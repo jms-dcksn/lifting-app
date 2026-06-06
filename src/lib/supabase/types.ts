@@ -321,6 +321,7 @@ export type Database = {
       }
       workout_session: {
         Row: {
+          finished_at: string | null
           id: string
           notes: string | null
           performed_at: string
@@ -330,6 +331,7 @@ export type Database = {
           week_index: number | null
         }
         Insert: {
+          finished_at?: string | null
           id?: string
           notes?: string | null
           performed_at?: string
@@ -339,6 +341,7 @@ export type Database = {
           week_index?: number | null
         }
         Update: {
+          finished_at?: string | null
           id?: string
           notes?: string | null
           performed_at?: string

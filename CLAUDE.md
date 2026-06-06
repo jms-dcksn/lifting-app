@@ -33,8 +33,8 @@ build sequence and what is intentionally out of scope.
 
 ### The strength engine (`src/lib/strength/`) — the heart of the app
 
-Pure TypeScript, no framework deps, runs **client-side** (the recommender needs no server
-round-trip). Three layers that must be understood together:
+Pure TypeScript, no framework deps. The recommender runs **client-side** (no server round-trip).
+Five modules that must be understood together:
 
 1. **`e1rm.ts`** — converts every logged set `(weight, reps, RIR)` to an estimated 1RM using
    an RPE/RIR load model (RPE = 10 − RIR), collapsed to a single %1RM curve over
@@ -54,6 +54,19 @@ round-trip). Three layers that must be understood together:
    weight for the target reps/RIR. Coefficients are population priors that shrink toward each
    user's observed ratios (Bayesian shrinkage, `PRIOR_WEIGHT`).
 
+4. **`recompute.ts`** — pure stat rebuild. `recomputeStat(def, sets, bodyweight)` returns
+   `currentE1rm` = max e1RM across logged working sets (demonstrated current strength).
+   `effectiveLoad(def, weight, bodyweight)` handles the bodyweight/assisted convention
+   (effective load = bodyweight + added; added is negative for assisted). Personal-coefficient
+   recompute for machine calibration is deferred to Phase 5; `logSet` preserves any existing
+   `personal_coefficient`/`coeff_confidence_n` untouched.
+
+5. **`progression.ts`** — pure double-progression engine. `sessionTarget(def, slot, last, defs,
+   stats)`: no prior history → hands off to `recommend()` at `rep_min` (source
+   `"recommendation"`, carries confidence); has prior → if first-set reps ≥ `rep_max`, bumps
+   weight by `def.increment` and resets to `rep_min`, else holds weight and targets +1 rep
+   (source `"progression"`). Bump test is reps-only.
+
 **Machines are special.** You cannot predict absolute machine loads from free weights (arbitrary
 leverage/pin/stack units). Exercises flagged `needsCalibration` return `confidence: "calibrate"`
 with a deliberately conservative number; the first logged set anchors that machine's personal
@@ -61,7 +74,7 @@ coefficient. Preserve this behavior — don't try to make machines predict like 
 
 ### Data model (`supabase/migrations/`)
 
-Three applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sql` (program/day/slot tables, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql` (signup trigger hardening). Typed DB types at `src/lib/supabase/types.ts`.
+Four applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sql` (program/day/slot tables, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql` (signup trigger hardening), `0004_session_finished_at.sql` (adds nullable `finished_at timestamptz` to `workout_session`). Typed DB types at `src/lib/supabase/types.ts`.
 
 - **`set_log` is the source of truth.** `user_exercise_stat` is a derived cache (current e1RM
   + personal coefficient) that is rebuildable from `set_log` — never let it drift.

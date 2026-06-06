@@ -41,9 +41,33 @@ Gym context: Lifetime — barbell, dumbbell (to ~120lb), cables, plus Hammer Str
 `set_log` is the source of truth; `user_exercise_stat` is a rebuildable cache. Program
 slots reference movement patterns, so "swap exercise" is a first-class operation. Seeded
 exercise catalog lives in `coefficients.ts` (app code); the `exercise` table holds only
-user-custom additions. Schema across three migrations: `0001_init.sql` (base), `0002_program_builder.sql`
+user-custom additions. Schema across four migrations: `0001_init.sql` (base), `0002_program_builder.sql`
 (program/day/slot, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql`
-(signup trigger hardening). Typed DB types at `src/lib/supabase/types.ts`.
+(signup trigger hardening), `0004_session_finished_at.sql` (adds nullable `finished_at
+timestamptz` to `workout_session`). Typed DB types at `src/lib/supabase/types.ts`.
+
+## Phase 2 decisions
+
+**`finished_at` on `workout_session`.** Added in `0004_session_finished_at.sql`. The original
+schema had no completion flag, which `finishSession` and "count completed sessions" (block
+position derivation) both require. Nullable so in-progress and abandoned sessions are
+distinguishable from completed ones.
+
+**`current_e1rm` = max e1RM across working sets.** `recomputeStat` selects the maximum e1RM
+from all logged working sets, not the first-set value or a session average. This represents
+demonstrated current strength. Per-session overload deltas (progress visualization) are
+computed separately in Phase 4 and are not stored in `user_exercise_stat`.
+
+**Block position (week/day) is fully derived, not stored.** For Phase 2 (seed program), day
+and week are derived entirely from the count of finished sessions — matches the SPEC decision
+that block position is derived. This also means `set_log.program_slot_id` is null for seed
+sessions (seed slots are not persisted to DB); progression keys on `exercise_id` alone until
+real programs exist in Phase 3, then keys on `(program_slot_id, exercise_id)`.
+
+**Machine personal-coefficient recompute is deferred to Phase 5.** `recomputeStat` returns
+only `currentE1rm`; `logSet` preserves any existing `personal_coefficient` and
+`coeff_confidence_n` untouched. Machine calibration (first-set anchor → personal coefficient)
+is part of the P5 recommendation + swap + calibration layer.
 
 ## Build order
 

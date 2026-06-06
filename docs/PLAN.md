@@ -66,36 +66,51 @@ a phone (or Playwright MCP if useful). Don't add a runner unless a phase genuine
 - [x] Protected app group `src/app/(app)/layout.tsx` — redirect to `/login` if no user
 - [x] PWA: `src/app/manifest.ts`, icons (`icon.svg`, `apple-icon.tsx`), `theme-color #000`. Add-to-home-screen works.
 
-## Phase 2 — Keystone: active-session screen (~9 hrs)
+## Phase 2 — Keystone: active-session screen (~9 hrs) — DONE
 
 Build against a **hardcoded seed program** (a TS constant shaped like the program/day/slot
 data) so logging is fully proven before the builder exists. Everything downstream depends on
 this screen being right.
 
-- [ ] `src/lib/strength/recompute.ts` — pure: rebuild `current_e1rm` (+ personal coefficient
-      for calibrated machines) for one user/exercise from its `set_log` rows. Verify with tsx.
-- [ ] `src/lib/strength/progression.ts` — pure double-progression engine. Given a slot + its
-      last logged performance, return the session target (weight + reps): first working set hit
-      `rep_max` → add `exercise.increment`, reset reps to `rep_min`; else hold weight, target
-      +1 rep toward `rep_max`. No prior performance → e1RM handoff via `recommend()` at `rep_min`.
-      Keys on `(program_slot_id, exercise_id)`. Verify with tsx.
-- [ ] Bodyweight e1RM convention in the engine: bodyweight/assisted log added load
-      (negative = assisted); e1RM input is `bodyweight + added`. Pull bodyweight from `profile`.
-- [ ] `src/app/(app)/session/actions.ts`:
-  - [ ] `startNextSession()` — derive next (week, day) from completed sessions of the active
-        program, insert `workout_session`, return it with the day's slots
-  - [ ] `logSet({ sessionId, programSlotId, exerciseId, weight, reps, rir })` — compute e1RM,
-        insert `set_log`, upsert `user_exercise_stat` via recompute
-  - [ ] `editSet` / `deleteSet` — mutate `set_log`, recompute affected stat
-  - [ ] `finishSession(sessionId)` — mark finished, return summary
-- [ ] `src/app/(app)/session/[id]/page.tsx` + components:
-  - [ ] Slot cards: prescription (sets × rep-range @ RIR) + double-progression target from
-        `progression.ts` (e.g. "Target: 50 × 5 · last: 45 × 8") + empty working-set list
-  - [ ] Set logger: weight / reps / RIR via big-tap steppers + numeric keypad
-  - [ ] Optimistic insert (`useOptimistic`) — row appears instantly, write in background, revert on error
-  - [ ] Inline edit/delete a set
-  - [ ] `navigator.wakeLock` on mount; release on finish/unmount
-- [ ] Finish → summary (total working sets, top e1RM per lift)
+- [x] `src/lib/strength/recompute.ts` — pure: rebuild `current_e1rm` from `set_log` rows.
+      `recomputeStat(def, sets, bodyweight)` returns `currentE1rm` (max e1RM across working sets).
+      `effectiveLoad(def, weight, bodyweight)` implements the bodyweight/assisted convention.
+      Personal-coefficient recompute is deferred to P5 (machine calibration layer); `logSet`
+      preserves any existing `personal_coefficient`/`coeff_confidence_n` untouched. Verified with tsx.
+- [x] `src/lib/strength/progression.ts` — pure double-progression engine. `sessionTarget(def,
+      slot, last, defs, stats)`: no prior → e1RM recommender at `rep_min` (source "recommendation",
+      carries confidence); has prior → first-set reps >= `rep_max` bumps weight by `def.increment`
+      and resets to `rep_min`, else holds weight and targets +1 rep (source "progression"). Bump
+      test is reps-only. Keys on `(program_slot_id, exercise_id)`. Verified with tsx.
+- [x] Bodyweight e1RM convention in the engine: `effectiveLoad` adds bodyweight for BW exercises,
+      subtracts assist for assisted. `logSet` reads bodyweight from `profile`.
+- [x] `src/app/(app)/session/seed.ts` — hardcoded `SEED_PROGRAM` (3-day Push/Pull/Legs, 5 weeks)
+      shaped like program/day/slot data. P3 replaces with real active program.
+- [x] `src/app/(app)/session/actions.ts`:
+  - [x] `startNextSession()` — derives next week/day from count of finished sessions, inserts
+        `workout_session`, redirects to `/session/[id]`
+  - [x] `logSet({ sessionId, programSlotId, exerciseId, weight, reps, rir })` — computes e1RM,
+        inserts `set_log`, upserts `user_exercise_stat` via recompute
+  - [x] `editSet` / `deleteSet` — mutate `set_log`, recompute affected stat
+  - [x] `finishSession(sessionId)` — sets `finished_at`, returns summary (total working sets +
+        top e1RM per lift)
+- [x] `src/app/(app)/session/[id]/page.tsx` — Server Component: derives seed day from finished
+      session count, loads bodyweight/stats/sets/last-performance, computes each slot's target,
+      renders client screen.
+- [x] `src/app/(app)/session/[id]/active-session.tsx` — client keystone screen:
+  - [x] Slot cards: prescription + double-progression/recommendation target line + working-set list
+  - [x] Set logger: weight / reps / RIR via big-tap steppers + numeric keypad
+  - [x] Optimistic insert (`useOptimistic`) — row appears instantly, revert on error
+  - [x] Inline edit/delete a set
+  - [x] `navigator.wakeLock` on mount; re-acquired on `visibilitychange`; released on finish/unmount
+- [x] Finish → summary (total working sets, top e1RM per lift)
+- [x] `supabase/migrations/0004_session_finished_at.sql` — adds nullable `finished_at timestamptz`
+      to `workout_session`; applied to remote DB
+- [x] `src/app/(app)/page.tsx` — home shows block status line + "Start next workout" button
+      (P2 scaffold; P3 replaces with real active program)
+- [x] `src/lib/supabase/client.ts` and `server.ts` — typed with `Database` generic
+- [x] `src/lib/supabase/types.ts` — regenerated (includes `finished_at`)
+- Verified: `npx tsc --noEmit` clean, `npm run build` clean, `npm run lint` clean
 
 ## Phase 3 — Program builder + home (~7 hrs)
 

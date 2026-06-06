@@ -8,7 +8,7 @@ weight for any exercise based on logged history of similar movements.
 
 - **Next.js (App Router, Server Actions)** — mobile web app, accessed via browser.
 - **Supabase** — Postgres + Auth + RLS. Zero-ops.
-- **Auth**: Supabase Auth, email magic-link + Google OAuth. RLS keys off `auth.uid()`.
+- **Auth**: Supabase Auth, email magic-link only (Google OAuth deferred post-MVP). RLS keys off `auth.uid()`.
 - **PWA manifest** — home-screen install, wake-lock, optimistic logging. (Not offline.)
 - **Recommender runs client-side** (pure TS, bundled coefficient table). No Python service.
 - **Deploy**: Vercel.
@@ -41,10 +41,12 @@ Gym context: Lifetime — barbell, dumbbell (to ~120lb), cables, plus Hammer Str
 `set_log` is the source of truth; `user_exercise_stat` is a rebuildable cache. Program
 slots reference movement patterns, so "swap exercise" is a first-class operation. Seeded
 exercise catalog lives in `coefficients.ts` (app code); the `exercise` table holds only
-user-custom additions. See `supabase/migrations/0001_init.sql`.
+user-custom additions. Schema across three migrations: `0001_init.sql` (base), `0002_program_builder.sql`
+(program/day/slot, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql`
+(signup trigger hardening). Typed DB types at `src/lib/supabase/types.ts`.
 
 ## Build order
 
-- **v0** — Logging + e1RM tracking + progression charts. (Build this fully first.)
-- **v1** — Swap exercise + weight recommendation (population priors).
-- **v2** — Personalized coefficients + machine calibration + per-gym machine identity.
+> Superseded by `SPEC.md`, which wins on conflicts. Current phase structure: P0 (backend, done),
+> P1 (auth + PWA), P2 (keystone: active-session screen), P3 (program builder), P4 (progression
+> view), P5 (recommendation + swap + calibration). See `docs/PLAN.md` for the sequence and status.

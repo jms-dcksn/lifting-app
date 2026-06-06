@@ -59,7 +59,9 @@ leverage/pin/stack units). Exercises flagged `needsCalibration` return `confiden
 with a deliberately conservative number; the first logged set anchors that machine's personal
 coefficient. Preserve this behavior — don't try to make machines predict like free weights.
 
-### Data model (`supabase/migrations/0001_init.sql`)
+### Data model (`supabase/migrations/`)
+
+Three applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sql` (program/day/slot tables, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql` (signup trigger hardening). Typed DB types at `src/lib/supabase/types.ts`.
 
 - **`set_log` is the source of truth.** `user_exercise_stat` is a derived cache (current e1RM
   + personal coefficient) that is rebuildable from `set_log` — never let it drift.
@@ -73,4 +75,4 @@ coefficient. Preserve this behavior — don't try to make machines predict like 
 ### Supabase clients (`src/lib/supabase/`)
 
 `client.ts` (browser) and `server.ts` (Server Components / Actions, async, cookie-based) via
-`@supabase/ssr`. Auth is magic-link + Google OAuth; session refresh belongs in middleware.
+`@supabase/ssr`. Auth is email magic-link; session refresh belongs in middleware.

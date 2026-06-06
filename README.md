@@ -25,7 +25,7 @@ Apply the schema to your Supabase project:
 supabase db push
 ```
 
-Enable Email (magic-link) and Google providers in the Supabase Auth dashboard.
+Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 
 ## Layout
 

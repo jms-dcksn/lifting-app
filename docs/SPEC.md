@@ -129,7 +129,7 @@ not part of the bump test). A stall just holds weight at the same rep target —
 ## Screens & flows
 
 ### `/login`
-Magic-link email form + "Sign in with Google" → `/` on success.
+Magic-link email form → `/` on success.
 
 ### `/` Home
 - Active-block status line: "Week 2 of 5 · next: Pull".

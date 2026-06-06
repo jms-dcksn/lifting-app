@@ -12,12 +12,18 @@ beat last time. Done = I use it for a real block.
 > Next.js 16 has breaking changes from older versions. Before writing framework code in any
 > phase, check `node_modules/next/dist/docs/` (see `AGENTS.md`).
 
-## What exists (committed)
+## What exists
 
+Committed:
 - Next.js (App Router, TS, Tailwind) scaffold
 - Strength engine: `e1rm.ts`, `coefficients.ts` (~38 Lifetime exercises), `recommend.ts` — typechecks, math sanity-checked
-- Supabase clients (browser/server) + schema with RLS in `supabase/migrations/0001_init.sql`
+- Supabase clients (browser/server, `@supabase/ssr`) + base schema with RLS in `supabase/migrations/0001_init.sql`
 - Architecture in `docs/DECISIONS.md`
+
+On disk and applied to remote DB (not yet committed):
+- `supabase/migrations/0002_program_builder.sql` — program/day/slot tables, `set_log.program_slot_id`, `profile.bodyweight`, RLS
+- `supabase/migrations/0003_harden_signup_trigger.sql` — hardens the trigger that auto-creates a `profile` row on signup
+- `src/lib/supabase/types.ts` — generated typed DB types (504 lines)
 
 ## Estimate
 
@@ -34,24 +40,27 @@ a phone (or Playwright MCP if useful). Don't add a runner unless a phase genuine
 
 ---
 
-## Phase 0 — Backend (blocking, ~2 hrs)
+## Phase 0 — Backend (blocking, ~2 hrs) — DONE except one item
 
-- [ ] Create Supabase project; put URL + anon key in `.env.local`
-- [ ] Apply `0001_init.sql` (SQL editor or `supabase db push`)
-- [ ] Write + apply `supabase/migrations/0002_program_builder.sql`:
-  - [ ] `program`: add `weeks int`, `is_active boolean default false`
-  - [ ] `program_day` `(id, program_id, user_id, position, name)` + RLS (own rows)
-  - [ ] `program_slot` `(id, program_day_id, user_id, position, exercise_id text, pattern text, target_sets int, rep_min int, rep_max int, target_rir numeric)` + RLS
-  - [ ] `workout_session`: add `program_day_id uuid references program_day`
-  - [ ] `set_log`: add `program_slot_id uuid references program_slot` (nullable)
-  - [ ] `profile`: add `bodyweight numeric`
-- [ ] Enable Auth providers: Email magic-link + Google OAuth
-- [ ] Generate typed DB types → `src/lib/supabase/types.ts`
+- [x] Create Supabase project; put URL + anon key in `.env.local`
+      (ref `jtcppebmosaffaajtgow`, ACTIVE_HEALTHY, us-east-2, created 2026-06-06)
+- [x] Apply `0001_init.sql` (SQL editor or `supabase db push`)
+- [x] Write + apply `supabase/migrations/0002_program_builder.sql`:
+  - [x] `program`: add `weeks int`, `is_active boolean default false`
+  - [x] `program_day` `(id, program_id, user_id, position, name)` + RLS (own rows)
+  - [x] `program_slot` `(id, program_day_id, user_id, position, exercise_id text, pattern text, target_sets int, rep_min int, rep_max int, target_rir numeric)` + RLS
+  - [x] `workout_session`: add `program_day_id uuid references program_day`
+  - [x] `set_log`: add `program_slot_id uuid references program_slot` (nullable)
+  - [x] `profile`: add `bodyweight numeric`
+- [x] `supabase/migrations/0003_harden_signup_trigger.sql` — hardens the `profile` row
+      auto-create trigger on signup (written and applied; not in original plan)
+- [ ] Enable Auth provider: Email magic-link in Supabase Auth dashboard (manual step; not yet done)
+- [x] Generate typed DB types → `src/lib/supabase/types.ts` (504 lines)
 
 ## Phase 1 — Auth + shell + PWA (~3 hrs)
 
 - [ ] `middleware.ts` — refresh Supabase session on every request
-- [ ] `src/app/login/page.tsx` — magic-link form + "Sign in with Google"
+- [ ] `src/app/login/page.tsx` — magic-link form
 - [ ] `src/app/auth/callback/route.ts` — exchange code for a session
 - [ ] Protected app group `src/app/(app)/layout.tsx` — redirect to `/login` if no user
 - [ ] PWA: `src/app/manifest.ts`, icons, `theme-color`. Add-to-home-screen works.

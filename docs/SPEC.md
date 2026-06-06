@@ -182,8 +182,8 @@ Edit `bodyweight`. Nothing else in MVP.
 
 - **P0 — Backend.** Supabase project; apply `0001_init.sql` + a new migration for
   program/day/slot tables, `set_log.program_slot_id`, `profile.bodyweight`, RLS. Typed DB types.
-- **P1 — Auth + shell + PWA.** `middleware.ts` session refresh, `/login`, `/auth/callback`,
-  protected layout, `manifest.ts`/icons/`theme-color`.
+- **P1 — Auth + shell + PWA.** `proxy.ts` session refresh (Next.js 16; see AGENTS.md), `/login`, `/auth/callback`,
+  protected layout, `manifest.ts`/icons/`theme-color`. DONE.
 - **P2 — Keystone: active-session screen** against a **hardcoded seed program** first. logSet,
   e1RM compute, `progression.ts` (per-session double-progression target, with the e1RM handoff
   for first-time/no-history slots), optimistic insert, wakeLock, edit/delete, finish summary.

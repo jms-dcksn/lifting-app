@@ -75,4 +75,7 @@ Three applied migrations: `0001_init.sql` (base schema), `0002_program_builder.s
 ### Supabase clients (`src/lib/supabase/`)
 
 `client.ts` (browser) and `server.ts` (Server Components / Actions, async, cookie-based) via
-`@supabase/ssr`. Auth is email magic-link; session refresh belongs in middleware.
+`@supabase/ssr`. Auth is email magic-link. Session refresh runs in `src/proxy.ts` (Next.js 16
+renamed `middleware.ts` → `proxy.ts`; see AGENTS.md) via `updateSession()` in
+`src/lib/supabase/middleware.ts`, which uses `getClaims()` (not `getUser()`/`getSession()`) for
+token refresh and auth protection.

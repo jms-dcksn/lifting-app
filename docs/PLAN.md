@@ -57,13 +57,14 @@ a phone (or Playwright MCP if useful). Don't add a runner unless a phase genuine
 - [ ] Enable Auth provider: Email magic-link in Supabase Auth dashboard (manual step; not yet done)
 - [x] Generate typed DB types → `src/lib/supabase/types.ts` (504 lines)
 
-## Phase 1 — Auth + shell + PWA (~3 hrs)
+## Phase 1 — Auth + shell + PWA (~3 hrs) — DONE
 
-- [ ] `middleware.ts` — refresh Supabase session on every request
-- [ ] `src/app/login/page.tsx` — magic-link form
-- [ ] `src/app/auth/callback/route.ts` — exchange code for a session
-- [ ] Protected app group `src/app/(app)/layout.tsx` — redirect to `/login` if no user
-- [ ] PWA: `src/app/manifest.ts`, icons, `theme-color`. Add-to-home-screen works.
+- [x] `src/proxy.ts` — refresh Supabase session on every request via `updateSession()` (Next.js 16: `middleware.ts` renamed to `proxy.ts`)
+- [x] `src/lib/supabase/middleware.ts` — `updateSession(request)` helper: cookie wiring + `getClaims()` token refresh
+- [x] `src/app/login/page.tsx` — magic-link form
+- [x] `src/app/auth/callback/route.ts` — exchange code for a session
+- [x] Protected app group `src/app/(app)/layout.tsx` — redirect to `/login` if no user
+- [x] PWA: `src/app/manifest.ts`, icons (`icon.svg`, `apple-icon.tsx`), `theme-color #000`. Add-to-home-screen works.
 
 ## Phase 2 — Keystone: active-session screen (~9 hrs)
 

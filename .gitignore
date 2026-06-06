@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude code — commit the workflow (skills, hooks, settings.json, agents);
+# keep local state out
+.claude/settings.local.json
+.claude/LAST_SESSION.md
+.claude/agent-memory/

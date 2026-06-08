@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
 import { computeE1rm } from "@/lib/strength/e1rm";
 import { recomputeStat, effectiveLoad } from "@/lib/strength/recompute";
-import { SEED_PROGRAM } from "./seed";
+import { getActiveProgram } from "@/lib/program";
 
 // auth.uid() for RLS; getClaims() is the trusted server-side check (see AGENTS.md).
 async function requireUser() {
@@ -60,22 +60,46 @@ async function recomputeAndUpsertStat(
   );
 }
 
-// Derive the next (week, day) from completed sessions of the seed program and start one.
+// Resume an in-progress session or start the next one. Day/week derive from the count of
+// finished sessions of the active program; days run in sequence.
 export async function startNextSession() {
   const { supabase, userId } = await requireUser();
+
+  const program = await getActiveProgram(supabase, userId);
+  if (!program || program.days.length === 0) redirect("/program");
+
+  // Resume an unfinished session rather than starting a duplicate.
+  const { data: open } = await supabase
+    .from("workout_session")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("program_id", program.id)
+    .is("finished_at", null)
+    .order("performed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (open) redirect(`/session/${open.id}`);
 
   const { count } = await supabase
     .from("workout_session")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
+    .eq("program_id", program.id)
     .not("finished_at", "is", null);
 
   const completed = count ?? 0;
-  const week = Math.floor(completed / SEED_PROGRAM.days.length) + 1;
+  const dayIndex = completed % program.days.length;
+  const week = Math.floor(completed / program.days.length) + 1;
+  const day = program.days[dayIndex];
 
   const { data, error } = await supabase
     .from("workout_session")
-    .insert({ user_id: userId, week_index: week })
+    .insert({
+      user_id: userId,
+      program_id: program.id,
+      program_day_id: day.id,
+      week_index: week,
+    })
     .select("id")
     .single();
 

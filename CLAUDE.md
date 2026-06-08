@@ -82,8 +82,28 @@ Four applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sq
   a foreign key, so the seeded catalog can live in app code.
 - Program slots reference movement *patterns*, not fixed exercises — this is what makes "swap
   exercise" a first-class operation that re-derives weight automatically.
+- `set_log.program_slot_id` is populated from Phase 3 onward. Progression "last performance"
+  lookup keys on `program_slot_id` (not `exercise_id`). Seed sessions from Phase 2 have
+  `program_slot_id = null` and are superseded by real DB-backed programs.
+- Block position (week/day within the active program) is derived from the count of finished
+  sessions with matching `program_id`, not stored.
+- Builder save is an id-preserving upsert + delete-missing (not full replace), so
+  `set_log.program_slot_id` continuity survives program edits. A partial unique index
+  (`program_one_active_per_user`) enforces a single active program per user; saving always
+  activates the saved program.
 - **Every table has RLS** keyed on `auth.uid()`; every row carries `user_id`. New tables must
   follow this pattern. A trigger auto-creates a `profile` row on signup.
+
+### Program loader (`src/lib/program.ts`)
+
+Shared server-side helper. Exports `getActiveProgram`, `getProgram`, `listPrograms`,
+`recentExerciseIds`, and the `Program`/`ProgramDay`/`ProgramSlot` types. Assembles the
+nested program structure (days → slots) from the `program`, `program_day`, and
+`program_slot` tables. Used by home, the session page, and the builder.
+
+`src/app/(app)/session/seed.ts` no longer drives the runtime program. It survives only
+as the template source for `createFromTemplate` (onboarding shortcut that seeds the
+built-in Push/Pull/Legs template).
 
 ### Supabase clients (`src/lib/supabase/`)
 

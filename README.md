@@ -34,6 +34,9 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
   - `recommend.ts` — pattern-strength model + cross-exercise weight recommendation
   - `recompute.ts` — rebuild `user_exercise_stat` from `set_log` rows
   - `progression.ts` — double-progression session target (weight + reps) per slot
+- `src/lib/program.ts` — server-side program loader; assembles nested program (days → slots) from DB
 - `src/lib/supabase/` — browser client, server client, and `middleware.ts` (`updateSession` helper for `proxy.ts`)
 - `src/proxy.ts` — Next.js 16 session proxy (replaces `middleware.ts`); refreshes Supabase session on every request
+- `src/app/(app)/program/` — program builder (server page + client builder, exercise picker, program list, server actions)
+- `src/app/(app)/settings/` — bodyweight editor
 - `supabase/migrations/` — database schema with row-level security

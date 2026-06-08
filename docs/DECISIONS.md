@@ -58,16 +58,37 @@ from all logged working sets, not the first-set value or a session average. This
 demonstrated current strength. Per-session overload deltas (progress visualization) are
 computed separately in Phase 4 and are not stored in `user_exercise_stat`.
 
-**Block position (week/day) is fully derived, not stored.** For Phase 2 (seed program), day
-and week are derived entirely from the count of finished sessions — matches the SPEC decision
-that block position is derived. This also means `set_log.program_slot_id` is null for seed
-sessions (seed slots are not persisted to DB); progression keys on `exercise_id` alone until
-real programs exist in Phase 3, then keys on `(program_slot_id, exercise_id)`.
+**Block position (week/day) is fully derived, not stored.** Day and week are derived from the
+count of finished sessions with matching `program_id`, not stored on the session row. Seed
+sessions from Phase 2 have `program_slot_id = null`; from Phase 3 onward all sessions carry
+a real `program_slot_id` and progression keys on that column.
 
 **Machine personal-coefficient recompute is deferred to Phase 5.** `recomputeStat` returns
 only `currentE1rm`; `logSet` preserves any existing `personal_coefficient` and
 `coeff_confidence_n` untouched. Machine calibration (first-set anchor → personal coefficient)
 is part of the P5 recommendation + swap + calibration layer.
+
+## Phase 3 decisions
+
+**Builder save is id-preserving, not a full replace.** `saveProgram` upserts day/slot rows
+by their existing ids and deletes only rows that are no longer present, rather than
+dropping and recreating the program. This preserves `set_log.program_slot_id` continuity
+when users edit an in-use program. Client generates uuids for new rows; positions are
+re-derived from array order on save.
+
+**Single active program enforced by a partial unique index.** `program_one_active_per_user`
+is a partial unique index on `(user_id) WHERE is_active`. Saving any program unconditionally
+activates it (clears the old active flag first). `cloneProgram` creates an inactive draft.
+
+**`session/seed.ts` demoted to template-only.** The hardcoded Push/Pull/Legs seed no longer
+drives the runtime program. It is called only by `createFromTemplate` (onboarding shortcut).
+All runtime program data comes from the `program`/`program_day`/`program_slot` tables via
+`src/lib/program.ts`.
+
+**Progression "last performance" keys on `program_slot_id`.** From Phase 3 onward,
+the double-progression engine looks up prior sets by `program_slot_id`, not `exercise_id`.
+This correctly handles the case where the same exercise appears in multiple slots with
+different rep targets.
 
 ## Build order
 

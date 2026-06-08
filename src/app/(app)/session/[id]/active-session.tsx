@@ -20,6 +20,7 @@ export interface LoggedSet {
 }
 
 export interface SlotView {
+  programSlotId: string;
   exerciseId: string;
   name: string;
   equipment: string;
@@ -113,7 +114,7 @@ function SlotCard({ sessionId, slot }: { sessionId: string; slot: SlotView }) {
       });
       await logSet({
         sessionId,
-        programSlotId: null,
+        programSlotId: slot.programSlotId,
         exerciseId: slot.exerciseId,
         weight,
         reps,

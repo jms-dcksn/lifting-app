@@ -112,21 +112,28 @@ this screen being right.
 - [x] `src/lib/supabase/types.ts` — regenerated (includes `finished_at`)
 - Verified: `npx tsc --noEmit` clean, `npm run build` clean, `npm run lint` clean
 
-## Phase 3 — Program builder + home (~7 hrs)
+## Phase 3 — Program builder + home (~7 hrs) — DONE
 
-- [ ] `src/app/(app)/program/actions.ts`: `saveProgram`, `cloneProgram`, `setActiveProgram`
-- [ ] `src/app/(app)/program/page.tsx` — builder:
-  - [ ] Program: name, weeks (4–6), set active
-  - [ ] Add/reorder named days
-  - [ ] Per day: add/reorder slots (exercise picker + sets + rep range + RIR)
-  - [ ] Clone an existing program to start a new block
-- [ ] Exercise picker component (reused by builder + swap): search seeded `EXERCISES`, recent-first
-- [ ] Replace the hardcoded seed program in P2 with the real active program
-- [ ] `src/app/(app)/page.tsx` Home:
-  - [ ] Block status line ("Week 2 of 5 · next: Pull") derived from completed sessions
-  - [ ] **Start next workout** CTA; resume affordance if a session is in progress
-  - [ ] Last finished session summary
-- [ ] `src/app/(app)/settings/page.tsx` — edit `bodyweight` (minimal)
+- [x] `src/app/(app)/program/actions.ts`: `saveProgram`, `cloneProgram`, `setActiveProgram`
+      (plus `createFromTemplate` — onboarding shortcut seeding the PPL template)
+- [x] `src/app/(app)/program/page.tsx` — builder (`program-builder.tsx` client):
+  - [x] Program: name, weeks (4–6), set active (save always makes the program active)
+  - [x] Add/reorder named days (↑/↓ reorder; no drag)
+  - [x] Per day: add/reorder slots (exercise picker + sets + rep range + RIR)
+  - [x] Clone an existing program to start a new block (`program-list.tsx` saved-programs list)
+- [x] Exercise picker component (`exercise-picker.tsx`, reused by builder + swap): search seeded
+      `EXERCISES`, recent-first
+- [x] Replace the hardcoded seed program in P2 with the real active program (`src/lib/program.ts`
+      shared loader; `seed.ts` repurposed as the `createFromTemplate` source)
+- [x] `src/app/(app)/page.tsx` Home:
+  - [x] Block status line ("Week 2 of 5 · next: Pull") derived from completed sessions of the
+        active program
+  - [x] **Start next workout** CTA; resume affordance if a session is in progress
+  - [x] Last finished session summary
+- [x] `src/app/(app)/settings/page.tsx` — edit `bodyweight` (minimal)
+- [x] Progression last-performance now keys on `program_slot_id` (real slot ids, preserved
+      across builder edits); `logSet` writes the real `program_slot_id`
+- Verified: `npx tsc --noEmit` clean, `npm run build` clean, `npm run lint` clean
 
 ## Phase 4 — Progression view (~3 hrs)
 

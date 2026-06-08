@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
 import { sessionTarget, type LastPerformance } from "@/lib/strength/progression";
 import type { ExerciseStat } from "@/lib/strength/recommend";
-import { SEED_PROGRAM } from "../seed";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
 
 export default async function SessionPage({
@@ -19,22 +18,23 @@ export default async function SessionPage({
 
   const { data: session } = await supabase
     .from("workout_session")
-    .select("id, performed_at, week_index, finished_at")
+    .select("id, week_index, finished_at, program_id, program_day_id")
     .eq("id", id)
     .maybeSingle();
-  if (!session) notFound();
+  if (!session?.program_day_id) notFound();
 
-  // Block position is derived: which seed day this session is = completed sessions before it.
-  const { count: priorFinished } = await supabase
-    .from("workout_session")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .not("finished_at", "is", null)
-    .lt("performed_at", session.performed_at);
-
-  const dayIndex = (priorFinished ?? 0) % SEED_PROGRAM.days.length;
-  const day = SEED_PROGRAM.days[dayIndex];
-  const week = session.week_index ?? Math.floor((priorFinished ?? 0) / SEED_PROGRAM.days.length) + 1;
+  const [{ data: day }, { data: program }, { data: daySlots }] = await Promise.all([
+    supabase.from("program_day").select("name").eq("id", session.program_day_id).maybeSingle(),
+    session.program_id
+      ? supabase.from("program").select("weeks").eq("id", session.program_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("program_slot")
+      .select("id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, position")
+      .eq("program_day_id", session.program_day_id)
+      .order("position", { ascending: true }),
+  ]);
+  if (!day) notFound();
 
   const [{ data: profile }, { data: statRows }, { data: thisSessionSets }] =
     await Promise.all([
@@ -57,22 +57,25 @@ export default async function SessionPage({
     confidenceN: r.coeff_confidence_n,
   }));
 
-  // Last performance per slot: the first working set of the most recent prior session.
-  const exerciseIds = day.slots.map((s) => s.exerciseId);
-  const { data: priorSets } = await supabase
-    .from("set_log")
-    .select("exercise_id, weight, reps, created_at")
-    .eq("user_id", userId)
-    .eq("set_index", 0)
-    .eq("is_warmup", false)
-    .neq("session_id", id)
-    .in("exercise_id", exerciseIds)
-    .order("created_at", { ascending: false });
+  // Last performance per slot, keyed on program_slot_id: first working set of the most recent
+  // prior session for this exact slot (so a duplicated exercise progresses independently).
+  const slotIds = (daySlots ?? []).map((s) => s.id);
+  const { data: priorSets } = slotIds.length
+    ? await supabase
+        .from("set_log")
+        .select("program_slot_id, weight, reps, created_at")
+        .eq("user_id", userId)
+        .eq("set_index", 0)
+        .eq("is_warmup", false)
+        .neq("session_id", id)
+        .in("program_slot_id", slotIds)
+        .order("created_at", { ascending: false })
+    : { data: [] };
 
-  const lastByExercise = new Map<string, LastPerformance>();
+  const lastBySlot = new Map<string, LastPerformance>();
   for (const row of priorSets ?? []) {
-    if (!lastByExercise.has(row.exercise_id)) {
-      lastByExercise.set(row.exercise_id, { weight: row.weight, reps: row.reps });
+    if (row.program_slot_id && !lastBySlot.has(row.program_slot_id)) {
+      lastBySlot.set(row.program_slot_id, { weight: row.weight, reps: row.reps });
     }
   }
 
@@ -83,29 +86,30 @@ export default async function SessionPage({
     setsByExercise.set(s.exercise_id, list);
   }
 
-  const slots: SlotView[] = day.slots.map((slot) => {
-    const def = EXERCISE_BY_ID[slot.exerciseId];
-    const last = lastByExercise.get(slot.exerciseId) ?? null;
+  const slots: SlotView[] = (daySlots ?? []).map((slot) => {
+    const def = EXERCISE_BY_ID[slot.exercise_id];
+    const last = lastBySlot.get(slot.id) ?? null;
     const target = sessionTarget(
       def,
-      { repMin: slot.repMin, repMax: slot.repMax, targetRir: slot.targetRir },
+      { repMin: slot.rep_min, repMax: slot.rep_max, targetRir: slot.target_rir },
       last,
       EXERCISE_BY_ID,
       stats,
     );
     return {
-      exerciseId: slot.exerciseId,
-      name: def?.name ?? slot.exerciseId,
+      programSlotId: slot.id,
+      exerciseId: slot.exercise_id,
+      name: def?.name ?? slot.exercise_id,
       equipment: def?.equipment ?? "barbell",
       increment: def?.increment ?? 5,
       prescription: {
-        targetSets: slot.targetSets,
-        repMin: slot.repMin,
-        repMax: slot.repMax,
-        targetRir: slot.targetRir,
+        targetSets: slot.target_sets,
+        repMin: slot.rep_min,
+        repMax: slot.rep_max,
+        targetRir: slot.target_rir,
       },
       target,
-      sets: setsByExercise.get(slot.exerciseId) ?? [],
+      sets: setsByExercise.get(slot.exercise_id) ?? [],
     };
   });
 
@@ -113,8 +117,8 @@ export default async function SessionPage({
     <ActiveSession
       sessionId={id}
       dayName={day.name}
-      week={week}
-      weeks={SEED_PROGRAM.weeks}
+      week={session.week_index ?? 1}
+      weeks={program?.weeks ?? 5}
       bodyweight={profile?.bodyweight ?? null}
       alreadyFinished={!!session.finished_at}
       slots={slots}

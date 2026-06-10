@@ -56,7 +56,8 @@ distinguishable from completed ones.
 **`current_e1rm` = max e1RM across working sets.** `recomputeStat` selects the maximum e1RM
 from all logged working sets, not the first-set value or a session average. This represents
 demonstrated current strength. Per-session overload deltas (progress visualization) are
-computed separately in Phase 4 and are not stored in `user_exercise_stat`.
+computed live from `set_log` in Phase 4 (history page, finish-session summary) and are not
+stored in `user_exercise_stat`.
 
 **Block position (week/day) is fully derived, not stored.** Day and week are derived from the
 count of finished sessions with matching `program_id`, not stored on the session row. Seed
@@ -89,6 +90,29 @@ All runtime program data comes from the `program`/`program_day`/`program_slot` t
 the double-progression engine looks up prior sets by `program_slot_id`, not `exercise_id`.
 This correctly handles the case where the same exercise appears in multiple slots with
 different rep targets.
+
+## Phase 4 decisions
+
+**Overload delta is computed live, keyed on `exercise_id` (not `program_slot_id`).**
+Both the per-exercise history page and the finish-session summary compare the latest
+session's best e1RM for an exercise against the best e1RM from that exercise's most
+recent *earlier* session, found via `set_log` joined to `workout_session.performed_at`
+(`workout_session!inner(performed_at)`). This is intentionally `exercise_id`-keyed, unlike
+progression's `program_slot_id` lookup: the overload signal is "is this exercise getting
+stronger over time" regardless of which slot/program it was logged under, including
+across a swap.
+
+**`finishSession` now verifies session ownership via a select before updating.** Needed to
+read `performed_at` for the overload-delta query anyway, so the existing
+`.eq("user_id", userId)` filter on the update was replaced by an explicit
+ownership-checked select (throws `"Session not found"` if missing/not owned) followed by
+an unfiltered-by-user update scoped by `id` + `is("finished_at", null)`.
+
+**Charts: Recharts, client component, no server-side rendering of chart data.** The
+history page (`src/app/(app)/history/[exerciseId]/page.tsx`) is a Server Component that
+fetches and groups sets by session; the line chart itself
+(`e1rm-chart.tsx`) is a small `"use client"` wrapper around `recharts` `LineChart`. Matches
+the SPEC.md default ("Charts: Recharts").
 
 ## Build order
 

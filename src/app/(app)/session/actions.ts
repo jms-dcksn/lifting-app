@@ -235,19 +235,27 @@ export async function deleteSet(setId: string) {
 
 export interface SessionSummary {
   totalSets: number;
-  topE1rm: { exerciseId: string; name: string; e1rm: number }[];
+  // prevE1rm: best e1RM from the previous session of that exact exercise (null = first time).
+  topE1rm: { exerciseId: string; name: string; e1rm: number; prevE1rm: number | null }[];
 }
 
-// Mark finished, return the summary (total working sets, top e1RM per lift).
+// Mark finished, return the summary (total working sets, top e1RM per lift, overload delta).
 export async function finishSession(sessionId: string): Promise<SessionSummary> {
   const { supabase, userId } = await requireUser();
+
+  const { data: session } = await supabase
+    .from("workout_session")
+    .select("performed_at")
+    .eq("id", sessionId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!session) throw new Error("Session not found");
 
   // `is finished_at null` keeps the original finish time when re-viewing the summary.
   const { error } = await supabase
     .from("workout_session")
     .update({ finished_at: new Date().toISOString() })
     .eq("id", sessionId)
-    .eq("user_id", userId)
     .is("finished_at", null);
   if (error) throw new Error(error.message);
 
@@ -264,11 +272,38 @@ export async function finishSession(sessionId: string): Promise<SessionSummary> 
     if (set.e1rm > cur) best.set(set.exercise_id, set.e1rm);
   }
 
+  // Overload signal: best e1RM from each exercise's most recent earlier session.
+  const prevBest = new Map<string, number>();
+  if (best.size > 0) {
+    const { data: prior } = await supabase
+      .from("set_log")
+      .select("exercise_id, e1rm, session_id, workout_session!inner(performed_at)")
+      .eq("user_id", userId)
+      .neq("session_id", sessionId)
+      .eq("is_warmup", false)
+      .not("e1rm", "is", null)
+      .in("exercise_id", [...best.keys()])
+      .lt("workout_session.performed_at", session.performed_at);
+
+    const latestSession = new Map<string, { performedAt: string; e1rm: number }>();
+    for (const row of prior ?? []) {
+      const at = row.workout_session.performed_at;
+      const cur = latestSession.get(row.exercise_id);
+      if (!cur || at > cur.performedAt) {
+        latestSession.set(row.exercise_id, { performedAt: at, e1rm: row.e1rm as number });
+      } else if (at === cur.performedAt && (row.e1rm as number) > cur.e1rm) {
+        cur.e1rm = row.e1rm as number;
+      }
+    }
+    for (const [exerciseId, v] of latestSession) prevBest.set(exerciseId, v.e1rm);
+  }
+
   const topE1rm = [...best.entries()]
     .map(([exerciseId, e1rm]) => ({
       exerciseId,
       name: EXERCISE_BY_ID[exerciseId]?.name ?? exerciseId,
       e1rm,
+      prevE1rm: prevBest.get(exerciseId) ?? null,
     }))
     .sort((a, b) => b.e1rm - a.e1rm);
 

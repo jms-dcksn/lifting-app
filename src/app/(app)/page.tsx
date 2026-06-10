@@ -97,7 +97,14 @@ export default async function Home() {
           </p>
           {lastSummary.topLift && (
             <p className="mt-1 text-sm text-zinc-500">
-              Top: {lastSummary.topLift.name} · {Math.round(lastSummary.topLift.e1rm)} lb e1RM
+              Top:{" "}
+              <Link
+                href={`/history/${lastSummary.topLift.exerciseId}`}
+                className="underline underline-offset-2"
+              >
+                {lastSummary.topLift.name}
+              </Link>{" "}
+              · {Math.round(lastSummary.topLift.e1rm)} lb e1RM
             </p>
           )}
         </section>
@@ -121,10 +128,14 @@ async function summarize(
       .eq("is_warmup", false),
   ]);
 
-  let topLift: { name: string; e1rm: number } | null = null;
+  let topLift: { exerciseId: string; name: string; e1rm: number } | null = null;
   for (const s of sets ?? []) {
     if (s.e1rm != null && (!topLift || s.e1rm > topLift.e1rm)) {
-      topLift = { name: EXERCISE_BY_ID[s.exercise_id]?.name ?? s.exercise_id, e1rm: s.e1rm };
+      topLift = {
+        exerciseId: s.exercise_id,
+        name: EXERCISE_BY_ID[s.exercise_id]?.name ?? s.exercise_id,
+        e1rm: s.e1rm,
+      };
     }
   }
 

@@ -108,6 +108,16 @@ nested program structure (days → slots) from the `program`, `program_day`, and
 as the template source for `createFromTemplate` (onboarding shortcut that seeds the
 built-in Push/Pull/Legs template).
 
+### Exercise history (`src/app/(app)/history/[exerciseId]/`)
+
+Server Component (`page.tsx`) fetches that exercise's working sets via `set_log` joined to
+`workout_session!inner(performed_at)`, groups them by session, and computes a best-e1RM-per-
+session series plus an overload badge (latest session vs the one before it). The line chart
+(`e1rm-chart.tsx`, `recharts`) is a thin client component. The same exercise-keyed overload
+delta (latest session vs that exercise's previous session) is also surfaced per-lift in the
+finish-session summary (`session/actions.ts` → `finishSession`'s `prevE1rm`). This lookup is
+keyed on `exercise_id`, not `program_slot_id` — see `docs/DECISIONS.md` Phase 4.
+
 ### Supabase clients (`src/lib/supabase/`)
 
 `client.ts` (browser) and `server.ts` (Server Components / Actions, async, cookie-based) via

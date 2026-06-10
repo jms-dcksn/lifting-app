@@ -140,7 +140,11 @@ function SlotCard({ sessionId, slot }: { sessionId: string; slot: SlotView }) {
   return (
     <section className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
       <div className="flex items-baseline justify-between">
-        <h2 className="font-semibold">{slot.name}</h2>
+        <h2 className="font-semibold">
+          <Link href={`/history/${slot.exerciseId}`} className="underline-offset-2 hover:underline">
+            {slot.name}
+          </Link>
+        </h2>
         <span className="text-xs text-zinc-500">
           {p.targetSets} × {p.repMin}–{p.repMax} @ {p.targetRir} RIR
         </span>
@@ -376,9 +380,14 @@ function Summary({ dayName, summary }: { dayName: string; summary: SessionSummar
           </h2>
           <ul className="flex flex-col gap-1">
             {summary.topE1rm.map((t) => (
-              <li key={t.exerciseId} className="flex justify-between text-sm">
-                <span>{t.name}</span>
-                <span className="font-semibold tabular-nums">{Math.round(t.e1rm)} lb</span>
+              <li key={t.exerciseId} className="flex items-baseline justify-between text-sm">
+                <Link href={`/history/${t.exerciseId}`} className="underline-offset-2 hover:underline">
+                  {t.name}
+                </Link>
+                <span className="tabular-nums">
+                  <span className="font-semibold">{Math.round(t.e1rm)} lb</span>
+                  <OverloadDelta e1rm={t.e1rm} prevE1rm={t.prevE1rm} />
+                </span>
               </li>
             ))}
           </ul>
@@ -392,6 +401,19 @@ function Summary({ dayName, summary }: { dayName: string; summary: SessionSummar
         Done
       </Link>
     </div>
+  );
+}
+
+// vs the previous session of this exercise: green = beat it, red = under it.
+function OverloadDelta({ e1rm, prevE1rm }: { e1rm: number; prevE1rm: number | null }) {
+  if (prevE1rm == null) return <span className="ml-2 text-xs text-zinc-400">first</span>;
+  const delta = Math.round(e1rm - prevE1rm);
+  if (delta === 0) return <span className="ml-2 text-xs text-zinc-400">±0</span>;
+  const cls = delta > 0 ? "text-emerald-600" : "text-red-500";
+  return (
+    <span className={`ml-2 text-xs font-medium ${cls}`}>
+      {delta > 0 ? `+${delta}` : delta}
+    </span>
   );
 }
 

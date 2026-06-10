@@ -8,7 +8,7 @@ See [docs/DECISIONS.md](docs/DECISIONS.md) for architecture and the recommendati
 
 ## Stack
 
-Next.js (App Router) · Supabase (Postgres + Auth + RLS) · TypeScript recommender · Vercel.
+Next.js (App Router) · Supabase (Postgres + Auth + RLS) · TypeScript recommender · Recharts · Vercel.
 
 ## Setup
 
@@ -39,4 +39,5 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/proxy.ts` — Next.js 16 session proxy (replaces `middleware.ts`); refreshes Supabase session on every request
 - `src/app/(app)/program/` — program builder (server page + client builder, exercise picker, program list, server actions)
 - `src/app/(app)/settings/` — bodyweight editor
+- `src/app/(app)/history/[exerciseId]/` — per-exercise history: e1RM line chart (Recharts) + overload signal vs the previous session
 - `supabase/migrations/` — database schema with row-level security

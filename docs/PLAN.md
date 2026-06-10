@@ -135,10 +135,10 @@ this screen being right.
       across builder edits); `logSet` writes the real `program_slot_id`
 - Verified: `npx tsc --noEmit` clean, `npm run build` clean, `npm run lint` clean
 
-## Phase 4 — Progression view (~3 hrs)
+## Phase 4 — Progression view (~3 hrs) — DONE
 
-- [ ] `src/app/(app)/history/[exerciseId]/page.tsx` — sets over time + e1RM line chart (Recharts)
-- [ ] Overload signal: top working-set e1RM this session vs the previous session of that exact
+- [x] `src/app/(app)/history/[exerciseId]/page.tsx` — sets over time + e1RM line chart (Recharts)
+- [x] Overload signal: top working-set e1RM this session vs the previous session of that exact
       exercise — shown in history and in the finish-session summary
 
 ## Phase 5 — Recommendation + swap + calibration (~5 hrs)

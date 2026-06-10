@@ -68,12 +68,14 @@ export async function startNextSession() {
   const program = await getActiveProgram(supabase, userId);
   if (!program || program.days.length === 0) redirect("/program");
 
-  // Resume an unfinished session rather than starting a duplicate.
+  // Resume an unfinished session rather than starting a duplicate. Sessions whose day was
+  // deleted from the program (program_day_id nulled by FK) are unloadable — skip them.
   const { data: open } = await supabase
     .from("workout_session")
     .select("id")
     .eq("user_id", userId)
     .eq("program_id", program.id)
+    .not("program_day_id", "is", null)
     .is("finished_at", null)
     .order("performed_at", { ascending: false })
     .limit(1)
@@ -122,24 +124,39 @@ export async function logSet(input: LogSetInput) {
   const def = EXERCISE_BY_ID[input.exerciseId];
   if (!def) throw new Error(`Unknown exercise: ${input.exerciseId}`);
 
-  const bodyweight = await getBodyweight(supabase, userId);
-
-  // set_index is per (session, exercise): the position in this session's working sets.
-  const { count: priorThisSession } = await supabase
+  // set_index is per (session, slot) so a duplicated exercise across two slots keeps
+  // independent set chains; ad-hoc sets (no slot) fall back to per (session, exercise).
+  let setIndexQuery = supabase
     .from("set_log")
     .select("id", { count: "exact", head: true })
-    .eq("session_id", input.sessionId)
-    .eq("exercise_id", input.exerciseId);
+    .eq("session_id", input.sessionId);
+  setIndexQuery = input.programSlotId
+    ? setIndexQuery.eq("program_slot_id", input.programSlotId)
+    : setIndexQuery.eq("exercise_id", input.exerciseId);
 
-  // First-ever set on a machine that needs calibration is a calibration set (P5 uses this).
-  const { count: priorEver } = await supabase
-    .from("set_log")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("exercise_id", input.exerciseId);
+  const [{ data: session }, bodyweight, { count: priorThisSession }, { count: priorEver }] =
+    await Promise.all([
+      // The session id comes from the client — confirm it is this user's session.
+      supabase
+        .from("workout_session")
+        .select("id")
+        .eq("id", input.sessionId)
+        .eq("user_id", userId)
+        .maybeSingle(),
+      getBodyweight(supabase, userId),
+      setIndexQuery,
+      // First-ever set on a machine that needs calibration is a calibration set (P5 uses this).
+      supabase
+        .from("set_log")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("exercise_id", input.exerciseId),
+    ]);
+  if (!session) throw new Error("Session not found");
 
   const load = effectiveLoad(def, input.weight, bodyweight);
-  const e1rm = load > 0 && input.reps > 0 ? computeE1rm(load, input.reps, input.rir) : null;
+  const e1rm =
+    load != null && load > 0 && input.reps > 0 ? computeE1rm(load, input.reps, input.rir) : null;
 
   const { data, error } = await supabase
     .from("set_log")
@@ -185,7 +202,8 @@ export async function editSet(input: EditSetInput) {
   const def = EXERCISE_BY_ID[existing.exercise_id];
   const bodyweight = await getBodyweight(supabase, userId);
   const load = def ? effectiveLoad(def, input.weight, bodyweight) : input.weight;
-  const e1rm = load > 0 && input.reps > 0 ? computeE1rm(load, input.reps, input.rir) : null;
+  const e1rm =
+    load != null && load > 0 && input.reps > 0 ? computeE1rm(load, input.reps, input.rir) : null;
 
   const { error } = await supabase
     .from("set_log")
@@ -224,11 +242,14 @@ export interface SessionSummary {
 export async function finishSession(sessionId: string): Promise<SessionSummary> {
   const { supabase, userId } = await requireUser();
 
-  await supabase
+  // `is finished_at null` keeps the original finish time when re-viewing the summary.
+  const { error } = await supabase
     .from("workout_session")
     .update({ finished_at: new Date().toISOString() })
     .eq("id", sessionId)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .is("finished_at", null);
+  if (error) throw new Error(error.message);
 
   const { data: sets } = await supabase
     .from("set_log")

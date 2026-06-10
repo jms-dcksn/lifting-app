@@ -68,7 +68,7 @@ export function ActiveSession({
       </header>
 
       {slots.map((slot) => (
-        <SlotCard key={slot.exerciseId} sessionId={sessionId} slot={slot} />
+        <SlotCard key={slot.programSlotId} sessionId={sessionId} slot={slot} />
       ))}
 
       <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/90 p-3 backdrop-blur dark:border-zinc-800 dark:bg-black/80">
@@ -96,7 +96,7 @@ function SlotCard({ sessionId, slot }: { sessionId: string; slot: SlotView }) {
       return state.filter((s) => s.id !== action.id);
     },
   );
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const p = slot.prescription;
@@ -158,6 +158,7 @@ function SlotCard({ sessionId, slot }: { sessionId: string; slot: SlotView }) {
                   defaultRir={p.targetRir}
                   initial={{ weight: s.weight, reps: s.reps, rir: s.rir ?? p.targetRir }}
                   label="Save"
+                  disabled={isPending}
                   onSubmit={(w, r, rir) => handleEdit(s.id, w, r, rir)}
                   onCancel={() => setEditingId(null)}
                 />
@@ -201,6 +202,7 @@ function SlotCard({ sessionId, slot }: { sessionId: string; slot: SlotView }) {
             defaultRir={p.targetRir}
             initial={{ weight: initialWeight, reps: initialReps, rir: p.targetRir }}
             label="Add set"
+            disabled={isPending}
             onSubmit={handleLog}
           />
         </div>
@@ -266,6 +268,7 @@ function SetEntry({
   defaultRir,
   initial,
   label,
+  disabled,
   onSubmit,
   onCancel,
 }: {
@@ -273,6 +276,7 @@ function SetEntry({
   defaultRir: number;
   initial: { weight: number; reps: number; rir: number };
   label: string;
+  disabled?: boolean;
   onSubmit: (weight: number, reps: number, rir: number) => void;
   onCancel?: () => void;
 }) {
@@ -290,7 +294,8 @@ function SetEntry({
       <div className="flex gap-2">
         <button
           onClick={() => onSubmit(weight, reps, rir)}
-          className="flex-1 rounded-lg bg-zinc-900 py-2 text-sm font-semibold text-white dark:bg-white dark:text-black"
+          disabled={disabled}
+          className="flex-1 rounded-lg bg-zinc-900 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-black"
         >
           {label}
         </button>

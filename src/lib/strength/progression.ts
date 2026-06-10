@@ -10,6 +10,7 @@
 // Keys on (program_slot_id, exercise_id) so a swap never corrupts the chain. Pure.
 
 import { recommend, type ExerciseStat, type Confidence } from "./recommend";
+import { roundToIncrement } from "./e1rm";
 import type { ExerciseDef } from "./coefficients";
 
 export interface SlotPrescription {
@@ -40,13 +41,24 @@ export function sessionTarget(
   last: LastPerformance | null,
   defs: Record<string, ExerciseDef>,
   stats: ExerciseStat[],
+  bodyweight: number | null,
 ): SessionTarget | null {
   // No prior performance — the e1RM recommender provides the starting weight at rep_min.
   if (!last) {
     const rec = recommend(def, slot.repMin, slot.targetRir, defs, stats);
     if (!rec) return null; // nothing logged in this pattern yet
+
+    // recommend() works in effective-load units. For bodyweight equipment, convert back
+    // to added load (negative = assisted) — the unit the UI displays and logs. Without a
+    // known bodyweight the conversion is impossible, so there is no target.
+    let weight = rec.suggestedWeight;
+    if (def.equipment === "bodyweight") {
+      if (bodyweight == null) return null;
+      weight = roundToIncrement(rec.suggestedWeight - bodyweight, def.increment);
+    }
+
     return {
-      weight: rec.suggestedWeight,
+      weight,
       targetReps: slot.repMin,
       targetRir: slot.targetRir,
       source: "recommendation",

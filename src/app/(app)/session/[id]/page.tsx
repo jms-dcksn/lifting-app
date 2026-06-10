@@ -45,7 +45,7 @@ export default async function SessionPage({
         .eq("user_id", userId),
       supabase
         .from("set_log")
-        .select("id, exercise_id, weight, reps, rir, set_index, e1rm")
+        .select("id, program_slot_id, exercise_id, weight, reps, rir, set_index, e1rm")
         .eq("session_id", id)
         .order("set_index", { ascending: true }),
     ]);
@@ -79,11 +79,14 @@ export default async function SessionPage({
     }
   }
 
-  const setsByExercise = new Map<string, LoggedSet[]>();
+  // Group by slot, not exercise, so a duplicated exercise across two slots renders
+  // its own sets on each card (matching the slot-keyed progression above).
+  const setsBySlot = new Map<string, LoggedSet[]>();
   for (const s of thisSessionSets ?? []) {
-    const list = setsByExercise.get(s.exercise_id) ?? [];
+    if (!s.program_slot_id) continue;
+    const list = setsBySlot.get(s.program_slot_id) ?? [];
     list.push({ id: s.id, weight: s.weight, reps: s.reps, rir: s.rir, setIndex: s.set_index });
-    setsByExercise.set(s.exercise_id, list);
+    setsBySlot.set(s.program_slot_id, list);
   }
 
   const slots: SlotView[] = (daySlots ?? []).map((slot) => {
@@ -95,6 +98,7 @@ export default async function SessionPage({
       last,
       EXERCISE_BY_ID,
       stats,
+      profile?.bodyweight ?? null,
     );
     return {
       programSlotId: slot.id,
@@ -109,7 +113,7 @@ export default async function SessionPage({
         targetRir: slot.target_rir,
       },
       target,
-      sets: setsByExercise.get(slot.exercise_id) ?? [],
+      sets: setsBySlot.get(slot.id) ?? [],
     };
   });
 

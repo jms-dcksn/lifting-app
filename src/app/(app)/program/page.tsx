@@ -32,7 +32,7 @@ export default async function ProgramPage({
   else if (!id) initial = await getActiveProgram(supabase, userId);
 
   // First run, no programs: offer the template before showing a blank builder.
-  if (!initial && programs.length === 0) {
+  if (!initial && programs.length === 0 && id !== "new") {
     return (
       <div className="flex flex-1 flex-col gap-4 px-6 py-10">
         <div>

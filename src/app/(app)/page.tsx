@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveProgram } from "@/lib/program";
 import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
 import { startNextSession } from "./session/actions";
+import { StartButton } from "./start-button";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -41,6 +42,7 @@ export default async function Home() {
       .select("id")
       .eq("user_id", userId)
       .eq("program_id", program.id)
+      .not("program_day_id", "is", null)
       .is("finished_at", null)
       .order("performed_at", { ascending: false })
       .limit(1)
@@ -81,9 +83,7 @@ export default async function Home() {
         </Link>
       ) : (
         <form action={startNextSession}>
-          <button className="w-full rounded-xl bg-zinc-900 py-4 text-lg font-semibold text-white dark:bg-white dark:text-black">
-            Start next workout
-          </button>
+          <StartButton />
         </form>
       )}
 

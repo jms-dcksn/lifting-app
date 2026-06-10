@@ -42,6 +42,10 @@ export interface SaveProgramInput {
 export async function saveProgram(input: SaveProgramInput) {
   const { supabase, userId } = await requireUser();
 
+  // The delete-missing step below removes every day not in the input; an empty input
+  // would silently wipe the whole program structure.
+  if (input.days.length === 0) throw new Error("A program needs at least one day");
+
   const name = input.name.trim() || "My Program";
   const weeks = Math.min(6, Math.max(4, Math.round(input.weeks)));
 

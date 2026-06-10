@@ -14,7 +14,7 @@ Next.js (App Router) · Supabase (Postgres + Auth + RLS) · TypeScript recommend
 
 ```bash
 npm install
-cp .env.local.example .env.local   # fill in Supabase URL + anon key
+cp .env.local.example .env.local   # fill in Supabase URL + publishable key
 npm run dev
 ```
 

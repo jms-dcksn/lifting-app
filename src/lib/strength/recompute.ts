@@ -14,12 +14,16 @@ export interface LoggedSetInput {
 
 // Bodyweight/assisted convention: the bar is your body. The recorded weight is added
 // load (negative = assisted), and e1RM is computed against bodyweight + added.
+// Returns null when bodyweight is required but unknown — the load is not computable,
+// and treating it as 0 would store garbage e1RMs that poison pattern strength.
 export function effectiveLoad(
   def: ExerciseDef,
   weight: number,
   bodyweight: number | null,
-): number {
-  if (def.equipment === "bodyweight") return (bodyweight ?? 0) + weight;
+): number | null {
+  if (def.equipment === "bodyweight") {
+    return bodyweight == null ? null : bodyweight + weight;
+  }
   return weight;
 }
 
@@ -39,7 +43,7 @@ export function recomputeStat(
   for (const s of sets) {
     if (s.reps <= 0) continue;
     const load = effectiveLoad(def, s.weight, bodyweight);
-    if (load <= 0) continue;
+    if (load == null || load <= 0) continue;
     const e = computeE1rm(load, s.reps, s.rir ?? 2);
     if (e > best) best = e;
   }

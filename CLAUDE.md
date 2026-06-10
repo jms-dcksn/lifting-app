@@ -57,13 +57,16 @@ Five modules that must be understood together:
 4. **`recompute.ts`** — pure stat rebuild. `recomputeStat(def, sets, bodyweight)` returns
    `currentE1rm` = max e1RM across logged working sets (demonstrated current strength).
    `effectiveLoad(def, weight, bodyweight)` handles the bodyweight/assisted convention
-   (effective load = bodyweight + added; added is negative for assisted). Personal-coefficient
+   (effective load = bodyweight + added; added is negative for assisted); it returns `null`
+   when bodyweight equipment is used but bodyweight is unknown — never coerce to 0. Personal-coefficient
    recompute for machine calibration is deferred to Phase 5; `logSet` preserves any existing
    `personal_coefficient`/`coeff_confidence_n` untouched.
 
 5. **`progression.ts`** — pure double-progression engine. `sessionTarget(def, slot, last, defs,
-   stats)`: no prior history → hands off to `recommend()` at `rep_min` (source
-   `"recommendation"`, carries confidence); has prior → if first-set reps ≥ `rep_max`, bumps
+   stats, bodyweight)`: no prior history → hands off to `recommend()` at `rep_min` (source
+   `"recommendation"`, carries confidence; for bodyweight equipment the suggested total load
+   is converted back to added load, and no target is returned when bodyweight is unknown);
+   has prior → if first-set reps ≥ `rep_max`, bumps
    weight by `def.increment` and resets to `rep_min`, else holds weight and targets +1 rep
    (source `"progression"`). Bump test is reps-only.
 

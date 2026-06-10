@@ -16,7 +16,9 @@ const MAX_RTF = 12;
 export function pctOf1RM(repsToFailure: number): number {
   const n = Math.max(1, repsToFailure);
   if (n <= 1) return 1;
-  if (n >= MAX_RTF) return 1 / (1 + n / 30); // Epley fallback beyond the table
+  // Beyond the table: Epley-shaped decay anchored to the table's last point so the
+  // curve stays continuous and monotonic across the boundary.
+  if (n >= MAX_RTF) return (PCT_BY_RTF[MAX_RTF] * (1 + MAX_RTF / 30)) / (1 + n / 30);
   const lo = Math.floor(n);
   const hi = Math.ceil(n);
   if (lo === hi) return PCT_BY_RTF[lo];

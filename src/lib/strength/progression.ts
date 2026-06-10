@@ -35,6 +35,30 @@ export interface SessionTarget {
   last?: LastPerformance; // present when source = "progression"
 }
 
+// Recommender-derived starting weight in the unit the UI displays and logs.
+// recommend() works in effective-load units; for bodyweight equipment, convert back to
+// added load (negative = assisted). Without a known bodyweight the conversion is
+// impossible, so there is no suggestion. Also used client-side to recompute live as
+// the user changes reps/RIR before the first set.
+export function startingWeight(
+  def: ExerciseDef,
+  reps: number,
+  targetRir: number,
+  defs: Record<string, ExerciseDef>,
+  stats: ExerciseStat[],
+  bodyweight: number | null,
+): { weight: number; confidence: Confidence } | null {
+  const rec = recommend(def, reps, targetRir, defs, stats);
+  if (!rec) return null; // nothing logged in this pattern yet
+
+  let weight = rec.suggestedWeight;
+  if (def.equipment === "bodyweight") {
+    if (bodyweight == null) return null;
+    weight = roundToIncrement(rec.suggestedWeight - bodyweight, def.increment);
+  }
+  return { weight, confidence: rec.confidence };
+}
+
 export function sessionTarget(
   def: ExerciseDef,
   slot: SlotPrescription,
@@ -45,24 +69,14 @@ export function sessionTarget(
 ): SessionTarget | null {
   // No prior performance — the e1RM recommender provides the starting weight at rep_min.
   if (!last) {
-    const rec = recommend(def, slot.repMin, slot.targetRir, defs, stats);
-    if (!rec) return null; // nothing logged in this pattern yet
-
-    // recommend() works in effective-load units. For bodyweight equipment, convert back
-    // to added load (negative = assisted) — the unit the UI displays and logs. Without a
-    // known bodyweight the conversion is impossible, so there is no target.
-    let weight = rec.suggestedWeight;
-    if (def.equipment === "bodyweight") {
-      if (bodyweight == null) return null;
-      weight = roundToIncrement(rec.suggestedWeight - bodyweight, def.increment);
-    }
-
+    const start = startingWeight(def, slot.repMin, slot.targetRir, defs, stats, bodyweight);
+    if (!start) return null;
     return {
-      weight,
+      weight: start.weight,
       targetReps: slot.repMin,
       targetRir: slot.targetRir,
       source: "recommendation",
-      confidence: rec.confidence,
+      confidence: start.confidence,
     };
   }
 

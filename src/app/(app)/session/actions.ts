@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
 import { computeE1rm } from "@/lib/strength/e1rm";
 import { recomputeStat, effectiveLoad } from "@/lib/strength/recompute";
+import { estimatePatternStrength, type ExerciseStat } from "@/lib/strength/recommend";
 import { getActiveProgram } from "@/lib/program";
 
 // auth.uid() for RLS; getClaims() is the trusted server-side check (see AGENTS.md).
@@ -30,8 +31,15 @@ async function getBodyweight(
 }
 
 // Rebuild user_exercise_stat.current_e1rm for one exercise from its set_log rows.
-// set_log is the source of truth; this keeps the cache from drifting. Personal
-// coefficient (machine calibration) is preserved untouched here — it lands in P5.
+// set_log is the source of truth; this keeps the cache from drifting.
+//
+// Machine calibration: exercises with arbitrary load units (needsCalibration) get a
+// personal coefficient = observed e1RM / pattern strength estimated from the OTHER
+// logged variants. It anchors on the first calibration session (re-anchored while only
+// one session exists, so edits/deletes of that session stay consistent) and is then held
+// fixed — later machine progress moves pattern strength, not the coefficient.
+// coeff_confidence_n tracks distinct sessions, growing trust in the personal coefficient
+// over the population prior (shrinkage in recommend.ts) and graduating confidence.
 async function recomputeAndUpsertStat(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
@@ -42,12 +50,43 @@ async function recomputeAndUpsertStat(
   if (!def) return;
   const { data: sets } = await supabase
     .from("set_log")
-    .select("weight, reps, rir")
+    .select("weight, reps, rir, session_id")
     .eq("user_id", userId)
     .eq("exercise_id", exerciseId)
     .eq("is_warmup", false);
 
   const { currentE1rm } = recomputeStat(def, sets ?? [], bodyweight);
+
+  let calibration: { personal_coefficient: number | null; coeff_confidence_n: number } | null =
+    null;
+  if (def.needsCalibration) {
+    const sessionCount = new Set((sets ?? []).map((s) => s.session_id)).size;
+    const { data: statRows } = await supabase
+      .from("user_exercise_stat")
+      .select("exercise_id, current_e1rm, personal_coefficient, coeff_confidence_n")
+      .eq("user_id", userId);
+
+    let personal =
+      statRows?.find((r) => r.exercise_id === exerciseId)?.personal_coefficient ?? null;
+    if (currentE1rm == null) {
+      personal = null; // all sets gone — recalibrate on the next first set
+    } else if (personal == null || sessionCount <= 1) {
+      const others: ExerciseStat[] = (statRows ?? [])
+        .filter((r) => r.exercise_id !== exerciseId)
+        .map((r) => ({
+          exerciseId: r.exercise_id,
+          currentE1rm: r.current_e1rm ?? 0,
+          personalCoefficient: r.personal_coefficient,
+          confidenceN: r.coeff_confidence_n,
+        }));
+      const patternStrength = estimatePatternStrength(def.pattern, EXERCISE_BY_ID, others);
+      if (patternStrength) personal = currentE1rm / patternStrength;
+    }
+    calibration = {
+      personal_coefficient: personal,
+      coeff_confidence_n: currentE1rm == null ? 0 : sessionCount,
+    };
+  }
 
   await supabase.from("user_exercise_stat").upsert(
     {
@@ -55,6 +94,7 @@ async function recomputeAndUpsertStat(
       exercise_id: exerciseId,
       current_e1rm: currentE1rm,
       last_updated: new Date().toISOString(),
+      ...(calibration ?? {}),
     },
     { onConflict: "user_id,exercise_id" },
   );

@@ -64,10 +64,9 @@ count of finished sessions with matching `program_id`, not stored on the session
 sessions from Phase 2 have `program_slot_id = null`; from Phase 3 onward all sessions carry
 a real `program_slot_id` and progression keys on that column.
 
-**Machine personal-coefficient recompute is deferred to Phase 5.** `recomputeStat` returns
-only `currentE1rm`; `logSet` preserves any existing `personal_coefficient` and
-`coeff_confidence_n` untouched. Machine calibration (first-set anchor → personal coefficient)
-is part of the P5 recommendation + swap + calibration layer.
+**Machine personal-coefficient recompute was deferred to Phase 5** (now shipped — see Phase 5
+decisions below). At the time, `recomputeStat` returned only `currentE1rm`; `logSet` preserved
+any existing `personal_coefficient` and `coeff_confidence_n` untouched.
 
 ## Phase 3 decisions
 
@@ -114,8 +113,49 @@ fetches and groups sets by session; the line chart itself
 (`e1rm-chart.tsx`) is a small `"use client"` wrapper around `recharts` `LineChart`. Matches
 the SPEC.md default ("Charts: Recharts").
 
+## Phase 5 decisions
+
+**Session targets compute client-side; the server hydrates state, not targets.** The session
+page no longer calls `sessionTarget()` server-side. It hydrates `ExerciseStat[]`,
+`recentExerciseIds`, and a per-slot `lastByExercise` map; `active-session.tsx` derives each
+slot's target via `useMemo`. This is what lets a swap re-derive the recommendation instantly
+with no server round-trip.
+
+**`startingWeight()` extracted from `sessionTarget()`'s no-prior branch.** Pure helper
+`startingWeight(def, reps, targetRir, defs, stats, bodyweight)` wraps `recommend()` and the
+bodyweight added-load conversion. `sessionTarget()` delegates to it for the "no prior
+performance" case, and the UI also calls it directly to recompute the suggested weight live
+as the user edits reps/RIR before the first set (the weight field follows reps/RIR until the
+user manually touches weight).
+
+**Progression "last performance" is now `(program_slot_id, exercise_id)`-keyed.** Previously
+keyed on `program_slot_id` alone (Phase 3). A swapped exercise now resumes its own
+progression chain within that slot, independent of whatever exercise the slot held before.
+The session page's effective exercise-per-slot is derived from the most recently logged
+exercise in that slot this session, so an in-session swap survives a page reload.
+
+**Swap is same-pattern-first with a show-all escape hatch.** `ExercisePicker` gained
+`patternFilter` (already plumbed for swap) plus a "show all patterns" toggle, since a same-
+pattern substitute isn't always available or desired.
+
+**Machine calibration: `personal_coefficient = currentE1rm / pattern strength estimated from
+the user's other logged variants`,** computed in `recomputeAndUpsertStat`
+(`session/actions.ts`) via `estimatePatternStrength`. It anchors on the first session with
+working sets on that exercise, re-anchors while only one such session exists (so editing or
+deleting that calibration session stays consistent), then holds fixed — later progress on the
+machine moves the pattern-strength estimate, not the coefficient. `coeff_confidence_n` =
+count of distinct sessions with working sets on that exercise, feeding the Bayesian shrinkage
+in `recommend.ts`. If all sets for a calibration exercise are deleted, both fields reset
+(`personal_coefficient = null`, `coeff_confidence_n = 0`) so the next first set recalibrates.
+Graduation out of `calibrate` is not a separate code path — once the machine has its own
+e1RM and confidence count, `recommend()`'s direct-history branch naturally returns
+medium/high.
+
+**Confidence badge wording: `low` → "starting estimate"** (was "estimate"), to read more
+clearly as a recommender-driven starting point rather than a measurement.
+
 ## Build order
 
 > Superseded by `SPEC.md`, which wins on conflicts. Current phase structure: P0 (backend, done),
 > P1 (auth + PWA), P2 (keystone: active-session screen), P3 (program builder), P4 (progression
-> view), P5 (recommendation + swap + calibration). See `docs/PLAN.md` for the sequence and status.
+> view), P5 (recommendation + swap + calibration, done). See `docs/PLAN.md` for the sequence and status.

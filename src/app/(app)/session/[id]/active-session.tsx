@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useOptimistic, useState, useTransition } from "react";
-import type { SessionTarget } from "@/lib/strength/progression";
+import { useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
+import { EXERCISE_BY_ID, type Pattern } from "@/lib/strength/coefficients";
+import {
+  sessionTarget,
+  startingWeight,
+  type LastPerformance,
+  type SessionTarget,
+} from "@/lib/strength/progression";
+import type { ExerciseStat } from "@/lib/strength/recommend";
+import { ExercisePicker } from "../../program/exercise-picker";
 import {
   logSet,
   editSet,
@@ -21,12 +29,10 @@ export interface LoggedSet {
 
 export interface SlotView {
   programSlotId: string;
-  exerciseId: string;
-  name: string;
-  equipment: string;
-  increment: number;
+  exerciseId: string; // last logged this session, else the program slot's exercise
+  pattern: Pattern;
   prescription: { targetSets: number; repMin: number; repMax: number; targetRir: number };
-  target: SessionTarget | null;
+  lastByExercise: Record<string, LastPerformance>;
   sets: LoggedSet[];
 }
 
@@ -37,6 +43,8 @@ export function ActiveSession({
   weeks,
   bodyweight,
   alreadyFinished,
+  stats,
+  recentIds,
   slots,
 }: {
   sessionId: string;
@@ -45,6 +53,8 @@ export function ActiveSession({
   weeks: number;
   bodyweight: number | null;
   alreadyFinished: boolean;
+  stats: ExerciseStat[];
+  recentIds: string[];
   slots: SlotView[];
 }) {
   useScreenWakeLock();
@@ -68,7 +78,14 @@ export function ActiveSession({
       </header>
 
       {slots.map((slot) => (
-        <SlotCard key={slot.programSlotId} sessionId={sessionId} slot={slot} />
+        <SlotCard
+          key={slot.programSlotId}
+          sessionId={sessionId}
+          slot={slot}
+          stats={stats}
+          bodyweight={bodyweight}
+          recentIds={recentIds}
+        />
       ))}
 
       <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/90 p-3 backdrop-blur dark:border-zinc-800 dark:bg-black/80">
@@ -88,7 +105,19 @@ type OptimisticAction =
   | { type: "add"; set: LoggedSet }
   | { type: "delete"; id: string };
 
-function SlotCard({ sessionId, slot }: { sessionId: string; slot: SlotView }) {
+function SlotCard({
+  sessionId,
+  slot,
+  stats,
+  bodyweight,
+  recentIds,
+}: {
+  sessionId: string;
+  slot: SlotView;
+  stats: ExerciseStat[];
+  bodyweight: number | null;
+  recentIds: string[];
+}) {
   const [optimisticSets, applyOptimistic] = useOptimistic(
     slot.sets,
     (state: LoggedSet[], action: OptimisticAction) => {
@@ -98,13 +127,45 @@ function SlotCard({ sessionId, slot }: { sessionId: string; slot: SlotView }) {
   );
   const [isPending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
+  // Swap (machine taken, etc.): sets log against the swapped exercise_id but keep the
+  // original program_slot_id, so each exercise's progression chain stays intact.
+  const [exerciseId, setExerciseId] = useState(slot.exerciseId);
+  const [swapping, setSwapping] = useState(false);
+
+  const def = EXERCISE_BY_ID[exerciseId];
+  const name = def?.name ?? exerciseId;
+  const equipment = def?.equipment ?? "barbell";
+  const increment = def?.increment ?? 5;
 
   const p = slot.prescription;
-  const isBodyweight = slot.equipment === "bodyweight";
-  const isMachine = slot.equipment.startsWith("machine") || slot.equipment === "cable";
+  const isBodyweight = equipment === "bodyweight";
+  const isMachine = equipment.startsWith("machine") || equipment === "cable";
 
-  const initialWeight = slot.target?.weight ?? (isMachine ? 0 : isBodyweight ? 0 : 45);
-  const initialReps = slot.target?.targetReps ?? p.repMin;
+  // Target computes client-side off hydrated stats, so a swap re-derives it instantly.
+  const target = useMemo(
+    () =>
+      def
+        ? sessionTarget(
+            def,
+            { repMin: p.repMin, repMax: p.repMax, targetRir: p.targetRir },
+            slot.lastByExercise[exerciseId] ?? null,
+            EXERCISE_BY_ID,
+            stats,
+            bodyweight,
+          )
+        : null,
+    [def, exerciseId, p.repMin, p.repMax, p.targetRir, slot.lastByExercise, stats, bodyweight],
+  );
+
+  // Before any history exists, the suggested weight follows reps/RIR edits live.
+  const liveWeight =
+    def && target?.source === "recommendation"
+      ? (reps: number, rir: number) =>
+          startingWeight(def, reps, rir, EXERCISE_BY_ID, stats, bodyweight)?.weight ?? null
+      : undefined;
+
+  const initialWeight = target?.weight ?? (isMachine ? 0 : isBodyweight ? 0 : 45);
+  const initialReps = target?.targetReps ?? p.repMin;
 
   function handleLog(weight: number, reps: number, rir: number) {
     startTransition(async () => {
@@ -115,7 +176,7 @@ function SlotCard({ sessionId, slot }: { sessionId: string; slot: SlotView }) {
       await logSet({
         sessionId,
         programSlotId: slot.programSlotId,
-        exerciseId: slot.exerciseId,
+        exerciseId,
         weight,
         reps,
         rir,
@@ -141,16 +202,34 @@ function SlotCard({ sessionId, slot }: { sessionId: string; slot: SlotView }) {
     <section className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
       <div className="flex items-baseline justify-between">
         <h2 className="font-semibold">
-          <Link href={`/history/${slot.exerciseId}`} className="underline-offset-2 hover:underline">
-            {slot.name}
+          <Link href={`/history/${exerciseId}`} className="underline-offset-2 hover:underline">
+            {name}
           </Link>
+          <button
+            onClick={() => setSwapping(true)}
+            className="ml-2 text-xs font-normal text-zinc-400 underline-offset-2 hover:underline"
+          >
+            swap
+          </button>
         </h2>
         <span className="text-xs text-zinc-500">
           {p.targetSets} × {p.repMin}–{p.repMax} @ {p.targetRir} RIR
         </span>
       </div>
 
-      <TargetLine target={slot.target} isBodyweight={isBodyweight} />
+      <TargetLine target={target} isBodyweight={isBodyweight} />
+
+      {swapping && (
+        <ExercisePicker
+          recentIds={recentIds}
+          patternFilter={slot.pattern}
+          onPick={(e) => {
+            setExerciseId(e.id);
+            setSwapping(false);
+          }}
+          onClose={() => setSwapping(false)}
+        />
+      )}
 
       {optimisticSets.length > 0 && (
         <ul className="mt-3 flex flex-col gap-1">
@@ -158,7 +237,7 @@ function SlotCard({ sessionId, slot }: { sessionId: string; slot: SlotView }) {
             editingId === s.id ? (
               <li key={s.id}>
                 <SetEntry
-                  increment={slot.increment}
+                  increment={increment}
                   defaultRir={p.targetRir}
                   initial={{ weight: s.weight, reps: s.reps, rir: s.rir ?? p.targetRir }}
                   label="Save"
@@ -202,11 +281,13 @@ function SlotCard({ sessionId, slot }: { sessionId: string; slot: SlotView }) {
       {editingId === null && (
         <div className="mt-3">
           <SetEntry
-            increment={slot.increment}
+            key={exerciseId}
+            increment={increment}
             defaultRir={p.targetRir}
             initial={{ weight: initialWeight, reps: initialReps, rir: p.targetRir }}
             label="Add set"
             disabled={isPending}
+            liveWeight={liveWeight}
             onSubmit={handleLog}
           />
         </div>
@@ -256,12 +337,14 @@ function TargetLine({
   );
 }
 
+// high/medium are trustworthy enough to show plainly; low is a prior-driven starting
+// estimate; calibrate is deliberately conservative — feel the machine out.
 function confidenceBadge(c: SessionTarget["confidence"]) {
   switch (c) {
     case "calibrate":
       return { label: "feel it out", className: "text-amber-600" };
     case "low":
-      return { label: "estimate", className: "text-zinc-400" };
+      return { label: "starting estimate", className: "text-zinc-400" };
     default:
       return null;
   }
@@ -273,6 +356,7 @@ function SetEntry({
   initial,
   label,
   disabled,
+  liveWeight,
   onSubmit,
   onCancel,
 }: {
@@ -281,19 +365,57 @@ function SetEntry({
   initial: { weight: number; reps: number; rir: number };
   label: string;
   disabled?: boolean;
+  // Recommender-derived weight for given reps/RIR; the weight field follows it live
+  // until the user touches weight manually.
+  liveWeight?: (reps: number, rir: number) => number | null;
   onSubmit: (weight: number, reps: number, rir: number) => void;
   onCancel?: () => void;
 }) {
   const [weight, setWeight] = useState(initial.weight);
   const [reps, setReps] = useState(initial.reps);
   const [rir, setRir] = useState(initial.rir ?? defaultRir);
+  const [weightTouched, setWeightTouched] = useState(false);
+
+  function follow(nextReps: number, nextRir: number) {
+    if (weightTouched || !liveWeight) return;
+    const w = liveWeight(nextReps, nextRir);
+    if (w != null) setWeight(w);
+  }
 
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-3 gap-2">
-        <Stepper label="Weight" value={weight} step={increment} min={-200} onChange={setWeight} />
-        <Stepper label="Reps" value={reps} step={1} min={1} onChange={setReps} />
-        <Stepper label="RIR" value={rir} step={1} min={0} max={5} onChange={setRir} />
+        <Stepper
+          label="Weight"
+          value={weight}
+          step={increment}
+          min={-200}
+          onChange={(v) => {
+            setWeightTouched(true);
+            setWeight(v);
+          }}
+        />
+        <Stepper
+          label="Reps"
+          value={reps}
+          step={1}
+          min={1}
+          onChange={(v) => {
+            setReps(v);
+            follow(v, rir);
+          }}
+        />
+        <Stepper
+          label="RIR"
+          value={rir}
+          step={1}
+          min={0}
+          max={5}
+          onChange={(v) => {
+            setRir(v);
+            follow(reps, v);
+          }}
+        />
       </div>
       <div className="flex gap-2">
         <button

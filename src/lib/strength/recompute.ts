@@ -33,7 +33,7 @@ export interface RecomputedStat {
 
 // current_e1rm is the best (highest) e1RM across all logged working sets — the user's
 // demonstrated current strength on this exercise. Personal coefficient (machine
-// calibration) is computed separately in the recommendation layer (P5).
+// calibration) is computed in recomputeAndUpsertStat (session/actions.ts), not here.
 export function recomputeStat(
   def: ExerciseDef,
   sets: LoggedSetInput[],

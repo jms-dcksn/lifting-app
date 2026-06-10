@@ -141,19 +141,27 @@ this screen being right.
 - [x] Overload signal: top working-set e1RM this session vs the previous session of that exact
       exercise — shown in history and in the finish-session summary
 
-## Phase 5 — Recommendation + swap + calibration (~5 hrs)
+## Phase 5 — Recommendation + swap + calibration (~5 hrs) — DONE
 
 Double-progression targets already render from P2. P5 adds the e1RM recommender's role —
 starting/swap weights — and its confidence UI.
 
-- [ ] Confidence badge on recommender-derived (starting/swap) weights: `high`/`medium` plain;
+- [x] Confidence badge on recommender-derived (starting/swap) weights: `high`/`medium` plain;
       `low` framed as a starting estimate; `calibrate` shows conservative number + first set
-      labeled "feel it out". Recompute live as reps/RIR change.
-- [ ] Swap a slot → exercise picker filtered to same pattern first → `recommend()` re-derives
-      the starting weight; log sets against the swapped `exercise_id` + original
-      `program_slot_id`; double progression resumes from there next session
-- [ ] Machine calibration: after the first calibration set, recompute + persist the machine's
-      personal coefficient; graduate it out of `calibrate`
+      labeled "feel it out". Recompute live as reps/RIR change (`startingWeight()` extracted
+      from `sessionTarget()`; targets now compute client-side off hydrated stats).
+- [x] Swap a slot → exercise picker filtered to same pattern first (show-all escape hatch) →
+      `recommend()` re-derives the starting weight; log sets against the swapped `exercise_id`
+      + original `program_slot_id`; double progression resumes from there next session
+      (last-performance map is now `(slot, exercise)`-keyed; in-session swap survives reload
+      via the slot's last logged exercise)
+- [x] Machine calibration: after the first calibration set, recompute + persist the machine's
+      personal coefficient (`e1RM / pattern strength from other variants`, anchored on the
+      first session, re-anchored while only one session exists); `coeff_confidence_n` =
+      distinct session count; graduates out of `calibrate` via `recommend()`'s direct-history
+      branch
+- Verified: `npx tsc --noEmit`, `npm run lint`, `npm run build` clean; tsx sanity checks for
+  `startingWeight` parity/monotonicity, bodyweight conversion, and calibration anchor math
 
 ---
 

@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { EXERCISES, type ExerciseDef, type Pattern } from "@/lib/strength/coefficients";
 
-// Searchable exercise list, recent-first. Reused by the builder (add slot) and, later, by
-// swap (P5) with a pattern filter. Overlay; parent controls open via conditional render.
+// Searchable exercise list, recent-first. Reused by the builder (add slot) and by swap
+// (same-pattern filter first, with a show-all escape hatch). Overlay; parent controls
+// open via conditional render.
 export function ExercisePicker({
   recentIds = [],
   patternFilter,
@@ -17,6 +18,8 @@ export function ExercisePicker({
   onClose: () => void;
 }) {
   const [query, setQuery] = useState("");
+  const [showAll, setShowAll] = useState(false);
+  const activeFilter = showAll ? undefined : patternFilter;
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -25,11 +28,11 @@ export function ExercisePicker({
       return i === -1 ? Number.MAX_SAFE_INTEGER : i;
     };
     return EXERCISES.filter((e) => {
-      if (patternFilter && e.pattern !== patternFilter) return false;
+      if (activeFilter && e.pattern !== activeFilter) return false;
       if (!q) return true;
       return e.name.toLowerCase().includes(q) || e.pattern.includes(q);
     }).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
-  }, [query, recentIds, patternFilter]);
+  }, [query, recentIds, activeFilter]);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-black">
@@ -45,6 +48,18 @@ export function ExercisePicker({
           Cancel
         </button>
       </div>
+      {patternFilter && (
+        <div className="border-b border-zinc-100 px-4 py-2 dark:border-zinc-900">
+          <button
+            onClick={() => setShowAll((v) => !v)}
+            className="text-xs text-zinc-500 underline-offset-2 hover:underline"
+          >
+            {showAll
+              ? `Only ${patternFilter.replace(/_/g, " ")}`
+              : "Show all patterns"}
+          </button>
+        </div>
+      )}
       <ul className="flex-1 overflow-y-auto">
         {results.map((e) => (
           <li key={e.id}>

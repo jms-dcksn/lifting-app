@@ -1,8 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
-import { sessionTarget, type LastPerformance } from "@/lib/strength/progression";
+import type { Pattern } from "@/lib/strength/coefficients";
+import type { LastPerformance } from "@/lib/strength/progression";
 import type { ExerciseStat } from "@/lib/strength/recommend";
+import { recentExerciseIds } from "@/lib/program";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
 
 export default async function SessionPage({
@@ -36,7 +37,7 @@ export default async function SessionPage({
   ]);
   if (!day) notFound();
 
-  const [{ data: profile }, { data: statRows }, { data: thisSessionSets }] =
+  const [{ data: profile }, { data: statRows }, { data: thisSessionSets }, recentIds] =
     await Promise.all([
       supabase.from("profile").select("bodyweight").eq("id", userId).maybeSingle(),
       supabase
@@ -48,8 +49,10 @@ export default async function SessionPage({
         .select("id, program_slot_id, exercise_id, weight, reps, rir, set_index, e1rm")
         .eq("session_id", id)
         .order("set_index", { ascending: true }),
+      recentExerciseIds(supabase, userId),
     ]);
 
+  // Hydrated to the client: targets (and swap re-derivation) compute client-side.
   const stats: ExerciseStat[] = (statRows ?? []).map((r) => ({
     exerciseId: r.exercise_id,
     currentE1rm: r.current_e1rm ?? 0,
@@ -57,13 +60,14 @@ export default async function SessionPage({
     confidenceN: r.coeff_confidence_n,
   }));
 
-  // Last performance per slot, keyed on program_slot_id: first working set of the most recent
-  // prior session for this exact slot (so a duplicated exercise progresses independently).
+  // Last performance per (slot, exercise): first working set of the most recent prior
+  // session. Keyed on exercise too, so a swapped exercise resumes its own progression
+  // chain in the slot without corrupting the original's.
   const slotIds = (daySlots ?? []).map((s) => s.id);
   const { data: priorSets } = slotIds.length
     ? await supabase
         .from("set_log")
-        .select("program_slot_id, weight, reps, created_at")
+        .select("program_slot_id, exercise_id, weight, reps, created_at")
         .eq("user_id", userId)
         .eq("set_index", 0)
         .eq("is_warmup", false)
@@ -72,50 +76,42 @@ export default async function SessionPage({
         .order("created_at", { ascending: false })
     : { data: [] };
 
-  const lastBySlot = new Map<string, LastPerformance>();
+  const lastBySlot = new Map<string, Record<string, LastPerformance>>();
   for (const row of priorSets ?? []) {
-    if (row.program_slot_id && !lastBySlot.has(row.program_slot_id)) {
-      lastBySlot.set(row.program_slot_id, { weight: row.weight, reps: row.reps });
+    if (!row.program_slot_id) continue;
+    const byExercise = lastBySlot.get(row.program_slot_id) ?? {};
+    if (!byExercise[row.exercise_id]) {
+      byExercise[row.exercise_id] = { weight: row.weight, reps: row.reps };
     }
+    lastBySlot.set(row.program_slot_id, byExercise);
   }
 
   // Group by slot, not exercise, so a duplicated exercise across two slots renders
-  // its own sets on each card (matching the slot-keyed progression above).
+  // its own sets on each card (matching the slot-keyed progression above). The last
+  // logged exercise per slot also makes an in-session swap survive a page reload.
   const setsBySlot = new Map<string, LoggedSet[]>();
+  const sessionExercise = new Map<string, string>();
   for (const s of thisSessionSets ?? []) {
     if (!s.program_slot_id) continue;
     const list = setsBySlot.get(s.program_slot_id) ?? [];
     list.push({ id: s.id, weight: s.weight, reps: s.reps, rir: s.rir, setIndex: s.set_index });
     setsBySlot.set(s.program_slot_id, list);
+    sessionExercise.set(s.program_slot_id, s.exercise_id);
   }
 
-  const slots: SlotView[] = (daySlots ?? []).map((slot) => {
-    const def = EXERCISE_BY_ID[slot.exercise_id];
-    const last = lastBySlot.get(slot.id) ?? null;
-    const target = sessionTarget(
-      def,
-      { repMin: slot.rep_min, repMax: slot.rep_max, targetRir: slot.target_rir },
-      last,
-      EXERCISE_BY_ID,
-      stats,
-      profile?.bodyweight ?? null,
-    );
-    return {
-      programSlotId: slot.id,
-      exerciseId: slot.exercise_id,
-      name: def?.name ?? slot.exercise_id,
-      equipment: def?.equipment ?? "barbell",
-      increment: def?.increment ?? 5,
-      prescription: {
-        targetSets: slot.target_sets,
-        repMin: slot.rep_min,
-        repMax: slot.rep_max,
-        targetRir: slot.target_rir,
-      },
-      target,
-      sets: setsBySlot.get(slot.id) ?? [],
-    };
-  });
+  const slots: SlotView[] = (daySlots ?? []).map((slot) => ({
+    programSlotId: slot.id,
+    exerciseId: sessionExercise.get(slot.id) ?? slot.exercise_id,
+    pattern: slot.pattern as Pattern,
+    prescription: {
+      targetSets: slot.target_sets,
+      repMin: slot.rep_min,
+      repMax: slot.rep_max,
+      targetRir: slot.target_rir,
+    },
+    lastByExercise: lastBySlot.get(slot.id) ?? {},
+    sets: setsBySlot.get(slot.id) ?? [],
+  }));
 
   return (
     <ActiveSession
@@ -125,6 +121,8 @@ export default async function SessionPage({
       weeks={program?.weeks ?? 5}
       bodyweight={profile?.bodyweight ?? null}
       alreadyFinished={!!session.finished_at}
+      stats={stats}
+      recentIds={recentIds}
       slots={slots}
     />
   );

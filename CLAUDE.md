@@ -58,22 +58,29 @@ Five modules that must be understood together:
    `currentE1rm` = max e1RM across logged working sets (demonstrated current strength).
    `effectiveLoad(def, weight, bodyweight)` handles the bodyweight/assisted convention
    (effective load = bodyweight + added; added is negative for assisted); it returns `null`
-   when bodyweight equipment is used but bodyweight is unknown — never coerce to 0. Personal-coefficient
-   recompute for machine calibration is deferred to Phase 5; `logSet` preserves any existing
-   `personal_coefficient`/`coeff_confidence_n` untouched.
+   when bodyweight equipment is used but bodyweight is unknown — never coerce to 0. Machine
+   calibration (`personal_coefficient`/`coeff_confidence_n`) is computed in
+   `recomputeAndUpsertStat` (`session/actions.ts`), not here — see below.
 
-5. **`progression.ts`** — pure double-progression engine. `sessionTarget(def, slot, last, defs,
-   stats, bodyweight)`: no prior history → hands off to `recommend()` at `rep_min` (source
-   `"recommendation"`, carries confidence; for bodyweight equipment the suggested total load
-   is converted back to added load, and no target is returned when bodyweight is unknown);
-   has prior → if first-set reps ≥ `rep_max`, bumps
-   weight by `def.increment` and resets to `rep_min`, else holds weight and targets +1 rep
-   (source `"progression"`). Bump test is reps-only.
+5. **`progression.ts`** — pure double-progression engine. `startingWeight(def, reps, targetRir,
+   defs, stats, bodyweight)` wraps `recommend()` and converts to the unit the UI displays/logs
+   (for bodyweight equipment, suggested total load → added load; returns `null` when bodyweight
+   is unknown). `sessionTarget(def, slot, last, defs, stats, bodyweight)`: no prior history →
+   delegates to `startingWeight()` at `rep_min` (source `"recommendation"`, carries confidence);
+   has prior → if first-set reps ≥ `rep_max`, bumps weight by `def.increment` and resets to
+   `rep_min`, else holds weight and targets +1 rep (source `"progression"`). Bump test is
+   reps-only. `startingWeight` is also called client-side to recompute the suggested weight
+   live as the user edits reps/RIR before the first set.
 
 **Machines are special.** You cannot predict absolute machine loads from free weights (arbitrary
 leverage/pin/stack units). Exercises flagged `needsCalibration` return `confidence: "calibrate"`
 with a deliberately conservative number; the first logged set anchors that machine's personal
-coefficient. Preserve this behavior — don't try to make machines predict like free weights.
+coefficient (`personal_coefficient = currentE1rm / pattern strength from other logged variants`),
+re-anchored while only one session exists, then held fixed — later machine progress moves
+pattern strength, not the coefficient. `coeff_confidence_n` (distinct sessions with working
+sets) feeds the Bayesian shrinkage in `recommend.ts` and graduates the exercise out of
+`calibrate` once it has its own e1RM history. Preserve this behavior — don't try to make
+machines predict like free weights.
 
 ### Data model (`supabase/migrations/`)
 
@@ -86,8 +93,9 @@ Four applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sq
 - Program slots reference movement *patterns*, not fixed exercises — this is what makes "swap
   exercise" a first-class operation that re-derives weight automatically.
 - `set_log.program_slot_id` is populated from Phase 3 onward. Progression "last performance"
-  lookup keys on `program_slot_id` (not `exercise_id`). Seed sessions from Phase 2 have
-  `program_slot_id = null` and are superseded by real DB-backed programs.
+  lookup keys on `(program_slot_id, exercise_id)`, so a swapped exercise resumes its own
+  progression chain in that slot without corrupting the original's. Seed sessions from
+  Phase 2 have `program_slot_id = null` and are superseded by real DB-backed programs.
 - Block position (week/day within the active program) is derived from the count of finished
   sessions with matching `program_id`, not stored.
 - Builder save is an id-preserving upsert + delete-missing (not full replace), so
@@ -107,6 +115,19 @@ nested program structure (days → slots) from the `program`, `program_day`, and
 `src/app/(app)/session/seed.ts` no longer drives the runtime program. It survives only
 as the template source for `createFromTemplate` (onboarding shortcut that seeds the
 built-in Push/Pull/Legs template).
+
+### Active session targets and swap (`src/app/(app)/session/[id]/`)
+
+`page.tsx` no longer computes session targets server-side — it hydrates the client
+component with `ExerciseStat[]`, `recentExerciseIds`, and a per-slot
+`lastByExercise: Record<exerciseId, LastPerformance>` map. `active-session.tsx`'s
+`SlotCard` calls `sessionTarget()` client-side (`useMemo`) to derive each target, so a
+swap re-derives instantly with no round-trip. A slot's effective exercise id is the most
+recently logged exercise in that slot this session (falling back to the program slot's
+exercise), so an in-session swap survives a page reload. Swap opens `ExercisePicker`
+(`program/exercise-picker.tsx`) filtered to the slot's pattern, with a "show all
+patterns" escape hatch; subsequent sets log against the swapped `exercise_id` + the
+original `program_slot_id`.
 
 ### Exercise history (`src/app/(app)/history/[exerciseId]/`)
 

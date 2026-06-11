@@ -2,8 +2,10 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveProgram } from "@/lib/program";
 import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
+import { Button } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button-styles";
+import { Card, CardLabel } from "@/components/ui/card";
 import { startNextSession } from "./session/actions";
-import { StartButton } from "./start-button";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -17,13 +19,10 @@ export default async function Home() {
     return (
       <div className="flex flex-1 flex-col gap-4 px-6 py-10">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">No active program</h1>
-          <p className="text-sm text-zinc-500">Build one to start training.</p>
+          <h1 className="text-display">No active program</h1>
+          <p className="text-body text-muted">Build one to start training.</p>
         </div>
-        <Link
-          href="/program"
-          className="rounded-xl bg-zinc-900 py-4 text-center text-lg font-semibold text-white dark:bg-white dark:text-black"
-        >
+        <Link href="/program" className={buttonClasses("primary", "lg", "w-full")}>
           Build your program
         </Link>
       </div>
@@ -68,35 +67,33 @@ export default async function Home() {
   return (
     <div className="flex flex-1 flex-col gap-6 px-6 py-10">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{program.name}</h1>
-        <p className="text-sm text-zinc-500">
+        <h1 className="text-display">{program.name}</h1>
+        <p className="text-body text-muted">
           Week {week} of {program.weeks} · next: {nextDay.name}
         </p>
       </div>
 
       {open ? (
-        <Link
-          href={`/session/${open.id}`}
-          className="rounded-xl bg-zinc-900 py-4 text-center text-lg font-semibold text-white dark:bg-white dark:text-black"
-        >
+        <Link href={`/session/${open.id}`} className={buttonClasses("primary", "lg", "w-full")}>
           Resume workout
         </Link>
       ) : (
         <form action={startNextSession}>
-          <StartButton />
+          {/* Auto-pending via useFormStatus, so a double-tap can't start two sessions. */}
+          <Button size="lg" className="w-full">
+            Start next workout
+          </Button>
         </form>
       )}
 
       {lastSummary && (
-        <section className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
-          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-zinc-400">
-            Last session
-          </h2>
-          <p className="text-sm">
+        <Card>
+          <CardLabel className="mb-1">Last session</CardLabel>
+          <p className="text-body">
             {lastSummary.dayName} · {lastSummary.totalSets} working sets
           </p>
           {lastSummary.topLift && (
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-body text-muted">
               Top:{" "}
               <Link
                 href={`/history/${lastSummary.topLift.exerciseId}`}
@@ -107,7 +104,7 @@ export default async function Home() {
               · {Math.round(lastSummary.topLift.e1rm)} lb e1RM
             </p>
           )}
-        </section>
+        </Card>
       )}
     </div>
   );

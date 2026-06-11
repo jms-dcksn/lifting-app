@@ -4,6 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { EXERCISE_BY_ID, type ExerciseDef } from "@/lib/strength/coefficients";
 import type { Program } from "@/lib/program";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Stepper } from "@/components/ui/stepper";
 import { saveProgram, type SaveDayInput, type SaveSlotInput } from "./actions";
 import { ExercisePicker } from "./exercise-picker";
 
@@ -77,7 +81,6 @@ export function ProgramBuilder({
       }
       return d;
     });
-    setPickerDayId(null);
   }
 
   function updateSlot(dayId: string, slotId: string, patch: Partial<ProgramSlotLike>) {
@@ -143,54 +146,64 @@ export function ProgramBuilder({
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 py-5 pb-28">
       <div className="flex flex-col gap-3">
-        <input
+        <Input
           value={draft.name}
           onChange={(e) => update((d) => ({ ...d, name: e.target.value }))}
           placeholder="Program name"
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-lg font-semibold outline-none dark:border-zinc-700 dark:bg-zinc-900"
+          enterKeyHint="done"
+          autoComplete="off"
+          className="text-lg font-semibold"
         />
-        <div className="flex items-center gap-3 text-sm">
-          <span className="text-zinc-500">Repeat for</span>
+        <div className="flex items-center gap-3 text-body">
+          <span className="text-muted">Repeat for</span>
           <Stepper
+            label="Weeks"
+            layout="row"
+            inputMode="numeric"
             value={draft.weeks}
+            step={1}
             min={4}
             max={6}
             onChange={(v) => update((d) => ({ ...d, weeks: v }))}
           />
-          <span className="text-zinc-500">weeks</span>
+          <span className="text-muted">weeks</span>
         </div>
       </div>
 
       {draft.days.map((day, di) => (
-        <section key={day.id} className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <input
+        <Card key={day.id}>
+          <div className="flex items-center gap-1">
+            <Input
               value={day.name}
               onChange={(e) => renameDay(day.id, e.target.value)}
-              className="flex-1 rounded-lg border border-zinc-300 px-2 py-1.5 font-medium outline-none dark:border-zinc-700 dark:bg-zinc-900"
+              aria-label="Day name"
+              enterKeyHint="done"
+              autoComplete="off"
+              className="h-11 flex-1 px-2 font-medium"
             />
-            <ReorderButtons onUp={() => moveDay(di, -1)} onDown={() => moveDay(di, 1)} />
-            <button onClick={() => removeDay(day.id)} className="px-1 text-sm text-red-500">
-              ✕
-            </button>
+            <ReorderButtons
+              what={day.name}
+              onUp={() => moveDay(di, -1)}
+              onDown={() => moveDay(di, 1)}
+            />
+            <RemoveButton what={day.name} onClick={() => removeDay(day.id)} />
           </div>
 
           <ul className="mt-3 flex flex-col gap-2">
             {day.slots.map((slot, si) => (
-              <li key={slot.id} className="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+              <li key={slot.id} className="rounded-control bg-surface p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{exerciseName(slot.exerciseId)}</span>
+                  <span className="text-body font-medium">{exerciseName(slot.exerciseId)}</span>
                   <span className="flex items-center gap-1">
                     <ReorderButtons
+                      what={exerciseName(slot.exerciseId)}
                       onUp={() => moveSlot(day.id, si, -1)}
                       onDown={() => moveSlot(day.id, si, 1)}
                     />
-                    <button
+                    <RemoveButton
+                      what={exerciseName(slot.exerciseId)}
                       onClick={() => removeSlot(day.id, slot.id)}
-                      className="px-1 text-sm text-red-500"
-                    >
-                      ✕
-                    </button>
+                    />
                   </span>
                 </div>
                 <div className="mt-2 grid grid-cols-4 gap-2">
@@ -208,31 +221,31 @@ export function ProgramBuilder({
           </ul>
 
           <button
+            type="button"
             onClick={() => setPickerDayId(day.id)}
-            className="mt-3 w-full rounded-lg border border-dashed border-zinc-300 py-2 text-sm text-zinc-500 dark:border-zinc-700"
+            className="mt-3 h-11 w-full rounded-control border border-dashed border-border-strong text-body text-muted active:bg-surface"
           >
             + Add exercise
           </button>
-        </section>
+        </Card>
       ))}
 
-      <button
-        onClick={addDay}
-        className="rounded-xl border border-zinc-300 py-3 text-sm font-medium dark:border-zinc-700"
-      >
+      <Button type="button" variant="secondary" size="md" onClick={addDay}>
         + Add day
-      </button>
+      </Button>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-body text-danger">{error}</p>}
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/90 p-3 backdrop-blur dark:border-zinc-800 dark:bg-black/80">
-        <button
+      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 p-3 backdrop-blur">
+        <Button
+          type="button"
+          size="lg"
+          className="w-full"
           onClick={handleSave}
-          disabled={saving}
-          className="w-full rounded-xl bg-zinc-900 py-3 font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-black"
+          pending={saving}
         >
-          {saving ? "Saving…" : "Save & make active"}
-        </button>
+          Save &amp; make active
+        </Button>
       </div>
 
       {pickerDayId && (
@@ -252,12 +265,39 @@ function exerciseName(id: string) {
   return EXERCISE_BY_ID[id]?.name ?? id;
 }
 
-function ReorderButtons({ onUp, onDown }: { onUp: () => void; onDown: () => void }) {
+function ReorderButtons({
+  what,
+  onUp,
+  onDown,
+}: {
+  what: string;
+  onUp: () => void;
+  onDown: () => void;
+}) {
+  const cls =
+    "flex h-10 w-9 items-center justify-center text-muted active:bg-surface rounded-control";
   return (
     <span className="flex">
-      <button onClick={onUp} className="px-1 text-zinc-400">↑</button>
-      <button onClick={onDown} className="px-1 text-zinc-400">↓</button>
+      <button type="button" aria-label={`Move ${what} up`} onClick={onUp} className={cls}>
+        ↑
+      </button>
+      <button type="button" aria-label={`Move ${what} down`} onClick={onDown} className={cls}>
+        ↓
+      </button>
     </span>
+  );
+}
+
+function RemoveButton({ what, onClick }: { what: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={`Remove ${what}`}
+      onClick={onClick}
+      className="flex h-10 w-9 items-center justify-center rounded-control text-body text-danger active:bg-surface"
+    >
+      ✕
+    </button>
   );
 }
 
@@ -276,7 +316,7 @@ function NumField({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-center text-[10px] uppercase tracking-wide text-zinc-400">{label}</span>
+      <span className="text-center text-[10px] uppercase tracking-wide text-muted">{label}</span>
       <input
         type="number"
         inputMode="numeric"
@@ -285,29 +325,9 @@ function NumField({
           const n = Number(e.target.value);
           onChange(Math.min(max, Math.max(min, Number.isFinite(n) ? n : min)));
         }}
-        className="w-full min-w-0 rounded-md border border-zinc-300 bg-transparent py-1.5 text-center text-sm font-semibold tabular-nums outline-none dark:border-zinc-700"
+        onFocus={(e) => e.currentTarget.select()}
+        className="h-10 w-full min-w-0 rounded-control border border-border-strong bg-transparent text-center text-sm font-semibold tabular-nums"
       />
     </label>
-  );
-}
-
-function Stepper({
-  value,
-  min,
-  max,
-  onChange,
-}: {
-  value: number;
-  min: number;
-  max: number;
-  onChange: (v: number) => void;
-}) {
-  const clamp = (v: number) => Math.min(max, Math.max(min, v));
-  return (
-    <div className="flex items-center overflow-hidden rounded-lg border border-zinc-300 dark:border-zinc-700">
-      <button onClick={() => onChange(clamp(value - 1))} className="px-3 py-1.5 text-zinc-500">−</button>
-      <span className="w-8 text-center font-semibold tabular-nums">{value}</span>
-      <button onClick={() => onChange(clamp(value + 1))} className="px-3 py-1.5 text-zinc-500">+</button>
-    </div>
   );
 }

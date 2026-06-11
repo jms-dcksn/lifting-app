@@ -1,26 +1,160 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens — the P6 contract (docs/PLAN.md):
+ * near-monochrome; color is semantic only (overload up/down, calibrate, danger);
+ * one card radius, one control radius; motion 150–250ms, transform/opacity only.
+ */
+
 :root {
+  color-scheme: light dark;
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --surface: #fafafa;
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --muted: #71717a;
+  --faint: #a1a1aa;
+  --accent: #171717;
+  --accent-foreground: #ffffff;
+  --overload-up: #059669;
+  --overload-down: #dc2626;
+  --calibrate: #b45309;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --surface: #18181b;
+    --border: #27272a;
+    --border-strong: #3f3f46;
+    --muted: #a1a1aa;
+    --faint: #71717a;
+    --accent: #ffffff;
+    --accent-foreground: #0a0a0a;
+    --overload-up: #34d399;
+    --overload-down: #f87171;
+    --calibrate: #fbbf24;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-overload-up: var(--overload-up);
+  --color-overload-down: var(--overload-down);
+  --color-danger: var(--overload-down);
+  --color-calibrate: var(--calibrate);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@theme {
+  /* type scale: hierarchy comes from these four, not from boxes */
+  --text-display: 1.5rem;
+  --text-display--line-height: 2rem;
+  --text-display--font-weight: 600;
+  --text-display--letter-spacing: -0.025em;
+  --text-heading: 1rem;
+  --text-heading--line-height: 1.5rem;
+  --text-heading--font-weight: 600;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.25rem;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+
+  /* one card radius, one control radius */
+  --radius-card: 1rem;
+  --radius-control: 0.75rem;
+
+  /* motion */
+  --ease-snap: cubic-bezier(0.2, 0, 0, 1);
+
+  --animate-tick: tick 200ms var(--ease-snap);
+  @keyframes tick {
+    from {
+      transform: translateY(-0.2em);
+      opacity: 0.3;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+input,
+label {
+  touch-action: manipulation;
+}
+
+/* keyboard-visible focus, everywhere */
+:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+/* steppers provide the affordance; native spinners just shrink the field */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  appearance: textfield;
+}
+
+/* bottom sheet (src/components/ui/sheet.tsx) */
+dialog.sheet {
+  transition: transform 250ms var(--ease-snap);
+}
+dialog.sheet::backdrop {
+  background: rgb(0 0 0 / 0.45);
+  transition: opacity 250ms var(--ease-snap);
+}
+@starting-style {
+  dialog.sheet[open] {
+    transform: translateY(100%);
+  }
+  dialog.sheet[open]::backdrop {
+    opacity: 0;
+  }
+}
+dialog.sheet[data-closing] {
+  transform: translateY(100%);
+}
+dialog.sheet[data-closing]::backdrop {
+  opacity: 0;
+}
+
+/* pin the page while a modal sheet is up */
+body:has(dialog.sheet[open]) {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after,
+  ::backdrop {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

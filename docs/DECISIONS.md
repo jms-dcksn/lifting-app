@@ -154,8 +154,43 @@ medium/high.
 **Confidence badge wording: `low` → "starting estimate"** (was "estimate"), to read more
 clearly as a recommender-driven starting point rather than a measurement.
 
+## Phase 6 decisions
+
+**Native `<dialog>` over a dialog/sheet library.** `Sheet` (`src/components/ui/sheet.tsx`)
+is a native `<dialog>` with `showModal()` (free focus trap + `Escape`→`cancel`), animated
+via `data-closing` + `@starting-style` in `globals.css`. It is the app's *only* overlay
+primitive — `ExercisePicker` is rebuilt on it. Rejected a component library (shadcn/Radix):
+one overlay and five controls is small enough that hand-rolling stays smaller and keeps the
+whole UI layer auditable.
+
+**Design tokens are the contract, defined once in `globals.css`.** `@theme`/`@theme inline`
+define a near-monochrome palette (color is semantic-only: `overload-up/down`, `calibrate`,
+`danger`), a four-step type scale (display/heading/body/caption), one card radius and one
+control radius, and shared motion (`--ease-snap`, `animate-tick`, all `transform`/`opacity`,
+150–250ms, honoring `prefers-reduced-motion`). This fixed a real bug in the process:
+`body { font-family: Arial }` had been silently overriding the Geist fonts loaded in
+`layout.tsx` since the project's start — Geist now actually renders.
+
+**`buttonClasses` lives in a separate non-`"use client"` module (`button-styles.ts`).**
+`Button` itself needs `"use client"` for `useFormStatus`, but Server Components (e.g. a
+page rendering a `<Link>` styled as a button) need the class builder without pulling in a
+client boundary. Calling an export from a `"use client"` module inside a Server Component
+throws at runtime — and `next build` does not catch it — so the class builder is split into
+its own plain module.
+
+**`ExercisePicker`'s dismiss contract changed when it moved onto `Sheet`.** Previously a
+full-screen div that the parent hard-unmounted on pick. Now picking dismisses the `Sheet`
+itself (with the exit animation) via `useSheetDismiss()`; `onPick` only updates parent
+state and `onClose` only unmounts after the animation completes. Both call sites (builder
+add-slot, session swap) were updated to this contract.
+
+**`start-button.tsx` deleted; home uses the shared `Button`.** The bespoke component
+existed only to prevent double-tap on Start/Resume; `Button`'s built-in pending state
+(via `useFormStatus` for the `<form action>` submit button) covers the same case for free.
+
 ## Build order
 
 > Superseded by `SPEC.md`, which wins on conflicts. Current phase structure: P0 (backend, done),
 > P1 (auth + PWA), P2 (keystone: active-session screen), P3 (program builder), P4 (progression
-> view), P5 (recommendation + swap + calibration, done). See `docs/PLAN.md` for the sequence and status.
+> view), P5 (recommendation + swap + calibration, done), P6 (UX foundation: design tokens +
+> core components, done). See `docs/PLAN.md` for the sequence and status.

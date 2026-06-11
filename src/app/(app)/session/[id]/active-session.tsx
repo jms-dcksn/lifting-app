@@ -10,6 +10,9 @@ import {
   type SessionTarget,
 } from "@/lib/strength/progression";
 import type { ExerciseStat } from "@/lib/strength/recommend";
+import { Button, buttonClasses } from "@/components/ui/button";
+import { Card, CardLabel } from "@/components/ui/card";
+import { Stepper } from "@/components/ui/stepper";
 import { ExercisePicker } from "../../program/exercise-picker";
 import {
   logSet,
@@ -70,8 +73,8 @@ export function ActiveSession({
   return (
     <div className="flex flex-1 flex-col gap-4 px-4 py-5 pb-28">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{dayName}</h1>
-        <p className="text-sm text-zinc-500">
+        <h1 className="text-display">{dayName}</h1>
+        <p className="text-body text-muted">
           Week {week} of {weeks}
           {bodyweight ? ` · BW ${bodyweight} lb` : ""}
         </p>
@@ -88,14 +91,16 @@ export function ActiveSession({
         />
       ))}
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/90 p-3 backdrop-blur dark:border-zinc-800 dark:bg-black/80">
-        <button
+      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 p-3 backdrop-blur">
+        <Button
+          type="button"
+          size="lg"
+          className="w-full"
           onClick={handleFinish}
-          disabled={finishing}
-          className="w-full rounded-xl bg-zinc-900 py-3 font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-black"
+          pending={finishing}
         >
-          {alreadyFinished ? "View summary" : finishing ? "Finishing…" : "Finish workout"}
-        </button>
+          {alreadyFinished ? "View summary" : "Finish workout"}
+        </Button>
       </div>
     </div>
   );
@@ -199,20 +204,22 @@ function SlotCard({
   }
 
   return (
-    <section className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+    <Card>
       <div className="flex items-baseline justify-between">
-        <h2 className="font-semibold">
+        <h2 className="text-heading">
           <Link href={`/history/${exerciseId}`} className="underline-offset-2 hover:underline">
             {name}
           </Link>
           <button
+            type="button"
             onClick={() => setSwapping(true)}
-            className="ml-2 text-xs font-normal text-zinc-400 underline-offset-2 hover:underline"
+            aria-label={`Swap ${name} for another exercise`}
+            className="-my-2 ml-1 px-2 py-2 text-caption font-normal text-muted underline-offset-2 hover:underline"
           >
             swap
           </button>
         </h2>
-        <span className="text-xs text-zinc-500">
+        <span className="text-caption text-muted">
           {p.targetSets} × {p.repMin}–{p.repMax} @ {p.targetRir} RIR
         </span>
       </div>
@@ -223,10 +230,7 @@ function SlotCard({
         <ExercisePicker
           recentIds={recentIds}
           patternFilter={slot.pattern}
-          onPick={(e) => {
-            setExerciseId(e.id);
-            setSwapping(false);
-          }}
+          onPick={(e) => setExerciseId(e.id)}
           onClose={() => setSwapping(false)}
         />
       )}
@@ -249,25 +253,27 @@ function SlotCard({
             ) : (
               <li
                 key={s.id}
-                className="flex items-center justify-between rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900"
+                className="flex items-center justify-between rounded-control bg-surface px-3 py-1 text-body"
               >
                 <span className="tabular-nums">
-                  <span className="text-zinc-400">{i + 1}.</span>{" "}
+                  <span className="text-faint">{i + 1}.</span>{" "}
                   {s.weight} lb × {s.reps}
                   {s.rir != null ? ` @ ${s.rir}` : ""}
                 </span>
-                <span className="flex gap-3 text-xs">
+                <span className="flex items-center gap-1 text-caption">
                   <button
+                    type="button"
                     onClick={() => setEditingId(s.id)}
                     disabled={s.id.startsWith("temp-")}
-                    className="text-zinc-500 disabled:opacity-40"
+                    className="px-2 py-2 text-muted disabled:opacity-40"
                   >
                     Edit
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleDelete(s.id)}
                     disabled={s.id.startsWith("temp-")}
-                    className="text-red-500 disabled:opacity-40"
+                    className="px-2 py-2 text-danger disabled:opacity-40"
                   >
                     Delete
                   </button>
@@ -292,7 +298,7 @@ function SlotCard({
           />
         </div>
       )}
-    </section>
+    </Card>
   );
 }
 
@@ -305,16 +311,16 @@ function TargetLine({
 }) {
   if (!target) {
     return (
-      <p className="mt-1 text-sm text-zinc-500">No history yet — log a set to set your baseline.</p>
+      <p className="mt-1 text-body text-muted">No history yet — log a set to set your baseline.</p>
     );
   }
   const unit = isBodyweight ? "added" : "lb";
   if (target.source === "recommendation") {
     const badge = confidenceBadge(target.confidence);
     return (
-      <p className="mt-1 text-sm">
-        <span className="text-zinc-500">Start: </span>
-        <span className="font-medium">
+      <p className="mt-1 text-body">
+        <span className="text-muted">Start: </span>
+        <span className="font-medium tabular-nums">
           {target.weight} {unit} × {target.targetReps}
         </span>
         {badge && <span className={`ml-2 ${badge.className}`}>{badge.label}</span>}
@@ -322,13 +328,13 @@ function TargetLine({
     );
   }
   return (
-    <p className="mt-1 text-sm">
-      <span className="text-zinc-500">Target: </span>
-      <span className="font-medium">
+    <p className="mt-1 text-body">
+      <span className="text-muted">Target: </span>
+      <span className="font-medium tabular-nums">
         {target.weight} {unit} × {target.targetReps}
       </span>
       {target.last && (
-        <span className="text-zinc-400">
+        <span className="tabular-nums text-muted">
           {" "}
           · last: {target.last.weight} × {target.last.reps}
         </span>
@@ -342,9 +348,9 @@ function TargetLine({
 function confidenceBadge(c: SessionTarget["confidence"]) {
   switch (c) {
     case "calibrate":
-      return { label: "feel it out", className: "text-amber-600" };
+      return { label: "feel it out", className: "text-calibrate" };
     case "low":
-      return { label: "starting estimate", className: "text-zinc-400" };
+      return { label: "starting estimate", className: "text-muted" };
     default:
       return null;
   }
@@ -400,6 +406,7 @@ function SetEntry({
           value={reps}
           step={1}
           min={1}
+          inputMode="numeric"
           onChange={(v) => {
             setReps(v);
             follow(v, rir);
@@ -411,6 +418,7 @@ function SetEntry({
           step={1}
           min={0}
           max={5}
+          inputMode="numeric"
           onChange={(v) => {
             setRir(v);
             follow(reps, v);
@@ -418,70 +426,20 @@ function SetEntry({
         />
       </div>
       <div className="flex gap-2">
-        <button
+        <Button
+          type="button"
+          size="md"
+          className="flex-1"
           onClick={() => onSubmit(weight, reps, rir)}
           disabled={disabled}
-          className="flex-1 rounded-lg bg-zinc-900 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-black"
         >
           {label}
-        </button>
+        </Button>
         {onCancel && (
-          <button
-            onClick={onCancel}
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700"
-          >
+          <Button type="button" variant="secondary" size="md" onClick={onCancel}>
             Cancel
-          </button>
+          </Button>
         )}
-      </div>
-    </div>
-  );
-}
-
-function Stepper({
-  label,
-  value,
-  step,
-  min,
-  max,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  step: number;
-  min: number;
-  max?: number;
-  onChange: (v: number) => void;
-}) {
-  const clamp = (v: number) => {
-    let n = v;
-    if (min != null) n = Math.max(min, n);
-    if (max != null) n = Math.min(max, n);
-    return n;
-  };
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-center text-xs uppercase tracking-wide text-zinc-400">{label}</span>
-      <div className="flex items-center overflow-hidden rounded-lg border border-zinc-300 dark:border-zinc-700">
-        <button
-          onClick={() => onChange(clamp(value - step))}
-          className="px-3 py-2 text-lg text-zinc-500 active:bg-zinc-100 dark:active:bg-zinc-800"
-        >
-          −
-        </button>
-        <input
-          type="number"
-          inputMode="decimal"
-          value={value}
-          onChange={(e) => onChange(clamp(Number(e.target.value)))}
-          className="w-full min-w-0 bg-transparent py-2 text-center text-base font-semibold tabular-nums outline-none"
-        />
-        <button
-          onClick={() => onChange(clamp(value + step))}
-          className="px-3 py-2 text-lg text-zinc-500 active:bg-zinc-100 dark:active:bg-zinc-800"
-        >
-          +
-        </button>
       </div>
     </div>
   );
@@ -491,18 +449,16 @@ function Summary({ dayName, summary }: { dayName: string; summary: SessionSummar
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 py-8">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{dayName} done</h1>
-        <p className="text-sm text-zinc-500">{summary.totalSets} working sets logged</p>
+        <h1 className="text-display">{dayName} done</h1>
+        <p className="text-body text-muted">{summary.totalSets} working sets logged</p>
       </header>
 
       {summary.topE1rm.length > 0 && (
-        <section className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-400">
-            Top e1RM
-          </h2>
+        <Card>
+          <CardLabel className="mb-2">Top e1RM</CardLabel>
           <ul className="flex flex-col gap-1">
             {summary.topE1rm.map((t) => (
-              <li key={t.exerciseId} className="flex items-baseline justify-between text-sm">
+              <li key={t.exerciseId} className="flex items-baseline justify-between text-body">
                 <Link href={`/history/${t.exerciseId}`} className="underline-offset-2 hover:underline">
                   {t.name}
                 </Link>
@@ -513,13 +469,10 @@ function Summary({ dayName, summary }: { dayName: string; summary: SessionSummar
               </li>
             ))}
           </ul>
-        </section>
+        </Card>
       )}
 
-      <Link
-        href="/"
-        className="rounded-xl bg-zinc-900 py-3 text-center font-semibold text-white dark:bg-white dark:text-black"
-      >
+      <Link href="/" className={buttonClasses("primary", "lg", "w-full")}>
         Done
       </Link>
     </div>
@@ -528,12 +481,12 @@ function Summary({ dayName, summary }: { dayName: string; summary: SessionSummar
 
 // vs the previous session of this exercise: green = beat it, red = under it.
 function OverloadDelta({ e1rm, prevE1rm }: { e1rm: number; prevE1rm: number | null }) {
-  if (prevE1rm == null) return <span className="ml-2 text-xs text-zinc-400">first</span>;
+  if (prevE1rm == null) return <span className="ml-2 text-caption text-muted">first</span>;
   const delta = Math.round(e1rm - prevE1rm);
-  if (delta === 0) return <span className="ml-2 text-xs text-zinc-400">±0</span>;
-  const cls = delta > 0 ? "text-emerald-600" : "text-red-500";
+  if (delta === 0) return <span className="ml-2 text-caption text-muted">±0</span>;
+  const cls = delta > 0 ? "text-overload-up" : "text-overload-down";
   return (
-    <span className={`ml-2 text-xs font-medium ${cls}`}>
+    <span className={`ml-2 text-caption font-medium ${cls}`}>
       {delta > 0 ? `+${delta}` : delta}
     </span>
   );

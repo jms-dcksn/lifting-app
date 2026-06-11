@@ -7,6 +7,8 @@ import {
   recentExerciseIds,
   type Program,
 } from "@/lib/program";
+import { Button } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button-styles";
 import { ProgramBuilder } from "./program-builder";
 import { ProgramList } from "./program-list";
 import { createFromTemplate } from "./actions";
@@ -36,18 +38,15 @@ export default async function ProgramPage({
     return (
       <div className="flex flex-1 flex-col gap-4 px-6 py-10">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Build your program</h1>
-          <p className="text-sm text-zinc-500">Start from a template, or build one from scratch.</p>
+          <h1 className="text-display">Build your program</h1>
+          <p className="text-body text-muted">Start from a template, or build one from scratch.</p>
         </div>
         <form action={createFromTemplate}>
-          <button className="w-full rounded-xl bg-zinc-900 py-3 font-semibold text-white dark:bg-white dark:text-black">
+          <Button size="lg" className="w-full">
             Start with Push / Pull / Legs
-          </button>
+          </Button>
         </form>
-        <a
-          href="/program?id=new"
-          className="rounded-xl border border-zinc-300 py-3 text-center text-sm font-medium dark:border-zinc-700"
-        >
+        <a href="/program?id=new" className={buttonClasses("secondary", "lg", "w-full")}>
           Build from scratch
         </a>
       </div>

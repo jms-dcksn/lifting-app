@@ -125,9 +125,11 @@ component with `ExerciseStat[]`, `recentExerciseIds`, and a per-slot
 swap re-derives instantly with no round-trip. A slot's effective exercise id is the most
 recently logged exercise in that slot this session (falling back to the program slot's
 exercise), so an in-session swap survives a page reload. Swap opens `ExercisePicker`
-(`program/exercise-picker.tsx`) filtered to the slot's pattern, with a "show all
+(`program/exercise-picker.tsx`, a `Sheet`) filtered to the slot's pattern, with a "show all
 patterns" escape hatch; subsequent sets log against the swapped `exercise_id` + the
-original `program_slot_id`.
+original `program_slot_id`. Picking an exercise dismisses the sheet itself (animated);
+`onPick` only updates parent state and `onClose` only unmounts — both the builder's
+add-slot flow and swap follow this contract.
 
 ### Exercise history (`src/app/(app)/history/[exerciseId]/`)
 
@@ -138,6 +140,45 @@ session series plus an overload badge (latest session vs the one before it). The
 delta (latest session vs that exercise's previous session) is also surfaced per-lift in the
 finish-session summary (`session/actions.ts` → `finishSession`'s `prevE1rm`). This lookup is
 keyed on `exercise_id`, not `program_slot_id` — see `docs/DECISIONS.md` Phase 4.
+
+### UI primitives and design tokens (`src/components/ui/`)
+
+All screens are built on a small shared component set, introduced in Phase 6. Don't
+hand-roll new buttons/cards/steppers/overlays — extend these.
+
+- **Tokens live in `src/app/globals.css`** (`@theme` / `@theme inline`): semantic colors
+  (background/foreground/surface/border/border-strong/muted/faint/accent/accent-foreground,
+  plus `overload-up`, `overload-down`, `calibrate`, `danger`), a type scale
+  (`text-display/heading/body/caption`), one card radius (`--radius-card`) and one control
+  radius (`--radius-control`), and `--ease-snap`/`animate-tick`. The palette is
+  near-monochrome by design — color is semantic only (overload/calibrate/danger). Geist
+  fonts are wired via `--font-sans`/`--font-mono` (the old `body { font-family: Arial }`
+  override that silently disabled Geist is gone).
+- **`Sheet` (`sheet.tsx`) is the app's one overlay primitive** — a native `<dialog>` +
+  `showModal()` bottom sheet (focus trap, scrim tap / Escape / swipe-down-on-handle to
+  dismiss, animated exit via `data-closing` + `@starting-style` in `globals.css`; the JS
+  exit delay (`EXIT_MS`) must match the CSS transition duration). `useSheetDismiss()` lets
+  inner content (e.g. a Cancel button) trigger the same animated close. The parent only
+  unmounts via `onClose` after the animation finishes. `ExercisePicker` is built on this.
+- **`Button` (`button.tsx`)** — primary/secondary/destructive/ghost × sm/md/lg, with
+  built-in pending state (spinner + `aria-busy`): pass `pending` explicitly, or rely on
+  `useFormStatus` for submit buttons inside a `<form action>`. The variant/size class
+  builder (`buttonClasses`, in `button-styles.ts`) is deliberately **not** in a `"use
+  client"` module so Server Components can use it to style `<Link>`s as buttons — calling
+  a function exported from a `"use client"` module from a Server Component throws at
+  runtime, and `next build` does **not** catch this.
+- **`Stepper` (`stepper.tsx`)** — the most-touched control mid-workout: 44px hit areas,
+  press-and-hold auto-repeat (action fires on `pointerdown`, repeats after 450ms at 80ms
+  intervals; `onClick` is reserved for keyboard activation), tick animation on change via
+  input remount, select-all on focus. `column` layout for session set-entry, `row` for
+  inline steppers (e.g. builder weeks). Note: the `eslint-plugin-react-hooks` "refs" rule
+  (no `ref.current` writes during render) shapes this component's structure — value reads
+  happen via an effect-synced ref, and the hold/repeat logic lives entirely in event
+  handlers, not render.
+- `input.tsx` (`Input`), `card.tsx` (`Card`, `CardLabel`), `cx.ts` (classname join) round
+  out the set. `src/app/(app)/start-button.tsx` was deleted — the home screen's
+  start/resume action is now a shared `Button` (its built-in pending state covers the
+  double-tap protection the old component existed for).
 
 ### Supabase clients (`src/lib/supabase/`)
 

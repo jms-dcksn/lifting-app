@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
+import { Card, CardLabel } from "@/components/ui/card";
 import { E1rmChart, type ChartPoint } from "./e1rm-chart";
 
 interface SessionGroup {
@@ -69,52 +70,47 @@ export default async function HistoryPage({
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 py-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{name}</h1>
-        <p className="text-sm text-zinc-500">
+        <h1 className="text-display">{name}</h1>
+        <p className="text-body text-muted">
           {sessions.length} session{sessions.length === 1 ? "" : "s"} logged
           {latest?.bestE1rm != null && ` · current e1RM ${Math.round(latest.bestE1rm)} lb`}
         </p>
       </header>
 
       {sessions.length === 0 ? (
-        <p className="text-sm text-zinc-500">No working sets logged yet.</p>
+        <p className="text-body text-muted">No working sets logged yet.</p>
       ) : (
         <>
           {delta != null && <OverloadBadge delta={delta} />}
 
           {chartData.length >= 2 && (
-            <section className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-400">
-                e1RM over time
-              </h2>
+            <Card>
+              <CardLabel className="mb-2">e1RM over time</CardLabel>
               <E1rmChart data={chartData} />
-            </section>
+            </Card>
           )}
 
           <section className="flex flex-col gap-3">
             {[...sessions].reverse().map((s) => (
-              <div
-                key={s.sessionId}
-                className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800"
-              >
+              <Card key={s.sessionId}>
                 <div className="flex items-baseline justify-between">
-                  <h3 className="text-sm font-semibold">{longDate(s.performedAt)}</h3>
+                  <h3 className="text-body font-semibold">{longDate(s.performedAt)}</h3>
                   {s.bestE1rm != null && (
-                    <span className="text-xs text-zinc-500 tabular-nums">
+                    <span className="text-caption text-muted tabular-nums">
                       best e1RM {Math.round(s.bestE1rm)} lb
                     </span>
                   )}
                 </div>
                 <ul className="mt-2 flex flex-col gap-1">
                   {s.sets.map((set, i) => (
-                    <li key={set.id} className="text-sm tabular-nums">
-                      <span className="text-zinc-400">{i + 1}.</span> {set.weight} lb
+                    <li key={set.id} className="text-body tabular-nums">
+                      <span className="text-faint">{i + 1}.</span> {set.weight} lb
                       {isBodyweight ? " added" : ""} × {set.reps}
                       {set.rir != null ? ` @ ${set.rir} RIR` : ""}
                     </li>
                   ))}
                 </ul>
-              </div>
+              </Card>
             ))}
           </section>
         </>
@@ -126,7 +122,7 @@ export default async function HistoryPage({
 function OverloadBadge({ delta }: { delta: number }) {
   const rounded = Math.round(delta);
   const cls =
-    rounded > 0 ? "text-emerald-600" : rounded < 0 ? "text-red-500" : "text-zinc-500";
+    rounded > 0 ? "text-overload-up" : rounded < 0 ? "text-overload-down" : "text-muted";
   const text =
     rounded > 0
       ? `Beat last session by ${rounded} lb e1RM`
@@ -134,7 +130,7 @@ function OverloadBadge({ delta }: { delta: number }) {
         ? `Down ${Math.abs(rounded)} lb e1RM vs last session`
         : "Matched last session's e1RM";
   return (
-    <p className={`text-sm font-medium ${cls}`}>
+    <p className={`text-body font-medium ${cls}`}>
       {text}
     </p>
   );

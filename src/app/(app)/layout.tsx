@@ -15,14 +15,14 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-        <nav className="flex items-center gap-4 text-sm">
-          <Link href="/" className="font-semibold tracking-tight">Lift</Link>
-          <Link href="/program" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">Program</Link>
-          <Link href="/settings" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">Settings</Link>
+      <header className="flex items-center justify-between border-b border-border px-4 py-1">
+        <nav className="flex items-center gap-2 text-body">
+          <Link href="/" className="px-1 py-3 font-semibold tracking-tight">Lift</Link>
+          <Link href="/program" className="px-2 py-3 text-muted hover:text-foreground">Program</Link>
+          <Link href="/settings" className="px-2 py-3 text-muted hover:text-foreground">Settings</Link>
         </nav>
         <form action={signOut}>
-          <button className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">
+          <button className="px-1 py-3 text-body text-muted hover:text-foreground">
             Sign out
           </button>
         </form>

@@ -165,6 +165,114 @@ starting/swap weights — and its confidence UI.
 
 ---
 
+## Phase 6 — UX foundation: audit + design system + core components (~6 hrs)
+
+The MVP is functionally complete but visually a scaffold: default zinc utilities, zero
+motion, ad-hoc spacing, and a typography bug (`globals.css` sets `body { font-family:
+Arial }`, overriding the Geist fonts loaded in `layout.tsx` — they never render). This
+phase establishes the design system the polish pass (P7) builds on. Aim: world-class feel
+with a near-monochrome black/white palette — restraint is the aesthetic.
+
+**Design principles (the contract for P6 + P7):**
+- Palette stays black/white/zinc. Color is *semantic only*: overload green/red,
+  calibration amber. Nothing decorative gets color.
+- Motion is 150–250 ms, ease-out, `transform`/`opacity` only (compositor-friendly);
+  every animation honors `prefers-reduced-motion`. Prefer CSS transitions +
+  `@starting-style` entry animations over a JS animation library.
+- Tap targets ≥ 44 px on anything used mid-set. Numbers always `tabular-nums`.
+- Hierarchy from type scale, weight, and spacing — not from boxes and borders.
+
+- [x] **Device audit (on phone, doubles as the outstanding P4/P5 device verification).**
+      Walk every screen as a PWA: login → home → builder → picker → active session
+      (log/edit/delete/swap/calibrate) → finish summary → history chart → settings.
+      Screenshot each; list every friction point (tap-target misses, layout shifts,
+      dead-feeling navigations, abrupt state changes). Output: a checklist in
+      `docs/UX-AUDIT.md` that P7 burns down screen by screen.
+      *(Done as an emulated 390×844 Playwright walk with a fresh test user;
+      `docs/UX-AUDIT.md` written. On-phone re-walk + real-data P4/P5 verification
+      remain — tagged **[device]** in the audit and folded into P7's final pass.)*
+- [x] **Typography + tokens.** Fix the Arial override so Geist actually renders. Define
+      the design tokens in `globals.css` `@theme`: type scale (display/heading/body/
+      caption), spacing rhythm, radii (one card radius, one control radius), borders,
+      semantic colors (overload-up/down, calibrate), motion durations/easings. Replace
+      raw hex/zinc one-offs as they're touched — no big-bang rename.
+- [x] **Core controls, rebuilt once, reused everywhere** (`src/components/ui/`):
+  - [x] `Button` — primary/secondary/destructive/ghost; pressed-state scale + opacity
+        transition; built-in pending state (spinner or label swap) wired to
+        `useFormStatus`/`useTransition` so taps never feel ignored
+        (`buttonClasses` lives in `button-styles.ts`, a non-client module, so Server
+        Components can style `<Link>`s)
+  - [x] `Stepper` — the most-touched control in the gym: ≥ 44 px hit areas,
+        press-and-hold auto-repeat, value-change tick animation, strip native
+        `type=number` spinners, select-all on focus; proper `aria-label`s on −/+
+  - [x] Text inputs (login email, program/day names, search) — one consistent style:
+        clear focus ring (`focus-visible`), correct `inputMode`/`autocomplete`/
+        `enterKeyHint` per field
+  - [x] Card — single shared surface treatment (radius, border, padding) replacing the
+        five hand-rolled variants
+- [x] **Sheet/overlay primitive.** `ExercisePicker` currently hard-cuts to a full-screen
+      div. Rebuild as a bottom sheet that slides up with a scrim, traps focus, closes on
+      scrim tap/Escape/swipe-down. This is the only overlay in the app — one primitive,
+      no dialog library. *(Native `<dialog>` + `@starting-style`; picking dismisses with
+      the exit animation too.)*
+- [x] **Focus + a11y baseline.** Visible `focus-visible` rings everywhere, `aria-label`s
+      on icon-ish buttons, check zinc-400-on-white contrast for text that carries meaning
+      (target lines, badges) and darken where it fails.
+- Verify: `npx tsc --noEmit`, `npm run lint`, `npm run build` clean; controls exercised
+  on a real phone, not just desktop devtools. *(tsc/lint/build clean; controls exercised
+  in the emulated walk — real-phone pass folded into P7.)*
+
+## Phase 7 — Screen-by-screen polish + motion + mobile ergonomics (~8 hrs)
+
+Burn down the P6 audit list using the P6 system. Order follows time-in-screen: the active
+session is where the app lives or dies.
+
+- [ ] **Active session (the keystone, most of the budget):**
+  - [ ] Slot cards show workout progress at a glance: sets-done vs target per slot
+        (e.g. filled dots), completed slots visually recede, the current slot reads as
+        *current* — hierarchy, not color
+  - [ ] Logged-set rows animate in on optimistic insert and out on delete; failed
+        optimistic writes revert visibly instead of silently vanishing
+  - [ ] Promote **swap** from a 12 px text link to a real affordance on the card —
+        it's the app's differentiator and is currently invisible
+  - [ ] Target line: clearer layout for weight × reps; confidence states get distinct
+        treatment ("feel it out" should read as an instruction, not a footnote)
+  - [ ] Sticky finish bar: respect `env(safe-area-inset-bottom)` (iOS PWA home-bar
+        overlap), replace the `pb-28` magic number with content-aware spacing
+  - [ ] Finish → summary transitions as a moment (it's the payoff screen): staggered
+        entry for top-e1RM rows, overload deltas land with a beat
+- [ ] **Home:** Start/Resume CTA gets the most visual weight on the screen; block
+      status reads as progress (week x of y) at a glance; last-session card uses the
+      shared Card
+- [ ] **Program builder:** day/slot reorder feels physical (move animation, not an
+      instant jump); add-slot/add-day affordances obvious; slot rows compact but
+      ≥ 44 px; exercise picker entry consistent with swap
+- [ ] **Exercise picker:** search field follows the P6 input style; pattern-filter
+      toggle becomes a visible chip (current state is a text underline); recent
+      exercises visually grouped, not just sorted
+- [ ] **History:** chart styled to the monochrome system (axis/grid/dot weights);
+      overload badge consistent with the summary's delta treatment; empty state for
+      exercises with one session
+- [ ] **Login:** first impression — center the form, real input + button styles,
+      magic-link sent state that doesn't look like an error
+- [ ] **Navigation feel:** `loading.tsx` skeletons for home/session/history so server
+      navigations never show a dead white screen; header nav links get active states;
+      consider View Transitions for route changes only if free — don't force it
+- [ ] **Final pass:** re-walk the P6 audit checklist on device; everything either fixed
+      or consciously deferred with a note
+- Verify: build/lint/typecheck clean; full workout logged on a phone end-to-end; deltas
+  reviewed at both color schemes (light + dark)
+
+### Explicitly NOT in P6/P7 (resist)
+- No component library (shadcn/Radix) — the app has one overlay and five controls;
+  hand-rolled stays smaller and teaches more
+- No JS animation library unless CSS provably can't do a specific interaction
+- No color system expansion, theming/toggle, or brand/logo work
+- No new features hiding inside "polish" (rest timers, plate calculator — still out)
+- No desktop layout work beyond not-broken — this is a phone app
+
+---
+
 ## Explicitly NOT in MVP (resist)
 - Macro-periodization / auto-deload / wave loading (week-over-week overload is double
   progression only; prescription structure stays fixed across the block)

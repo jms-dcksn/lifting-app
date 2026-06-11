@@ -35,6 +35,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
   - `recompute.ts` — rebuild `user_exercise_stat` from `set_log` rows
   - `progression.ts` — double-progression session target (weight + reps) per slot
 - `src/lib/program.ts` — server-side program loader; assembles nested program (days → slots) from DB
+- `src/components/ui/` — shared UI primitives (Button, Stepper, Card, Input, Sheet) and design tokens (`src/app/globals.css`)
 - `src/lib/supabase/` — browser client, server client, and `middleware.ts` (`updateSession` helper for `proxy.ts`)
 - `src/proxy.ts` — Next.js 16 session proxy (replaces `middleware.ts`); refreshes Supabase session on every request
 - `src/app/(app)/program/` — program builder (server page + client builder, exercise picker, program list, server actions)

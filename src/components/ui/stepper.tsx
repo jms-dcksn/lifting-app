@@ -6,6 +6,8 @@ import { cx } from "./cx";
 const HOLD_DELAY_MS = 450;
 const HOLD_REPEAT_MS = 80;
 
+const format = (n: number) => (Number.isFinite(n) ? String(n) : "");
+
 // The most-touched control in the gym: 44px hit areas, press-and-hold auto-repeat,
 // value tick animation, select-all on focus. `column` stacks value over −/+ (set
 // entry grid); `row` is the inline [−][value][+] form.
@@ -34,6 +36,16 @@ export function Stepper({
     valueRef.current = value;
   });
   const [tick, setTick] = useState(0);
+  // Local text draft so the field can be cleared and typed from scratch, and can
+  // hold partial values like "52." or "-" mid-edit. It commits to the numeric value
+  // as it parses; +/- and external changes write straight through.
+  const [text, setText] = useState(() => format(value));
+  const editing = useRef(false);
+
+  // Reflect external value changes (e.g. weight following reps) unless mid-edit.
+  useEffect(() => {
+    if (!editing.current) setText(format(value));
+  }, [value]);
 
   function clamp(v: number) {
     let n = Number.isFinite(v) ? v : (min ?? 0);
@@ -43,9 +55,41 @@ export function Stepper({
   }
 
   const bump = (dir: 1 | -1) => {
-    onChange(clamp(valueRef.current + dir * step));
+    const next = clamp(valueRef.current + dir * step);
+    editing.current = false; // a +/- press may remount the input before blur fires
+    onChange(next);
+    setText(format(next));
     setTick((t) => t + 1); // remounts the input so the tick animation replays
   };
+
+  // Allow digits, an optional leading "-" where negatives are valid, and a single
+  // decimal place for decimal fields; reject anything else as it's typed.
+  const allowNeg = (min ?? 0) < 0;
+  const valid = new RegExp(
+    `^${allowNeg ? "-?" : ""}\\d*${inputMode === "decimal" ? "(\\.\\d?)?" : ""}$`,
+  );
+
+  function handleType(raw: string) {
+    if (raw !== "" && !valid.test(raw)) return;
+    setText(raw);
+    const n = Number(raw);
+    if (raw !== "" && raw !== "-" && raw !== "." && raw !== "-." && Number.isFinite(n)) {
+      onChange(clamp(n));
+    }
+  }
+
+  // On blur, normalize: clamp a usable number, or restore the last value if blank.
+  function commit() {
+    editing.current = false;
+    const n = Number(text);
+    if (text.trim() === "" || !Number.isFinite(n)) {
+      setText(format(value));
+      return;
+    }
+    const c = clamp(n);
+    setText(format(c));
+    if (c !== value) onChange(c);
+  }
 
   const btn =
     "flex h-11 min-w-11 shrink-0 select-none items-center justify-center rounded-control border border-border-strong text-xl text-muted transition-transform duration-150 ease-out active:scale-95 active:bg-surface";
@@ -53,11 +97,15 @@ export function Stepper({
   const input = (
     <input
       key={tick}
-      type="number"
+      type="text"
       inputMode={inputMode}
-      value={value}
-      onChange={(e) => onChange(clamp(Number(e.target.value)))}
-      onFocus={(e) => e.currentTarget.select()}
+      value={text}
+      onChange={(e) => handleType(e.target.value)}
+      onFocus={(e) => {
+        editing.current = true;
+        e.currentTarget.select();
+      }}
+      onBlur={commit}
       aria-label={label}
       className={cx(
         "h-11 min-w-0 animate-tick bg-transparent text-center font-semibold tabular-nums",

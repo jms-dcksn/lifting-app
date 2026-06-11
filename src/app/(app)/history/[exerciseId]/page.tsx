@@ -68,7 +68,7 @@ export default async function HistoryPage({
       : null;
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-4 py-6">
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
       <header>
         <h1 className="text-display">{name}</h1>
         <p className="text-body text-muted">
@@ -83,10 +83,17 @@ export default async function HistoryPage({
         <>
           {delta != null && <OverloadBadge delta={delta} />}
 
-          {chartData.length >= 2 && (
+          {chartData.length >= 2 ? (
             <Card>
               <CardLabel className="mb-2">e1RM over time</CardLabel>
               <E1rmChart data={chartData} />
+            </Card>
+          ) : (
+            <Card>
+              <CardLabel className="mb-2">e1RM over time</CardLabel>
+              <p className="text-body text-muted">
+                One session so far — log another to see your trend line.
+              </p>
             </Card>
           )}
 
@@ -119,19 +126,16 @@ export default async function HistoryPage({
   );
 }
 
+// Same delta vocabulary as the finish summary: a colored signed number, then context.
 function OverloadBadge({ delta }: { delta: number }) {
   const rounded = Math.round(delta);
   const cls =
     rounded > 0 ? "text-overload-up" : rounded < 0 ? "text-overload-down" : "text-muted";
-  const text =
-    rounded > 0
-      ? `Beat last session by ${rounded} lb e1RM`
-      : rounded < 0
-        ? `Down ${Math.abs(rounded)} lb e1RM vs last session`
-        : "Matched last session's e1RM";
+  const signed = rounded > 0 ? `+${rounded}` : rounded < 0 ? `${rounded}` : "±0";
   return (
-    <p className={`text-body font-medium ${cls}`}>
-      {text}
+    <p className="flex items-baseline gap-2 text-body">
+      <span className={`font-semibold tabular-nums ${cls}`}>{signed} lb</span>
+      <span className="text-muted">e1RM vs last session</span>
     </p>
   );
 }

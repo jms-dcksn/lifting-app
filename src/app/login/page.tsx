@@ -38,10 +38,27 @@ export default function LoginPage() {
         </p>
 
         {status === "sent" ? (
-          <p className="mt-8 rounded-control bg-surface p-4 text-body">
-            Check <span className="font-medium">{email}</span> for a sign-in
-            link.
-          </p>
+          <div className="mt-8 rounded-card border border-border-strong p-5 text-center">
+            <div
+              aria-hidden
+              className="mx-auto flex size-10 items-center justify-center rounded-full bg-foreground text-lg text-background"
+            >
+              ✓
+            </div>
+            <p className="mt-3 text-heading">Check your email</p>
+            <p className="mt-1 text-body text-muted">
+              We sent a sign-in link to{" "}
+              <span className="font-medium text-foreground">{email}</span>. Open it on this
+              device to continue.
+            </p>
+            <button
+              type="button"
+              onClick={() => setStatus("idle")}
+              className="mt-4 text-body text-muted underline underline-offset-2 hover:text-foreground"
+            >
+              Use a different email
+            </button>
+          </div>
         ) : (
           <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-3">
             <Input

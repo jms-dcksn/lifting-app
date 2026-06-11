@@ -1,15 +1,29 @@
 import { cx } from "./cx";
 
-// The single shared surface: one radius, one border, one padding.
+// The single shared surface: one radius, one border, one padding. `tone` carries
+// hierarchy without color — `active` reads as current, `done` recedes.
+export type CardTone = "default" | "active" | "done";
+
+const tones: Record<CardTone, string> = {
+  default: "border-border",
+  active: "border-border-strong",
+  done: "border-border opacity-60",
+};
+
 export function Card({
   className,
+  tone = "default",
   children,
-}: {
-  className?: string;
+  ...props
+}: React.HTMLAttributes<HTMLElement> & {
+  tone?: CardTone;
   children: React.ReactNode;
 }) {
   return (
-    <section className={cx("rounded-card border border-border p-4", className)}>
+    <section
+      {...props}
+      className={cx("rounded-card border p-4 transition-opacity", tones[tone], className)}
+    >
       {children}
     </section>
   );

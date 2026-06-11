@@ -8,10 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Stepper } from "@/components/ui/stepper";
+import { withViewTransition } from "@/components/ui/view-transition";
 import { saveProgram, type SaveDayInput, type SaveSlotInput } from "./actions";
 import { ExercisePicker } from "./exercise-picker";
 
 const uid = () => crypto.randomUUID();
+
+const MAX_DAYS = 6;
 
 function blankProgram(): Program {
   return { id: uid(), name: "", weeks: 5, isActive: true, days: [] };
@@ -49,12 +52,14 @@ export function ProgramBuilder({
   }
 
   function moveDay(index: number, dir: -1 | 1) {
-    update((d) => {
-      const j = index + dir;
-      if (j < 0 || j >= d.days.length) return d;
-      [d.days[index], d.days[j]] = [d.days[j], d.days[index]];
-      return d;
-    });
+    withViewTransition(() =>
+      update((d) => {
+        const j = index + dir;
+        if (j < 0 || j >= d.days.length) return d;
+        [d.days[index], d.days[j]] = [d.days[j], d.days[index]];
+        return d;
+      }),
+    );
   }
 
   function renameDay(dayId: string, name: string) {
@@ -100,14 +105,16 @@ export function ProgramBuilder({
   }
 
   function moveSlot(dayId: string, index: number, dir: -1 | 1) {
-    update((d) => {
-      const day = d.days.find((x) => x.id === dayId);
-      if (!day) return d;
-      const j = index + dir;
-      if (j < 0 || j >= day.slots.length) return d;
-      [day.slots[index], day.slots[j]] = [day.slots[j], day.slots[index]];
-      return d;
-    });
+    withViewTransition(() =>
+      update((d) => {
+        const day = d.days.find((x) => x.id === dayId);
+        if (!day) return d;
+        const j = index + dir;
+        if (j < 0 || j >= day.slots.length) return d;
+        [day.slots[index], day.slots[j]] = [day.slots[j], day.slots[index]];
+        return d;
+      }),
+    );
   }
 
   function handleSave() {
@@ -144,8 +151,8 @@ export function ProgramBuilder({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-4 py-5 pb-28">
-      <div className="flex flex-col gap-3">
+    <div className="flex flex-1 flex-col gap-5 px-4 py-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
+      <div className="flex w-full max-w-page flex-col gap-3">
         <Input
           value={draft.name}
           onChange={(e) => update((d) => ({ ...d, name: e.target.value }))}
@@ -170,82 +177,101 @@ export function ProgramBuilder({
         </div>
       </div>
 
-      {draft.days.map((day, di) => (
-        <Card key={day.id}>
-          <div className="flex items-center gap-1">
-            <Input
-              value={day.name}
-              onChange={(e) => renameDay(day.id, e.target.value)}
-              aria-label="Day name"
-              enterKeyHint="done"
-              autoComplete="off"
-              className="h-11 flex-1 px-2 font-medium"
-            />
-            <ReorderButtons
-              what={day.name}
-              onUp={() => moveDay(di, -1)}
-              onDown={() => moveDay(di, 1)}
-            />
-            <RemoveButton what={day.name} onClick={() => removeDay(day.id)} />
-          </div>
+      {/* Days: vertical stack on phones, horizontal scroller when width allows. */}
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-4 sm:overflow-x-auto sm:pb-3">
+        {draft.days.map((day, di) => (
+          <Card
+            key={day.id}
+            className="sm:w-80 sm:shrink-0"
+            style={{ viewTransitionName: `vt-${day.id}` }}
+          >
+            <div className="flex items-center gap-1">
+              <Input
+                value={day.name}
+                onChange={(e) => renameDay(day.id, e.target.value)}
+                aria-label="Day name"
+                enterKeyHint="done"
+                autoComplete="off"
+                className="h-11 flex-1 px-2 font-medium"
+              />
+              <ReorderButtons
+                what={day.name}
+                onUp={() => moveDay(di, -1)}
+                onDown={() => moveDay(di, 1)}
+              />
+              <RemoveButton what={day.name} onClick={() => removeDay(day.id)} />
+            </div>
 
-          <ul className="mt-3 flex flex-col gap-2">
-            {day.slots.map((slot, si) => (
-              <li key={slot.id} className="rounded-control bg-surface p-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-body font-medium">{exerciseName(slot.exerciseId)}</span>
-                  <span className="flex items-center gap-1">
-                    <ReorderButtons
-                      what={exerciseName(slot.exerciseId)}
-                      onUp={() => moveSlot(day.id, si, -1)}
-                      onDown={() => moveSlot(day.id, si, 1)}
-                    />
-                    <RemoveButton
-                      what={exerciseName(slot.exerciseId)}
-                      onClick={() => removeSlot(day.id, slot.id)}
-                    />
-                  </span>
-                </div>
-                <div className="mt-2 grid grid-cols-4 gap-2">
-                  <NumField label="Sets" value={slot.targetSets} min={1} max={10}
-                    onChange={(v) => updateSlot(day.id, slot.id, { targetSets: v })} />
-                  <NumField label="Rep min" value={slot.repMin} min={1} max={30}
-                    onChange={(v) => updateSlot(day.id, slot.id, { repMin: v })} />
-                  <NumField label="Rep max" value={slot.repMax} min={1} max={30}
-                    onChange={(v) => updateSlot(day.id, slot.id, { repMax: v })} />
-                  <NumField label="RIR" value={slot.targetRir} min={0} max={5}
-                    onChange={(v) => updateSlot(day.id, slot.id, { targetRir: v })} />
-                </div>
-              </li>
-            ))}
-          </ul>
+            <ul className="mt-3 flex flex-col gap-2">
+              {day.slots.map((slot, si) => (
+                <li
+                  key={slot.id}
+                  style={{ viewTransitionName: `vt-${slot.id}` }}
+                  className="rounded-control bg-surface p-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-body font-medium">{exerciseName(slot.exerciseId)}</span>
+                    <span className="flex items-center gap-1">
+                      <ReorderButtons
+                        what={exerciseName(slot.exerciseId)}
+                        onUp={() => moveSlot(day.id, si, -1)}
+                        onDown={() => moveSlot(day.id, si, 1)}
+                      />
+                      <RemoveButton
+                        what={exerciseName(slot.exerciseId)}
+                        onClick={() => removeSlot(day.id, slot.id)}
+                      />
+                    </span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-4 gap-2">
+                    <NumField label="Sets" value={slot.targetSets} min={1} max={10}
+                      onChange={(v) => updateSlot(day.id, slot.id, { targetSets: v })} />
+                    <NumField label="Rep min" value={slot.repMin} min={1} max={30}
+                      onChange={(v) => updateSlot(day.id, slot.id, { repMin: v })} />
+                    <NumField label="Rep max" value={slot.repMax} min={1} max={30}
+                      onChange={(v) => updateSlot(day.id, slot.id, { repMax: v })} />
+                    <NumField label="RIR" value={slot.targetRir} min={0} max={5}
+                      onChange={(v) => updateSlot(day.id, slot.id, { targetRir: v })} />
+                  </div>
+                </li>
+              ))}
+            </ul>
 
+            <button
+              type="button"
+              onClick={() => setPickerDayId(day.id)}
+              className="mt-3 h-11 w-full rounded-control border border-dashed border-border-strong text-body font-medium text-foreground active:bg-surface"
+            >
+              + Add exercise
+            </button>
+          </Card>
+        ))}
+
+        {draft.days.length < MAX_DAYS && (
           <button
             type="button"
-            onClick={() => setPickerDayId(day.id)}
-            className="mt-3 h-11 w-full rounded-control border border-dashed border-border-strong text-body text-muted active:bg-surface"
+            onClick={addDay}
+            className="h-11 w-full rounded-control border border-dashed border-border-strong text-body font-medium text-foreground active:bg-surface sm:h-auto sm:min-h-32 sm:w-64 sm:shrink-0 sm:self-stretch sm:rounded-card"
           >
-            + Add exercise
+            + Add day
           </button>
-        </Card>
-      ))}
-
-      <Button type="button" variant="secondary" size="md" onClick={addDay}>
-        + Add day
-      </Button>
+        )}
+      </div>
 
       {error && <p className="text-body text-danger">{error}</p>}
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 p-3 backdrop-blur">
-        <Button
-          type="button"
-          size="lg"
-          className="w-full"
-          onClick={handleSave}
-          pending={saving}
-        >
-          Save &amp; make active
-        </Button>
+      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
+        <div className="mx-auto w-full max-w-page">
+          <Button
+            type="button"
+            size="lg"
+            className="w-full"
+            onClick={handleSave}
+            pending={saving}
+          >
+            Save &amp; make active
+          </Button>
+        </div>
       </div>
 
       {pickerDayId && (
@@ -326,7 +352,7 @@ function NumField({
           onChange(Math.min(max, Math.max(min, Number.isFinite(n) ? n : min)));
         }}
         onFocus={(e) => e.currentTarget.select()}
-        className="h-10 w-full min-w-0 rounded-control border border-border-strong bg-transparent text-center text-sm font-semibold tabular-nums"
+        className="h-11 w-full min-w-0 rounded-control border border-border-strong bg-transparent text-center text-sm font-semibold tabular-nums"
       />
     </label>
   );

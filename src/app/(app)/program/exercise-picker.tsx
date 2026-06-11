@@ -53,6 +53,11 @@ function PickerBody({
     }).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
   }, [query, recentIds, activeFilter]);
 
+  // Group recents under their own header when browsing (no query); a search flattens.
+  const grouped = query.trim() === "" && recentIds.length > 0;
+  const recent = grouped ? results.filter((e) => recentIds.includes(e.id)) : [];
+  const rest = grouped ? results.filter((e) => !recentIds.includes(e.id)) : results;
+
   return (
     <>
       <div className="flex items-center gap-1 border-b border-border px-3 pb-3">
@@ -65,54 +70,97 @@ function PickerBody({
           autoComplete="off"
           className="h-11 flex-1"
         />
-        <button
-          type="button"
-          onClick={dismiss}
-          className="px-3 py-2 text-body text-muted"
-        >
+        <button type="button" onClick={dismiss} className="px-3 py-2 text-body text-muted">
           Cancel
         </button>
       </div>
       {patternFilter && (
-        <div className="border-b border-border px-4 py-1">
-          <button
-            type="button"
-            onClick={() => setShowAll((v) => !v)}
-            className="py-2 text-caption text-muted underline-offset-2 hover:underline"
-          >
-            {showAll
-              ? `Only ${patternFilter.replace(/_/g, " ")}`
-              : "Show all patterns"}
-          </button>
+        <div className="flex gap-2 border-b border-border px-4 py-2">
+          <Chip selected={!showAll} onClick={() => setShowAll(false)}>
+            {patternFilter.replace(/_/g, " ")}
+          </Chip>
+          <Chip selected={showAll} onClick={() => setShowAll(true)}>
+            All patterns
+          </Chip>
         </div>
       )}
       <ul className="flex-1 overflow-y-auto overscroll-contain">
-        {results.map((e) => (
-          <li key={e.id}>
-            <button
-              type="button"
-              onClick={() => {
-                onPick(e);
-                dismiss();
-              }}
-              className="flex min-h-11 w-full items-center justify-between border-b border-border px-4 py-3 text-left active:bg-surface"
-            >
-              <span>
-                <span className="block text-body font-medium">{e.name}</span>
-                <span className="block text-caption text-muted">
-                  {e.pattern.replace(/_/g, " ")} · {e.equipment.replace(/_/g, " ")}
-                </span>
-              </span>
-              {recentIds.includes(e.id) && (
-                <span className="text-caption text-faint">recent</span>
-              )}
-            </button>
-          </li>
+        {recent.length > 0 && <SectionHeader>Recent</SectionHeader>}
+        {recent.map((e) => (
+          <ExerciseRow key={e.id} exercise={e} onPick={onPick} dismiss={dismiss} />
+        ))}
+        {recent.length > 0 && rest.length > 0 && <SectionHeader>All exercises</SectionHeader>}
+        {rest.map((e) => (
+          <ExerciseRow key={e.id} exercise={e} onPick={onPick} dismiss={dismiss} />
         ))}
         {results.length === 0 && (
           <li className="px-4 py-6 text-center text-body text-muted">No matches</li>
         )}
       </ul>
     </>
+  );
+}
+
+function Chip({
+  selected,
+  onClick,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={
+        "rounded-full border px-3 py-1 text-caption font-medium capitalize transition-colors " +
+        (selected
+          ? "border-foreground bg-foreground text-background"
+          : "border-border-strong text-muted active:bg-surface")
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="sticky top-0 bg-background px-4 pb-1 pt-3 text-caption font-semibold uppercase tracking-wide text-muted">
+      {children}
+    </li>
+  );
+}
+
+function ExerciseRow({
+  exercise: e,
+  onPick,
+  dismiss,
+}: {
+  exercise: ExerciseDef;
+  onPick: (exercise: ExerciseDef) => void;
+  dismiss: () => void;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={() => {
+          onPick(e);
+          dismiss();
+        }}
+        className="flex min-h-11 w-full items-center justify-between border-b border-border px-4 py-3 text-left active:bg-surface"
+      >
+        <span>
+          <span className="block text-body font-medium">{e.name}</span>
+          <span className="block text-caption capitalize text-muted">
+            {e.pattern.replace(/_/g, " ")} · {e.equipment.replace(/_/g, " ")}
+          </span>
+        </span>
+      </button>
+    </li>
   );
 }

@@ -36,7 +36,7 @@ export default async function ProgramPage({
   // First run, no programs: offer the template before showing a blank builder.
   if (!initial && programs.length === 0 && id !== "new") {
     return (
-      <div className="flex flex-1 flex-col gap-4 px-6 py-10">
+      <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-6 py-10">
         <div>
           <h1 className="text-display">Build your program</h1>
           <p className="text-body text-muted">Start from a template, or build one from scratch.</p>
@@ -54,7 +54,7 @@ export default async function ProgramPage({
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">
       <ProgramBuilder initial={id === "new" ? null : initial} recentIds={recent} />
       <ProgramList programs={programs} editingId={initial?.id ?? "new"} />
     </div>

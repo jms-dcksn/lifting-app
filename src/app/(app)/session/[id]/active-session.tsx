@@ -70,8 +70,12 @@ export function ActiveSession({
 
   if (summary) return <Summary dayName={dayName} summary={summary} />;
 
+  // Current slot = first one not yet at its target set count (server truth; re-derives
+  // after each logged set revalidates). Earlier slots recede, the current one reads active.
+  const currentIndex = slots.findIndex((s) => s.sets.length < s.prescription.targetSets);
+
   return (
-    <div className="flex flex-1 flex-col gap-4 px-4 py-5 pb-28">
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-4 py-5">
       <header>
         <h1 className="text-display">{dayName}</h1>
         <p className="text-body text-muted">
@@ -80,18 +84,19 @@ export function ActiveSession({
         </p>
       </header>
 
-      {slots.map((slot) => (
+      {slots.map((slot, i) => (
         <SlotCard
           key={slot.programSlotId}
           sessionId={sessionId}
           slot={slot}
+          isCurrent={i === currentIndex}
           stats={stats}
           bodyweight={bodyweight}
           recentIds={recentIds}
         />
       ))}
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 p-3 backdrop-blur">
+      <div className="sticky bottom-0 -mx-4 mt-2 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
         <Button
           type="button"
           size="lg"
@@ -113,12 +118,14 @@ type OptimisticAction =
 function SlotCard({
   sessionId,
   slot,
+  isCurrent,
   stats,
   bodyweight,
   recentIds,
 }: {
   sessionId: string;
   slot: SlotView;
+  isCurrent: boolean;
   stats: ExerciseStat[];
   bodyweight: number | null;
   recentIds: string[];
@@ -132,6 +139,9 @@ function SlotCard({
   );
   const [isPending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
+  // Rows fading out before their delete commits, and the last failed-write message.
+  const [exitingIds, setExitingIds] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
   // Swap (machine taken, etc.): sets log against the swapped exercise_id but keep the
   // original program_slot_id, so each exercise's progression chain stays intact.
   const [exerciseId, setExerciseId] = useState(slot.exerciseId);
@@ -172,28 +182,50 @@ function SlotCard({
   const initialWeight = target?.weight ?? (isMachine ? 0 : isBodyweight ? 0 : 45);
   const initialReps = target?.targetReps ?? p.repMin;
 
+  const done = optimisticSets.length;
+  const complete = done >= p.targetSets;
+  const tone = complete ? "done" : isCurrent ? "active" : "default";
+
   function handleLog(weight: number, reps: number, rir: number) {
+    setError(null);
     startTransition(async () => {
       applyOptimistic({
         type: "add",
         set: { id: `temp-${Date.now()}`, weight, reps, rir, setIndex: optimisticSets.length },
       });
-      await logSet({
-        sessionId,
-        programSlotId: slot.programSlotId,
-        exerciseId,
-        weight,
-        reps,
-        rir,
-      });
+      try {
+        await logSet({
+          sessionId,
+          programSlotId: slot.programSlotId,
+          exerciseId,
+          weight,
+          reps,
+          rir,
+        });
+      } catch {
+        // optimistic row reverts when the transition settles — surface why so it
+        // doesn't just vanish.
+        setError("Couldn’t save that set. Check your connection and try again.");
+      }
     });
   }
 
+  // Play the row's exit animation, then commit the delete.
   function handleDelete(id: string) {
-    startTransition(async () => {
-      applyOptimistic({ type: "delete", id });
-      await deleteSet(id);
-    });
+    if (id.startsWith("temp-")) return;
+    setError(null);
+    setExitingIds((ids) => [...ids, id]);
+    setTimeout(() => {
+      startTransition(async () => {
+        applyOptimistic({ type: "delete", id });
+        try {
+          await deleteSet(id);
+        } catch {
+          setError("Couldn’t delete that set. Try again.");
+        }
+      });
+      setExitingIds((ids) => ids.filter((x) => x !== id));
+    }, 160);
   }
 
   function handleEdit(id: string, weight: number, reps: number, rir: number) {
@@ -204,27 +236,33 @@ function SlotCard({
   }
 
   return (
-    <Card>
-      <div className="flex items-baseline justify-between">
+    <Card tone={tone}>
+      <div className="flex items-start justify-between gap-3">
         <h2 className="text-heading">
           <Link href={`/history/${exerciseId}`} className="underline-offset-2 hover:underline">
             {name}
           </Link>
-          <button
-            type="button"
-            onClick={() => setSwapping(true)}
-            aria-label={`Swap ${name} for another exercise`}
-            className="-my-2 ml-1 px-2 py-2 text-caption font-normal text-muted underline-offset-2 hover:underline"
-          >
-            swap
-          </button>
         </h2>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() => setSwapping(true)}
+          aria-label={`Swap ${name} for another exercise`}
+          className="shrink-0"
+        >
+          Swap
+        </Button>
+      </div>
+
+      <div className="mt-1 flex items-center justify-between gap-3">
         <span className="text-caption text-muted">
           {p.targetSets} × {p.repMin}–{p.repMax} @ {p.targetRir} RIR
         </span>
+        <ProgressDots done={done} target={p.targetSets} />
       </div>
 
-      <TargetLine target={target} isBodyweight={isBodyweight} />
+      <TargetLine target={target} isBodyweight={isBodyweight} done={done} />
 
       {swapping && (
         <ExercisePicker
@@ -253,7 +291,8 @@ function SlotCard({
             ) : (
               <li
                 key={s.id}
-                className="flex items-center justify-between rounded-control bg-surface px-3 py-1 text-body"
+                data-exiting={exitingIds.includes(s.id) || undefined}
+                className="flex animate-row-in items-center justify-between rounded-control bg-surface px-3 py-1 text-body"
               >
                 <span className="tabular-nums">
                   <span className="text-faint">{i + 1}.</span>{" "}
@@ -284,6 +323,8 @@ function SlotCard({
         </ul>
       )}
 
+      {error && <p className="mt-2 text-caption text-danger">{error}</p>}
+
       {editingId === null && (
         <div className="mt-3">
           <SetEntry
@@ -302,58 +343,76 @@ function SlotCard({
   );
 }
 
-function TargetLine({
-  target,
-  isBodyweight,
-}: {
-  target: SessionTarget | null;
-  isBodyweight: boolean;
-}) {
-  if (!target) {
-    return (
-      <p className="mt-1 text-body text-muted">No history yet — log a set to set your baseline.</p>
-    );
-  }
-  const unit = isBodyweight ? "added" : "lb";
-  if (target.source === "recommendation") {
-    const badge = confidenceBadge(target.confidence);
-    return (
-      <p className="mt-1 text-body">
-        <span className="text-muted">Start: </span>
-        <span className="font-medium tabular-nums">
-          {target.weight} {unit} × {target.targetReps}
-        </span>
-        {badge && <span className={`ml-2 ${badge.className}`}>{badge.label}</span>}
-      </p>
-    );
-  }
+// Sets-done vs target at a glance — filled dots, hierarchy not color.
+function ProgressDots({ done, target }: { done: number; target: number }) {
   return (
-    <p className="mt-1 text-body">
-      <span className="text-muted">Target: </span>
-      <span className="font-medium tabular-nums">
-        {target.weight} {unit} × {target.targetReps}
-      </span>
-      {target.last && (
-        <span className="tabular-nums text-muted">
-          {" "}
-          · last: {target.last.weight} × {target.last.reps}
-        </span>
+    <span
+      className="flex items-center gap-1"
+      aria-label={`${done} of ${target} sets logged`}
+    >
+      {Array.from({ length: target }).map((_, i) => (
+        <span
+          key={i}
+          className={`h-1.5 w-1.5 rounded-full ${i < done ? "bg-foreground" : "bg-border-strong"}`}
+        />
+      ))}
+      {done > target && (
+        <span className="ml-0.5 text-caption tabular-nums text-muted">+{done - target}</span>
       )}
-    </p>
+    </span>
   );
 }
 
-// high/medium are trustworthy enough to show plainly; low is a prior-driven starting
-// estimate; calibrate is deliberately conservative — feel the machine out.
-function confidenceBadge(c: SessionTarget["confidence"]) {
-  switch (c) {
-    case "calibrate":
-      return { label: "feel it out", className: "text-calibrate" };
-    case "low":
-      return { label: "starting estimate", className: "text-muted" };
-    default:
-      return null;
+function TargetLine({
+  target,
+  isBodyweight,
+  done,
+}: {
+  target: SessionTarget | null;
+  isBodyweight: boolean;
+  done: number;
+}) {
+  if (!target) {
+    return (
+      <p className="mt-2 text-body text-muted">No history yet — log a set to set your baseline.</p>
+    );
   }
+  const unit = isBodyweight ? "added" : "lb";
+  const isRecommendation = target.source === "recommendation";
+
+  // A recommendation is a *first-set* suggestion; once sets are logged this session it's
+  // stale, so drop it (the next-set weight already carries forward in the stepper).
+  if (isRecommendation && done > 0) return null;
+
+  const value = (
+    <span className="text-heading tabular-nums">
+      {target.weight} {unit} <span className="font-normal text-muted">× {target.targetReps}</span>
+    </span>
+  );
+
+  return (
+    <div className="mt-2">
+      <div className="flex items-baseline gap-2">
+        <span className="text-caption uppercase tracking-wide text-muted">
+          {isRecommendation ? "Start" : "Target"}
+        </span>
+        {value}
+        {target.source === "progression" && target.last && (
+          <span className="text-caption tabular-nums text-muted">
+            last {target.last.weight} × {target.last.reps}
+          </span>
+        )}
+      </div>
+      {isRecommendation && target.confidence === "calibrate" && (
+        <p className="mt-1 text-caption text-calibrate">
+          New machine — feel out the first set, then it calibrates to you.
+        </p>
+      )}
+      {isRecommendation && target.confidence === "low" && (
+        <p className="mt-1 text-caption text-muted">Starting estimate from your similar lifts.</p>
+      )}
+    </div>
+  );
 }
 
 function SetEntry({
@@ -446,19 +505,26 @@ function SetEntry({
 }
 
 function Summary({ dayName, summary }: { dayName: string; summary: SessionSummary }) {
+  // Staggered rise so the payoff screen lands as a moment, not a flash.
+  let step = 0;
+  const delay = () => ({ animationDelay: `${step++ * 70}ms` });
   return (
-    <div className="flex flex-1 flex-col gap-5 px-4 py-8">
-      <header>
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-8">
+      <header className="animate-rise" style={delay()}>
         <h1 className="text-display">{dayName} done</h1>
         <p className="text-body text-muted">{summary.totalSets} working sets logged</p>
       </header>
 
       {summary.topE1rm.length > 0 && (
-        <Card>
+        <Card className="animate-rise" style={delay()}>
           <CardLabel className="mb-2">Top e1RM</CardLabel>
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-2">
             {summary.topE1rm.map((t) => (
-              <li key={t.exerciseId} className="flex items-baseline justify-between text-body">
+              <li
+                key={t.exerciseId}
+                className="flex animate-rise items-baseline justify-between text-body"
+                style={delay()}
+              >
                 <Link href={`/history/${t.exerciseId}`} className="underline-offset-2 hover:underline">
                   {t.name}
                 </Link>
@@ -472,7 +538,7 @@ function Summary({ dayName, summary }: { dayName: string; summary: SessionSummar
         </Card>
       )}
 
-      <Link href="/" className={buttonClasses("primary", "lg", "w-full")}>
+      <Link href="/" className={buttonClasses("primary", "lg", "w-full animate-rise")} style={delay()}>
         Done
       </Link>
     </div>

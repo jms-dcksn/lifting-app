@@ -72,7 +72,7 @@ export function Sheet({
         if (e.target === ref.current) dismiss(); // scrim tap
       }}
       className={cx(
-        "sheet fixed inset-x-0 top-auto bottom-0 m-0 max-h-[90dvh] w-full max-w-none rounded-t-card border-t border-border bg-background p-0 text-foreground",
+        "sheet fixed inset-x-0 top-auto bottom-0 mx-auto my-0 max-h-[90dvh] w-full max-w-page rounded-t-card border-t border-border bg-background p-0 text-foreground sm:border-x",
         className,
       )}
     >

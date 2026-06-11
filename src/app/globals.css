@@ -75,6 +75,9 @@
   --radius-card: 1rem;
   --radius-control: 0.75rem;
 
+  /* single content column: full width on phones, capped on desktop */
+  --container-page: 32rem;
+
   /* motion */
   --ease-snap: cubic-bezier(0.2, 0, 0, 1);
 
@@ -83,6 +86,32 @@
     from {
       transform: translateY(-0.2em);
       opacity: 0.3;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+
+  /* logged-set row enters on optimistic insert */
+  --animate-row-in: row-in 180ms var(--ease-snap);
+  @keyframes row-in {
+    from {
+      transform: translateY(-4px);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+
+  /* staggered entry for the finish summary (payoff moment) */
+  --animate-rise: rise 320ms var(--ease-snap) both;
+  @keyframes rise {
+    from {
+      transform: translateY(8px);
+      opacity: 0;
     }
     to {
       transform: none;
@@ -147,6 +176,34 @@ dialog.sheet[data-closing]::backdrop {
 /* pin the page while a modal sheet is up */
 body:has(dialog.sheet[open]) {
   overflow: hidden;
+}
+
+/* logged-set row exits on delete (parent commits the removal after this plays) */
+[data-exiting] {
+  animation: row-out 160ms var(--ease-snap) forwards;
+  pointer-events: none;
+}
+@keyframes row-out {
+  to {
+    transform: translateX(8px);
+    opacity: 0;
+  }
+}
+
+/* loading skeletons */
+@keyframes skeleton {
+  50% {
+    opacity: 0.45;
+  }
+}
+.skeleton {
+  animation: skeleton 1.4s var(--ease-snap) infinite;
+  background: var(--surface);
+}
+
+/* route-change reorder via View Transitions stays snappy and local */
+::view-transition-group(*) {
+  animation-duration: 200ms;
 }
 
 @media (prefers-reduced-motion: reduce) {

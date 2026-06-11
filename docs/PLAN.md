@@ -227,41 +227,39 @@ with a near-monochrome black/white palette — restraint is the aesthetic.
 Burn down the P6 audit list using the P6 system. Order follows time-in-screen: the active
 session is where the app lives or dies.
 
-- [ ] **Active session (the keystone, most of the budget):**
-  - [ ] Slot cards show workout progress at a glance: sets-done vs target per slot
-        (e.g. filled dots), completed slots visually recede, the current slot reads as
-        *current* — hierarchy, not color
-  - [ ] Logged-set rows animate in on optimistic insert and out on delete; failed
-        optimistic writes revert visibly instead of silently vanishing
-  - [ ] Promote **swap** from a 12 px text link to a real affordance on the card —
-        it's the app's differentiator and is currently invisible
-  - [ ] Target line: clearer layout for weight × reps; confidence states get distinct
-        treatment ("feel it out" should read as an instruction, not a footnote)
-  - [ ] Sticky finish bar: respect `env(safe-area-inset-bottom)` (iOS PWA home-bar
-        overlap), replace the `pb-28` magic number with content-aware spacing
-  - [ ] Finish → summary transitions as a moment (it's the payoff screen): staggered
-        entry for top-e1RM rows, overload deltas land with a beat
-- [ ] **Home:** Start/Resume CTA gets the most visual weight on the screen; block
-      status reads as progress (week x of y) at a glance; last-session card uses the
-      shared Card
-- [ ] **Program builder:** day/slot reorder feels physical (move animation, not an
-      instant jump); add-slot/add-day affordances obvious; slot rows compact but
-      ≥ 44 px; exercise picker entry consistent with swap
-- [ ] **Exercise picker:** search field follows the P6 input style; pattern-filter
-      toggle becomes a visible chip (current state is a text underline); recent
-      exercises visually grouped, not just sorted
-- [ ] **History:** chart styled to the monochrome system (axis/grid/dot weights);
-      overload badge consistent with the summary's delta treatment; empty state for
-      exercises with one session
-- [ ] **Login:** first impression — center the form, real input + button styles,
-      magic-link sent state that doesn't look like an error
-- [ ] **Navigation feel:** `loading.tsx` skeletons for home/session/history so server
-      navigations never show a dead white screen; header nav links get active states;
-      consider View Transitions for route changes only if free — don't force it
-- [ ] **Final pass:** re-walk the P6 audit checklist on device; everything either fixed
-      or consciously deferred with a note
-- Verify: build/lint/typecheck clean; full workout logged on a phone end-to-end; deltas
-  reviewed at both color schemes (light + dark)
+- [x] **Active session (the keystone, most of the budget):**
+  - [x] Slot cards show workout progress at a glance: sets-done vs target per slot
+        (filled `ProgressDots`), completed slots recede and the current slot reads as
+        *current* via `Card` `tone` (active/done) — hierarchy, not color
+  - [x] Logged-set rows animate in (`animate-row-in`) and out on delete (`data-exiting`
+        → `row-out`, commit after); failed optimistic writes now surface a per-card error
+        instead of silently vanishing
+  - [x] Promoted **swap** from a caption text link to a real `secondary` `Button` on the card
+  - [x] Target line rebuilt: weight × reps in heading weight; calibrate/low read as their
+        own instruction lines; stale "Start:" suppressed once sets are logged this session
+  - [x] Sticky finish bar: `sticky bottom-0` + `env(safe-area-inset-bottom)` padding,
+        replacing the `pb-28` magic number
+  - [x] Finish → summary lands as a moment: staggered `animate-rise` entry on header,
+        card, each top-e1RM row, and the Done button
+- [x] **Home:** Start/Resume CTA keeps the most visual weight; block status now a
+      `BlockProgress` bar + "x of y sessions"; last-session card already on shared Card
+- [x] **Program builder:** day/slot reorder animates physically via the View Transitions
+      API (`withViewTransition` + `viewTransitionName`); add-slot/add-day affordances
+      promoted to foreground weight; NumField/controls bumped toward 44 px; save bar safe-area
+- [x] **Exercise picker:** pattern filter is now visible `Chip`s (pattern vs all); recents
+      grouped under their own sticky section header, with "All exercises" below
+- [x] **History:** chart restyled to the monochrome system (faint grid, muted axes, smaller
+      dots, token-colored tooltip); overload badge matches the summary's signed-delta
+      treatment; one-session empty state added
+- [x] **Login:** sent state rebuilt as an affirmative card (check mark, "Check your email",
+      "use a different email" reset) so it no longer scans as an error
+- [x] **Navigation feel:** `loading.tsx` skeletons for the (app) group, session, and history;
+      header nav links get active states (`NavLinks`, `usePathname`); reorder uses View
+      Transitions where free
+- [ ] **Final pass:** re-walk the P6 audit checklist on device — folded into the post-P7
+      on-phone walk with James's real account + first Vercel deploy (audit `[device]` items)
+- [x] Verify: build/lint/typecheck clean. *(Full on-phone workout + dual-scheme review are
+      the deferred `[device]` pass above.)*
 
 ### Explicitly NOT in P6/P7 (resist)
 - No component library (shadcn/Radix) — the app has one overlay and five controls;

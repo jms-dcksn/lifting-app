@@ -17,7 +17,7 @@ export default async function Home() {
 
   if (!program || program.days.length === 0) {
     return (
-      <div className="flex flex-1 flex-col gap-4 px-6 py-10">
+      <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-6 py-10">
         <div>
           <h1 className="text-display">No active program</h1>
           <p className="text-body text-muted">Build one to start training.</p>
@@ -64,13 +64,19 @@ export default async function Home() {
 
   const lastSummary = lastFinished ? await summarize(supabase, lastFinished) : null;
 
+  const totalSessions = program.days.length * program.weeks;
+
   return (
-    <div className="flex flex-1 flex-col gap-6 px-6 py-10">
-      <div>
-        <h1 className="text-display">{program.name}</h1>
-        <p className="text-body text-muted">
-          Week {week} of {program.weeks} · next: {nextDay.name}
-        </p>
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-6 px-6 py-10">
+      <div className="flex flex-col gap-3">
+        <div>
+          <h1 className="text-display">{program.name}</h1>
+          <p className="text-body text-muted">
+            Week {week} of {program.weeks} · next:{" "}
+            <span className="font-medium text-foreground">{nextDay.name}</span>
+          </p>
+        </div>
+        <BlockProgress completed={completed} total={totalSessions} />
       </div>
 
       {open ? (
@@ -106,6 +112,21 @@ export default async function Home() {
           )}
         </Card>
       )}
+    </div>
+  );
+}
+
+// Block completion at a glance: a thin bar plus a sessions-done count.
+function BlockProgress({ completed, total }: { completed: number; total: number }) {
+  const pct = total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-border">
+        <div className="h-full rounded-full bg-foreground transition-[width]" style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-caption tabular-nums text-muted">
+        {completed} of {total} sessions this block
+      </span>
     </div>
   );
 }

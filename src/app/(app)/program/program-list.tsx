@@ -23,7 +23,7 @@ export function ProgramList({ programs, editingId }: { programs: ProgramRow[]; e
   const action = "px-2 py-3 text-muted disabled:opacity-40";
 
   return (
-    <section className="px-4 pb-28">
+    <section className="w-full max-w-page px-4 pb-[calc(7rem+env(safe-area-inset-bottom))]">
       <CardLabel className="mb-2">Saved programs</CardLabel>
       <ul className="flex flex-col gap-2">
         {others.map((p) => (

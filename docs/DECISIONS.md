@@ -188,9 +188,49 @@ add-slot, session swap) were updated to this contract.
 existed only to prevent double-tap on Start/Resume; `Button`'s built-in pending state
 (via `useFormStatus` for the `<form action>` submit button) covers the same case for free.
 
+## Phase 7 decisions
+
+**Reorder animates via the View Transitions API, not a JS animation library.** Program
+builder day/slot reorder calls `withViewTransition(update)` (`src/components/ui/
+view-transition.ts`), which wraps the state update in `document.startViewTransition` +
+`flushSync`; day cards and slot rows carry a matching `viewTransitionName` (`vt-<id>`) so
+the browser tweens their old/new positions. Falls back to a plain update when unsupported
+or `prefers-reduced-motion` is set. Chosen over a library (e.g. Framer Motion) for the same
+reason as Phase 6's native-`<dialog>` call: one more dependency for a single reorder
+interaction isn't worth it when the platform API covers it.
+
+**Sticky + safe-area-inset over fixed + magic padding.** The session finish bar and program
+builder save bar were `fixed inset-x-0 bottom-0` paired with a `pb-28` spacer guess on the
+scroll container. The finish bar is now `sticky bottom-0` with
+`padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))`; remaining `fixed` bars
+(builder save) and bottom-padded scroll containers (program list) use the same
+`env(safe-area-inset-bottom)` calc instead of a fixed pixel guess, so content doesn't
+disappear behind the iOS PWA home-indicator bar.
+
+**Current-slot hierarchy is conveyed via `Card` `tone`, not color.** The active session
+derives `currentIndex` (first slot whose logged-set count is below its target, from
+server-truth set counts) and passes `isCurrent` to `SlotCard`. `Card` gained a `tone` prop
+(`default | active | done`): `active` = `border-border-strong`, `done` = `opacity-60`.
+Consistent with the near-monochrome design system — color stays reserved for the
+overload/calibrate/danger semantics from Phase 6.
+
+**Failed optimistic writes are now surfaced, not silently reverted.** `handleLog`/
+`handleDelete` in `active-session.tsx` catch errors from `logSet`/`deleteSet` and render a
+per-card message (`text-danger`). Previously a failed write just reverted on revalidation
+with no explanation, which looked like the tap did nothing.
+
+**One content-column token (`--container-page` → `max-w-page`, 32rem) applied across every
+screen.** Centralizes what had been ad hoc per-page flex containers; also used by `Sheet`
+(now `max-w-page` with `sm:border-x` instead of full-bleed) so overlays read as a column on
+wider viewports.
+
+**Program builder caps at `MAX_DAYS = 6`** and lays days out as a horizontal scroller at
+`sm:` and above (vertical stack on phones).
+
 ## Build order
 
 > Superseded by `SPEC.md`, which wins on conflicts. Current phase structure: P0 (backend, done),
 > P1 (auth + PWA), P2 (keystone: active-session screen), P3 (program builder), P4 (progression
 > view), P5 (recommendation + swap + calibration, done), P6 (UX foundation: design tokens +
-> core components, done). See `docs/PLAN.md` for the sequence and status.
+> core components, done), P7 (screen-by-screen UX polish + motion + mobile ergonomics, done).
+> See `docs/PLAN.md` for the sequence and status.

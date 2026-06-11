@@ -124,12 +124,26 @@ component with `ExerciseStat[]`, `recentExerciseIds`, and a per-slot
 `SlotCard` calls `sessionTarget()` client-side (`useMemo`) to derive each target, so a
 swap re-derives instantly with no round-trip. A slot's effective exercise id is the most
 recently logged exercise in that slot this session (falling back to the program slot's
-exercise), so an in-session swap survives a page reload. Swap opens `ExercisePicker`
+exercise), so an in-session swap survives a page reload. Swap is a `secondary` `Button` on
+the slot card (was a caption text link) that opens `ExercisePicker`
 (`program/exercise-picker.tsx`, a `Sheet`) filtered to the slot's pattern, with a "show all
-patterns" escape hatch; subsequent sets log against the swapped `exercise_id` + the
-original `program_slot_id`. Picking an exercise dismisses the sheet itself (animated);
-`onPick` only updates parent state and `onClose` only unmounts — both the builder's
-add-slot flow and swap follow this contract.
+patterns" escape hatch (now visible pattern `Chip`s, not a text toggle); subsequent sets
+log against the swapped `exercise_id` + the original `program_slot_id`. Picking an exercise
+dismisses the sheet itself (animated); `onPick` only updates parent state and `onClose`
+only unmounts — both the builder's add-slot flow and swap follow this contract.
+
+`SlotCard` tracks `isCurrent` (passed from the parent: the first slot whose logged set
+count is below its target, i.e. server-truth-derived) and renders `Card tone="done"` once
+its own sets reach target, `tone="active"` if it's the current slot, else `default` —
+completed slots recede, the current slot reads as current, via hierarchy not color.
+`ProgressDots` (filled vs target count) sits next to the rep/RIR prescription. Logged-set
+rows animate in (`animate-row-in`); delete sets `data-exiting` (plays `row-out`) before the
+optimistic removal commits ~160ms later. `handleLog`/`handleDelete` catch failed writes and
+set a per-card `error` string rendered below the set list — failed optimistic writes no
+longer revert silently. `TargetLine` shows weight × reps at heading weight with a "Start"/
+"Target" caption label; `calibrate` and `low` confidence render as their own instruction
+lines below (the old inline `confidenceBadge` helper is gone); the recommendation line is
+suppressed entirely once `done > 0` (it goes stale the moment the first set is logged).
 
 ### Exercise history (`src/app/(app)/history/[exerciseId]/`)
 
@@ -143,23 +157,31 @@ keyed on `exercise_id`, not `program_slot_id` — see `docs/DECISIONS.md` Phase 
 
 ### UI primitives and design tokens (`src/components/ui/`)
 
-All screens are built on a small shared component set, introduced in Phase 6. Don't
-hand-roll new buttons/cards/steppers/overlays — extend these.
+All screens are built on a small shared component set, introduced in Phase 6 and extended
+in Phase 7 with motion/loading primitives. Don't hand-roll new buttons/cards/steppers/
+overlays/skeletons — extend these.
 
 - **Tokens live in `src/app/globals.css`** (`@theme` / `@theme inline`): semantic colors
   (background/foreground/surface/border/border-strong/muted/faint/accent/accent-foreground,
   plus `overload-up`, `overload-down`, `calibrate`, `danger`), a type scale
   (`text-display/heading/body/caption`), one card radius (`--radius-card`) and one control
-  radius (`--radius-control`), and `--ease-snap`/`animate-tick`. The palette is
-  near-monochrome by design — color is semantic only (overload/calibrate/danger). Geist
-  fonts are wired via `--font-sans`/`--font-mono` (the old `body { font-family: Arial }`
-  override that silently disabled Geist is gone).
+  radius (`--radius-control`), a single content-column width (`--container-page` →
+  `max-w-page`, used on every screen's root wrapper), and motion tokens `--ease-snap`/
+  `animate-tick`/`animate-row-in`/`animate-rise` plus a plain-CSS `[data-exiting]` →
+  `row-out` exit animation and `.skeleton` pulse keyframes. The palette is near-monochrome
+  by design — color is semantic only (overload/calibrate/danger). Geist fonts are wired via
+  `--font-sans`/`--font-mono` (the old `body { font-family: Arial }` override that silently
+  disabled Geist is gone). The global `prefers-reduced-motion` kill-switch
+  (`animation-duration`/`transition-duration: 0.01ms`) covers all motion tokens, including
+  the Phase 7 additions and `::view-transition-group(*)`.
 - **`Sheet` (`sheet.tsx`) is the app's one overlay primitive** — a native `<dialog>` +
   `showModal()` bottom sheet (focus trap, scrim tap / Escape / swipe-down-on-handle to
   dismiss, animated exit via `data-closing` + `@starting-style` in `globals.css`; the JS
   exit delay (`EXIT_MS`) must match the CSS transition duration). `useSheetDismiss()` lets
   inner content (e.g. a Cancel button) trigger the same animated close. The parent only
-  unmounts via `onClose` after the animation finishes. `ExercisePicker` is built on this.
+  unmounts via `onClose` after the animation finishes. `ExercisePicker` is built on this,
+  and is itself capped at `max-w-page` (with `sm:border-x` so it reads as a column on wider
+  viewports rather than spanning edge-to-edge).
 - **`Button` (`button.tsx`)** — primary/secondary/destructive/ghost × sm/md/lg, with
   built-in pending state (spinner + `aria-busy`): pass `pending` explicitly, or rely on
   `useFormStatus` for submit buttons inside a `<form action>`. The variant/size class
@@ -175,10 +197,29 @@ hand-roll new buttons/cards/steppers/overlays — extend these.
   (no `ref.current` writes during render) shapes this component's structure — value reads
   happen via an effect-synced ref, and the hold/repeat logic lives entirely in event
   handlers, not render.
-- `input.tsx` (`Input`), `card.tsx` (`Card`, `CardLabel`), `cx.ts` (classname join) round
-  out the set. `src/app/(app)/start-button.tsx` was deleted — the home screen's
-  start/resume action is now a shared `Button` (its built-in pending state covers the
-  double-tap protection the old component existed for).
+- **`Card` (`card.tsx`)** gained a `tone` prop (`default | active | done`) that carries
+  hierarchy without color: `active` = `border-border-strong` (the current slot), `done` =
+  `opacity-60` (a completed slot). `Card` now spreads `...props`, so callers can pass
+  `style` (e.g. `viewTransitionName`) and other DOM attributes through.
+- **`Skeleton` (`skeleton.tsx`)** — neutral placeholder block (`.skeleton` pulse keyframes,
+  reduced-motion-safe). Used by the route-level `loading.tsx` fallbacks (`(app)/loading.tsx`,
+  `(app)/session/[id]/loading.tsx`, `(app)/history/[exerciseId]/loading.tsx`) so server
+  navigations never show a dead white screen.
+- **`withViewTransition` (`view-transition.ts`)** — runs a state update inside
+  `document.startViewTransition` (+ `flushSync`) so elements carrying a matching
+  `viewTransitionName` tween between their old and new positions; falls back to a plain
+  update when unsupported or `prefers-reduced-motion` is set. Used by the program builder's
+  day/slot reorder (`vt-<id>` view-transition names on day cards and slot rows).
+- `input.tsx` (`Input`), `cx.ts` (classname join) round out the set.
+  `src/app/(app)/start-button.tsx` was deleted — the home screen's start/resume action is
+  now a shared `Button` (its built-in pending state covers the double-tap protection the
+  old component existed for).
+
+### App shell (`src/app/(app)/layout.tsx`)
+
+Nav is extracted into a client component, `(app)/nav-links.tsx` (`NavLinks`), which uses
+`usePathname()` to mark the active top-level route (`aria-current="page"`, foreground vs
+muted text). `layout.tsx` itself stays a Server Component (auth gate via `getClaims()`).
 
 ### Supabase clients (`src/lib/supabase/`)
 

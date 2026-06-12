@@ -1,8 +1,8 @@
 # lifting-app
 
 Personal progressive-overload lifting tracker. Logs sets with RIR, tracks estimated 1RM,
-and recommends a working weight for any exercise — including when you swap movements
-(dumbbell → barbell → machine) — from your logged history.
+recommends a working weight for any exercise — including when you swap movements
+(dumbbell → barbell → machine) — and summarizes training progress across sessions.
 
 See [docs/DECISIONS.md](docs/DECISIONS.md) for architecture and the recommendation algorithm.
 
@@ -34,11 +34,13 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
   - `recommend.ts` — pattern-strength model + cross-exercise weight recommendation
   - `recompute.ts` — rebuild `user_exercise_stat` from `set_log` rows
   - `progression.ts` — double-progression session target (weight + reps) per slot
+- `src/lib/analytics.ts` — framework-free aggregation helpers for the Progress hub
 - `src/lib/program.ts` — server-side program loader; assembles nested program (days → slots) from DB
 - `src/components/ui/` — shared UI primitives (Button, Stepper, Card, Input, Sheet, Skeleton) and design tokens (`src/app/globals.css`)
 - `src/lib/supabase/` — browser client, server client, and `middleware.ts` (`updateSession` helper for `proxy.ts`)
 - `src/proxy.ts` — Next.js 16 session proxy (replaces `middleware.ts`); refreshes Supabase session on every request
 - `src/app/(app)/program/` — program builder (server page + client builder, exercise picker, program list, server actions)
 - `src/app/(app)/settings/` — bodyweight editor
+- `src/app/(app)/analytics/` — Progress hub: session volume, e1RM gainers, record feed, searchable exercise list
 - `src/app/(app)/history/[exerciseId]/` — per-exercise history: e1RM line chart (Recharts) + overload signal vs the previous session
 - `supabase/migrations/` — database schema with row-level security

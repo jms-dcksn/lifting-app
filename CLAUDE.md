@@ -155,6 +155,27 @@ delta (latest session vs that exercise's previous session) is also surfaced per-
 finish-session summary (`session/actions.ts` → `finishSession`'s `prevE1rm`). This lookup is
 keyed on `exercise_id`, not `program_slot_id` — see `docs/DECISIONS.md` Phase 4.
 
+### Progress analytics (`src/app/(app)/analytics/`)
+
+Top-level nav label is **Progress** (`/analytics`). The page is a Server Component that
+fetches this user's working `set_log` rows joined to
+`workout_session(performed_at, finished_at, program_id)` plus `profile.bodyweight`, then
+hands them to `src/lib/analytics.ts`.
+
+`src/lib/analytics.ts` is pure and framework-free:
+
+- `sessionTonnage(rows, defs, bodyweight)` groups by session and sums
+  `effectiveLoad(def, weight, bodyweight) * reps`. Bodyweight sets with unknown
+  bodyweight are excluded and counted, never treated as zero.
+- `e1rmPrFeed(rows)` emits chronological e1RM record events per exercise.
+- `weightPrs(rows)` returns each exercise's all-time heaviest raw logged load.
+- `exerciseSummaries(rows)` returns current/latest-session e1RM, all-time best e1RM,
+  last-performed date, session count, and latest-vs-previous-session delta.
+
+The hub deliberately funnels lift rows into the existing `history/[exerciseId]` route
+instead of creating a second per-exercise drill-down. Keep client code small: current
+client pieces are only `volume-chart.tsx` (Recharts) and `exercise-list.tsx` (search).
+
 ### UI primitives and design tokens (`src/components/ui/`)
 
 All screens are built on a small shared component set, introduced in Phase 6 and extended
@@ -203,8 +224,8 @@ overlays/skeletons — extend these.
   `style` (e.g. `viewTransitionName`) and other DOM attributes through.
 - **`Skeleton` (`skeleton.tsx`)** — neutral placeholder block (`.skeleton` pulse keyframes,
   reduced-motion-safe). Used by the route-level `loading.tsx` fallbacks (`(app)/loading.tsx`,
-  `(app)/session/[id]/loading.tsx`, `(app)/history/[exerciseId]/loading.tsx`) so server
-  navigations never show a dead white screen.
+  `(app)/session/[id]/loading.tsx`, `(app)/history/[exerciseId]/loading.tsx`,
+  `(app)/analytics/loading.tsx`) so server navigations never show a dead white screen.
 - **`withViewTransition` (`view-transition.ts`)** — runs a state update inside
   `document.startViewTransition` (+ `flushSync`) so elements carrying a matching
   `viewTransitionName` tween between their old and new positions; falls back to a plain
@@ -219,7 +240,9 @@ overlays/skeletons — extend these.
 
 Nav is extracted into a client component, `(app)/nav-links.tsx` (`NavLinks`), which uses
 `usePathname()` to mark the active top-level route (`aria-current="page"`, foreground vs
-muted text). `layout.tsx` itself stays a Server Component (auth gate via `getClaims()`).
+muted text). Current top-level destinations are Progress (`/analytics`), Program, and
+Settings, plus the Lift home link. `layout.tsx` itself stays a Server Component (auth gate
+via `getClaims()`).
 
 ### Supabase clients (`src/lib/supabase/`)
 

@@ -227,10 +227,31 @@ wider viewports.
 **Program builder caps at `MAX_DAYS = 6`** and lays days out as a horizontal scroller at
 `sm:` and above (vertical stack on phones).
 
+## Phase 8 decisions
+
+**Analytics is a derived read model, not new schema.** The Progress hub reads working
+`set_log` rows joined to `workout_session(performed_at, finished_at, program_id)` plus
+`profile.bodyweight`, then aggregates in `src/lib/analytics.ts`. No analytics tables,
+views, RPCs, or cached counters were added; single-user full-history scans are still
+trivial, and the helpers are framework-free so they can be sanity-checked with `tsx`.
+
+**Tonnage reuses the strength engine's effective-load convention.** `sessionTonnage()`
+calls `effectiveLoad(def, weight, bodyweight)` from `recompute.ts`, so bodyweight and
+assisted exercises use the same convention as e1RM recompute. Sets whose effective load
+cannot be computed (notably bodyweight lifts without a stored bodyweight) are counted as
+excluded, not coerced to zero, and the UI names that exclusion beside the volume chart.
+
+**Progress links funnel into the existing per-exercise history route.** The Progress hub
+surfaces total volume, recent e1RM gainers, record events, and a searchable all-exercise
+list, but every lift row links to `history/[exerciseId]` rather than introducing another
+exercise chart surface. The only new client code is the Recharts volume chart and the
+small searchable list component; data fetching and aggregation stay server-side.
+
 ## Build order
 
 > Superseded by `SPEC.md`, which wins on conflicts. Current phase structure: P0 (backend, done),
 > P1 (auth + PWA), P2 (keystone: active-session screen), P3 (program builder), P4 (progression
 > view), P5 (recommendation + swap + calibration, done), P6 (UX foundation: design tokens +
-> core components, done), P7 (screen-by-screen UX polish + motion + mobile ergonomics, done).
+> core components, done), P7 (screen-by-screen UX polish + motion + mobile ergonomics, done),
+> P8 (Progress analytics hub, done).
 > See `docs/PLAN.md` for the sequence and status.

@@ -271,6 +271,87 @@ session is where the app lives or dies.
 
 ---
 
+## Phase 8 — Analytics hub: cross-workout performance screen (~6 hrs)
+
+The MVP is UX-complete but progress is only legible one exercise at a time, reachable
+by tapping a lift in the last session. This phase adds a dedicated **Analytics** screen
+(new top-level nav destination) that reads performance *broadly* across the whole training
+history, then funnels into the existing per-exercise drill-down. Everything is derivable
+from `set_log` + `workout_session` — **no schema change**.
+
+**Reuse, don't reinvent:**
+- Tonnage must use `effectiveLoad(def, weight, bodyweight)` from `recompute.ts` for the
+  bodyweight/assisted convention — and **exclude** sets where it returns `null` (BW with
+  unknown bodyweight), never coerce to 0.
+- e1RM values are already cached per set (`set_log.e1rm`); PRs are computed chronologically,
+  no recompute needed. Working sets only (`is_warmup = false`), as everywhere else.
+- The per-exercise drill-down is the **existing** `history/[exerciseId]` route — this phase
+  links into it from the new exercise list rather than building a second chart.
+
+- [x] `src/lib/analytics.ts` — pure server-side aggregation helpers over fetched rows
+      (keep them framework-free + ad-hoc testable with tsx, like the strength engine):
+  - [x] `sessionTonnage(rows, defs, bodyweight)` → per-session total volume
+        (`Σ effectiveLoad × reps`), in `performed_at` order
+  - [x] `e1rmPrFeed(rows)` → chronological list of e1RM records broken (a set whose e1RM
+        exceeds all prior e1RM for that `exercise_id`): `{ date, exerciseId, e1rm, delta }`
+  - [x] `weightPrs(rows)` → per-exercise heaviest working weight ever lifted (raw load PR,
+        distinct from e1RM PR) + the date it was set
+  - [x] `exerciseSummaries(rows)` → per-exercise roll-up for the selectable list: current
+        e1RM, all-time best e1RM, last-performed date, session count, trend arrow
+        (latest vs previous session e1RM — same signed-delta convention as the overload badge)
+- [x] `src/app/(app)/analytics/page.tsx` — Server Component. One query: this user's working
+      sets joined to `workout_session(performed_at, finished_at)`, plus `profile.bodyweight`.
+      Sections, top to bottom (most-glanceable first):
+  - [x] **Total volume by session** — bar/line of session tonnage over time (Recharts, reuse
+        the monochrome chart styling from `e1rm-chart.tsx`); headline = this block's total +
+        delta vs last session
+  - [x] **e1RM progression highlights** — the top N lifts by recent e1RM gain (sparkline or
+        signed-delta chips), each tappable → its history page
+  - [x] **Records feed** — recent e1RM PRs and new max-weight PRs as a reverse-chronological
+        list ("Bench press · new e1RM 218 lb · +4"); the motivating "what did I just beat" view
+  - [x] **All exercises** — searchable list (reuse `ExercisePicker`'s search idiom) of every
+        logged lift with its summary chip; tap → `history/[exerciseId]` drill-down
+- [x] `src/app/(app)/analytics/loading.tsx` — Skeleton fallback (match the other route loaders)
+- [x] Nav: add **Analytics** (or "Progress") to `NavLinks` (`(app)/nav-links.tsx`) with an
+      active state; it becomes the hub the lone exercise-tap used to be the only door to
+- [x] Empty / thin-data states: first session, single-session lifts (no trend yet), and BW
+      lifts excluded from tonnage all read deliberately, not as bugs
+- Verify: `npx tsc --noEmit`, `npm run lint`, `npm run build` clean; aggregation helpers
+  sanity-checked with tsx (tonnage with a BW lift present, a PR chain, a single-session lift);
+  real-phone walk with the production account remains part of the open post-P7/P8 device pass
+
+> **Perf note (not a blocker):** single-user, full-history scans in JS are trivial now. If a
+> long block ever makes the analytics query heavy, push the aggregation into a Postgres view
+> or RPC — out of scope until measured.
+
+## Phase 9 — Analytics depth: pattern balance + stalls + adherence (~4 hrs, stretch)
+
+Optional follow-on. These are the analytics *this app* can show that a generic logger can't,
+because it already models movement **patterns**, **RIR**, and a latent **pattern strength**.
+Cherry-pick by value; none are load-bearing for "run a real block."
+
+- [ ] **Volume by movement pattern** — working sets (and tonnage) per `pattern` per week.
+      Surfaces push/pull/legs balance and neglected patterns; the app already thinks in
+      patterns, so this is near-free and genuinely differentiated.
+- [ ] **Hard sets per week** — count of working sets at low RIR (≤ 1–2) per pattern. The real
+      hypertrophy-stimulus metric, and only possible because we log RIR. Arguably the single
+      most useful chart here.
+- [ ] **Pattern strength trend** — plot the recommender's latent pattern-strength e1RM
+      (`recommend.ts`) over time per pattern: progress *pooled across every variant*, the
+      thing no per-exercise chart shows. Strongest first-principles story for a writeup.
+- [ ] **Stalled-lift detector** — exercises whose e1RM hasn't risen in N sessions; actionable
+      nudge (deload / swap / check recovery). Directly serves the progressive-overload thesis.
+- [ ] **Adherence / consistency** — sessions completed vs the block's planned cadence
+      (`finished_at` count vs program weeks × days), plus a simple streak. Behavior, not strength.
+- [ ] **Rep-quality drift** — average RIR at a fixed load over time (are sets getting easier =
+      hidden progress the weight number doesn't show). Nice-to-have.
+
+> Pick 2–3 of these, not all six. "Volume by pattern" + "hard sets" + "pattern strength trend"
+> is the highest-signal trio and the best material for the public first-principles writeup
+> (per `goals.md`).
+
+---
+
 ## Explicitly NOT in MVP (resist)
 - Macro-periodization / auto-deload / wave loading (week-over-week overload is double
   progression only; prescription structure stays fixed across the block)

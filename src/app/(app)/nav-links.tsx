@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cx } from "@/components/ui/cx";
 
 const links = [
+  { href: "/analytics", label: "Progress" },
   { href: "/program", label: "Program" },
   { href: "/settings", label: "Settings" },
 ];

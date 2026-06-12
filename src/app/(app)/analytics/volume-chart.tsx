@@ -18,8 +18,13 @@ export interface VolumeChartPoint {
 
 export function VolumeChart({ data }: { data: VolumeChartPoint[] }) {
   return (
-    <div className="h-56 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-56 min-w-0 w-full">
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        minWidth={0}
+        initialDimension={{ width: 0, height: 224 }}
+      >
         <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
           <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
           <XAxis

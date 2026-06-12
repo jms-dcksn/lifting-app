@@ -18,8 +18,13 @@ export interface ChartPoint {
 // Monochrome to match the design system: faint grid, muted axes, foreground line.
 export function E1rmChart({ data }: { data: ChartPoint[] }) {
   return (
-    <div className="h-56 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-56 min-w-0 w-full">
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        minWidth={0}
+        initialDimension={{ width: 0, height: 224 }}
+      >
         <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
           <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
           <XAxis

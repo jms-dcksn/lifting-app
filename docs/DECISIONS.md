@@ -247,11 +247,41 @@ list, but every lift row links to `history/[exerciseId]` rather than introducing
 exercise chart surface. The only new client code is the Recharts volume chart and the
 small searchable list component; data fetching and aggregation stay server-side.
 
+## Phase 9 decisions
+
+**Three of the six Phase 9 bullets were implemented; the other three remain unbuilt.**
+Implemented: volume by movement pattern, hard sets per week, pattern strength trend.
+Left for later (or never): stalled-lift detector, adherence/consistency, rep-quality drift.
+
+**Training balance and pattern strength are list-based cards, not colored multi-line charts.**
+Both new analytics surfaces on the Progress screen are horizontal-bar or list layouts with a
+signed-delta `TrendPill` — not `recharts` multi-line time charts per pattern. Reason: a
+per-pattern line chart would require distinct colors per pattern, breaking the "color is
+semantic only" Phase 6 contract. Monochrome lists and bar overlays (total sets vs hard sets)
+carry the same signal without introducing decorative color.
+
+**`patternStrengthTrend` replays sessions with population coefficients only (no personal coefficient).** `patternStrengthTrend` in `analytics.ts` passes `null` as `personalCoefficient`
+when calling `estimatePatternStrength` at each historical session. This is intentional: the
+goal is to track the pooled-across-variants signal (pattern strength) rather than any one
+machine's absolute load. Machine personal-coefficient history is not replayed. The displayed
+trend and the live recommender pool from the same signal, so they agree directionally.
+
+**`PATTERN_LABEL` added to `coefficients.ts`.** Human-readable pattern names (e.g. `"Hip Hinge"`)
+needed by analytics UI are exported alongside the seeded exercise catalog. Kept in
+`coefficients.ts` because it is the canonical home of pattern-level knowledge in the strength
+engine.
+
+**`HARD_RIR = 2` is a module-level constant, not a user setting.** Sets with `rir ≤ 2` are
+classified as hard (stimulating) sets. The constant is unexported (private to `analytics.ts`)
+but the two public functions that use it (`patternWeekStats`, `latestWeekBalance`) accept an
+optional `hardRir` parameter for callers that need a different threshold.
+
 ## Build order
 
 > Superseded by `SPEC.md`, which wins on conflicts. Current phase structure: P0 (backend, done),
 > P1 (auth + PWA), P2 (keystone: active-session screen), P3 (program builder), P4 (progression
 > view), P5 (recommendation + swap + calibration, done), P6 (UX foundation: design tokens +
 > core components, done), P7 (screen-by-screen UX polish + motion + mobile ergonomics, done),
-> P8 (Progress analytics hub, done).
+> P8 (Progress analytics hub, done), P9 (analytics depth: partial — pattern balance, hard sets,
+> pattern strength trend shipped; stalled lifts, adherence, rep-quality drift not built).
 > See `docs/PLAN.md` for the sequence and status.

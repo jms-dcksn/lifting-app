@@ -3,12 +3,14 @@ import { redirect } from "next/navigation";
 import {
   e1rmPrFeed,
   exerciseSummaries,
+  latestWeekBalance,
+  patternStrengthTrend,
   sessionTonnage,
   weightPrs,
   type AnalyticsSetRow,
 } from "@/lib/analytics";
 import { createClient } from "@/lib/supabase/server";
-import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
+import { EXERCISE_BY_ID, PATTERN_LABEL } from "@/lib/strength/coefficients";
 import { Card, CardLabel } from "@/components/ui/card";
 import { cx } from "@/components/ui/cx";
 import { ExerciseList, type ExerciseListItem } from "./exercise-list";
@@ -81,6 +83,12 @@ export default async function AnalyticsPage() {
     tonnage: Math.round(point.tonnage),
   }));
 
+  const balance = latestWeekBalance(analyticsRows, EXERCISE_BY_ID, bodyweight);
+  const maxBalanceSets = balance
+    ? Math.max(...balance.patterns.map((pattern) => pattern.sets))
+    : 0;
+  const strengthTrend = patternStrengthTrend(analyticsRows, EXERCISE_BY_ID);
+
   const gainers = summaries
     .filter((summary) => summary.delta != null && summary.delta > 0)
     .sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0))
@@ -151,6 +159,38 @@ export default async function AnalyticsPage() {
             )}
           </Card>
 
+          {balance && (
+            <Card>
+              <div className="mb-3 flex items-baseline justify-between gap-3">
+                <CardLabel>Training balance</CardLabel>
+                <span className="text-caption text-muted">week of {shortDate(balance.weekStart)}</span>
+              </div>
+              <ul className="flex flex-col gap-3">
+                {balance.patterns.map((pattern) => (
+                  <li key={pattern.pattern}>
+                    <div className="mb-1 flex items-baseline justify-between gap-3">
+                      <span className="text-body">{PATTERN_LABEL[pattern.pattern]}</span>
+                      <span className="text-caption tabular-nums text-muted">
+                        {pattern.sets} set{pattern.sets === 1 ? "" : "s"} · {pattern.hardSets} hard
+                      </span>
+                    </div>
+                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-border">
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full bg-faint"
+                        style={{ width: `${(pattern.sets / maxBalanceSets) * 100}%` }}
+                      />
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full bg-foreground"
+                        style={{ width: `${(pattern.hardSets / maxBalanceSets) * 100}%` }}
+                      />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-caption text-muted">Hard = RIR ≤ 2 (near failure).</p>
+            </Card>
+          )}
+
           <Card>
             <CardLabel className="mb-3">e1RM progression highlights</CardLabel>
             {gainers.length > 0 ? (
@@ -180,6 +220,37 @@ export default async function AnalyticsPage() {
               </p>
             )}
           </Card>
+
+          {strengthTrend.length > 0 && (
+            <Card>
+              <CardLabel className="mb-1">Pattern strength</CardLabel>
+              <p className="mb-3 text-caption text-muted">
+                Pooled across every variant you train in each pattern.
+              </p>
+              <ul className="flex flex-col gap-2">
+                {strengthTrend.map((point) => (
+                  <li
+                    key={point.pattern}
+                    className="flex min-h-11 items-center justify-between gap-3"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-body">
+                        {PATTERN_LABEL[point.pattern]}
+                      </span>
+                      <span className="block text-caption tabular-nums text-muted">
+                        {Math.round(point.current)} lb reference e1RM
+                      </span>
+                    </span>
+                    {point.sessions >= 2 ? (
+                      <TrendPill delta={point.delta} />
+                    ) : (
+                      <span className="text-caption text-muted">new</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
 
           <Card>
             <CardLabel className="mb-3">Records feed</CardLabel>

@@ -119,3 +119,22 @@ export const EXERCISES: ExerciseDef[] = [
 export const EXERCISE_BY_ID: Record<string, ExerciseDef> = Object.fromEntries(
   EXERCISES.map((e) => [e.id, e]),
 );
+
+// Human-readable movement-pattern names for analytics surfaces.
+export const PATTERN_LABEL: Record<Pattern, string> = {
+  horizontal_press: "Horizontal Press",
+  vertical_press: "Vertical Press",
+  horizontal_pull: "Horizontal Pull",
+  vertical_pull: "Vertical Pull",
+  squat: "Squat",
+  hinge: "Hinge",
+  lunge: "Lunge",
+  knee_extension: "Knee Extension",
+  knee_flexion: "Knee Flexion",
+  hip_thrust: "Hip Thrust",
+  calf: "Calf",
+  elbow_flexion: "Elbow Flexion",
+  elbow_extension: "Elbow Extension",
+  lateral_raise: "Lateral Raise",
+  rear_delt: "Rear Delt",
+};

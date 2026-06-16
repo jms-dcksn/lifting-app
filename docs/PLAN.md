@@ -330,13 +330,13 @@ Optional follow-on. These are the analytics *this app* can show that a generic l
 because it already models movement **patterns**, **RIR**, and a latent **pattern strength**.
 Cherry-pick by value; none are load-bearing for "run a real block."
 
-- [ ] **Volume by movement pattern** — working sets (and tonnage) per `pattern` per week.
+- [x] **Volume by movement pattern** — working sets (and tonnage) per `pattern` per week.
       Surfaces push/pull/legs balance and neglected patterns; the app already thinks in
       patterns, so this is near-free and genuinely differentiated.
-- [ ] **Hard sets per week** — count of working sets at low RIR (≤ 1–2) per pattern. The real
+- [x] **Hard sets per week** — count of working sets at low RIR (≤ 1–2) per pattern. The real
       hypertrophy-stimulus metric, and only possible because we log RIR. Arguably the single
       most useful chart here.
-- [ ] **Pattern strength trend** — plot the recommender's latent pattern-strength e1RM
+- [x] **Pattern strength trend** — plot the recommender's latent pattern-strength e1RM
       (`recommend.ts`) over time per pattern: progress *pooled across every variant*, the
       thing no per-exercise chart shows. Strongest first-principles story for a writeup.
 - [ ] **Stalled-lift detector** — exercises whose e1RM hasn't risen in N sessions; actionable

@@ -162,7 +162,8 @@ fetches this user's working `set_log` rows joined to
 `workout_session(performed_at, finished_at, program_id)` plus `profile.bodyweight`, then
 hands them to `src/lib/analytics.ts`.
 
-`src/lib/analytics.ts` is pure and framework-free:
+`src/lib/analytics.ts` is pure and framework-free (ad-hoc testable with `npx tsx --eval`
+like the strength engine):
 
 - `sessionTonnage(rows, defs, bodyweight)` groups by session and sums
   `effectiveLoad(def, weight, bodyweight) * reps`. Bodyweight sets with unknown
@@ -171,10 +172,37 @@ hands them to `src/lib/analytics.ts`.
 - `weightPrs(rows)` returns each exercise's all-time heaviest raw logged load.
 - `exerciseSummaries(rows)` returns current/latest-session e1RM, all-time best e1RM,
   last-performed date, session count, and latest-vs-previous-session delta.
+- `patternWeekStats(rows, defs, bodyweight, hardRir=2)` → working sets, hard sets
+  (RIR ≤ `hardRir`), and tonnage per movement pattern per ISO week (Monday-start UTC).
+  Returns `PatternWeekStat[]`. `HARD_RIR = 2` is the module default.
+- `latestWeekBalance(rows, defs, bodyweight, hardRir=2)` → the most recent training
+  week's per-pattern stats ranked by set count: `{ weekStart, patterns }` or null.
+- `patternStrengthTrend(rows, defs)` → per-pattern latent pattern-strength trend.
+  Replays sessions chronologically over running-best e1RMs, calling
+  `estimatePatternStrength` from `recommend.ts` at each session. Returns
+  `PatternStrengthPoint[]` sorted by current pattern strength desc. **Caveat:**
+  passes `null` for `personalCoefficient`, so machine personal-coefficient history is
+  not replayed — it tracks the same pooled-across-variants signal the live recommender
+  uses, not its exact calibrated value.
+
+`coefficients.ts` now also exports `PATTERN_LABEL: Record<Pattern, string>` —
+human-readable movement-pattern names for analytics UI (e.g. `"Hip Hinge"`).
+
+The Progress page (`analytics/page.tsx`) renders five server-side cards, top to bottom:
+1. **Total volume** — session tonnage chart (Recharts `volume-chart.tsx`)
+2. **Training balance** — latest training week's per-pattern horizontal bar list;
+   total working sets (faint bar) with hard-set portion overlaid (foreground bar);
+   caption "{n} sets · {m} hard"; footnote "Hard = RIR ≤ 2 (near failure)"
+3. **e1RM progression highlights** — top gainers with signed-delta `TrendPill`
+4. **Pattern strength** — list of trained patterns, current reference-lift e1RM,
+   signed-delta `TrendPill`; patterns with <2 sessions show "new" instead of a trend
+5. **All exercises** — searchable list (`exercise-list.tsx`) → `history/[exerciseId]`
 
 The hub deliberately funnels lift rows into the existing `history/[exerciseId]` route
-instead of creating a second per-exercise drill-down. Keep client code small: current
-client pieces are only `volume-chart.tsx` (Recharts) and `exercise-list.tsx` (search).
+instead of creating a second per-exercise drill-down. Keep client code small: client
+pieces are only `volume-chart.tsx` (Recharts) and `exercise-list.tsx` (search).
+Training balance and pattern strength are monochrome list cards — not colored multi-line
+charts — to preserve the "color is semantic only" Phase 6 contract.
 
 ### UI primitives and design tokens (`src/components/ui/`)
 

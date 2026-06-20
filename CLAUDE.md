@@ -17,12 +17,15 @@ A personal progressive-overload lifting tracker. Mobile web app. The defining fe
 npm run dev          # Next.js dev server (Turbopack)
 npm run build        # production build
 npm run lint         # eslint
-npx tsc --noEmit     # typecheck (no test runner configured yet)
+npx tsc --noEmit     # typecheck
+npm test             # vitest (run once); npm run test:watch for watch mode
 ```
 
-There is no test runner yet. The strength engine is pure and framework-free, so verify it
-ad hoc with `npx tsx --eval` importing from `src/lib/strength/` (see git history for the
-sanity-check pattern). If adding tests, prefer a runner that runs these modules in isolation.
+Tests run on **vitest**, scoped to the pure modules under `src/lib/` (config:
+`vitest.config.ts`, `include: src/lib/**/*.test.ts`, node environment, `@/` alias via
+native tsconfig-paths). The strength engine and analytics are framework-free, so the suite
+loads no Next.js/React. Co-locate new tests as `*.test.ts` next to the module. Current
+coverage: `e1rm`, `recommend`, `progression`.
 
 ## Architecture
 

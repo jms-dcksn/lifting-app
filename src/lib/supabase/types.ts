@@ -110,28 +110,31 @@ export type Database = {
       program: {
         Row: {
           created_at: string
+          description: string | null
           id: string
           is_active: boolean
           name: string
-          notes: string | null
+          tags: string[]
           user_id: string
           weeks: number | null
         }
         Insert: {
           created_at?: string
+          description?: string | null
           id?: string
           is_active?: boolean
           name: string
-          notes?: string | null
+          tags?: string[]
           user_id: string
           weeks?: number | null
         }
         Update: {
           created_at?: string
+          description?: string | null
           id?: string
           is_active?: boolean
           name?: string
-          notes?: string | null
+          tags?: string[]
           user_id?: string
           weeks?: number | null
         }

@@ -11,13 +11,14 @@ import { Stepper } from "@/components/ui/stepper";
 import { withViewTransition } from "@/components/ui/view-transition";
 import { saveProgram, type SaveDayInput, type SaveSlotInput } from "./actions";
 import { ExercisePicker } from "./exercise-picker";
+import { TagInput } from "./tag-input";
 
 const uid = () => crypto.randomUUID();
 
 const MAX_DAYS = 6;
 
 function blankProgram(): Program {
-  return { id: uid(), name: "", weeks: 5, isActive: true, days: [] };
+  return { id: uid(), name: "", description: null, tags: [], weeks: 5, isActive: true, days: [] };
 }
 
 // Local editable mirror of SaveProgramInput. Program type already matches closely.
@@ -132,6 +133,8 @@ export function ProgramBuilder({
         await saveProgram({
           id: draft.id,
           name: draft.name,
+          description: draft.description,
+          tags: draft.tags,
           weeks: draft.weeks,
           days: draft.days.map<SaveDayInput>((d) => ({
             id: d.id,
@@ -172,6 +175,14 @@ export function ProgramBuilder({
           autoComplete="off"
           className="text-lg font-semibold"
         />
+        <textarea
+          value={draft.description ?? ""}
+          onChange={(e) => update((d) => ({ ...d, description: e.target.value || null }))}
+          placeholder="Description (optional)"
+          rows={2}
+          className="w-full resize-none rounded-control border border-border-strong bg-transparent p-2 text-body outline-none"
+        />
+        <TagInput value={draft.tags} onChange={(tags) => update((d) => ({ ...d, tags }))} />
         <div className="flex items-center gap-3 text-body">
           <span className="text-muted">Repeat for</span>
           <Stepper

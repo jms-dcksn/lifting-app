@@ -271,6 +271,32 @@ needed by analytics UI are exported alongside the seeded exercise catalog. Kept 
 `coefficients.ts` because it is the canonical home of pattern-level knowledge in the strength
 engine.
 
+## Phase A decisions (program gallery + tags)
+
+Phase A of `docs/superpowers/specs/2026-06-20-program-gallery-tags-rest-timer-design.md`
+(plan: `docs/superpowers/plans/2026-06-20-program-gallery-tags.md`). Phase B (rest timer) is
+a separate, not-yet-built plan.
+
+**`program.notes` (present in generated types, never read or written by app code) was
+renamed to `program.description` instead of adding a new column.** A deviation from the
+spec, which proposed adding `description`. Reusing the dead column avoids a redundant field.
+
+**`listPrograms` was replaced by `listProgramsFull`, which assembles every program's full
+day/slot tree, not just the row.** The gallery expands any card inline with no extra
+round-trip per card; a user has only a handful of programs, so assembling all of them
+up front server-side is cheap. This is plan option (a) over the spec's alternative of adding
+a `dayCount` to a row-only `listPrograms`.
+
+**The standalone read-only `?id=X` program view is gone.** `program-view.tsx` and
+`program-list.tsx` are deleted; their rendering (day/slot detail, clone/activate actions)
+moved into `program-card.tsx`'s expanded state. There is now exactly one place a program's
+detail renders: inline in the gallery card.
+
+**Tags are free text on the program row, not a separate table.** Single-user app, no need
+for tag identity, sharing, or referential integrity — `text[]` with app-level normalization
+(`program-tags.ts`: trim, drop empties, case-insensitive dedupe preserving first-seen form)
+is sufficient.
+
 **`HARD_RIR = 2` is a module-level constant, not a user setting.** Sets with `rir ≤ 2` are
 classified as hard (stimulating) sets. The constant is unexported (private to `analytics.ts`)
 but the two public functions that use it (`patternWeekStats`, `latestWeekBalance`) accept an
@@ -284,4 +310,6 @@ optional `hardRir` parameter for callers that need a different threshold.
 > core components, done), P7 (screen-by-screen UX polish + motion + mobile ergonomics, done),
 > P8 (Progress analytics hub, done), P9 (analytics depth: partial — pattern balance, hard sets,
 > pattern strength trend shipped; stalled lifts, adherence, rep-quality drift not built).
-> See `docs/PLAN.md` for the sequence and status.
+> See `docs/PLAN.md` for the sequence and status. Outside this numbered sequence: Phase A
+> (program gallery + tags, done) and Phase B (rest timer, not built) come from a separate
+> spec/plan pair under `docs/superpowers/` — see "Phase A decisions" above.

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { normalizeTags } from "@/lib/program-tags";
 import { SEED_PROGRAM } from "../session/seed";
 
 async function requireUser() {
@@ -32,6 +33,8 @@ export interface SaveDayInput {
 export interface SaveProgramInput {
   id: string;
   name: string;
+  description: string | null;
+  tags: string[];
   weeks: number;
   days: SaveDayInput[];
 }
@@ -47,6 +50,8 @@ export async function saveProgram(input: SaveProgramInput) {
   if (input.days.length === 0) throw new Error("A program needs at least one day");
 
   const name = input.name.trim() || "My Program";
+  const description = input.description?.trim() || null;
+  const tags = normalizeTags(input.tags);
   const weeks = Math.min(6, Math.max(4, Math.round(input.weeks)));
 
   // Single active program per user (enforced by a partial unique index): clear others first.
@@ -58,7 +63,7 @@ export async function saveProgram(input: SaveProgramInput) {
 
   const { error: progErr } = await supabase
     .from("program")
-    .upsert({ id: input.id, user_id: userId, name, weeks, is_active: true });
+    .upsert({ id: input.id, user_id: userId, name, description, tags, weeks, is_active: true });
   if (progErr) throw new Error(progErr.message);
 
   // Days: upsert incoming, then delete any removed (cascade drops their slots).

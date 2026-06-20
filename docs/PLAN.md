@@ -120,7 +120,8 @@ this screen being right.
   - [x] Program: name, weeks (4–6), set active (save always makes the program active)
   - [x] Add/reorder named days (↑/↓ reorder; no drag)
   - [x] Per day: add/reorder slots (exercise picker + sets + rep range + RIR)
-  - [x] Clone an existing program to start a new block (`program-list.tsx` saved-programs list)
+  - [x] Clone an existing program to start a new block (originally `program-list.tsx`'s
+        saved-programs list; superseded by the program gallery, see Phase A in DECISIONS.md)
 - [x] Exercise picker component (`exercise-picker.tsx`, reused by builder + swap): search seeded
       `EXERCISES`, recent-first
 - [x] Replace the hardcoded seed program in P2 with the real active program (`src/lib/program.ts`

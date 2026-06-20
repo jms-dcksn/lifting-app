@@ -25,7 +25,7 @@ Tests run on **vitest**, scoped to the pure modules under `src/lib/` (config:
 `vitest.config.ts`, `include: src/lib/**/*.test.ts`, node environment, `@/` alias via
 native tsconfig-paths). The strength engine and analytics are framework-free, so the suite
 loads no Next.js/React. Co-locate new tests as `*.test.ts` next to the module. Current
-coverage: `e1rm`, `recommend`, `progression`.
+coverage: `e1rm`, `recommend`, `progression`, `program-tags`.
 
 ## Architecture
 
@@ -87,7 +87,7 @@ machines predict like free weights.
 
 ### Data model (`supabase/migrations/`)
 
-Four applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sql` (program/day/slot tables, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql` (signup trigger hardening), `0004_session_finished_at.sql` (adds nullable `finished_at timestamptz` to `workout_session`). Typed DB types at `src/lib/supabase/types.ts`.
+Six applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sql` (program/day/slot tables, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql` (signup trigger hardening), `0004_session_finished_at.sql` (adds nullable `finished_at timestamptz` to `workout_session`), `0005_goal_weight.sql` (adds nullable `profile.goal_weight`), `0006_program_metadata.sql` (renames the unused `program.notes` → `program.description`, adds `program.tags text[] not null default '{}'`). Typed DB types at `src/lib/supabase/types.ts`.
 
 - **`set_log` is the source of truth.** `user_exercise_stat` is a derived cache (current e1RM
   + personal coefficient) that is rebuildable from `set_log` — never let it drift.
@@ -110,14 +110,43 @@ Four applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sq
 
 ### Program loader (`src/lib/program.ts`)
 
-Shared server-side helper. Exports `getActiveProgram`, `getProgram`, `listPrograms`,
-`recentExerciseIds`, and the `Program`/`ProgramDay`/`ProgramSlot` types. Assembles the
-nested program structure (days → slots) from the `program`, `program_day`, and
-`program_slot` tables. Used by home, the session page, and the builder.
+Shared server-side helper. Exports `getActiveProgram`, `getProgram`, `listProgramsFull`,
+`recentExerciseIds`, and the `Program`/`ProgramDay`/`ProgramSlot` types. `Program` carries
+`description: string | null` and `tags: string[]` alongside the assembled days → slots tree.
+`listProgramsFull` (replaced the old `listPrograms`) fully assembles every one of a user's
+programs — days and slots included, not just the row — because the program gallery (below)
+expands any card inline with no extra round-trip; users have only a handful of programs, so
+assembling all of them up front is cheap. Used by home, the session page, the program
+gallery, and the builder.
 
 `src/app/(app)/session/seed.ts` no longer drives the runtime program. It survives only
 as the template source for `createFromTemplate` (onboarding shortcut that seeds the
 built-in Push/Pull/Legs template).
+
+### Program page: gallery (`src/app/(app)/program/`)
+
+`/program` (no query params) renders a **gallery** of expandable program cards — not a
+single active-program view plus a separate saved-programs list. `program-gallery.tsx`
+(client) owns expand state (one card open at a time, the active program open by default)
+and a single-select tag filter; it hands filtered programs to `program-card.tsx`. A
+card collapsed shows name, `{weeks} wk · {days} days`, tag chips, and an `active` pill;
+expanded (inline, `animate-row-in`) it shows the description and the full day/slot detail
+plus Edit / Make active / Clone actions — this absorbed the day/slot detail rendering that
+used to live in `program-view.tsx` (deleted, along with `program-list.tsx`; there is no
+longer a standalone read-only `?id=X` view route — detail only ever appears inline in the
+gallery). `tag-filter.tsx` is a single-select chip row over the union of all tags (plus
+"All"); it renders nothing when no programs have tags. `tag-input.tsx` is the chip input
+used in the builder to edit a program's tags (Enter/comma to add, ×/Backspace to remove).
+
+`program-builder.tsx` has a metadata block (description textarea + `TagInput`); `saveProgram`
+(`actions.ts`) persists `description` and normalized tags on the program upsert. Builder
+routing is unchanged (`?id=new`, `?id=X&mode=edit`); both `afterSaveHref`/`cancelHref` point
+back to `/program`. The first-run "no programs yet" template offer is unchanged.
+
+`src/lib/program-tags.ts` is pure tag logic shared by the gallery and the builder:
+`normalizeTags` (trim, drop empties, case-insensitive dedupe preserving first form),
+`uniqueTags` (sorted case-insensitive union across programs), `filterByTag` (case-insensitive
+filter; a null tag returns everything). Tested in `program-tags.test.ts`.
 
 ### Active session targets and swap (`src/app/(app)/session/[id]/`)
 

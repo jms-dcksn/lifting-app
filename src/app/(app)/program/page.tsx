@@ -1,17 +1,15 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
-  getActiveProgram,
   getProgram,
-  listPrograms,
+  listProgramsFull,
   recentExerciseIds,
   type Program,
 } from "@/lib/program";
 import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button-styles";
 import { ProgramBuilder } from "./program-builder";
-import { ProgramList } from "./program-list";
-import { ProgramView } from "./program-view";
+import { ProgramGallery } from "./program-gallery";
 import { createFromTemplate } from "./actions";
 
 export default async function ProgramPage({
@@ -21,22 +19,35 @@ export default async function ProgramPage({
 }) {
   const { id, mode } = await searchParams;
   const isNew = id === "new";
+  const isEdit = !!id && !isNew && mode === "edit";
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
 
-  const [programs, recent] = await Promise.all([
-    listPrograms(supabase, userId),
-    recentExerciseIds(supabase, userId),
-  ]);
+  // Builder: new program or editing an existing one.
+  if (isNew || isEdit) {
+    const recent = await recentExerciseIds(supabase, userId);
+    let initial: Program | null = null;
+    if (isEdit) initial = await getProgram(supabase, userId, id!);
+    return (
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">
+        <ProgramBuilder
+          key={isNew ? "new" : (initial?.id ?? "new")}
+          initial={isNew ? null : initial}
+          recentIds={recent}
+          afterSaveHref="/program"
+          cancelHref="/program"
+        />
+      </div>
+    );
+  }
 
-  let initial: Program | null = null;
-  if (id && !isNew) initial = await getProgram(supabase, userId, id);
-  else if (!id) initial = await getActiveProgram(supabase, userId);
+  // Gallery (default).
+  const programs = await listProgramsFull(supabase, userId);
 
   // First run, no programs: offer the template before showing a blank builder.
-  if (!initial && programs.length === 0 && !isNew) {
+  if (programs.length === 0) {
     return (
       <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-6 py-10">
         <div>
@@ -55,25 +66,9 @@ export default async function ProgramPage({
     );
   }
 
-  const editable = isNew || mode === "edit" || !initial;
-  const readOnlyHref = initial
-    ? `/program?id=${encodeURIComponent(initial.id)}`
-    : undefined;
-
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">
-      {editable ? (
-        <ProgramBuilder
-          key={isNew ? "new" : (initial?.id ?? "new")}
-          initial={isNew ? null : initial}
-          recentIds={recent}
-          afterSaveHref={readOnlyHref ?? "/"}
-          cancelHref={readOnlyHref}
-        />
-      ) : initial ? (
-        <ProgramView program={initial} />
-      ) : null}
-      <ProgramList programs={programs} selectedId={initial?.id ?? "new"} />
+      <ProgramGallery programs={programs} />
     </div>
   );
 }

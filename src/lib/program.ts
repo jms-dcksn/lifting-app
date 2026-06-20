@@ -28,6 +28,8 @@ export interface ProgramDay {
 export interface Program {
   id: string;
   name: string;
+  description: string | null;
+  tags: string[];
   weeks: number;
   isActive: boolean;
   days: ProgramDay[];
@@ -35,7 +37,14 @@ export interface Program {
 
 async function assemble(
   supabase: Client,
-  row: { id: string; name: string; weeks: number | null; is_active: boolean },
+  row: {
+    id: string;
+    name: string;
+    description: string | null;
+    tags: string[];
+    weeks: number | null;
+    is_active: boolean;
+  },
 ): Promise<Program> {
   const { data: days } = await supabase
     .from("program_day")
@@ -70,6 +79,8 @@ async function assemble(
   return {
     id: row.id,
     name: row.name,
+    description: row.description,
+    tags: row.tags ?? [],
     weeks: row.weeks ?? 5,
     isActive: row.is_active,
     days: (days ?? []).map((d) => ({
@@ -86,7 +97,7 @@ export async function getActiveProgram(
 ): Promise<Program | null> {
   const { data: row } = await supabase
     .from("program")
-    .select("id, name, weeks, is_active")
+    .select("id, name, description, tags, weeks, is_active")
     .eq("user_id", userId)
     .eq("is_active", true)
     .maybeSingle();
@@ -101,7 +112,7 @@ export async function getProgram(
 ): Promise<Program | null> {
   const { data: row } = await supabase
     .from("program")
-    .select("id, name, weeks, is_active")
+    .select("id, name, description, tags, weeks, is_active")
     .eq("user_id", userId)
     .eq("id", id)
     .maybeSingle();
@@ -109,21 +120,19 @@ export async function getProgram(
   return assemble(supabase, row);
 }
 
-export async function listPrograms(
+// Every program for a user, fully assembled (days + slots), created-order. The gallery
+// expands cards inline, so it needs the full tree up front; users have only a handful of
+// programs, so assembling all is cheap.
+export async function listProgramsFull(
   supabase: Client,
   userId: string,
-): Promise<{ id: string; name: string; weeks: number; isActive: boolean }[]> {
-  const { data } = await supabase
+): Promise<Program[]> {
+  const { data: rows } = await supabase
     .from("program")
-    .select("id, name, weeks, is_active")
+    .select("id, name, description, tags, weeks, is_active")
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
-  return (data ?? []).map((p) => ({
-    id: p.id,
-    name: p.name,
-    weeks: p.weeks ?? 5,
-    isActive: p.is_active,
-  }));
+  return Promise.all((rows ?? []).map((row) => assemble(supabase, row)));
 }
 
 // Exercise ids the user has logged, most-recent-first (for recent-first picker ordering).

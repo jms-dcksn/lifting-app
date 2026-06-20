@@ -12,7 +12,7 @@ export default async function SettingsPage() {
 
   const { data: profile } = await supabase
     .from("profile")
-    .select("bodyweight, goal_weight")
+    .select("bodyweight, goal_weight, default_rest_seconds")
     .eq("id", userId)
     .maybeSingle();
 
@@ -50,6 +50,22 @@ export default async function SettingsPage() {
             step="0.5"
             defaultValue={profile?.goal_weight ?? ""}
             placeholder="e.g. 175"
+          />
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <label className="text-body text-muted" htmlFor="default_rest_seconds">
+            Default rest between sets (seconds)
+          </label>
+          <Input
+            id="default_rest_seconds"
+            name="default_rest_seconds"
+            type="number"
+            inputMode="numeric"
+            enterKeyHint="done"
+            step="5"
+            defaultValue={profile?.default_rest_seconds ?? 120}
+            placeholder="e.g. 120"
           />
         </div>
 

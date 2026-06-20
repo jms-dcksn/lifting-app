@@ -17,6 +17,7 @@ export interface ProgramSlot {
   repMin: number;
   repMax: number;
   targetRir: number;
+  restSeconds: number | null;
 }
 
 export interface ProgramDay {
@@ -56,7 +57,7 @@ async function assemble(
   const { data: slots } = dayIds.length
     ? await supabase
         .from("program_slot")
-        .select("id, program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, position")
+        .select("id, program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, position")
         .in("program_day_id", dayIds)
         .order("position", { ascending: true })
     : { data: [] };
@@ -72,6 +73,7 @@ async function assemble(
       repMin: s.rep_min,
       repMax: s.rep_max,
       targetRir: s.target_rir,
+      restSeconds: s.rest_seconds,
     });
     slotsByDay.set(s.program_day_id, list);
   }

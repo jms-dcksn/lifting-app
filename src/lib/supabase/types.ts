@@ -87,6 +87,7 @@ export type Database = {
         Row: {
           bodyweight: number | null
           created_at: string
+          default_rest_seconds: number
           display_name: string | null
           goal_weight: number | null
           id: string
@@ -94,6 +95,7 @@ export type Database = {
         Insert: {
           bodyweight?: number | null
           created_at?: string
+          default_rest_seconds?: number
           display_name?: string | null
           goal_weight?: number | null
           id: string
@@ -101,6 +103,7 @@ export type Database = {
         Update: {
           bodyweight?: number | null
           created_at?: string
+          default_rest_seconds?: number
           display_name?: string | null
           goal_weight?: number | null
           id?: string
@@ -185,6 +188,7 @@ export type Database = {
           program_day_id: string
           rep_max: number
           rep_min: number
+          rest_seconds: number | null
           target_rir: number
           target_sets: number
           user_id: string
@@ -198,6 +202,7 @@ export type Database = {
           program_day_id: string
           rep_max: number
           rep_min: number
+          rest_seconds?: number | null
           target_rir: number
           target_sets: number
           user_id: string
@@ -211,6 +216,7 @@ export type Database = {
           program_day_id?: string
           rep_max?: number
           rep_min?: number
+          rest_seconds?: number | null
           target_rir?: number
           target_sets?: number
           user_id?: string

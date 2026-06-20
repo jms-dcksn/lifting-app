@@ -16,9 +16,15 @@ export async function saveProfile(formData: FormData) {
   const rawGoalWeight = Number(formData.get("goal_weight"));
   const goalWeight = Number.isFinite(rawGoalWeight) && rawGoalWeight > 0 ? rawGoalWeight : null;
 
-  await supabase.from("profile").update({ 
-    bodyweight, 
-    goal_weight: goalWeight 
+  // Clamp rest to a sane range; fall back to the 120s default on junk input.
+  const rawRest = Number(formData.get("default_rest_seconds"));
+  const defaultRestSeconds =
+    Number.isFinite(rawRest) && rawRest > 0 ? Math.min(600, Math.round(rawRest)) : 120;
+
+  await supabase.from("profile").update({
+    bodyweight,
+    goal_weight: goalWeight,
+    default_rest_seconds: defaultRestSeconds,
   }).eq("id", userId);
 
   revalidatePath("/settings");

@@ -25,7 +25,7 @@ Tests run on **vitest**, scoped to the pure modules under `src/lib/` (config:
 `vitest.config.ts`, `include: src/lib/**/*.test.ts`, node environment, `@/` alias via
 native tsconfig-paths). The strength engine and analytics are framework-free, so the suite
 loads no Next.js/React. Co-locate new tests as `*.test.ts` next to the module. Current
-coverage: `e1rm`, `recommend`, `progression`, `program-tags`.
+coverage: `e1rm`, `recommend`, `progression`, `program-tags`, `rest`.
 
 ## Architecture
 
@@ -87,7 +87,7 @@ machines predict like free weights.
 
 ### Data model (`supabase/migrations/`)
 
-Six applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sql` (program/day/slot tables, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql` (signup trigger hardening), `0004_session_finished_at.sql` (adds nullable `finished_at timestamptz` to `workout_session`), `0005_goal_weight.sql` (adds nullable `profile.goal_weight`), `0006_program_metadata.sql` (renames the unused `program.notes` → `program.description`, adds `program.tags text[] not null default '{}'`). Typed DB types at `src/lib/supabase/types.ts`.
+Seven applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sql` (program/day/slot tables, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql` (signup trigger hardening), `0004_session_finished_at.sql` (adds nullable `finished_at timestamptz` to `workout_session`), `0005_goal_weight.sql` (adds nullable `profile.goal_weight`), `0006_program_metadata.sql` (renames the unused `program.notes` → `program.description`, adds `program.tags text[] not null default '{}'`), `0007_rest_timer.sql` (adds `profile.default_rest_seconds int not null default 120` and nullable `program_slot.rest_seconds int`, null = use the profile default). Typed DB types at `src/lib/supabase/types.ts`.
 
 - **`set_log` is the source of truth.** `user_exercise_stat` is a derived cache (current e1RM
   + personal coefficient) that is rebuildable from `set_log` — never let it drift.
@@ -117,7 +117,9 @@ Shared server-side helper. Exports `getActiveProgram`, `getProgram`, `listProgra
 programs — days and slots included, not just the row — because the program gallery (below)
 expands any card inline with no extra round-trip; users have only a handful of programs, so
 assembling all of them up front is cheap. Used by home, the session page, the program
-gallery, and the builder.
+gallery, and the builder. `ProgramSlot` also carries `restSeconds: number | null` (the
+per-slot rest override; `null` = use the profile default), selected/mapped by `assemble()`
+so builder edits preserve it.
 
 `src/app/(app)/session/seed.ts` no longer drives the runtime program. It survives only
 as the template source for `createFromTemplate` (onboarding shortcut that seeds the
@@ -141,7 +143,10 @@ used in the builder to edit a program's tags (Enter/comma to add, ×/Backspace t
 `program-builder.tsx` has a metadata block (description textarea + `TagInput`); `saveProgram`
 (`actions.ts`) persists `description` and normalized tags on the program upsert. Builder
 routing is unchanged (`?id=new`, `?id=X&mode=edit`); both `afterSaveHref`/`cancelHref` point
-back to `/program`. The first-run "no programs yet" template offer is unchanged.
+back to `/program`. The first-run "no programs yet" template offer is unchanged. Each slot
+also has an optional "Rest (s)" override field (empty = use the profile default, stored as
+`null`); `saveProgram`/`cloneProgram` persist/copy `rest_seconds` alongside the other slot
+fields.
 
 `src/lib/program-tags.ts` is pure tag logic shared by the gallery and the builder:
 `normalizeTags` (trim, drop empties, case-insensitive dedupe preserving first form),
@@ -176,6 +181,20 @@ longer revert silently. `TargetLine` shows weight × reps at heading weight with
 "Target" caption label; `calibrate` and `low` confidence render as their own instruction
 lines below (the old inline `confidenceBadge` helper is gone); the recommendation line is
 suppressed entirely once `done > 0` (it goes stale the moment the first set is logged).
+
+**Rest timer.** `active-session.tsx` owns one `useRestTimer()` (`rest-timer.tsx`) for the
+whole session — only one rest countdown runs at a time, regardless of how many slots are in
+play. The hook tracks an absolute end timestamp (not a decrementing counter) so a 250ms tick
+stays accurate across tab throttling; on completion it fires `navigator.vibrate` plus a short
+WebAudio beep, both best-effort/guarded. `handleLog` calls each `SlotCard`'s `startRest`
+callback immediately on logging a set — optimistically, so a failed write doesn't stop the
+clock — with duration `slot.restSeconds ?? defaultRestSeconds` (the per-slot override from
+`program_slot.rest_seconds`, falling back to `profile.default_rest_seconds`). `RestBar`
+renders in the sticky footer above Finish, with `+30s` and `Skip` controls, and is absent
+when idle. `useScreenWakeLock()` (further down in this file, pre-existing from before the
+timer) keeps the screen on for the duration of the session, so the timer fires reliably as
+long as the session screen stays open and unlocked — see `docs/DECISIONS.md` Phase B for the
+narrower-than-expected limitation this leaves (manual lock / backgrounded tab only).
 
 ### Exercise history (`src/app/(app)/history/[exerciseId]/`)
 

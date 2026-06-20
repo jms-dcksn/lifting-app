@@ -275,7 +275,7 @@ engine.
 
 Phase A of `docs/superpowers/specs/2026-06-20-program-gallery-tags-rest-timer-design.md`
 (plan: `docs/superpowers/plans/2026-06-20-program-gallery-tags.md`). Phase B (rest timer) is
-a separate, not-yet-built plan.
+documented separately below.
 
 **`program.notes` (present in generated types, never read or written by app code) was
 renamed to `program.description` instead of adding a new column.** A deviation from the
@@ -302,6 +302,42 @@ classified as hard (stimulating) sets. The constant is unexported (private to `a
 but the two public functions that use it (`patternWeekStats`, `latestWeekBalance`) accept an
 optional `hardRir` parameter for callers that need a different threshold.
 
+## Phase B decisions (rest timer)
+
+Phase B of `docs/superpowers/specs/2026-06-20-program-gallery-tags-rest-timer-design.md`.
+Note: `docs/PLAN.md`'s "Explicitly NOT in MVP" list named "rest timers" as out of scope —
+that line predates this spec, which deliberately revisits and reverses that call. See the
+PLAN.md edit accompanying this section.
+
+**Rest starts optimistically on log, not on a confirmed write.** `handleLog` starts the
+countdown immediately when a set is logged client-side, before the Supabase write resolves.
+A failed write surfaces its own error (existing per-card `error` state) but does not stop or
+roll back the clock — the rest period is real regardless of whether the log persisted, and
+gating the timer on a round-trip would make it feel laggy for no benefit.
+
+**One timer for the whole session, not one per slot.** `useRestTimer()` is instantiated once
+in `active-session.tsx` and shared; starting a new rest replaces whatever was running. A
+lifter only rests for one slot at a time in practice, so per-slot timers would just add state
+without adding capability.
+
+**Absolute end-timestamp, not a decrementing counter.** The hook stores `Date.now() + seconds
+* 1000` and recomputes `remaining` from `endsAt - Date.now()` on each 250ms tick, so drift
+from tab throttling or a missed tick self-corrects instead of accumulating.
+
+**Screen Wake Lock turned out to already exist.** The spec listed "no Wake Lock" as an
+explicit non-goal, anticipating that a locked-pocket countdown could drift or never fire.
+`active-session.tsx` already had a `useScreenWakeLock()` hook (predating this phase) that
+keeps the screen on for the duration of a session. As a result the documented limitation is
+narrower than the spec feared: the timer is unreliable only if the user *manually* locks the
+phone or backgrounds the tab (JS timers throttle then) — not merely from leaving the screen
+untouched. No push/service-worker notification was added; that remains out of scope.
+
+**Per-slot rest override is nullable, not a required field.** `program_slot.rest_seconds`
+defaults to `null` (use the profile default) rather than copying the profile's value at
+creation time. This keeps "most slots use the default" cheap to express and means a later
+change to the profile default automatically applies to every slot that hasn't been
+explicitly overridden.
+
 ## Build order
 
 > Superseded by `SPEC.md`, which wins on conflicts. Current phase structure: P0 (backend, done),
@@ -311,5 +347,6 @@ optional `hardRir` parameter for callers that need a different threshold.
 > P8 (Progress analytics hub, done), P9 (analytics depth: partial — pattern balance, hard sets,
 > pattern strength trend shipped; stalled lifts, adherence, rep-quality drift not built).
 > See `docs/PLAN.md` for the sequence and status. Outside this numbered sequence: Phase A
-> (program gallery + tags, done) and Phase B (rest timer, not built) come from a separate
-> spec/plan pair under `docs/superpowers/` — see "Phase A decisions" above.
+> (program gallery + tags, done) and Phase B (rest timer, done) come from a separate
+> spec/plan pair under `docs/superpowers/` — see "Phase A decisions" and "Phase B decisions"
+> above.

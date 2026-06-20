@@ -87,6 +87,7 @@ export function ProgramBuilder({
           repMin: 8,
           repMax: 12,
           targetRir: 2,
+          restSeconds: null,
         });
       }
       return d;
@@ -147,6 +148,7 @@ export function ProgramBuilder({
               repMin: s.repMin,
               repMax: s.repMax,
               targetRir: s.targetRir,
+              restSeconds: s.restSeconds,
             })),
           })),
         });
@@ -255,6 +257,10 @@ export function ProgramBuilder({
                     <NumField label="RIR" value={slot.targetRir} min={0} max={5}
                       onChange={(v) => updateSlot(day.id, slot.id, { targetRir: v })} />
                   </div>
+                  <RestField
+                    value={slot.restSeconds}
+                    onChange={(v) => updateSlot(day.id, slot.id, { restSeconds: v })}
+                  />
                 </li>
               ))}
             </ul>
@@ -360,6 +366,35 @@ function RemoveButton({ what, onClick }: { what: string; onClick: () => void }) 
     >
       ✕
     </button>
+  );
+}
+
+// Optional per-slot rest override. Empty = use the user's default rest (stored as null).
+function RestField({
+  value,
+  onChange,
+}: {
+  value: number | null;
+  onChange: (v: number | null) => void;
+}) {
+  return (
+    <label className="mt-2 flex items-center justify-between gap-2 text-caption text-muted">
+      <span className="uppercase tracking-wide">Rest (s)</span>
+      <input
+        type="number"
+        inputMode="numeric"
+        value={value ?? ""}
+        placeholder="default"
+        onChange={(e) => {
+          const raw = e.target.value.trim();
+          if (raw === "") return onChange(null);
+          const n = Number(raw);
+          onChange(Number.isFinite(n) && n > 0 ? Math.min(600, Math.round(n)) : null);
+        }}
+        onFocus={(e) => e.currentTarget.select()}
+        className="h-9 w-24 rounded-control border border-border-strong bg-transparent text-center text-sm font-semibold tabular-nums"
+      />
+    </label>
   );
 }
 

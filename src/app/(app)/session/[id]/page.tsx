@@ -31,7 +31,7 @@ export default async function SessionPage({
       : Promise.resolve({ data: null }),
     supabase
       .from("program_slot")
-      .select("id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, position")
+      .select("id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, position")
       .eq("program_day_id", session.program_day_id)
       .order("position", { ascending: true }),
   ]);
@@ -39,7 +39,11 @@ export default async function SessionPage({
 
   const [{ data: profile }, { data: statRows }, { data: thisSessionSets }, recentIds] =
     await Promise.all([
-      supabase.from("profile").select("bodyweight").eq("id", userId).maybeSingle(),
+      supabase
+        .from("profile")
+        .select("bodyweight, default_rest_seconds")
+        .eq("id", userId)
+        .maybeSingle(),
       supabase
         .from("user_exercise_stat")
         .select("exercise_id, current_e1rm, personal_coefficient, coeff_confidence_n")
@@ -110,6 +114,7 @@ export default async function SessionPage({
       targetRir: slot.target_rir,
     },
     lastByExercise: lastBySlot.get(slot.id) ?? {},
+    restSeconds: slot.rest_seconds,
     sets: setsBySlot.get(slot.id) ?? [],
   }));
 
@@ -120,6 +125,7 @@ export default async function SessionPage({
       week={session.week_index ?? 1}
       weeks={program?.weeks ?? 5}
       bodyweight={profile?.bodyweight ?? null}
+      defaultRestSeconds={profile?.default_rest_seconds ?? 120}
       alreadyFinished={!!session.finished_at}
       stats={stats}
       recentIds={recentIds}

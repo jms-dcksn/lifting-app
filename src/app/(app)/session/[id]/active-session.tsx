@@ -14,6 +14,7 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { Card, CardLabel } from "@/components/ui/card";
 import { Stepper } from "@/components/ui/stepper";
 import { ExercisePicker } from "../../program/exercise-picker";
+import { RestBar, useRestTimer } from "./rest-timer";
 import {
   logSet,
   editSet,
@@ -36,6 +37,7 @@ export interface SlotView {
   pattern: Pattern;
   prescription: { targetSets: number; repMin: number; repMax: number; targetRir: number };
   lastByExercise: Record<string, LastPerformance>;
+  restSeconds: number | null;
   sets: LoggedSet[];
 }
 
@@ -45,6 +47,7 @@ export function ActiveSession({
   week,
   weeks,
   bodyweight,
+  defaultRestSeconds,
   alreadyFinished,
   stats,
   recentIds,
@@ -55,12 +58,14 @@ export function ActiveSession({
   week: number;
   weeks: number;
   bodyweight: number | null;
+  defaultRestSeconds: number;
   alreadyFinished: boolean;
   stats: ExerciseStat[];
   recentIds: string[];
   slots: SlotView[];
 }) {
   useScreenWakeLock();
+  const rest = useRestTimer();
   const [summary, setSummary] = useState<SessionSummary | null>(null);
   const [finishing, startFinish] = useTransition();
 
@@ -93,10 +98,12 @@ export function ActiveSession({
           stats={stats}
           bodyweight={bodyweight}
           recentIds={recentIds}
+          startRest={() => rest.start(slot.restSeconds ?? defaultRestSeconds)}
         />
       ))}
 
-      <div className="sticky bottom-0 -mx-4 mt-2 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
+      <div className="sticky bottom-0 -mx-4 mt-2 flex flex-col gap-2 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
+        <RestBar timer={rest} />
         <Button
           type="button"
           size="lg"
@@ -122,6 +129,7 @@ function SlotCard({
   stats,
   bodyweight,
   recentIds,
+  startRest,
 }: {
   sessionId: string;
   slot: SlotView;
@@ -129,6 +137,7 @@ function SlotCard({
   stats: ExerciseStat[];
   bodyweight: number | null;
   recentIds: string[];
+  startRest: () => void;
 }) {
   const [optimisticSets, applyOptimistic] = useOptimistic(
     slot.sets,
@@ -188,6 +197,9 @@ function SlotCard({
 
   function handleLog(weight: number, reps: number, rir: number) {
     setError(null);
+    // Rest starts the moment the set is logged (optimistically) — a failed write doesn't
+    // stop the clock, which matches what the lifter is already doing: resting.
+    startRest();
     startTransition(async () => {
       applyOptimistic({
         type: "add",

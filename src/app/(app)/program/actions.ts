@@ -22,6 +22,7 @@ export interface SaveSlotInput {
   repMin: number;
   repMax: number;
   targetRir: number;
+  restSeconds: number | null;
 }
 
 export interface SaveDayInput {
@@ -100,6 +101,7 @@ export async function saveProgram(input: SaveProgramInput) {
       rep_min: s.repMin,
       rep_max: s.repMax,
       target_rir: s.targetRir,
+      rest_seconds: s.restSeconds,
     })),
   );
   if (slotRows.length) {
@@ -209,7 +211,7 @@ export async function cloneProgram(id: string): Promise<string> {
 
     const { data: slots } = await supabase
       .from("program_slot")
-      .select("exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, position")
+      .select("exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, position")
       .eq("program_day_id", day.id)
       .order("position", { ascending: true });
 
@@ -224,6 +226,7 @@ export async function cloneProgram(id: string): Promise<string> {
           rep_min: s.rep_min,
           rep_max: s.rep_max,
           target_rir: s.target_rir,
+          rest_seconds: s.rest_seconds,
           position: s.position,
         })),
       );

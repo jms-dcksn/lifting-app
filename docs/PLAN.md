@@ -359,8 +359,12 @@ Cherry-pick by value; none are load-bearing for "run a real block."
 - Calendar-bound scheduling (days run in sequence)
 - Multiple concurrent active programs (one `is_active`; others saved)
 - Per-gym machine instances UI (`equipment_instance` exists but unused)
-- Social, sharing, export, Apple Health, rest timers, plate calculator
+- Social, sharing, export, Apple Health, plate calculator
 - Offline (we assume connectivity), kg, warmup tracking, onboarding polish
+
+> Rest timers were on this list and are no longer out of scope — built as Phase B
+> (`docs/superpowers/specs/2026-06-20-program-gallery-tags-rest-timer-design.md`), see
+> `docs/DECISIONS.md` "Phase B decisions". This list otherwise still holds.
 
 ## Sequencing notes
 - Phases are strictly ordered; **P2 is the keystone** — building it against a hardcoded program

@@ -26,9 +26,13 @@ type Draft = Program;
 export function ProgramBuilder({
   initial,
   recentIds,
+  afterSaveHref = "/",
+  cancelHref,
 }: {
   initial: Program | null;
   recentIds: string[];
+  afterSaveHref?: string;
+  cancelHref?: string;
 }) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(initial ?? blankProgram());
@@ -143,12 +147,19 @@ export function ProgramBuilder({
             })),
           })),
         });
-        router.push("/");
+        if (cancelHref) router.replace(afterSaveHref);
+        else router.push(afterSaveHref);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Could not save");
       }
     });
   }
+
+  function handleCancel() {
+    if (cancelHref) router.replace(cancelHref);
+  }
+
+  const saveLabel = initial?.isActive ? "Save changes" : "Save & make active";
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 py-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
@@ -262,15 +273,29 @@ export function ProgramBuilder({
 
       <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="mx-auto w-full max-w-page">
-          <Button
-            type="button"
-            size="lg"
-            className="w-full"
-            onClick={handleSave}
-            pending={saving}
-          >
-            Save &amp; make active
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="lg"
+              className="min-w-0 flex-1"
+              onClick={handleSave}
+              pending={saving}
+            >
+              {saveLabel}
+            </Button>
+            {cancelHref && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="lg"
+                className="shrink-0"
+                onClick={handleCancel}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

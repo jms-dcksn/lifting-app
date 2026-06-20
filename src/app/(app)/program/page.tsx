@@ -56,6 +56,9 @@ export default async function ProgramPage({
   }
 
   const editable = isNew || mode === "edit" || !initial;
+  const readOnlyHref = initial
+    ? `/program?id=${encodeURIComponent(initial.id)}`
+    : undefined;
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">
@@ -64,6 +67,8 @@ export default async function ProgramPage({
           key={isNew ? "new" : (initial?.id ?? "new")}
           initial={isNew ? null : initial}
           recentIds={recent}
+          afterSaveHref={readOnlyHref ?? "/"}
+          cancelHref={readOnlyHref}
         />
       ) : initial ? (
         <ProgramView program={initial} />

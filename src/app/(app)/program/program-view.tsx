@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Program, ProgramSlot } from "@/lib/program";
 import {
   EXERCISE_BY_ID,
@@ -9,25 +10,33 @@ import { Card } from "@/components/ui/card";
 
 export function ProgramView({ program }: { program: Program }) {
   const editHref = `/program?id=${encodeURIComponent(program.id)}&mode=edit`;
+  const title = program.name.trim() || "Untitled program";
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 py-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
       <div className="flex w-full max-w-page flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="break-words text-display">
-              {program.name.trim() || "Untitled program"}
-            </h1>
+            <h1 className="break-words text-display">{title}</h1>
             <p className="text-body text-muted">
               {program.weeks} {program.weeks === 1 ? "week" : "weeks"} -{" "}
               {program.days.length} {program.days.length === 1 ? "day" : "days"}
             </p>
           </div>
-          {program.isActive && (
-            <span className="shrink-0 rounded-control border border-border px-2 py-1 text-caption font-medium uppercase tracking-wide text-muted">
-              active
-            </span>
-          )}
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href={editHref}
+              aria-label={`Edit ${title}`}
+              className={buttonClasses("secondary", "sm")}
+            >
+              Edit
+            </Link>
+            {program.isActive && (
+              <span className="rounded-control border border-border px-2 py-1 text-caption font-medium uppercase tracking-wide text-muted">
+                active
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -72,9 +81,9 @@ export function ProgramView({ program }: { program: Program }) {
 
       <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="mx-auto w-full max-w-page">
-          <a href={editHref} className={buttonClasses("secondary", "lg", "w-full")}>
+          <Link href={editHref} className={buttonClasses("secondary", "lg", "w-full")}>
             Edit program
-          </a>
+          </Link>
         </div>
       </div>
     </div>

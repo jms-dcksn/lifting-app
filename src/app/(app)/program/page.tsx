@@ -11,14 +11,16 @@ import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button-styles";
 import { ProgramBuilder } from "./program-builder";
 import { ProgramList } from "./program-list";
+import { ProgramView } from "./program-view";
 import { createFromTemplate } from "./actions";
 
 export default async function ProgramPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string; mode?: string }>;
 }) {
-  const { id } = await searchParams;
+  const { id, mode } = await searchParams;
+  const isNew = id === "new";
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub as string | undefined;
@@ -30,11 +32,11 @@ export default async function ProgramPage({
   ]);
 
   let initial: Program | null = null;
-  if (id && id !== "new") initial = await getProgram(supabase, userId, id);
+  if (id && !isNew) initial = await getProgram(supabase, userId, id);
   else if (!id) initial = await getActiveProgram(supabase, userId);
 
   // First run, no programs: offer the template before showing a blank builder.
-  if (!initial && programs.length === 0 && id !== "new") {
+  if (!initial && programs.length === 0 && !isNew) {
     return (
       <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-6 py-10">
         <div>
@@ -53,10 +55,20 @@ export default async function ProgramPage({
     );
   }
 
+  const editable = isNew || mode === "edit" || !initial;
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">
-      <ProgramBuilder initial={id === "new" ? null : initial} recentIds={recent} />
-      <ProgramList programs={programs} editingId={initial?.id ?? "new"} />
+      {editable ? (
+        <ProgramBuilder
+          key={isNew ? "new" : (initial?.id ?? "new")}
+          initial={isNew ? null : initial}
+          recentIds={recent}
+        />
+      ) : initial ? (
+        <ProgramView program={initial} />
+      ) : null}
+      <ProgramList programs={programs} selectedId={initial?.id ?? "new"} />
     </div>
   );
 }

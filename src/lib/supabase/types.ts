@@ -88,18 +88,21 @@ export type Database = {
           bodyweight: number | null
           created_at: string
           display_name: string | null
+          goal_weight: number | null
           id: string
         }
         Insert: {
           bodyweight?: number | null
           created_at?: string
           display_name?: string | null
+          goal_weight?: number | null
           id: string
         }
         Update: {
           bodyweight?: number | null
           created_at?: string
           display_name?: string | null
+          goal_weight?: number | null
           id?: string
         }
         Relationships: []

@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { EXERCISE_BY_ID, type ExerciseDef } from "@/lib/strength/coefficients";
+import { useMemo, useState, useTransition } from "react";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import type { Program } from "@/lib/program";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -27,15 +27,18 @@ type Draft = Program;
 export function ProgramBuilder({
   initial,
   recentIds,
+  catalog,
   afterSaveHref = "/",
   cancelHref,
 }: {
   initial: Program | null;
   recentIds: string[];
+  catalog: ExerciseDef[];
   afterSaveHref?: string;
   cancelHref?: string;
 }) {
   const router = useRouter();
+  const byId = useMemo(() => Object.fromEntries(catalog.map((d) => [d.id, d])), [catalog]);
   const [draft, setDraft] = useState<Draft>(initial ?? blankProgram());
   const [pickerDayId, setPickerDayId] = useState<string | null>(null);
   const [saving, startSave] = useTransition();
@@ -234,15 +237,15 @@ export function ProgramBuilder({
                   className="rounded-control bg-surface p-3"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-body font-medium">{exerciseName(slot.exerciseId)}</span>
+                    <span className="text-body font-medium">{exerciseName(byId, slot.exerciseId)}</span>
                     <span className="flex items-center gap-1">
                       <ReorderButtons
-                        what={exerciseName(slot.exerciseId)}
+                        what={exerciseName(byId, slot.exerciseId)}
                         onUp={() => moveSlot(day.id, si, -1)}
                         onDown={() => moveSlot(day.id, si, 1)}
                       />
                       <RemoveButton
-                        what={exerciseName(slot.exerciseId)}
+                        what={exerciseName(byId, slot.exerciseId)}
                         onClick={() => removeSlot(day.id, slot.id)}
                       />
                     </span>
@@ -318,6 +321,7 @@ export function ProgramBuilder({
 
       {pickerDayId && (
         <ExercisePicker
+          catalog={catalog}
           recentIds={recentIds}
           onPick={(ex) => addSlot(pickerDayId, ex)}
           onClose={() => setPickerDayId(null)}
@@ -329,8 +333,8 @@ export function ProgramBuilder({
 
 type ProgramSlotLike = Draft["days"][number]["slots"][number];
 
-function exerciseName(id: string) {
-  return EXERCISE_BY_ID[id]?.name ?? id;
+function exerciseName(byId: Record<string, ExerciseDef>, id: string) {
+  return byId[id]?.name ?? id;
 }
 
 function ReorderButtons({

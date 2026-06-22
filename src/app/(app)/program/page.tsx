@@ -28,7 +28,10 @@ export default async function ProgramPage({
 
   // Builder: new program or editing an existing one.
   if (isNew || isEdit) {
-    const recent = await recentExerciseIds(supabase, userId);
+    const [recent, builderCatalog] = await Promise.all([
+      recentExerciseIds(supabase, userId),
+      getCatalogMap(supabase, userId),
+    ]);
     let initial: Program | null = null;
     if (isEdit) initial = await getProgram(supabase, userId, id!);
     return (
@@ -37,6 +40,7 @@ export default async function ProgramPage({
           key={isNew ? "new" : (initial?.id ?? "new")}
           initial={isNew ? null : initial}
           recentIds={recent}
+          catalog={Object.values(builderCatalog)}
           afterSaveHref="/program"
           cancelHref="/program"
         />

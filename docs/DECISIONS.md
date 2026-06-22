@@ -30,21 +30,23 @@ original complexity). No Fly.io, Docker, or sync engine.
 
 Cannot predict absolute machine loads from free weights (arbitrary leverage/pin/stack
 units). So machines are flagged `needsCalibration`: the first session is a calibration set
-(conservative guess), and one data point anchors everything after. Machine identity is
-ideally machine-at-a-gym (`equipment_instance`) since brand loading differs.
+(conservative guess), and one data point anchors everything after. Machine identity is a
+*variant* = generic template × brand × machine_type (Phase C below), stored in the `exercise`
+table, since brand loading differs.
 
-Gym context: Lifetime — barbell, dumbbell (to ~120lb), cables, plus Hammer Strength
-(plate-loaded ISO-lateral), Life Fitness / Hoist (selectorized pin), Technogym (selectorized).
+Gym context: Lifetime — barbell, dumbbell (to ~120lb), cables, plus machines from Hammer
+Strength, Life Fitness, Cybex, Hoist, Technogym, Precor, Matrix, Nautilus (the `KNOWN_BRANDS`
+dropdown seed; any other brand is free-text).
 
 ## Data model
 
 `set_log` is the source of truth; `user_exercise_stat` is a rebuildable cache. Program
 slots reference movement patterns, so "swap exercise" is a first-class operation. Seeded
-exercise catalog lives in `coefficients.ts` (app code); the `exercise` table holds only
-user-custom additions. Schema across four migrations: `0001_init.sql` (base), `0002_program_builder.sql`
-(program/day/slot, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql`
-(signup trigger hardening), `0004_session_finished_at.sql` (adds nullable `finished_at
-timestamptz` to `workout_session`). Typed DB types at `src/lib/supabase/types.ts`.
+exercise *templates* live in `coefficients.ts` (app code); the `exercise` table holds
+user-created brand/type variants and fully-custom exercises, merged with the seeded set by
+`src/lib/catalog.ts`. Schema across migrations `0001`–`0008` (see Phase C below for `0008`);
+`0002` adds program/day/slot + `profile.bodyweight` + `set_log.program_slot_id`, `0004` adds
+`workout_session.finished_at`. Typed DB types at `src/lib/supabase/types.ts`.
 
 ## Phase 2 decisions
 
@@ -337,6 +339,47 @@ defaults to `null` (use the profile default) rather than copying the profile's v
 creation time. This keeps "most slots use the default" cheap to express and means a later
 change to the profile default automatically applies to every slot that hasn't been
 explicitly overridden.
+
+## Phase C decisions (machine brands, types, custom exercises)
+
+Spec: `docs/superpowers/specs/2026-06-21-machine-brands-types-custom-exercises-design.md`;
+plan: `docs/superpowers/plans/2026-06-21-machine-brands-types-custom-exercises.md`.
+
+**Exercise identity gains a layer: templates → variants → customs.** `coefficients.ts` no
+longer bakes a brand into machine rows. Machine movements are now generic *templates*
+(`equipment: "machine"`, `machineTemplate: true`, no brand). A *variant* = template × brand ×
+machine_type, stored as a row in the (previously dormant) `exercise` table; this is the
+trackable identity `set_log.exercise_id` points at, created lazily via find-or-create
+(`resolveVariant`) the first time a brand/type combo is logged. A *custom exercise* is also an
+`exercise` row, with `base_exercise_id = null` and a user-picked pattern. `src/lib/catalog.ts`
+merges seeded templates with the user's DB rows into the `Record<id, ExerciseDef>` the pure
+engine already consumes (seeded ids win collisions); that merged catalog is threaded through
+every screen that used to import the static `EXERCISE_BY_ID`.
+
+**Equipment collapses to one `machine` value; `machine_type` is identity, not math.** The old
+`machine_plate`/`machine_pin` split is gone (nothing in the engine branched on it — only
+`equipment.startsWith("machine")` and `=== "bodyweight"`). Selectorized and plate-loaded both
+log total load; `machine_type` (`selectorized | plate_loaded`) only distinguishes one physical
+machine from another. Cross-machine recommendation falls out for free: a brand-new variant
+predicts from `pattern_strength × template coefficient`, and per-machine progression is just its
+own `exercise_id`.
+
+**Two judgment calls.** (1) Brand/type are scoped to `machine` equipment only — cables stay
+single exercises (one cable column behaves the same across brands), so the picker shows the
+brand/type step only for machines. (2) A `core` movement pattern was added with `cable-crunch`
+as its reference anchor, so ab work has a home in the pattern model.
+
+**Builder picks templates; the session resolves them.** The program builder stays
+brand-agnostic (`resolveMachines={false}`): a slot stores the generic machine template. The
+active-session picker runs with `resolveMachines`, so the first time a lifter reaches a machine
+slot they pick brand + type and the template is instantiated to a concrete variant before any
+set is logged. A bare template renders a "Choose machine" prompt instead of set-entry. Custom
+exercises created from either picker are concrete and immediately loggable.
+
+**Migration 0008** adds `exercise.machine_type` and `exercise.base_exercise_id` plus a partial
+unique index (`exercise_variant_unique` on `user_id, base_exercise_id, coalesce(brand,''),
+coalesce(machine_type,'')`) backing variant dedup. No `set_log` backfill — demo data is
+disposable, and old brand-baked ids (`hs-chest-press`, etc.) are simply gone.
 
 ## Build order
 

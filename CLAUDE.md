@@ -25,7 +25,8 @@ Tests run on **vitest**, scoped to the pure modules under `src/lib/` (config:
 `vitest.config.ts`, `include: src/lib/**/*.test.ts`, node environment, `@/` alias via
 native tsconfig-paths). The strength engine and analytics are framework-free, so the suite
 loads no Next.js/React. Co-locate new tests as `*.test.ts` next to the module. Current
-coverage: `e1rm`, `recommend`, `progression`, `program-tags`, `rest`.
+coverage: `e1rm`, `recommend`, `progression`, `program-tags`, `rest`, `coefficients`,
+`catalog`, `exercise-id`.
 
 ## Architecture
 
@@ -44,12 +45,17 @@ Five modules that must be understood together:
    reps-to-failure. This is the universal comparison unit; progressive overload = e1RM rising.
    Do not swap in a bare Epley/Brzycki formula — it drifts in the 1–12 rep range.
 
-2. **`coefficients.ts`** — the seeded exercise catalog (~38 exercises for a Lifetime gym).
-   Each exercise has a `pattern` (movement pattern), an `equipment` type, and a `coefficient`
-   = its strength relative to that pattern's reference lift (coefficient 1.0). This file is the
-   **source of truth** for seeded exercises; the `exercise` DB table holds only user-custom
-   additions. Logging conventions are encoded here and must stay consistent: barbell/machine =
-   total load, dumbbell = one dumbbell's weight.
+2. **`coefficients.ts`** — the seeded exercise catalog for a Lifetime gym. Each exercise has a
+   `pattern` (movement pattern), an `equipment` type (`barbell | dumbbell | cable | machine |
+   bodyweight`), and a `coefficient` = its strength relative to that pattern's reference lift
+   (coefficient 1.0). This file is the **source of truth** for seeded exercises. Machine
+   movements are seeded as *generic templates* (`equipment: "machine"`, `machineTemplate: true`,
+   no brand); the `exercise` DB table holds user-created brand/type *variants* and fully-custom
+   exercises, merged in by `src/lib/catalog.ts`. Logging conventions are encoded here and must
+   stay consistent: barbell/machine = total load (selectorized and plate-loaded both log total),
+   dumbbell = one dumbbell's weight. Also exports `KNOWN_BRANDS`, `MACHINE_TYPE_LABEL`, and the
+   `MachineType` (`selectorized | plate_loaded`) type. A machine template carries no absolute
+   load identity until instantiated to a variant (`resolveVariant`).
 
 3. **`recommend.ts`** — the model. One latent "pattern strength" per user per movement pattern
    (in reference-lift e1RM units), pooled from every logged variant. To recommend a weight for
@@ -87,12 +93,20 @@ machines predict like free weights.
 
 ### Data model (`supabase/migrations/`)
 
-Seven applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sql` (program/day/slot tables, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql` (signup trigger hardening), `0004_session_finished_at.sql` (adds nullable `finished_at timestamptz` to `workout_session`), `0005_goal_weight.sql` (adds nullable `profile.goal_weight`), `0006_program_metadata.sql` (renames the unused `program.notes` → `program.description`, adds `program.tags text[] not null default '{}'`), `0007_rest_timer.sql` (adds `profile.default_rest_seconds int not null default 120` and nullable `program_slot.rest_seconds int`, null = use the profile default). Typed DB types at `src/lib/supabase/types.ts`.
+Eight applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sql` (program/day/slot tables, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql` (signup trigger hardening), `0004_session_finished_at.sql` (adds nullable `finished_at timestamptz` to `workout_session`), `0005_goal_weight.sql` (adds nullable `profile.goal_weight`), `0006_program_metadata.sql` (renames the unused `program.notes` → `program.description`, adds `program.tags text[] not null default '{}'`), `0007_rest_timer.sql` (adds `profile.default_rest_seconds int not null default 120` and nullable `program_slot.rest_seconds int`, null = use the profile default), `0008_machine_variants.sql` (adds `exercise.machine_type` and `exercise.base_exercise_id`, plus the partial unique index `exercise_variant_unique` for variant dedup — activates the previously dormant `exercise` table). Typed DB types at `src/lib/supabase/types.ts`.
 
 - **`set_log` is the source of truth.** `user_exercise_stat` is a derived cache (current e1RM
   + personal coefficient) that is rebuildable from `set_log` — never let it drift.
-- `exercise_id` is a **text slug** (matching `coefficients.ts` ids) and is intentionally **not**
-  a foreign key, so the seeded catalog can live in app code.
+- `exercise_id` is a **text slug** and is intentionally **not** a foreign key, so the seeded
+  catalog can live in app code. A slug resolves through the **merged catalog** (`src/lib/catalog.ts`):
+  seeded templates from `coefficients.ts` plus the user's `exercise` rows (brand/type variants and
+  fully-custom exercises), seeded ids winning collisions. Variant ids are
+  `base__brand__machinetype` (`src/lib/exercise-id.ts`); custom ids are `custom-<slug>-<rand>`.
+  Variants are find-or-created by `resolveVariant` (`src/app/(app)/exercise/actions.ts`), backed by
+  the `exercise_variant_unique` index; `createCustomExercise` makes fully-custom rows. Every screen
+  that used to import the static `EXERCISE_BY_ID` now threads `getCatalogMap(supabase, userId)`
+  instead — including the calibration-critical `session/actions.ts`, so variants calibrate and
+  progress like any other exercise.
 - Program slots reference movement *patterns*, not fixed exercises — this is what makes "swap
   exercise" a first-class operation that re-derives weight automatically.
 - `set_log.program_slot_id` is populated from Phase 3 onward. Progression "last performance"
@@ -159,15 +173,22 @@ filter; a null tag returns everything). Tested in `program-tags.test.ts`.
 component with `ExerciseStat[]`, `recentExerciseIds`, and a per-slot
 `lastByExercise: Record<exerciseId, LastPerformance>` map. `active-session.tsx`'s
 `SlotCard` calls `sessionTarget()` client-side (`useMemo`) to derive each target, so a
-swap re-derives instantly with no round-trip. A slot's effective exercise id is the most
-recently logged exercise in that slot this session (falling back to the program slot's
-exercise), so an in-session swap survives a page reload. Swap is a `secondary` `Button` on
-the slot card (was a caption text link) that opens `ExercisePicker`
+swap re-derives instantly with no round-trip. `ActiveSession` holds the merged `catalog`
+(hydrated from `page.tsx` via `getCatalogMap`) in state and exposes `addToCatalog`, so a
+variant resolved in-session is merged in and immediately drives that slot's name/target.
+A slot's effective exercise id is the most recently logged exercise in that slot this session
+(falling back to the program slot's exercise), so an in-session swap survives a page reload.
+Swap is a `secondary` `Button` on the slot card that opens `ExercisePicker`
 (`program/exercise-picker.tsx`, a `Sheet`) filtered to the slot's pattern, with a "show all
-patterns" escape hatch (now visible pattern `Chip`s, not a text toggle); subsequent sets
-log against the swapped `exercise_id` + the original `program_slot_id`. Picking an exercise
-dismisses the sheet itself (animated); `onPick` only updates parent state and `onClose`
-only unmounts — both the builder's add-slot flow and swap follow this contract.
+patterns" escape hatch; subsequent sets log against the swapped `exercise_id` + the original
+`program_slot_id`. **Machine instantiation:** the session picker runs with `resolveMachines`,
+so picking a bare machine template opens a brand/type sub-step that calls `resolveVariant` and
+returns a concrete variant; a slot still on a template renders a "Choose machine (brand &
+type)" button instead of set-entry (`isTemplate` gate). The picker also has an "Add custom
+exercise" form (name + pattern + equipment, plus brand/type when equipment is machine) calling
+`createCustomExercise`. `onPick` always receives a concrete, loggable def; `onClose` only
+unmounts — the builder's add-slot flow (`resolveMachines` off → templates stored as-is) and
+swap both follow this contract.
 
 `SlotCard` tracks `isCurrent` (passed from the parent: the first slot whose logged set
 count is below its target, i.e. server-truth-derived) and renders `Card tone="done"` once

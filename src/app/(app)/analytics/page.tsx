@@ -10,7 +10,8 @@ import {
   type AnalyticsSetRow,
 } from "@/lib/analytics";
 import { createClient } from "@/lib/supabase/server";
-import { EXERCISE_BY_ID, PATTERN_LABEL } from "@/lib/strength/coefficients";
+import { getCatalogMap } from "@/lib/catalog";
+import { PATTERN_LABEL, type ExerciseDef } from "@/lib/strength/coefficients";
 import { Card, CardLabel } from "@/components/ui/card";
 import { cx } from "@/components/ui/cx";
 import { ExerciseList, type ExerciseListItem } from "./exercise-list";
@@ -60,9 +61,10 @@ export default async function AnalyticsPage() {
 
   if (error) throw new Error(error.message);
 
+  const catalog = await getCatalogMap(supabase, userId);
   const analyticsRows = normalizeRows((rows ?? []) as AnalyticsQueryRow[]);
   const bodyweight = profile?.bodyweight ?? null;
-  const volume = sessionTonnage(analyticsRows, EXERCISE_BY_ID, bodyweight);
+  const volume = sessionTonnage(analyticsRows, catalog, bodyweight);
   const summaries = exerciseSummaries(analyticsRows);
   const e1rmRecords = e1rmPrFeed(analyticsRows);
   const weightRecords = weightPrs(analyticsRows);
@@ -83,11 +85,11 @@ export default async function AnalyticsPage() {
     tonnage: Math.round(point.tonnage),
   }));
 
-  const balance = latestWeekBalance(analyticsRows, EXERCISE_BY_ID, bodyweight);
+  const balance = latestWeekBalance(analyticsRows, catalog, bodyweight);
   const maxBalanceSets = balance
     ? Math.max(...balance.patterns.map((pattern) => pattern.sets))
     : 0;
-  const strengthTrend = patternStrengthTrend(analyticsRows, EXERCISE_BY_ID);
+  const strengthTrend = patternStrengthTrend(analyticsRows, catalog);
 
   const gainers = summaries
     .filter((summary) => summary.delta != null && summary.delta > 0)
@@ -103,8 +105,8 @@ export default async function AnalyticsPage() {
 
   const listItems: ExerciseListItem[] = summaries.map((summary) => ({
     exerciseId: summary.exerciseId,
-    name: exerciseName(summary.exerciseId),
-    pattern: EXERCISE_BY_ID[summary.exerciseId]?.pattern ?? "unknown",
+    name: exerciseName(catalog, summary.exerciseId),
+    pattern: catalog[summary.exerciseId]?.pattern ?? "unknown",
     currentE1rm: summary.currentE1rm,
     bestE1rm: summary.bestE1rm,
     lastPerformedAt: summary.lastPerformedAt,
@@ -203,7 +205,7 @@ export default async function AnalyticsPage() {
                     >
                       <span className="min-w-0">
                         <span className="block truncate text-body font-medium">
-                          {exerciseName(summary.exerciseId)}
+                          {exerciseName(catalog, summary.exerciseId)}
                         </span>
                         <span className="block text-caption text-muted">
                           current {formatMaybe(summary.currentE1rm)} e1RM
@@ -259,7 +261,7 @@ export default async function AnalyticsPage() {
                 {recordFeed.map((record) => (
                   <li key={`${record.type}-${record.id}`} className="text-body">
                     <Link href={`/history/${record.exerciseId}`} className="block">
-                      <span className="block font-medium">{exerciseName(record.exerciseId)}</span>
+                      <span className="block font-medium">{exerciseName(catalog, record.exerciseId)}</span>
                       <span className="text-muted">
                         {record.type === "e1rm" ? (
                           <>
@@ -267,7 +269,7 @@ export default async function AnalyticsPage() {
                             {record.delta == null ? "· first mark" : <Delta value={record.delta} />}
                           </>
                         ) : (
-                          <>new max {formatWeightRecord(record.exerciseId, record.weight)}</>
+                          <>new max {formatWeightRecord(catalog, record.exerciseId, record.weight)}</>
                         )}{" "}
                         · {longDate(record.date)}
                       </span>
@@ -315,8 +317,8 @@ function normalizeRows(rows: AnalyticsQueryRow[]): AnalyticsSetRow[] {
   });
 }
 
-function exerciseName(exerciseId: string) {
-  return EXERCISE_BY_ID[exerciseId]?.name ?? exerciseId;
+function exerciseName(catalog: Record<string, ExerciseDef>, exerciseId: string) {
+  return catalog[exerciseId]?.name ?? exerciseId;
 }
 
 function formatMaybe(value: number | null) {
@@ -338,8 +340,12 @@ function longDate(iso: string) {
   });
 }
 
-function formatWeightRecord(exerciseId: string, weight: number) {
-  const def = EXERCISE_BY_ID[exerciseId];
+function formatWeightRecord(
+  catalog: Record<string, ExerciseDef>,
+  exerciseId: string,
+  weight: number,
+) {
+  const def = catalog[exerciseId];
   if (def?.equipment === "bodyweight") {
     if (weight < 0) return `${Math.abs(weight)} lb assist`;
     return `${weight} lb added`;

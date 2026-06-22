@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import type { Program, ProgramSlot } from "@/lib/program";
 import {
-  EXERCISE_BY_ID,
   PATTERN_LABEL,
   type Equipment,
+  type ExerciseDef,
 } from "@/lib/strength/coefficients";
 import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button-styles";
@@ -16,10 +16,12 @@ import { cloneProgram, setActiveProgram } from "./actions";
 
 export function ProgramCard({
   program,
+  defs,
   expanded,
   onToggle,
 }: {
   program: Program;
+  defs: Record<string, ExerciseDef>;
   expanded: boolean;
   onToggle: () => void;
 }) {
@@ -79,9 +81,9 @@ export function ProgramCard({
                   {day.slots.map((slot) => (
                     <li key={slot.id} className="rounded-control bg-surface p-3">
                       <h4 className="break-words text-body font-medium">
-                        {exerciseName(slot.exerciseId)}
+                        {exerciseName(defs, slot.exerciseId)}
                       </h4>
-                      <p className="mt-0.5 text-caption capitalize text-muted">{slotMeta(slot)}</p>
+                      <p className="mt-0.5 text-caption capitalize text-muted">{slotMeta(defs, slot)}</p>
                       <div className="mt-2 grid grid-cols-3 gap-2">
                         <StaticMetric label="Sets" value={slot.targetSets} />
                         <StaticMetric label="Reps" value={repRange(slot)} />
@@ -162,12 +164,12 @@ function StaticMetric({ label, value }: { label: string; value: React.ReactNode 
   );
 }
 
-function exerciseName(id: string) {
-  return EXERCISE_BY_ID[id]?.name ?? id;
+function exerciseName(defs: Record<string, ExerciseDef>, id: string) {
+  return defs[id]?.name ?? id;
 }
 
-function slotMeta(slot: ProgramSlot) {
-  const exercise = EXERCISE_BY_ID[slot.exerciseId];
+function slotMeta(defs: Record<string, ExerciseDef>, slot: ProgramSlot) {
+  const exercise = defs[slot.exerciseId];
   const pattern = PATTERN_LABEL[slot.pattern];
   if (!exercise) return pattern;
   return `${pattern} / ${equipmentLabel(exercise.equipment)}`;

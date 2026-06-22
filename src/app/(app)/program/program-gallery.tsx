@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Program } from "@/lib/program";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { filterByTag, uniqueTags } from "@/lib/program-tags";
 import { buttonClasses } from "@/components/ui/button-styles";
 import { ProgramCard } from "./program-card";
@@ -10,7 +11,13 @@ import { TagFilter } from "./tag-filter";
 
 // The program index: a tag filter over a list of expandable cards. One card expands at a
 // time. Filter + expand state are local; the program data is assembled server-side.
-export function ProgramGallery({ programs }: { programs: Program[] }) {
+export function ProgramGallery({
+  programs,
+  defs,
+}: {
+  programs: Program[];
+  defs: Record<string, ExerciseDef>;
+}) {
   const [expandedId, setExpandedId] = useState<string | null>(
     programs.find((p) => p.isActive)?.id ?? null,
   );
@@ -35,6 +42,7 @@ export function ProgramGallery({ programs }: { programs: Program[] }) {
           <li key={program.id}>
             <ProgramCard
               program={program}
+              defs={defs}
               expanded={expandedId === program.id}
               onToggle={() =>
                 setExpandedId((cur) => (cur === program.id ? null : program.id))

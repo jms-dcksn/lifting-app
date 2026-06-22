@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
+import { getCatalogMap } from "@/lib/catalog";
 import { Card, CardLabel } from "@/components/ui/card";
 import { E1rmChart, type ChartPoint } from "./e1rm-chart";
 
@@ -22,7 +22,8 @@ export default async function HistoryPage({
   const userId = claims?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
 
-  const def = EXERCISE_BY_ID[exerciseId];
+  const catalog = await getCatalogMap(supabase, userId);
+  const def = catalog[exerciseId];
   const name = def?.name ?? exerciseId;
   const isBodyweight = def?.equipment === "bodyweight";
 

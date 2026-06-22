@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCatalogMap } from "@/lib/catalog";
 import {
   getProgram,
   listProgramsFull,
@@ -44,7 +45,10 @@ export default async function ProgramPage({
   }
 
   // Gallery (default).
-  const programs = await listProgramsFull(supabase, userId);
+  const [programs, catalog] = await Promise.all([
+    listProgramsFull(supabase, userId),
+    getCatalogMap(supabase, userId),
+  ]);
 
   // First run, no programs: offer the template before showing a blank builder.
   if (programs.length === 0) {
@@ -68,7 +72,7 @@ export default async function ProgramPage({
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">
-      <ProgramGallery programs={programs} />
+      <ProgramGallery programs={programs} defs={catalog} />
     </div>
   );
 }

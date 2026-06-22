@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveProgram } from "@/lib/program";
-import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
+import { getCatalogMap } from "@/lib/catalog";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button-styles";
 import { Card, CardLabel } from "@/components/ui/card";
@@ -62,7 +63,8 @@ export default async function Home() {
   const week = Math.floor(completed / program.days.length) + 1;
   const nextDay = program.days[dayIndex];
 
-  const lastSummary = lastFinished ? await summarize(supabase, lastFinished) : null;
+  const catalog = await getCatalogMap(supabase, userId);
+  const lastSummary = lastFinished ? await summarize(supabase, lastFinished, catalog) : null;
 
   const totalSessions = program.days.length * program.weeks;
 
@@ -134,6 +136,7 @@ function BlockProgress({ completed, total }: { completed: number; total: number 
 async function summarize(
   supabase: Awaited<ReturnType<typeof createClient>>,
   session: { id: string; program_day_id: string | null },
+  catalog: Record<string, ExerciseDef>,
 ) {
   const [{ data: day }, { data: sets }] = await Promise.all([
     session.program_day_id
@@ -151,7 +154,7 @@ async function summarize(
     if (s.e1rm != null && (!topLift || s.e1rm > topLift.e1rm)) {
       topLift = {
         exerciseId: s.exercise_id,
-        name: EXERCISE_BY_ID[s.exercise_id]?.name ?? s.exercise_id,
+        name: catalog[s.exercise_id]?.name ?? s.exercise_id,
         e1rm: s.e1rm,
       };
     }

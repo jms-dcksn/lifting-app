@@ -43,6 +43,7 @@ export type Database = {
       }
       exercise: {
         Row: {
+          base_exercise_id: string | null
           brand: string | null
           coefficient: number
           created_at: string
@@ -50,12 +51,14 @@ export type Database = {
           id: string
           increment: number
           is_reference: boolean
+          machine_type: string | null
           name: string
           needs_calibration: boolean
           pattern: string
           user_id: string
         }
         Insert: {
+          base_exercise_id?: string | null
           brand?: string | null
           coefficient?: number
           created_at?: string
@@ -63,12 +66,14 @@ export type Database = {
           id: string
           increment?: number
           is_reference?: boolean
+          machine_type?: string | null
           name: string
           needs_calibration?: boolean
           pattern: string
           user_id: string
         }
         Update: {
+          base_exercise_id?: string | null
           brand?: string | null
           coefficient?: number
           created_at?: string
@@ -76,6 +81,7 @@ export type Database = {
           id?: string
           increment?: number
           is_reference?: boolean
+          machine_type?: string | null
           name?: string
           needs_calibration?: boolean
           pattern?: string

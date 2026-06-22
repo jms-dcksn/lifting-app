@@ -4,6 +4,7 @@ import type { Pattern } from "@/lib/strength/coefficients";
 import type { LastPerformance } from "@/lib/strength/progression";
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { recentExerciseIds } from "@/lib/program";
+import { getCatalogMap } from "@/lib/catalog";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
 
 export default async function SessionPage({
@@ -55,6 +56,8 @@ export default async function SessionPage({
         .order("set_index", { ascending: true }),
       recentExerciseIds(supabase, userId),
     ]);
+
+  const catalog = await getCatalogMap(supabase, userId);
 
   // Hydrated to the client: targets (and swap re-derivation) compute client-side.
   const stats: ExerciseStat[] = (statRows ?? []).map((r) => ({
@@ -130,6 +133,7 @@ export default async function SessionPage({
       stats={stats}
       recentIds={recentIds}
       slots={slots}
+      catalog={catalog}
     />
   );
 }

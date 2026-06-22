@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
-import { EXERCISE_BY_ID, type Pattern } from "@/lib/strength/coefficients";
+import { useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
+import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
 import {
   sessionTarget,
   startingWeight,
@@ -52,6 +52,7 @@ export function ActiveSession({
   stats,
   recentIds,
   slots,
+  catalog: initialCatalog,
 }: {
   sessionId: string;
   dayName: string;
@@ -63,9 +64,17 @@ export function ActiveSession({
   stats: ExerciseStat[];
   recentIds: string[];
   slots: SlotView[];
+  catalog: Record<string, ExerciseDef>;
 }) {
   useScreenWakeLock();
   const rest = useRestTimer();
+  // Holds the merged catalog in state so a variant resolved in-session can be added and
+  // immediately drive that slot's name/target without a round-trip.
+  const [catalog, setCatalog] = useState(initialCatalog);
+  const addToCatalog = useCallback(
+    (def: ExerciseDef) => setCatalog((c) => (c[def.id] ? c : { ...c, [def.id]: def })),
+    [],
+  );
   const [summary, setSummary] = useState<SessionSummary | null>(null);
   const [finishing, startFinish] = useTransition();
 
@@ -98,6 +107,8 @@ export function ActiveSession({
           stats={stats}
           bodyweight={bodyweight}
           recentIds={recentIds}
+          catalog={catalog}
+          onResolve={addToCatalog}
           startRest={() => rest.start(slot.restSeconds ?? defaultRestSeconds)}
         />
       ))}
@@ -129,6 +140,8 @@ function SlotCard({
   stats,
   bodyweight,
   recentIds,
+  catalog,
+  onResolve,
   startRest,
 }: {
   sessionId: string;
@@ -137,6 +150,8 @@ function SlotCard({
   stats: ExerciseStat[];
   bodyweight: number | null;
   recentIds: string[];
+  catalog: Record<string, ExerciseDef>;
+  onResolve: (def: ExerciseDef) => void;
   startRest: () => void;
 }) {
   const [optimisticSets, applyOptimistic] = useOptimistic(
@@ -156,10 +171,12 @@ function SlotCard({
   const [exerciseId, setExerciseId] = useState(slot.exerciseId);
   const [swapping, setSwapping] = useState(false);
 
-  const def = EXERCISE_BY_ID[exerciseId];
+  const def = catalog[exerciseId];
   const name = def?.name ?? exerciseId;
   const equipment = def?.equipment ?? "barbell";
   const increment = def?.increment ?? 5;
+  // A bare machine template isn't loggable — it must be instantiated to a brand/type variant.
+  const isTemplate = !!def?.machineTemplate;
 
   const p = slot.prescription;
   const isBodyweight = equipment === "bodyweight";
@@ -173,19 +190,19 @@ function SlotCard({
             def,
             { repMin: p.repMin, repMax: p.repMax, targetRir: p.targetRir },
             slot.lastByExercise[exerciseId] ?? null,
-            EXERCISE_BY_ID,
+            catalog,
             stats,
             bodyweight,
           )
         : null,
-    [def, exerciseId, p.repMin, p.repMax, p.targetRir, slot.lastByExercise, stats, bodyweight],
+    [def, catalog, exerciseId, p.repMin, p.repMax, p.targetRir, slot.lastByExercise, stats, bodyweight],
   );
 
   // Before any history exists, the suggested weight follows reps/RIR edits live.
   const liveWeight =
     def && target?.source === "recommendation"
       ? (reps: number, rir: number) =>
-          startingWeight(def, reps, rir, EXERCISE_BY_ID, stats, bodyweight)?.weight ?? null
+          startingWeight(def, reps, rir, catalog, stats, bodyweight)?.weight ?? null
       : undefined;
 
   const initialWeight = target?.weight ?? (isMachine ? 0 : isBodyweight ? 0 : 45);
@@ -263,7 +280,7 @@ function SlotCard({
           aria-label={`Swap ${name} for another exercise`}
           className="shrink-0"
         >
-          Swap
+          {isTemplate ? "Choose machine" : "Swap"}
         </Button>
       </div>
 
@@ -278,9 +295,14 @@ function SlotCard({
 
       {swapping && (
         <ExercisePicker
+          catalog={Object.values(catalog)}
           recentIds={recentIds}
           patternFilter={slot.pattern}
-          onPick={(e) => setExerciseId(e.id)}
+          resolveMachines
+          onPick={(picked) => {
+            onResolve(picked);
+            setExerciseId(picked.id);
+          }}
           onClose={() => setSwapping(false)}
         />
       )}
@@ -337,7 +359,13 @@ function SlotCard({
 
       {error && <p className="mt-2 text-caption text-danger">{error}</p>}
 
-      {editingId === null && (
+      {isTemplate ? (
+        <div className="mt-3">
+          <Button type="button" className="w-full" onClick={() => setSwapping(true)}>
+            Choose machine (brand &amp; type)
+          </Button>
+        </div>
+      ) : editingId === null ? (
         <div className="mt-3">
           <SetEntry
             key={exerciseId}
@@ -350,7 +378,7 @@ function SlotCard({
             onSubmit={handleLog}
           />
         </div>
-      )}
+      ) : null}
     </Card>
   );
 }

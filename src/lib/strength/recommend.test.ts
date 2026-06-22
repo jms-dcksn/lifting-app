@@ -19,22 +19,22 @@ const stat = (exerciseId: string, e: Partial<ExerciseStat> = {}): ExerciseStat =
 
 describe("effectiveCoefficient", () => {
   it("returns the population prior when there is no personal coefficient", () => {
-    const def = defs["hs-chest-press"]; // coefficient 0.9
+    const def = defs["machine-chest-press"]; // coefficient 0.9
     expect(effectiveCoefficient(def)).toBe(0.9);
-    expect(effectiveCoefficient(def, stat("hs-chest-press"))).toBe(0.9);
+    expect(effectiveCoefficient(def, stat("machine-chest-press"))).toBe(0.9);
   });
 
   it("shrinks the personal coefficient toward the prior by confidence (k=4)", () => {
-    const def = defs["hs-chest-press"]; // prior 0.9
-    const s = stat("hs-chest-press", { personalCoefficient: 1.2, confidenceN: 4 });
+    const def = defs["machine-chest-press"]; // prior 0.9
+    const s = stat("machine-chest-press", { personalCoefficient: 1.2, confidenceN: 4 });
     // (4*1.2 + 4*0.9) / (4 + 4) = 1.05
     expect(effectiveCoefficient(def, s)).toBeCloseTo(1.05, 6);
   });
 
   it("approaches the personal coefficient as confidence grows", () => {
-    const def = defs["hs-chest-press"];
-    const lowN = effectiveCoefficient(def, stat("hs-chest-press", { personalCoefficient: 1.5, confidenceN: 1 }));
-    const highN = effectiveCoefficient(def, stat("hs-chest-press", { personalCoefficient: 1.5, confidenceN: 50 }));
+    const def = defs["machine-chest-press"];
+    const lowN = effectiveCoefficient(def, stat("machine-chest-press", { personalCoefficient: 1.5, confidenceN: 1 }));
+    const highN = effectiveCoefficient(def, stat("machine-chest-press", { personalCoefficient: 1.5, confidenceN: 50 }));
     expect(highN).toBeGreaterThan(lowN);
     expect(highN).toBeCloseTo(1.5, 1);
   });
@@ -96,7 +96,7 @@ describe("recommend", () => {
   it("biases a fresh machine conservative and flags it for calibration", () => {
     const stats = [stat("bb-bench", { currentE1rm: 200 })];
     const plain = recommend(defs["bb-incline-bench"], 8, 2, defs, stats)!; // free weight, no discount
-    const machine = recommend(defs["hs-chest-press"], 8, 2, defs, stats)!; // needsCalibration
+    const machine = recommend(defs["machine-chest-press"], 8, 2, defs, stats)!; // needsCalibration
     expect(machine.confidence).toBe("calibrate");
     // discounted 15% off the naive predicted weight
     const naive = roundToIncrement(weightForTarget(200 * 0.9, 8, 2), 5);

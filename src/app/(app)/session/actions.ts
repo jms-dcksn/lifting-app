@@ -3,7 +3,8 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
+import { getCatalogMap } from "@/lib/catalog";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { computeE1rm } from "@/lib/strength/e1rm";
 import { recomputeStat, effectiveLoad } from "@/lib/strength/recompute";
 import { estimatePatternStrength, type ExerciseStat } from "@/lib/strength/recommend";
@@ -45,8 +46,9 @@ async function recomputeAndUpsertStat(
   userId: string,
   exerciseId: string,
   bodyweight: number | null,
+  catalog: Record<string, ExerciseDef>,
 ) {
-  const def = EXERCISE_BY_ID[exerciseId];
+  const def = catalog[exerciseId];
   if (!def) return;
   const { data: sets } = await supabase
     .from("set_log")
@@ -79,7 +81,7 @@ async function recomputeAndUpsertStat(
           personalCoefficient: r.personal_coefficient,
           confidenceN: r.coeff_confidence_n,
         }));
-      const patternStrength = estimatePatternStrength(def.pattern, EXERCISE_BY_ID, others);
+      const patternStrength = estimatePatternStrength(def.pattern, catalog, others);
       if (patternStrength) personal = currentE1rm / patternStrength;
     }
     calibration = {
@@ -161,7 +163,8 @@ export interface LogSetInput {
 // Compute e1RM, insert the set, refresh the derived stat. Returns the persisted row.
 export async function logSet(input: LogSetInput) {
   const { supabase, userId } = await requireUser();
-  const def = EXERCISE_BY_ID[input.exerciseId];
+  const catalog = await getCatalogMap(supabase, userId);
+  const def = catalog[input.exerciseId];
   if (!def) throw new Error(`Unknown exercise: ${input.exerciseId}`);
 
   // set_index is per (session, slot) so a duplicated exercise across two slots keeps
@@ -217,7 +220,7 @@ export async function logSet(input: LogSetInput) {
 
   if (error || !data) throw new Error(error?.message ?? "Could not log set");
 
-  await recomputeAndUpsertStat(supabase, userId, input.exerciseId, bodyweight);
+  await recomputeAndUpsertStat(supabase, userId, input.exerciseId, bodyweight, catalog);
   revalidatePath(`/session/${input.sessionId}`);
   return data;
 }
@@ -239,7 +242,8 @@ export async function editSet(input: EditSetInput) {
     .single();
   if (!existing) throw new Error("Set not found");
 
-  const def = EXERCISE_BY_ID[existing.exercise_id];
+  const catalog = await getCatalogMap(supabase, userId);
+  const def = catalog[existing.exercise_id];
   const bodyweight = await getBodyweight(supabase, userId);
   const load = def ? effectiveLoad(def, input.weight, bodyweight) : input.weight;
   const e1rm =
@@ -251,7 +255,7 @@ export async function editSet(input: EditSetInput) {
     .eq("id", input.setId);
   if (error) throw new Error(error.message);
 
-  await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight);
+  await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight, catalog);
   revalidatePath(`/session/${existing.session_id}`);
 }
 
@@ -268,8 +272,9 @@ export async function deleteSet(setId: string) {
   const { error } = await supabase.from("set_log").delete().eq("id", setId);
   if (error) throw new Error(error.message);
 
+  const catalog = await getCatalogMap(supabase, userId);
   const bodyweight = await getBodyweight(supabase, userId);
-  await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight);
+  await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight, catalog);
   revalidatePath(`/session/${existing.session_id}`);
 }
 
@@ -282,6 +287,7 @@ export interface SessionSummary {
 // Mark finished, return the summary (total working sets, top e1RM per lift, overload delta).
 export async function finishSession(sessionId: string): Promise<SessionSummary> {
   const { supabase, userId } = await requireUser();
+  const catalog = await getCatalogMap(supabase, userId);
 
   const { data: session } = await supabase
     .from("workout_session")
@@ -341,7 +347,7 @@ export async function finishSession(sessionId: string): Promise<SessionSummary> 
   const topE1rm = [...best.entries()]
     .map(([exerciseId, e1rm]) => ({
       exerciseId,
-      name: EXERCISE_BY_ID[exerciseId]?.name ?? exerciseId,
+      name: catalog[exerciseId]?.name ?? exerciseId,
       e1rm,
       prevE1rm: prevBest.get(exerciseId) ?? null,
     }))

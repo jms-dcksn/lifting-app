@@ -74,11 +74,17 @@ export default async function Home() {
         <div>
           <h1 className="text-display">{program.name}</h1>
           <p className="text-body text-muted">
-            Week {week} of {program.weeks} · next:{" "}
+            {program.style === "fluid" ? "Next" : `Week ${week} of ${program.weeks} · next`}:{" "}
             <span className="font-medium text-foreground">{nextDay.name}</span>
           </p>
         </div>
-        <BlockProgress completed={completed} total={totalSessions} />
+        {program.style === "fluid" ? (
+          <p className="text-caption text-muted">
+            Session {completed + 1} · adaptive — movements adjust as you plateau
+          </p>
+        ) : (
+          <BlockProgress completed={completed} total={totalSessions} />
+        )}
       </div>
 
       {open ? (

@@ -20,6 +20,8 @@ import {
   editSet,
   deleteSet,
   finishSession,
+  acceptAdaptation,
+  dismissAdaptation,
   type SessionSummary,
 } from "../actions";
 
@@ -171,6 +173,12 @@ function SlotCard({
   // original program_slot_id, so each exercise's progression chain stays intact.
   const [exerciseId, setExerciseId] = useState(slot.exerciseId);
   const [swapping, setSwapping] = useState(false);
+  // Fluid plateau suggestion: shown before any set is logged this session; accepting writes a
+  // movement_adaptation row, "Keep going" snoozes it.
+  const [dismissed, setDismissed] = useState(false);
+  const [applying, startApply] = useTransition();
+  const suggestion = slot.pendingSuggestion;
+  const showSuggestion = !!suggestion && !dismissed && slot.sets.length === 0;
 
   const def = catalog[exerciseId];
   const name = def?.name ?? exerciseId;
@@ -293,6 +301,114 @@ function SlotCard({
       </div>
 
       <TargetLine target={target} isBodyweight={isBodyweight} done={done} />
+
+      {showSuggestion && suggestion && (
+        <div className="mt-3 rounded-card border border-border-strong p-3">
+          <p className="text-caption uppercase tracking-wide text-muted">Plateau detected</p>
+          <p className="mt-1 text-body">
+            {name} · no new e1RM high in {suggestion.stalledExposures} sessions.
+          </p>
+          {suggestion.action === "rep_change" && suggestion.repBand && (
+            <>
+              <p className="mt-1 text-body">
+                Try{" "}
+                <span className="font-medium text-foreground">
+                  {suggestion.repBand.repMin}–{suggestion.repBand.repMax} reps
+                  {suggestion.weight != null ? ` @ ${suggestion.weight} lb` : ""}
+                </span>
+                .
+              </p>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  pending={applying}
+                  onClick={() =>
+                    startApply(async () => {
+                      await acceptAdaptation({
+                        sessionId,
+                        programSlotId: slot.programSlotId,
+                        exerciseId,
+                        action: "rep_change",
+                        ladderStep: suggestion.ladderStep,
+                        newRepMin: suggestion.repBand!.repMin,
+                        newRepMax: suggestion.repBand!.repMax,
+                      });
+                    })
+                  }
+                >
+                  Accept
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() =>
+                    startApply(async () => {
+                      await dismissAdaptation({ programSlotId: slot.programSlotId, exerciseId });
+                      setDismissed(true);
+                    })
+                  }
+                >
+                  Keep going
+                </Button>
+              </div>
+            </>
+          )}
+          {suggestion.action === "swap" && (
+            <>
+              <p className="mt-1 text-body">Stuck here — try a different movement:</p>
+              <ul className="mt-2 flex flex-col gap-1">
+                {suggestion.candidates?.map((c) => (
+                  <li key={c.exerciseId}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="w-full justify-between"
+                      pending={applying}
+                      onClick={() =>
+                        startApply(async () => {
+                          await acceptAdaptation({
+                            sessionId,
+                            programSlotId: slot.programSlotId,
+                            exerciseId,
+                            action: "swap",
+                            ladderStep: suggestion.ladderStep,
+                            newExerciseId: c.exerciseId,
+                          });
+                          setExerciseId(c.exerciseId);
+                        })
+                      }
+                    >
+                      <span>{c.name}</span>
+                      {c.weight != null && <span className="tabular-nums text-muted">{c.weight} lb</span>}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-2 flex gap-2">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setSwapping(true)}>
+                  Other options
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() =>
+                    startApply(async () => {
+                      await dismissAdaptation({ programSlotId: slot.programSlotId, exerciseId });
+                      setDismissed(true);
+                    })
+                  }
+                >
+                  Keep going
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {swapping && (
         <ExercisePicker

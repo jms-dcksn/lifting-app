@@ -18,7 +18,7 @@ const uid = () => crypto.randomUUID();
 const MAX_DAYS = 6;
 
 function blankProgram(): Program {
-  return { id: uid(), name: "", description: null, tags: [], weeks: 5, isActive: true, days: [] };
+  return { id: uid(), name: "", description: null, tags: [], weeks: 5, style: "classic", isActive: true, days: [] };
 }
 
 // Local editable mirror of SaveProgramInput. Program type already matches closely.
@@ -91,6 +91,7 @@ export function ProgramBuilder({
           repMax: 12,
           targetRir: 2,
           restSeconds: null,
+          plateauPatience: null,
         });
       }
       return d;
@@ -140,6 +141,7 @@ export function ProgramBuilder({
           description: draft.description,
           tags: draft.tags,
           weeks: draft.weeks,
+          style: draft.style,
           days: draft.days.map<SaveDayInput>((d) => ({
             id: d.id,
             name: d.name,
@@ -152,6 +154,7 @@ export function ProgramBuilder({
               repMax: s.repMax,
               targetRir: s.targetRir,
               restSeconds: s.restSeconds,
+              plateauPatience: s.plateauPatience,
             })),
           })),
         });
@@ -188,20 +191,50 @@ export function ProgramBuilder({
           className="w-full resize-none rounded-control border border-border-strong bg-transparent p-2 text-body outline-none"
         />
         <TagInput value={draft.tags} onChange={(tags) => update((d) => ({ ...d, tags }))} />
-        <div className="flex items-center gap-3 text-body">
-          <span className="text-muted">Repeat for</span>
-          <Stepper
-            label="Weeks"
-            layout="row"
-            inputMode="numeric"
-            value={draft.weeks}
-            step={1}
-            min={4}
-            max={6}
-            onChange={(v) => update((d) => ({ ...d, weeks: v }))}
-          />
-          <span className="text-muted">weeks</span>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-body text-muted">Progression style</span>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={draft.style === "classic" ? "primary" : "secondary"}
+              size="sm"
+              onClick={() => update((d) => ({ ...d, style: "classic" }))}
+            >
+              Classic
+            </Button>
+            <Button
+              type="button"
+              variant={draft.style === "fluid" ? "primary" : "secondary"}
+              size="sm"
+              onClick={() => update((d) => ({ ...d, style: "fluid" }))}
+            >
+              Adaptive
+            </Button>
+          </div>
+          <p className="text-caption text-muted">
+            {draft.style === "fluid"
+              ? "Runs indefinitely. Each movement is tracked for plateaus and swapped or re-ranged when it stalls."
+              : "Fixed block of weeks with double-progression."}
+          </p>
         </div>
+
+        {draft.style === "classic" && (
+          <div className="flex items-center gap-3 text-body">
+            <span className="text-muted">Repeat for</span>
+            <Stepper
+              label="Weeks"
+              layout="row"
+              inputMode="numeric"
+              value={draft.weeks}
+              step={1}
+              min={4}
+              max={6}
+              onChange={(v) => update((d) => ({ ...d, weeks: v }))}
+            />
+            <span className="text-muted">weeks</span>
+          </div>
+        )}
       </div>
 
       {/* Days: vertical stack on phones, horizontal scroller when width allows. */}
@@ -264,6 +297,26 @@ export function ProgramBuilder({
                     value={slot.restSeconds}
                     onChange={(v) => updateSlot(day.id, slot.id, { restSeconds: v })}
                   />
+                  {draft.style === "fluid" && (
+                    <label className="mt-2 flex items-center justify-between gap-2 text-caption text-muted">
+                      <span className="uppercase tracking-wide">Patience</span>
+                      <select
+                        value={slot.plateauPatience ?? ""}
+                        onChange={(e) =>
+                          updateSlot(day.id, slot.id, {
+                            plateauPatience: e.target.value === "" ? null : Number(e.target.value),
+                          })
+                        }
+                        className="h-9 rounded-control border border-border-strong bg-transparent px-2 text-sm font-semibold"
+                      >
+                        <option value="">Auto</option>
+                        <option value="2">Low (2)</option>
+                        <option value="3">Normal (3)</option>
+                        <option value="4">High (4)</option>
+                        <option value="5">Very high (5)</option>
+                      </select>
+                    </label>
+                  )}
                 </li>
               ))}
             </ul>

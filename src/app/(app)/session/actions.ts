@@ -356,3 +356,52 @@ export async function finishSession(sessionId: string): Promise<SessionSummary> 
   revalidatePath("/");
   return { totalSets: sets?.length ?? 0, topE1rm };
 }
+
+// Fluid programs: record an accepted plateau intervention (rep-range change or swap) to the
+// append-only movement_adaptation log. The resulting ladder step is 0 after a swap (fresh
+// movement) or +1 after a rep change. The folded prescription advances, so the suggestion
+// self-clears next load.
+export async function acceptAdaptation(input: {
+  sessionId: string;
+  programSlotId: string;
+  exerciseId: string;
+  action: "rep_change" | "swap";
+  ladderStep: number;
+  newExerciseId?: string;
+  newRepMin?: number;
+  newRepMax?: number;
+}): Promise<void> {
+  const { supabase, userId } = await requireUser();
+
+  const resultingStep = input.action === "swap" ? 0 : input.ladderStep + 1;
+
+  const { error } = await supabase.from("movement_adaptation").insert({
+    user_id: userId,
+    program_slot_id: input.programSlotId,
+    exercise_id: input.exerciseId,
+    action: input.action,
+    new_exercise_id: input.newExerciseId ?? null,
+    new_rep_min: input.newRepMin ?? null,
+    new_rep_max: input.newRepMax ?? null,
+    ladder_step: resultingStep,
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/session/${input.sessionId}`);
+}
+
+// "Keep going": snooze the suggestion for SNOOZE_EXPOSURES more exposures.
+export async function dismissAdaptation(input: {
+  programSlotId: string;
+  exerciseId: string;
+}): Promise<void> {
+  const { supabase, userId } = await requireUser();
+
+  const { error } = await supabase.from("movement_adaptation").insert({
+    user_id: userId,
+    program_slot_id: input.programSlotId,
+    exercise_id: input.exerciseId,
+    action: "dismiss",
+  });
+  if (error) throw new Error(error.message);
+}

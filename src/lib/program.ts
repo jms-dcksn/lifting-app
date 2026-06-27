@@ -18,6 +18,7 @@ export interface ProgramSlot {
   repMax: number;
   targetRir: number;
   restSeconds: number | null;
+  plateauPatience: number | null;
 }
 
 export interface ProgramDay {
@@ -33,6 +34,7 @@ export interface Program {
   tags: string[];
   weeks: number;
   isActive: boolean;
+  style: "classic" | "fluid";
   days: ProgramDay[];
 }
 
@@ -45,6 +47,7 @@ async function assemble(
     tags: string[];
     weeks: number | null;
     is_active: boolean;
+    style: string;
   },
 ): Promise<Program> {
   const { data: days } = await supabase
@@ -57,7 +60,7 @@ async function assemble(
   const { data: slots } = dayIds.length
     ? await supabase
         .from("program_slot")
-        .select("id, program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, position")
+        .select("id, program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, position")
         .in("program_day_id", dayIds)
         .order("position", { ascending: true })
     : { data: [] };
@@ -74,6 +77,7 @@ async function assemble(
       repMax: s.rep_max,
       targetRir: s.target_rir,
       restSeconds: s.rest_seconds,
+      plateauPatience: s.plateau_patience,
     });
     slotsByDay.set(s.program_day_id, list);
   }
@@ -85,6 +89,7 @@ async function assemble(
     tags: row.tags ?? [],
     weeks: row.weeks ?? 5,
     isActive: row.is_active,
+    style: (row.style as "classic" | "fluid") ?? "classic",
     days: (days ?? []).map((d) => ({
       id: d.id,
       name: d.name,
@@ -99,7 +104,7 @@ export async function getActiveProgram(
 ): Promise<Program | null> {
   const { data: row } = await supabase
     .from("program")
-    .select("id, name, description, tags, weeks, is_active")
+    .select("id, name, description, tags, weeks, is_active, style")
     .eq("user_id", userId)
     .eq("is_active", true)
     .maybeSingle();
@@ -114,7 +119,7 @@ export async function getProgram(
 ): Promise<Program | null> {
   const { data: row } = await supabase
     .from("program")
-    .select("id, name, description, tags, weeks, is_active")
+    .select("id, name, description, tags, weeks, is_active, style")
     .eq("user_id", userId)
     .eq("id", id)
     .maybeSingle();
@@ -131,7 +136,7 @@ export async function listProgramsFull(
 ): Promise<Program[]> {
   const { data: rows } = await supabase
     .from("program")
-    .select("id, name, description, tags, weeks, is_active")
+    .select("id, name, description, tags, weeks, is_active, style")
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
   return Promise.all((rows ?? []).map((row) => assemble(supabase, row)));

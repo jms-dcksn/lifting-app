@@ -129,3 +129,60 @@ export function rankSwapCandidates(cands: SwapCandidateInput[]): SwapCandidateIn
       Number(a.recentlyPlateaued) - Number(b.recentlyPlateaued) || b.recencyRank - a.recencyRank,
   );
 }
+
+export interface AdaptationRow {
+  action: AdaptationAction | "dismiss";
+  newExerciseId: string | null;
+  newRepMin: number | null;
+  newRepMax: number | null;
+  createdAt: string;
+}
+
+export interface FoldedPrescription {
+  exerciseId: string;
+  repMin: number;
+  repMax: number;
+  ladderStep: number;
+  phaseStartAt: string | null; // createdAt of the last rep_change/swap; null = original phase
+  recentBands: RepBand[]; // rep_change bands used since the last swap
+  lastDismissAt: string | null;
+}
+
+// Current prescription = base slot folded with accepted adaptation rows (chronological).
+// set_log stays the source of truth for performance; this folds the INTENT log.
+export function foldPrescription(
+  base: { exerciseId: string; repMin: number; repMax: number },
+  rows: AdaptationRow[],
+): FoldedPrescription {
+  const homeBand = { repMin: base.repMin, repMax: base.repMax };
+  const state: FoldedPrescription = {
+    exerciseId: base.exerciseId,
+    repMin: base.repMin,
+    repMax: base.repMax,
+    ladderStep: 0,
+    phaseStartAt: null,
+    recentBands: [],
+    lastDismissAt: null,
+  };
+
+  for (const row of rows) {
+    if (row.action === "rep_change" && row.newRepMin != null && row.newRepMax != null) {
+      state.repMin = row.newRepMin;
+      state.repMax = row.newRepMax;
+      state.ladderStep += 1;
+      state.phaseStartAt = row.createdAt;
+      state.recentBands = [...state.recentBands, { repMin: row.newRepMin, repMax: row.newRepMax }];
+    } else if (row.action === "swap" && row.newExerciseId) {
+      state.exerciseId = row.newExerciseId;
+      state.repMin = homeBand.repMin;
+      state.repMax = homeBand.repMax;
+      state.ladderStep = 0;
+      state.phaseStartAt = row.createdAt;
+      state.recentBands = [];
+    } else if (row.action === "dismiss") {
+      state.lastDismissAt = row.createdAt;
+    }
+  }
+
+  return state;
+}

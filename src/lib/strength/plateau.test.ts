@@ -6,8 +6,10 @@ import {
   pickRepBand,
   nextLadderAction,
   rankSwapCandidates,
+  foldPrescription,
   type PhaseExposure,
   type SwapCandidateInput,
+  type AdaptationRow,
 } from "./plateau";
 import type { ExerciseDef } from "./coefficients";
 
@@ -118,5 +120,41 @@ describe("rankSwapCandidates", () => {
   it("among fresh movements, prefers the most novel (staler/never trained)", () => {
     const ranked = rankSwapCandidates([c("recent", false, 0), c("stale", false, 99)]);
     expect(ranked[0].exerciseId).toBe("stale");
+  });
+});
+
+describe("foldPrescription", () => {
+  const base = { exerciseId: "db-bench", repMin: 8, repMax: 12 };
+
+  it("returns the base when there are no adaptations", () => {
+    const f = foldPrescription(base, []);
+    expect(f).toMatchObject({ exerciseId: "db-bench", repMin: 8, repMax: 12, ladderStep: 0, phaseStartAt: null });
+  });
+
+  it("applies a rep_change: new band, ladder step 1, phase start set", () => {
+    const rows: AdaptationRow[] = [
+      { action: "rep_change", newExerciseId: null, newRepMin: 5, newRepMax: 8, createdAt: "2026-02-01T00:00:00Z" },
+    ];
+    const f = foldPrescription(base, rows);
+    expect(f).toMatchObject({ exerciseId: "db-bench", repMin: 5, repMax: 8, ladderStep: 1, phaseStartAt: "2026-02-01T00:00:00Z" });
+    expect(f.recentBands).toEqual([{ repMin: 5, repMax: 8 }]);
+  });
+
+  it("applies a swap: new exercise, home band restored, ladder reset, recentBands cleared", () => {
+    const rows: AdaptationRow[] = [
+      { action: "rep_change", newExerciseId: null, newRepMin: 5, newRepMax: 8, createdAt: "2026-02-01T00:00:00Z" },
+      { action: "swap", newExerciseId: "machine-chest-press", newRepMin: null, newRepMax: null, createdAt: "2026-03-01T00:00:00Z" },
+    ];
+    const f = foldPrescription(base, rows);
+    expect(f).toMatchObject({ exerciseId: "machine-chest-press", repMin: 8, repMax: 12, ladderStep: 0, phaseStartAt: "2026-03-01T00:00:00Z" });
+    expect(f.recentBands).toEqual([]);
+  });
+
+  it("records the latest dismiss without changing the prescription", () => {
+    const rows: AdaptationRow[] = [
+      { action: "dismiss", newExerciseId: null, newRepMin: null, newRepMax: null, createdAt: "2026-02-10T00:00:00Z" },
+    ];
+    const f = foldPrescription(base, rows);
+    expect(f).toMatchObject({ exerciseId: "db-bench", repMin: 8, repMax: 12, lastDismissAt: "2026-02-10T00:00:00Z" });
   });
 });

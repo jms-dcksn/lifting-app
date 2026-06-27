@@ -23,6 +23,7 @@ export interface SaveSlotInput {
   repMax: number;
   targetRir: number;
   restSeconds: number | null;
+  plateauPatience: number | null;
 }
 
 export interface SaveDayInput {
@@ -37,6 +38,7 @@ export interface SaveProgramInput {
   description: string | null;
   tags: string[];
   weeks: number;
+  style: "classic" | "fluid";
   days: SaveDayInput[];
 }
 
@@ -64,7 +66,7 @@ export async function saveProgram(input: SaveProgramInput) {
 
   const { error: progErr } = await supabase
     .from("program")
-    .upsert({ id: input.id, user_id: userId, name, description, tags, weeks, is_active: true });
+    .upsert({ id: input.id, user_id: userId, name, description, tags, weeks, style: input.style, is_active: true });
   if (progErr) throw new Error(progErr.message);
 
   // Days: upsert incoming, then delete any removed (cascade drops their slots).
@@ -102,6 +104,7 @@ export async function saveProgram(input: SaveProgramInput) {
       rep_max: s.repMax,
       target_rir: s.targetRir,
       rest_seconds: s.restSeconds,
+      plateau_patience: s.plateauPatience,
     })),
   );
   if (slotRows.length) {
@@ -182,7 +185,7 @@ export async function cloneProgram(id: string): Promise<string> {
 
   const { data: src } = await supabase
     .from("program")
-    .select("name, weeks")
+    .select("name, weeks, style")
     .eq("user_id", userId)
     .eq("id", id)
     .single();
@@ -190,7 +193,7 @@ export async function cloneProgram(id: string): Promise<string> {
 
   const { data: newProg, error: progErr } = await supabase
     .from("program")
-    .insert({ user_id: userId, name: `${src.name} (copy)`, weeks: src.weeks, is_active: false })
+    .insert({ user_id: userId, name: `${src.name} (copy)`, weeks: src.weeks, style: src.style, is_active: false })
     .select("id")
     .single();
   if (progErr || !newProg) throw new Error(progErr?.message ?? "Could not clone program");
@@ -211,7 +214,7 @@ export async function cloneProgram(id: string): Promise<string> {
 
     const { data: slots } = await supabase
       .from("program_slot")
-      .select("exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, position")
+      .select("exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, position")
       .eq("program_day_id", day.id)
       .order("position", { ascending: true });
 
@@ -227,6 +230,7 @@ export async function cloneProgram(id: string): Promise<string> {
           rep_max: s.rep_max,
           target_rir: s.target_rir,
           rest_seconds: s.rest_seconds,
+          plateau_patience: s.plateau_patience,
           position: s.position,
         })),
       );

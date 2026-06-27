@@ -18,7 +18,7 @@ const uid = () => crypto.randomUUID();
 const MAX_DAYS = 6;
 
 function blankProgram(): Program {
-  return { id: uid(), name: "", description: null, tags: [], weeks: 5, isActive: true, days: [] };
+  return { id: uid(), name: "", description: null, tags: [], weeks: 5, style: "classic", isActive: true, days: [] };
 }
 
 // Local editable mirror of SaveProgramInput. Program type already matches closely.
@@ -91,6 +91,7 @@ export function ProgramBuilder({
           repMax: 12,
           targetRir: 2,
           restSeconds: null,
+          plateauPatience: null,
         });
       }
       return d;
@@ -140,6 +141,7 @@ export function ProgramBuilder({
           description: draft.description,
           tags: draft.tags,
           weeks: draft.weeks,
+          style: draft.style,
           days: draft.days.map<SaveDayInput>((d) => ({
             id: d.id,
             name: d.name,
@@ -152,6 +154,7 @@ export function ProgramBuilder({
               repMax: s.repMax,
               targetRir: s.targetRir,
               restSeconds: s.restSeconds,
+              plateauPatience: s.plateauPatience,
             })),
           })),
         });

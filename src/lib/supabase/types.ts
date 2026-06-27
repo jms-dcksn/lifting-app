@@ -116,6 +116,53 @@ export type Database = {
         }
         Relationships: []
       }
+      movement_adaptation: {
+        Row: {
+          action: string
+          created_at: string
+          exercise_id: string
+          id: string
+          ladder_step: number
+          new_exercise_id: string | null
+          new_rep_max: number | null
+          new_rep_min: number | null
+          program_slot_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          exercise_id: string
+          id?: string
+          ladder_step?: number
+          new_exercise_id?: string | null
+          new_rep_max?: number | null
+          new_rep_min?: number | null
+          program_slot_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          ladder_step?: number
+          new_exercise_id?: string | null
+          new_rep_max?: number | null
+          new_rep_min?: number | null
+          program_slot_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movement_adaptation_program_slot_id_fkey"
+            columns: ["program_slot_id"]
+            isOneToOne: false
+            referencedRelation: "program_slot"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       program: {
         Row: {
           created_at: string
@@ -123,6 +170,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          style: string
           tags: string[]
           user_id: string
           weeks: number | null
@@ -133,6 +181,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          style?: string
           tags?: string[]
           user_id: string
           weeks?: number | null
@@ -143,6 +192,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          style?: string
           tags?: string[]
           user_id?: string
           weeks?: number | null
@@ -190,6 +240,7 @@ export type Database = {
           exercise_id: string
           id: string
           pattern: string
+          plateau_patience: number | null
           position: number
           program_day_id: string
           rep_max: number
@@ -204,6 +255,7 @@ export type Database = {
           exercise_id: string
           id?: string
           pattern: string
+          plateau_patience?: number | null
           position: number
           program_day_id: string
           rep_max: number
@@ -218,6 +270,7 @@ export type Database = {
           exercise_id?: string
           id?: string
           pattern?: string
+          plateau_patience?: number | null
           position?: number
           program_day_id?: string
           rep_max?: number

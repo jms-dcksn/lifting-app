@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { detectPlateau, defaultPatience, type PhaseExposure } from "./plateau";
+import {
+  detectPlateau,
+  defaultPatience,
+  bandOf,
+  pickRepBand,
+  nextLadderAction,
+  type PhaseExposure,
+} from "./plateau";
 import type { ExerciseDef } from "./coefficients";
 
 const day = (n: number) => new Date(2026, 0, 1 + n).toISOString();
@@ -55,5 +62,40 @@ describe("detectPlateau", () => {
   it("never flags a brand-new movement (too few exposures)", () => {
     const r = detectPlateau(series([150, 150]), 3);
     expect(r.plateaued).toBe(false);
+  });
+});
+
+describe("bandOf", () => {
+  it("maps an exact range to its band", () => {
+    expect(bandOf(8, 12)).toEqual({ repMin: 8, repMax: 12 });
+  });
+  it("maps an off-grid range to the nearest band by midpoint", () => {
+    expect(bandOf(6, 10)).toEqual({ repMin: 5, repMax: 8 }); // mid 8 -> heavy(6.5) vs moderate(10): closer to heavy
+  });
+});
+
+describe("pickRepBand", () => {
+  it("moves moderate -> heavy", () => {
+    expect(pickRepBand({ repMin: 8, repMax: 12 }, [])).toEqual({ repMin: 5, repMax: 8 });
+  });
+  it("moves heavy -> light", () => {
+    expect(pickRepBand({ repMin: 5, repMax: 8 }, [])).toEqual({ repMin: 12, repMax: 15 });
+  });
+  it("moves light -> heavy", () => {
+    expect(pickRepBand({ repMin: 12, repMax: 15 }, [])).toEqual({ repMin: 5, repMax: 8 });
+  });
+  it("avoids a recently used band", () => {
+    // from heavy, furthest is light; but if light was just used, fall back to moderate
+    expect(pickRepBand({ repMin: 5, repMax: 8 }, [{ repMin: 12, repMax: 15 }])).toEqual({
+      repMin: 8,
+      repMax: 12,
+    });
+  });
+});
+
+describe("nextLadderAction", () => {
+  it("recommends a rep change at step 0, a swap once rungs are exhausted", () => {
+    expect(nextLadderAction(0)).toBe("rep_change");
+    expect(nextLadderAction(1)).toBe("swap");
   });
 });

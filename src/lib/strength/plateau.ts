@@ -76,3 +76,39 @@ export function detectPlateau(
   const plateaued = stalledExposures >= patience && stalledSinceDays >= MIN_PLATEAU_DAYS;
   return { plateaued, stalledExposures, stalledSinceDays };
 }
+
+export type AdaptationAction = "rep_change" | "swap";
+
+const mid = (b: RepBand) => (b.repMin + b.repMax) / 2;
+const sameBand = (a: RepBand, b: RepBand) => a.repMin === b.repMin && a.repMax === b.repMax;
+
+// Nearest standard band to an arbitrary built range, by midpoint.
+export function bandOf(repMin: number, repMax: number): RepBand {
+  const m = (repMin + repMax) / 2;
+  return REP_BANDS.reduce((best, b) =>
+    Math.abs(mid(b) - m) < Math.abs(mid(best) - m) ? b : best,
+  );
+}
+
+// The most novel band relative to the current one: furthest by index, tie-broken toward the
+// heavier band (lower repMin). Skips any band in `recent` (recently used in this phase chain)
+// unless that leaves nothing.
+export function pickRepBand(current: RepBand, recent: RepBand[]): RepBand {
+  const curBand = bandOf(current.repMin, current.repMax);
+  const curIdx = REP_BANDS.findIndex((b) => sameBand(b, curBand));
+
+  const ranked = REP_BANDS.map((b, i) => ({ b, i }))
+    .filter(({ b }) => !sameBand(b, curBand))
+    .sort((x, y) => {
+      const dist = Math.abs(y.i - curIdx) - Math.abs(x.i - curIdx); // furthest first
+      if (dist !== 0) return dist;
+      return x.b.repMin - y.b.repMin; // tie -> heavier (lower repMin) first
+    });
+
+  const fresh = ranked.find(({ b }) => !recent.some((r) => sameBand(r, b)));
+  return (fresh ?? ranked[0]).b;
+}
+
+export function nextLadderAction(ladderStep: number): AdaptationAction {
+  return ladderStep < RUNGS_BEFORE_SWAP ? "rep_change" : "swap";
+}

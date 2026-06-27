@@ -39,6 +39,7 @@ export interface SlotView {
   lastByExercise: Record<string, LastPerformance>;
   restSeconds: number | null;
   sets: LoggedSet[];
+  pendingSuggestion: import("@/lib/fluid").PendingSuggestion | null;
 }
 
 export function ActiveSession({

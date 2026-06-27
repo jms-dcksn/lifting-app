@@ -5,6 +5,8 @@ import type { LastPerformance } from "@/lib/strength/progression";
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { recentExerciseIds } from "@/lib/program";
 import { getCatalogMap } from "@/lib/catalog";
+import { foldPrescription, type AdaptationRow } from "@/lib/strength/plateau";
+import { loadPendingSuggestions } from "@/lib/fluid";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
 
 export default async function SessionPage({
@@ -28,11 +30,11 @@ export default async function SessionPage({
   const [{ data: day }, { data: program }, { data: daySlots }] = await Promise.all([
     supabase.from("program_day").select("name").eq("id", session.program_day_id).maybeSingle(),
     session.program_id
-      ? supabase.from("program").select("weeks").eq("id", session.program_id).maybeSingle()
+      ? supabase.from("program").select("weeks, style").eq("id", session.program_id).maybeSingle()
       : Promise.resolve({ data: null }),
     supabase
       .from("program_slot")
-      .select("id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, position")
+      .select("id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, position")
       .eq("program_day_id", session.program_day_id)
       .order("position", { ascending: true }),
   ]);
@@ -106,20 +108,74 @@ export default async function SessionPage({
     sessionExercise.set(s.program_slot_id, s.exercise_id);
   }
 
-  const slots: SlotView[] = (daySlots ?? []).map((slot) => ({
-    programSlotId: slot.id,
-    exerciseId: sessionExercise.get(slot.id) ?? slot.exercise_id,
-    pattern: slot.pattern as Pattern,
-    prescription: {
-      targetSets: slot.target_sets,
-      repMin: slot.rep_min,
-      repMax: slot.rep_max,
-      targetRir: slot.target_rir,
-    },
-    lastByExercise: lastBySlot.get(slot.id) ?? {},
-    restSeconds: slot.rest_seconds,
-    sets: setsBySlot.get(slot.id) ?? [],
-  }));
+  // Fluid programs: fold the per-slot adaptation log so this session shows the *current*
+  // prescription (post rep-range change / swap), not the program's built defaults.
+  const isFluid = program?.style === "fluid";
+  const foldedBySlot = new Map<string, ReturnType<typeof foldPrescription>>();
+  if (isFluid && slotIds.length) {
+    const { data: adaptRows } = await supabase
+      .from("movement_adaptation")
+      .select("program_slot_id, action, new_exercise_id, new_rep_min, new_rep_max, created_at")
+      .eq("user_id", userId)
+      .in("program_slot_id", slotIds)
+      .order("created_at", { ascending: true });
+    for (const slot of daySlots ?? []) {
+      const rows: AdaptationRow[] = (adaptRows ?? [])
+        .filter((r) => r.program_slot_id === slot.id)
+        .map((r) => ({
+          action: r.action as AdaptationRow["action"],
+          newExerciseId: r.new_exercise_id,
+          newRepMin: r.new_rep_min,
+          newRepMax: r.new_rep_max,
+          createdAt: r.created_at,
+        }));
+      foldedBySlot.set(
+        slot.id,
+        foldPrescription({ exerciseId: slot.exercise_id, repMin: slot.rep_min, repMax: slot.rep_max }, rows),
+      );
+    }
+  }
+
+  const slots: SlotView[] = (daySlots ?? []).map((slot) => {
+    const folded = foldedBySlot.get(slot.id);
+    return {
+      programSlotId: slot.id,
+      // In-session swap wins; else the folded current exercise (fluid) or program default.
+      exerciseId: sessionExercise.get(slot.id) ?? folded?.exerciseId ?? slot.exercise_id,
+      pattern: slot.pattern as Pattern,
+      prescription: {
+        targetSets: slot.target_sets,
+        repMin: folded?.repMin ?? slot.rep_min,
+        repMax: folded?.repMax ?? slot.rep_max,
+        targetRir: slot.target_rir,
+      },
+      lastByExercise: lastBySlot.get(slot.id) ?? {},
+      restSeconds: slot.rest_seconds,
+      sets: setsBySlot.get(slot.id) ?? [],
+      pendingSuggestion: null,
+    };
+  });
+
+  if (isFluid) {
+    const suggestions = await loadPendingSuggestions(
+      supabase,
+      userId,
+      slots.map((s) => ({
+        programSlotId: s.programSlotId,
+        exerciseId: s.exerciseId,
+        pattern: s.pattern,
+        repMin: s.prescription.repMin,
+        repMax: s.prescription.repMax,
+        targetRir: s.prescription.targetRir,
+        plateauPatience:
+          (daySlots ?? []).find((d) => d.id === s.programSlotId)?.plateau_patience ?? null,
+      })),
+      catalog,
+      stats,
+      profile?.bodyweight ?? null,
+    );
+    for (const s of slots) s.pendingSuggestion = suggestions[s.programSlotId] ?? null;
+  }
 
   return (
     <ActiveSession

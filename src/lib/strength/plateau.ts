@@ -112,3 +112,20 @@ export function pickRepBand(current: RepBand, recent: RepBand[]): RepBand {
 export function nextLadderAction(ladderStep: number): AdaptationAction {
   return ladderStep < RUNGS_BEFORE_SWAP ? "rep_change" : "swap";
 }
+
+export interface SwapCandidateInput {
+  exerciseId: string;
+  name: string;
+  recentlyPlateaued: boolean; // plateaued on / swapped away from recently — avoid ping-pong
+  recencyRank: number; // 0 = trained most recently; larger = staler/more novel
+}
+
+// Novel-first: movements not recently plateaued beat ones that were; among equals, the staler
+// (less recently trained) movement ranks higher. The current exercise must be excluded by the
+// caller before ranking.
+export function rankSwapCandidates(cands: SwapCandidateInput[]): SwapCandidateInput[] {
+  return [...cands].sort(
+    (a, b) =>
+      Number(a.recentlyPlateaued) - Number(b.recentlyPlateaued) || b.recencyRank - a.recencyRank,
+  );
+}

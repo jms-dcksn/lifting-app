@@ -5,7 +5,9 @@ import {
   bandOf,
   pickRepBand,
   nextLadderAction,
+  rankSwapCandidates,
   type PhaseExposure,
+  type SwapCandidateInput,
 } from "./plateau";
 import type { ExerciseDef } from "./coefficients";
 
@@ -97,5 +99,24 @@ describe("nextLadderAction", () => {
   it("recommends a rep change at step 0, a swap once rungs are exhausted", () => {
     expect(nextLadderAction(0)).toBe("rep_change");
     expect(nextLadderAction(1)).toBe("swap");
+  });
+});
+
+describe("rankSwapCandidates", () => {
+  const c = (exerciseId: string, recentlyPlateaued: boolean, recencyRank: number): SwapCandidateInput => ({
+    exerciseId,
+    name: exerciseId,
+    recentlyPlateaued,
+    recencyRank,
+  });
+
+  it("puts fresh (not recently plateaued) movements first", () => {
+    const ranked = rankSwapCandidates([c("a", true, 5), c("b", false, 1)]);
+    expect(ranked.map((x) => x.exerciseId)).toEqual(["b", "a"]);
+  });
+
+  it("among fresh movements, prefers the most novel (staler/never trained)", () => {
+    const ranked = rankSwapCandidates([c("recent", false, 0), c("stale", false, 99)]);
+    expect(ranked[0].exerciseId).toBe("stale");
   });
 });

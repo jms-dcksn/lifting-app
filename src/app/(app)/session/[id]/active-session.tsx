@@ -485,7 +485,7 @@ function SlotCard({
       ) : editingId === null ? (
         <div className="mt-3">
           <SetEntry
-            key={exerciseId}
+            key={`${exerciseId}-${p.repMin}-${p.repMax}`}
             increment={increment}
             defaultRir={p.targetRir}
             initial={{ weight: initialWeight, reps: initialReps, rir: p.targetRir }}

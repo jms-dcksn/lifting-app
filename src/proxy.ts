@@ -8,8 +8,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Run on everything except static assets and image files, so auth cookies
-    // refresh on real navigations. Route protection lives in (app)/layout.tsx.
-    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // Run on everything except Next internals (incl. _next/webpack-hmr), static
+    // assets and image files, so auth cookies refresh on real navigations without
+    // the proxy intercepting the HMR channel. Route protection lives in (app)/layout.tsx.
+    "/((?!_next/|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

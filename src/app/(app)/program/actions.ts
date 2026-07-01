@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeTags } from "@/lib/program-tags";
-import { SEED_PROGRAM } from "../session/seed";
+import { TEMPLATE_BY_ID } from "@/lib/program-templates";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -124,20 +124,36 @@ export async function saveProgram(input: SaveProgramInput) {
   revalidatePath("/program");
 }
 
-// Seed a new active program from the built-in Push/Pull/Legs template (onboarding shortcut).
-export async function createFromTemplate() {
+// Create a program from a built-in template. On an empty account (first-run offer) the
+// new program becomes active; otherwise it lands as an inactive draft so adding a template
+// from the gallery never silently deactivates the program the user is running.
+export async function createFromTemplate(templateId: string) {
+  const template = TEMPLATE_BY_ID[templateId];
+  if (!template) throw new Error("Unknown template");
   const { supabase, userId } = await requireUser();
 
-  await supabase.from("program").update({ is_active: false }).eq("user_id", userId);
+  const { count } = await supabase
+    .from("program")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+  const activate = (count ?? 0) === 0;
 
   const { data: prog, error } = await supabase
     .from("program")
-    .insert({ user_id: userId, name: SEED_PROGRAM.name, weeks: SEED_PROGRAM.weeks, is_active: true })
+    .insert({
+      user_id: userId,
+      name: template.name,
+      description: template.description,
+      tags: template.tags,
+      weeks: template.weeks,
+      style: "classic",
+      is_active: activate,
+    })
     .select("id")
     .single();
   if (error || !prog) throw new Error(error?.message ?? "Could not create program");
 
-  for (const [di, day] of SEED_PROGRAM.days.entries()) {
+  for (const [di, day] of template.days.entries()) {
     const { data: newDay } = await supabase
       .from("program_day")
       .insert({ user_id: userId, program_id: prog.id, name: day.name, position: di })
@@ -155,11 +171,13 @@ export async function createFromTemplate() {
         rep_min: s.repMin,
         rep_max: s.repMax,
         target_rir: s.targetRir,
+        rest_seconds: s.restSeconds,
       })),
     );
   }
 
   revalidatePath("/");
+  revalidatePath("/program");
   redirect("/program");
 }
 

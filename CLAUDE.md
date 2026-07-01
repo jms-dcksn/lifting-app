@@ -25,8 +25,8 @@ Tests run on **vitest**, scoped to the pure modules under `src/lib/` (config:
 `vitest.config.ts`, `include: src/lib/**/*.test.ts`, node environment, `@/` alias via
 native tsconfig-paths). The strength engine and analytics are framework-free, so the suite
 loads no Next.js/React. Co-locate new tests as `*.test.ts` next to the module. Current
-coverage: `e1rm`, `recommend`, `progression`, `program-tags`, `rest`, `coefficients`,
-`catalog`, `exercise-id`.
+coverage: `e1rm`, `recommend`, `progression`, `plateau`, `program-tags`, `program-templates`,
+`rest`, `coefficients`, `catalog`, `exercise-id`.
 
 ## Architecture
 
@@ -135,9 +135,16 @@ gallery, and the builder. `ProgramSlot` also carries `restSeconds: number | null
 per-slot rest override; `null` = use the profile default), selected/mapped by `assemble()`
 so builder edits preserve it.
 
-`src/app/(app)/session/seed.ts` no longer drives the runtime program. It survives only
-as the template source for `createFromTemplate` (onboarding shortcut that seeds the
-built-in Push/Pull/Legs template).
+Built-in program templates live in `src/lib/program-templates.ts` (pure data, validated by
+`program-templates.test.ts`: every slot's exercise id must resolve in `coefficients.ts` with
+a matching pattern, and `weeks` must sit in the builder's 4-6 range). Six templates: the
+simple Push/Pull/Legs plus five community programs (Reddit PPL, GZCLP, 5/3/1 BBB, PHUL,
+PHAT) mapped into the rep-range/RIR model — linear progression is encoded as
+`repMin === repMax` (hitting repMax on the first set triggers the weight bump), percent
+work is approximated with RIR. `createFromTemplate(templateId)` (`program/actions.ts`)
+instantiates one: active on an empty account (first-run), otherwise an inactive draft.
+The old `src/app/(app)/session/seed.ts` is deleted; its PPL data moved into the templates
+module.
 
 ### Program page: gallery (`src/app/(app)/program/`)
 
@@ -157,7 +164,9 @@ used in the builder to edit a program's tags (Enter/comma to add, ×/Backspace t
 `program-builder.tsx` has a metadata block (description textarea + `TagInput`); `saveProgram`
 (`actions.ts`) persists `description` and normalized tags on the program upsert. Builder
 routing is unchanged (`?id=new`, `?id=X&mode=edit`); both `afterSaveHref`/`cancelHref` point
-back to `/program`. The first-run "no programs yet" template offer is unchanged. Each slot
+back to `/program`. The first-run "no programs yet" screen offers every built-in template
+(one button each); the gallery also renders a "Templates" section below the program cards
+(`TemplateSummary` rows with an Add button posting `createFromTemplate`). Each slot
 also has an optional "Rest (s)" override field (empty = use the profile default, stored as
 `null`); `saveProgram`/`cloneProgram` persist/copy `rest_seconds` alongside the other slot
 fields.

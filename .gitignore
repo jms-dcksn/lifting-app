@@ -52,3 +52,6 @@ next-env.d.ts
 
 # local design mockups
 .superpowers/
+
+# isolated feature worktrees
+.worktrees/

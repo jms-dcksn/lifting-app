@@ -131,21 +131,6 @@ export async function getProgram(
   return assemble(supabase, row);
 }
 
-// Every program for a user, fully assembled (days + slots), created-order. The gallery
-// expands cards inline, so it needs the full tree up front; users have only a handful of
-// programs, so assembling all is cheap.
-export async function listProgramsFull(
-  supabase: Client,
-  userId: string,
-): Promise<Program[]> {
-  const { data: rows } = await supabase
-    .from("program")
-    .select("id, name, description, tags, weeks, is_active, style")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: true });
-  return Promise.all((rows ?? []).map((row) => assemble(supabase, row)));
-}
-
 // The program index needs counts, not every nested program tree. Load each table once and
 // aggregate in memory; getProgram remains the full loader for detail and edit screens.
 export async function listProgramSummaries(

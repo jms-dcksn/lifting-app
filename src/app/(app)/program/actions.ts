@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeTags } from "@/lib/program-tags";
 import { TEMPLATE_BY_ID } from "@/lib/program-templates";
+import { programDetailHref } from "@/lib/program-routes";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -122,6 +123,7 @@ export async function saveProgram(input: SaveProgramInput) {
 
   revalidatePath("/");
   revalidatePath("/program");
+  revalidatePath(programDetailHref(input.id));
 }
 
 // Create a program from a built-in template. On an empty account (first-run offer) the
@@ -195,6 +197,7 @@ export async function setActiveProgram(id: string) {
     .eq("id", id);
   revalidatePath("/");
   revalidatePath("/program");
+  revalidatePath(programDetailHref(id));
 }
 
 // Duplicate a program (new ids) as an inactive draft; returns the new program id.
@@ -203,7 +206,7 @@ export async function cloneProgram(id: string): Promise<string> {
 
   const { data: src } = await supabase
     .from("program")
-    .select("name, weeks, style")
+    .select("name, description, tags, weeks, style")
     .eq("user_id", userId)
     .eq("id", id)
     .single();
@@ -211,7 +214,15 @@ export async function cloneProgram(id: string): Promise<string> {
 
   const { data: newProg, error: progErr } = await supabase
     .from("program")
-    .insert({ user_id: userId, name: `${src.name} (copy)`, weeks: src.weeks, style: src.style, is_active: false })
+    .insert({
+      user_id: userId,
+      name: `${src.name} (copy)`,
+      description: src.description,
+      tags: src.tags,
+      weeks: src.weeks,
+      style: src.style,
+      is_active: false,
+    })
     .select("id")
     .single();
   if (progErr || !newProg) throw new Error(progErr?.message ?? "Could not clone program");

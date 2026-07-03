@@ -1,16 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCatalogMap } from "@/lib/catalog";
-import {
-  getProgram,
-  listProgramsFull,
-  recentExerciseIds,
-  type Program,
-} from "@/lib/program";
+import { listProgramSummaries } from "@/lib/program";
 import { PROGRAM_TEMPLATES } from "@/lib/program-templates";
+import { programNewHref } from "@/lib/program-routes";
 import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button-styles";
-import { ProgramBuilder } from "./program-builder";
 import { ProgramGallery, type TemplateSummary } from "./program-gallery";
 import { createFromTemplate } from "./actions";
 
@@ -21,46 +16,13 @@ const TEMPLATE_SUMMARIES: TemplateSummary[] = PROGRAM_TEMPLATES.map((t) => ({
   tags: t.tags,
 }));
 
-export default async function ProgramPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string; mode?: string }>;
-}) {
-  const { id, mode } = await searchParams;
-  const isNew = id === "new";
-  const isEdit = !!id && !isNew && mode === "edit";
+export default async function ProgramPage() {
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
 
-  // Builder: new program or editing an existing one.
-  if (isNew || isEdit) {
-    const [recent, builderCatalog] = await Promise.all([
-      recentExerciseIds(supabase, userId),
-      getCatalogMap(supabase, userId),
-    ]);
-    let initial: Program | null = null;
-    if (isEdit) initial = await getProgram(supabase, userId, id!);
-    return (
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">
-        <ProgramBuilder
-          key={isNew ? "new" : (initial?.id ?? "new")}
-          initial={isNew ? null : initial}
-          recentIds={recent}
-          catalog={Object.values(builderCatalog)}
-          afterSaveHref="/program"
-          cancelHref="/program"
-        />
-      </div>
-    );
-  }
-
-  // Gallery (default).
-  const [programs, catalog] = await Promise.all([
-    listProgramsFull(supabase, userId),
-    getCatalogMap(supabase, userId),
-  ]);
+  const programs = await listProgramSummaries(supabase, userId);
 
   // First run, no programs: offer the template before showing a blank builder.
   if (programs.length === 0) {
@@ -84,16 +46,12 @@ export default async function ProgramPage({
             </li>
           ))}
         </ul>
-        <a href="/program?id=new" className={buttonClasses("secondary", "lg", "w-full")}>
+        <Link href={programNewHref()} className={buttonClasses("secondary", "lg", "w-full")}>
           Build from scratch
-        </a>
+        </Link>
       </div>
     );
   }
 
-  return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">
-      <ProgramGallery programs={programs} defs={catalog} templates={TEMPLATE_SUMMARIES} />
-    </div>
-  );
+  return <ProgramGallery programs={programs} templates={TEMPLATE_SUMMARIES} />;
 }

@@ -137,16 +137,12 @@ Eight applied migrations: `0001_init.sql` (base schema), `0002_program_builder.s
 
 ### Program loader (`src/lib/program.ts`)
 
-Shared server-side helper. Exports `getActiveProgram`, `getProgram`, `listProgramsFull`,
-`recentExerciseIds`, and the `Program`/`ProgramDay`/`ProgramSlot` types. `Program` carries
-`description: string | null` and `tags: string[]` alongside the assembled days → slots tree.
-`listProgramsFull` (replaced the old `listPrograms`) fully assembles every one of a user's
-programs — days and slots included, not just the row — because the program gallery (below)
-expands any card inline with no extra round-trip; users have only a handful of programs, so
-assembling all of them up front is cheap. Used by home, the session page, the program
-gallery, and the builder. `ProgramSlot` also carries `restSeconds: number | null` (the
-per-slot rest override; `null` = use the profile default), selected/mapped by `assemble()`
-so builder edits preserve it.
+`getProgram` assembles one complete program for home, detail, edit, and session flows.
+`listProgramSummaries` powers `/program` with three batched queries (programs, days, slots)
+and returns counts without assembling every program tree. Pure aggregation and ordering live
+in `src/lib/program-summary.ts`: active first, then newest first. `ProgramSlot` carries
+`restSeconds: number | null` (the per-slot rest override; `null` = use the profile default),
+selected/mapped by `assemble()` so builder edits preserve it.
 
 Built-in program templates live in `src/lib/program-templates.ts` (pure data, validated by
 `program-templates.test.ts`: every slot's exercise id must resolve in `coefficients.ts` with
@@ -159,30 +155,18 @@ instantiates one: active on an empty account (first-run), otherwise an inactive 
 The old `src/app/(app)/session/seed.ts` is deleted; its PPL data moved into the templates
 module.
 
-### Program page: gallery (`src/app/(app)/program/`)
+### Program routes (`src/app/(app)/program/`)
 
-`/program` (no query params) renders a **gallery** of expandable program cards — not a
-single active-program view plus a separate saved-programs list. `program-gallery.tsx`
-(client) owns expand state (one card open at a time, the active program open by default)
-and a single-select tag filter; it hands filtered programs to `program-card.tsx`. A
-card collapsed shows name, `{weeks} wk · {days} days`, tag chips, and an `active` pill;
-expanded (inline, `animate-row-in`) it shows the description and the full day/slot detail
-plus Edit / Make active / Clone actions — this absorbed the day/slot detail rendering that
-used to live in `program-view.tsx` (deleted, along with `program-list.tsx`; there is no
-longer a standalone read-only `?id=X` view route — detail only ever appears inline in the
-gallery). `tag-filter.tsx` is a single-select chip row over the union of all tags (plus
-"All"); it renders nothing when no programs have tags. `tag-input.tsx` is the chip input
-used in the builder to edit a program's tags (Enter/comma to add, ×/Backspace to remove).
+`/program` is a filterable responsive grid of linked summary tiles. Tiles show essential
+metadata only and contain no actions. `/program/[id]` is the read-only full program view;
+`/program/[id]?mode=edit` edits that program; `/program/new` creates one. Save/cancel from
+an existing edit returns to detail. Edit, Make active, and Clone live on detail. Templates
+remain a compact list below the owned-program grid.
 
-`program-builder.tsx` has a metadata block (description textarea + `TagInput`); `saveProgram`
-(`actions.ts`) persists `description` and normalized tags on the program upsert. Builder
-routing is unchanged (`?id=new`, `?id=X&mode=edit`); both `afterSaveHref`/`cancelHref` point
-back to `/program`. The first-run "no programs yet" screen offers every built-in template
-(one button each); the gallery also renders a "Templates" section below the program cards
-(`TemplateSummary` rows with an Add button posting `createFromTemplate`). Each slot
-also has an optional "Rest (s)" override field (empty = use the profile default, stored as
-`null`); `saveProgram`/`cloneProgram` persist/copy `rest_seconds` alongside the other slot
-fields.
+`tag-filter.tsx` is a single-select chip row over the union of all tags (plus "All"); it
+renders nothing when no programs have tags. `tag-input.tsx` edits tags in the builder
+(Enter/comma to add, ×/Backspace to remove). `saveProgram` persists normalized tags and the
+description. Each slot also has an optional rest override; save and clone preserve it.
 
 `src/lib/program-tags.ts` is pure tag logic shared by the gallery and the builder:
 `normalizeTags` (trim, drop empties, case-insensitive dedupe preserving first form),

@@ -2,13 +2,13 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import type { Program } from "@/lib/program";
-import type { ExerciseDef } from "@/lib/strength/coefficients";
+import type { ProgramSummary } from "@/lib/program-summary";
+import { programNewHref } from "@/lib/program-routes";
 import { filterByTag, uniqueTags } from "@/lib/program-tags";
 import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button-styles";
 import { createFromTemplate } from "./actions";
-import { ProgramCard } from "./program-card";
+import { ProgramTile } from "./program-tile";
 import { TagFilter } from "./tag-filter";
 
 // Serializable summary of a built-in template (full data stays server-side).
@@ -19,53 +19,40 @@ export interface TemplateSummary {
   tags: string[];
 }
 
-// The program index: a tag filter over a list of expandable cards. One card expands at a
-// time. Filter + expand state are local; the program data is assembled server-side.
 export function ProgramGallery({
   programs,
-  defs,
   templates,
 }: {
-  programs: Program[];
-  defs: Record<string, ExerciseDef>;
+  programs: ProgramSummary[];
   templates: TemplateSummary[];
 }) {
-  const [expandedId, setExpandedId] = useState<string | null>(
-    programs.find((p) => p.isActive)?.id ?? null,
-  );
   const [tag, setTag] = useState<string | null>(null);
 
   const tags = useMemo(() => uniqueTags(programs), [programs]);
   const visible = useMemo(() => filterByTag(programs, tag), [programs, tag]);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 px-4 py-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
-      <div className="flex w-full max-w-page items-center justify-between gap-3">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-display">Programs</h1>
-        <Link href="/program?id=new" className={buttonClasses("secondary", "sm")}>
+        <Link href={programNewHref()} className={buttonClasses("secondary", "sm")}>
           + New
         </Link>
       </div>
 
       <TagFilter tags={tags} active={tag} onSelect={setTag} />
 
-      <ul className="flex w-full max-w-page flex-col gap-3">
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {visible.map((program) => (
           <li key={program.id}>
-            <ProgramCard
-              program={program}
-              defs={defs}
-              expanded={expandedId === program.id}
-              onToggle={() =>
-                setExpandedId((cur) => (cur === program.id ? null : program.id))
-              }
-            />
+            <ProgramTile program={program} />
           </li>
         ))}
-        {visible.length === 0 && (
-          <li className="text-body text-muted">No programs match this tag.</li>
-        )}
       </ul>
+
+      {visible.length === 0 && (
+        <p className="text-body text-muted">No programs match this tag.</p>
+      )}
 
       {templates.length > 0 && (
         <div className="mt-4 flex w-full max-w-page flex-col gap-2">

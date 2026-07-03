@@ -48,13 +48,14 @@ Adaptive plateau engine under §5.
 
 ## 3. Programs (`/program`)
 
-### Gallery
-- **Expandable program gallery** — all of a user's programs as cards; one expands at a time,
-  the active program open by default (`program-gallery.tsx`).
-- **Collapsed card** — name, "{weeks} wk · {days} days", tag chips, and an `active` pill.
-- **Expanded card (inline)** — description + full day/slot detail + actions, animated in.
+### Program grid and detail
+- **Responsive program grid** — active program first, then newest first; tiles show days,
+  weeks, exercise count, style, and primary tag.
 - **Single-select tag filter** — chip row over the union of all program tags (plus "All");
   hidden entirely when no program has tags (`tag-filter.tsx`, `program-tags.ts`).
+- **Dedicated detail screen** — `/program/[id]` shows description, tags, and a responsive
+  day grid with Edit, Make active, and Clone actions.
+- **Templates** — creation shortcuts remain separate below owned programs.
 - **Make active** — `setActiveProgram`; a partial unique index enforces exactly one active
   program per user.
 - **Clone program** — `cloneProgram` deep-copies a program (days, slots, per-slot rest
@@ -62,7 +63,7 @@ Adaptive plateau engine under §5.
 - **First-run template offer** — when a user has no programs, offers the built-in
   Push/Pull/Legs template via `createFromTemplate`.
 
-### Builder (`?id=new`, `?id=X&mode=edit`)
+### Builder (`/program/new`, `/program/[id]?mode=edit`)
 - **Program metadata** — name, description textarea, and a chip-input tag editor
   (`tag-input.tsx`; Enter/comma to add, ×/Backspace to remove). Tags are normalized
   (trim, drop empties, case-insensitive dedupe).

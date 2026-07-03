@@ -11,6 +11,19 @@ A personal progressive-overload lifting tracker. Mobile web app. The defining fe
 > Note: this is Next.js 16 with breaking changes from older versions (see AGENTS.md above) —
 > check `node_modules/next/dist/docs/` before writing framework code.
 
+## Deployment
+
+Deployed on **Vercel** via its native GitHub integration (repo `jms-dcksn/lifting-app`).
+Every pushed branch gets an automatic **preview deployment**; `main` deploys to production.
+
+- Production: https://lifting-app-plum.vercel.app
+- Latest production deployment URL: https://lifting-e0yxuet5p-jmsdcksns-projects.vercel.app
+
+Preview URLs for a branch/commit can be read from Vercel (CLI `vercel ls`, or the Vercel MCP
+`list_deployments`) or from GitHub — Vercel posts deployment statuses back to the commit/PR
+(`gh api repos/jms-dcksn/lifting-app/deployments`, `gh pr checks`). This is Vercel's Git
+integration, **not** GitHub Actions.
+
 ## Commands
 
 ```bash

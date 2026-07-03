@@ -49,3 +49,6 @@ next-env.d.ts
 
 # playwright session debris (audit screenshots, snapshots)
 .playwright-mcp/
+
+# local design mockups
+.superpowers/

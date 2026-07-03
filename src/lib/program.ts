@@ -6,6 +6,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import type { Pattern } from "@/lib/strength/coefficients";
+import {
+  buildProgramSummaries,
+  type ProgramSummary,
+} from "@/lib/program-summary";
 
 type Client = SupabaseClient<Database>;
 
@@ -140,6 +144,40 @@ export async function listProgramsFull(
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
   return Promise.all((rows ?? []).map((row) => assemble(supabase, row)));
+}
+
+// The program index needs counts, not every nested program tree. Load each table once and
+// aggregate in memory; getProgram remains the full loader for detail and edit screens.
+export async function listProgramSummaries(
+  supabase: Client,
+  userId: string,
+): Promise<ProgramSummary[]> {
+  const { data: programs } = await supabase
+    .from("program")
+    .select("id, name, tags, weeks, is_active, style, created_at")
+    .eq("user_id", userId);
+
+  if (!programs?.length) return [];
+
+  const { data: days } = await supabase
+    .from("program_day")
+    .select("id, program_id")
+    .in(
+      "program_id",
+      programs.map((program) => program.id),
+    );
+
+  if (!days?.length) return buildProgramSummaries(programs, [], []);
+
+  const { data: slots } = await supabase
+    .from("program_slot")
+    .select("program_day_id")
+    .in(
+      "program_day_id",
+      days.map((day) => day.id),
+    );
+
+  return buildProgramSummaries(programs, days, slots ?? []);
 }
 
 // Exercise ids the user has logged, most-recent-first (for recent-first picker ordering).

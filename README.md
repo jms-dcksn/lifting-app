@@ -48,7 +48,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/components/ui/` — shared UI primitives (Button, Stepper, Card, Input, Sheet, Skeleton) and design tokens (`src/app/globals.css`)
 - `src/lib/supabase/` — browser client, server client, and `middleware.ts` (`updateSession` helper for `proxy.ts`)
 - `src/proxy.ts` — Next.js 16 session proxy (replaces `middleware.ts`); refreshes Supabase session on every request
-- `src/app/(app)/program/` — program gallery (expandable cards, tag filter) + builder (server page + client builder, Classic/Adaptive style toggle with per-slot plateau patience, catalog-driven exercise picker with brand/type + add-custom flows, server actions)
+- `src/app/(app)/program/` — summary tile grid + dedicated read-only detail route + builder (Classic/Adaptive style, catalog-driven picker, custom exercises, server actions)
 - `src/app/(app)/exercise/actions.ts` — `resolveVariant` (find-or-create a machine brand/type variant) and `createCustomExercise` server actions
 - `src/app/(app)/settings/` — bodyweight, goal weight, and default rest-between-sets editor
 - `src/app/(app)/analytics/` — Progress hub: session volume, e1RM gainers, record feed, searchable exercise list

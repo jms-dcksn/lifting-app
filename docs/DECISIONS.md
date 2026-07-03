@@ -299,6 +299,14 @@ for tag identity, sharing, or referential integrity — `text[]` with app-level 
 (`program-tags.ts`: trim, drop empties, case-insensitive dedupe preserving first-seen form)
 is sufficient.
 
+## Program grid navigation (2026-07-03)
+
+**Dedicated summary and detail paths supersede inline expansion.** `/program` now loads
+batched summaries and renders linked tiles; `/program/[id]` loads one full program. This
+reverses the earlier full-gallery assembly decision because inline expansion created large
+cards and avoidable scroll friction. Actions live on detail, edit remains explicit, and no
+schema change is required.
+
 **`HARD_RIR = 2` is a module-level constant, not a user setting.** Sets with `rir ≤ 2` are
 classified as hard (stimulating) sets. The constant is unexported (private to `analytics.ts`)
 but the two public functions that use it (`patternWeekStats`, `latestWeekBalance`) accept an

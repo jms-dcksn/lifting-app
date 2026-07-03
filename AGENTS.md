@@ -27,6 +27,8 @@ version's behavior — Next.js 16 has additional breaking changes beyond the one
 
 ---
 
+@CLAUDE.md
+
 ## Session continuity
 
 At the start of every session, read `.claude/LAST_SESSION.md` if it exists. It records what

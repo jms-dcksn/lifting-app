@@ -314,6 +314,92 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
     ],
   },
   {
+    id: "kino-strength-density",
+    name: "Ripped Artiste — Strength & Density",
+    description:
+      "Greg O'Gallagher's Kinobody Ripped Artiste, Protocol One. Three heavy, low-volume " +
+      "days a week built around big progressive lifts. The original uses Reverse Pyramid " +
+      "Training (top set heavy, drop ~10-15% per set) — this app double-progresses instead, " +
+      "so the near-failure top-set intent is encoded as low RIR over the 6-10 range with long " +
+      "rest. Incline press mapped to barbell incline; chin-ups to weighted pull-ups; chest " +
+      "fly to pec deck; face pulls to reverse pec deck. Repeat the cycle as long as it climbs.",
+    tags: ["intermediate", "strength", "3-day", "kinobody"],
+    weeks: 5,
+    days: [
+      {
+        name: "Upper Body A",
+        slots: [
+          s("bb-incline-bench", "horizontal_press", 3, 6, 10, 1, 180),
+          s("bb-curl", "elbow_flexion", 3, 6, 10, 1, 120),
+          s("db-skullcrusher", "elbow_extension", 2, 8, 10, 1, 120),
+          s("db-lateral-raise", "lateral_raise", 2, 6, 10, 1, 90),
+        ],
+      },
+      {
+        name: "Lower Body",
+        slots: [
+          s("db-split-squat", "lunge", 3, 6, 8, 2, 150),
+          s("bb-rdl", "hinge", 3, 8, 10, 2, 150),
+          s("leg-extension", "knee_extension", 2, 8, 12, 1, 90),
+          s("bb-shrug", "traps", 2, 10, 15, 1, 90),
+        ],
+      },
+      {
+        name: "Upper Body C",
+        slots: [
+          s("bb-ohp", "vertical_press", 3, 6, 10, 1, 180),
+          s("weighted-pullup", "vertical_pull", 3, 4, 10, 1, 150),
+          s("pec-deck", "horizontal_press", 2, 6, 10, 1, 90),
+          s("reverse-pec-deck", "rear_delt", 2, 6, 10, 1, 90),
+        ],
+      },
+    ],
+  },
+  {
+    id: "kino-physique-mastery",
+    name: "Ripped Artiste — Physique Mastery",
+    description:
+      "Greg O'Gallagher's Kinobody Ripped Artiste, Protocol Two. Same three days and heavy " +
+      "progression as Strength & Density, with a little more isolation for detail and " +
+      "fullness — two upper days and one leg day. Reverse-Pyramid intent encoded as low RIR " +
+      "over 6-10; each day's final rest-pause set is modeled as a single near-failure set " +
+      "(RIR 0). Optionally add Machine Crunches (2x8-12) on either upper day for direct abs.",
+    tags: ["intermediate", "hypertrophy", "3-day", "kinobody"],
+    weeks: 5,
+    days: [
+      {
+        name: "Upper Body A",
+        slots: [
+          s("bb-incline-bench", "horizontal_press", 3, 6, 10, 1, 180),
+          s("bb-curl", "elbow_flexion", 3, 6, 10, 1, 120),
+          s("db-skullcrusher", "elbow_extension", 2, 6, 10, 1, 90),
+          s("seated-cable-row", "horizontal_pull", 2, 6, 10, 2, 120),
+          s("db-lateral-raise", "lateral_raise", 1, 6, 10, 0, 90),
+        ],
+      },
+      {
+        name: "Lower Body",
+        slots: [
+          s("standing-calf-raise", "calf", 2, 6, 10, 1, 90),
+          s("leg-extension", "knee_extension", 2, 6, 10, 1, 90),
+          s("db-step-up", "lunge", 2, 6, 10, 2, 120),
+          s("back-extension", "hinge", 2, 8, 12, 2, 90),
+          s("cable-shrug", "traps", 2, 8, 12, 1, 90),
+        ],
+      },
+      {
+        name: "Upper Body B",
+        slots: [
+          s("bb-ohp", "vertical_press", 2, 6, 10, 1, 150),
+          s("lat-pulldown", "vertical_pull", 2, 6, 10, 2, 120),
+          s("pec-deck", "horizontal_press", 2, 6, 10, 1, 90),
+          s("cable-pushdown", "elbow_extension", 2, 6, 10, 1, 90),
+          s("reverse-pec-deck", "rear_delt", 1, 6, 10, 0, 90),
+        ],
+      },
+    ],
+  },
+  {
     id: "phat",
     name: "PHAT (Layne Norton)",
     description:

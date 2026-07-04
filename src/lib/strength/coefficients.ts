@@ -29,6 +29,7 @@ export type Pattern =
   | "knee_flexion"
   | "hip_thrust"
   | "calf"
+  | "traps"
   | "elbow_flexion"
   | "elbow_extension"
   | "lateral_raise"
@@ -112,6 +113,11 @@ export const EXERCISES: ExerciseDef[] = [
   // --- Hinge (ref: barbell deadlift) ---
   { id: "bb-deadlift", name: "Barbell Deadlift", pattern: "hinge", equipment: "barbell", coefficient: 1.0, isReference: true, increment: 5 },
   { id: "bb-rdl", name: "Romanian Deadlift", pattern: "hinge", equipment: "barbell", coefficient: 0.85, increment: 5 },
+  { id: "back-extension", name: "Back Extension", pattern: "hinge", equipment: "machine", coefficient: 0.4, needsCalibration: true, machineTemplate: true, increment: 10 },
+
+  // --- Lunge (ref: dumbbell Bulgarian split squat; log one dumbbell's weight) ---
+  { id: "db-split-squat", name: "Bulgarian Split Squat", pattern: "lunge", equipment: "dumbbell", coefficient: 1.0, isReference: true, increment: 5 },
+  { id: "db-step-up", name: "Dumbbell Step-Up", pattern: "lunge", equipment: "dumbbell", coefficient: 0.9, increment: 5 },
 
   // --- Hip thrust ---
   { id: "bb-hip-thrust", name: "Barbell Hip Thrust", pattern: "hip_thrust", equipment: "barbell", coefficient: 1.0, isReference: true, increment: 5 },
@@ -123,6 +129,10 @@ export const EXERCISES: ExerciseDef[] = [
 
   // --- Calf ---
   { id: "standing-calf-raise", name: "Standing Calf Raise", pattern: "calf", equipment: "machine", coefficient: 1.0, isReference: true, needsCalibration: true, machineTemplate: true, increment: 10 },
+
+  // --- Traps (ref: barbell shrug) ---
+  { id: "bb-shrug", name: "Barbell Shrug", pattern: "traps", equipment: "barbell", coefficient: 1.0, isReference: true, increment: 5 },
+  { id: "cable-shrug", name: "Cable Shrug", pattern: "traps", equipment: "cable", coefficient: 0.6, needsCalibration: true, increment: 10 },
 
   // --- Arms ---
   { id: "bb-curl", name: "Barbell Curl", pattern: "elbow_flexion", equipment: "barbell", coefficient: 1.0, isReference: true, increment: 5 },
@@ -157,6 +167,7 @@ export const PATTERN_LABEL: Record<Pattern, string> = {
   knee_flexion: "Knee Flexion",
   hip_thrust: "Hip Thrust",
   calf: "Calf",
+  traps: "Traps",
   elbow_flexion: "Elbow Flexion",
   elbow_extension: "Elbow Extension",
   lateral_raise: "Lateral Raise",

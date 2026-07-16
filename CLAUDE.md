@@ -146,16 +146,21 @@ selected/mapped by `assemble()` so builder edits preserve it.
 
 Built-in program templates live in `src/lib/program-templates.ts` (pure data, validated by
 `program-templates.test.ts`: every slot's exercise id must resolve in `coefficients.ts` with
-a matching pattern, and `weeks` must sit in the builder's 4-6 range). Eight templates: the
+a matching pattern, and `weeks` must sit in the builder's 4-6 range). Fourteen templates: the
 simple Push/Pull/Legs, five community programs (Reddit PPL, GZCLP, 5/3/1 BBB, PHUL, PHAT),
-and both Kinobody Ripped Artiste protocols (`kino-strength-density`,
-`kino-physique-mastery`), all mapped into the rep-range/RIR model — linear progression is
+both Kinobody Ripped Artiste protocols (`kino-strength-density`, `kino-physique-mastery`),
+and six transcribed from the source files in `docs/` — Jeff Nippard's Essentials 3x/4x/5x
+(`essentials-3x/4x/5x`), Ultimate PPL 4x Phase 1 (`ultimate-ppl-4x`), Pure Bodybuilding
+Upper/Lower Build Phase (`pure-bodybuilding-ul`), and Kinobody's Warrior Shred
+(`warrior-shred`) — all mapped into the rep-range/RIR model — linear progression is
 encoded as `repMin === repMax` (hitting repMax on the first set triggers the weight bump),
 percent work is approximated with RIR. Kinobody's Reverse Pyramid Training (heavy top set,
 drop ~10-15%/set) has no native model here, so its near-failure intent is approximated with
 low RIR over the rep range; each rest-pause finisher is a single RIR-0 set. Seeding those two
 added a `traps` pattern (`bb-shrug`/`cable-shrug`), populated the previously-empty `lunge`
-pattern (`db-split-squat` ref, `db-step-up`), and added a `back-extension` machine template. `createFromTemplate(templateId)` (`program/actions.ts`)
+pattern (`db-split-squat` ref, `db-step-up`), and added a `back-extension` machine template;
+the `docs/` batch added `weighted-dip` (bodyweight `horizontal_press`, so assisted dips log
+assistance as negative added weight like `weighted-pullup`). `createFromTemplate(templateId)` (`program/actions.ts`)
 instantiates one: active on an empty account (first-run), otherwise an inactive draft.
 The old `src/app/(app)/session/seed.ts` is deleted; its PPL data moved into the templates
 module.

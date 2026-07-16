@@ -85,6 +85,7 @@ export const EXERCISES: ExerciseDef[] = [
   { id: "bb-incline-bench", name: "Barbell Incline Bench", pattern: "horizontal_press", equipment: "barbell", coefficient: 0.82, increment: 5 },
   { id: "db-bench", name: "Dumbbell Bench Press", pattern: "horizontal_press", equipment: "dumbbell", coefficient: 0.42, increment: 5 },
   { id: "db-incline-bench", name: "Dumbbell Incline Bench", pattern: "horizontal_press", equipment: "dumbbell", coefficient: 0.36, increment: 5 },
+  { id: "weighted-dip", name: "Weighted Dip", pattern: "horizontal_press", equipment: "bodyweight", coefficient: 1.05, increment: 5 },
   { id: "machine-chest-press", name: "Machine Chest Press", pattern: "horizontal_press", equipment: "machine", coefficient: 0.9, needsCalibration: true, machineTemplate: true, increment: 5 },
   { id: "pec-deck", name: "Pec Deck / Chest Fly", pattern: "horizontal_press", equipment: "machine", coefficient: 0.5, needsCalibration: true, machineTemplate: true, increment: 10 },
 

@@ -473,6 +473,345 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
       },
     ],
   },
+  // --- Programs transcribed from docs/ (Nippard spreadsheets/PDF + Kinobody PDF). ---
+  // Same mapping conventions as above: RIR = 10 - RPE, dropsets/intensity techniques
+  // encoded as straight near-failure sets, specialty variations mapped to the nearest
+  // catalog movement, stretch holds and unloadable AMRAP push-ups dropped.
+  {
+    id: "essentials-3x",
+    name: "Essentials 3x (Jeff Nippard)",
+    description:
+      "Jeff Nippard's Essentials Program, 3 days: Full Body / Upper / Lower. One heavy " +
+      "top set plus a back-off on the main lift, then tight accessory volume near failure. " +
+      "Dropsets encoded as straight RIR-0 sets; T-bar row mapped to machine row, seated calf " +
+      "raise to standing calf raise, EZ-bar work to barbell/dumbbell equivalents.",
+    tags: ["intermediate", "hypertrophy", "3-day", "nippard"],
+    weeks: 4,
+    days: [
+      {
+        name: "Full Body",
+        slots: [
+          s("hack-squat", "squat", 1, 4, 6, 1, 180),
+          s("hack-squat", "squat", 1, 8, 10, 1, 180),
+          s("db-incline-bench", "horizontal_press", 2, 8, 10, 1, 120),
+          s("seated-leg-curl", "knee_flexion", 1, 10, 12, 0, 90),
+          s("machine-row", "horizontal_pull", 2, 10, 12, 1, 90),
+          s("db-curl", "elbow_flexion", 1, 12, 15, 0, 90),
+          s("db-lateral-raise", "lateral_raise", 1, 12, 15, 0, 90),
+          s("cable-crunch", "core", 1, 12, 15, 0, 90),
+        ],
+      },
+      {
+        name: "Upper",
+        slots: [
+          s("db-bench", "horizontal_press", 1, 4, 6, 1, 180),
+          s("db-bench", "horizontal_press", 1, 8, 10, 1, 180),
+          s("lat-pulldown", "vertical_pull", 2, 10, 12, 1, 120),
+          s("db-shoulder-press", "vertical_press", 2, 10, 12, 1, 120),
+          s("seated-cable-row", "horizontal_pull", 2, 10, 12, 1, 120),
+          s("db-skullcrusher", "elbow_extension", 2, 12, 15, 0, 60),
+          s("bb-curl", "elbow_flexion", 2, 12, 15, 0, 90),
+        ],
+      },
+      {
+        name: "Lower",
+        slots: [
+          s("bb-rdl", "hinge", 2, 10, 12, 1, 120),
+          s("leg-press", "squat", 3, 10, 12, 1, 120),
+          s("leg-extension", "knee_extension", 1, 10, 12, 1, 90),
+          s("standing-calf-raise", "calf", 2, 12, 15, 0, 60),
+          s("cable-crunch", "core", 2, 12, 15, 0, 90),
+        ],
+      },
+    ],
+  },
+  {
+    id: "essentials-4x",
+    name: "Essentials 4x (Jeff Nippard)",
+    description:
+      "Jeff Nippard's Essentials Program, 4 days: Upper / Lower / Upper / Lower. Same " +
+      "heavy-top-set-plus-back-off structure and mappings as the 3x version; cable chest " +
+      "press mapped to machine chest press, hanging leg raise to cable crunch.",
+    tags: ["intermediate", "hypertrophy", "4-day", "nippard"],
+    weeks: 4,
+    days: [
+      {
+        name: "Upper A",
+        slots: [
+          s("db-bench", "horizontal_press", 1, 4, 6, 1, 180),
+          s("db-bench", "horizontal_press", 1, 8, 10, 1, 180),
+          s("lat-pulldown", "vertical_pull", 2, 10, 12, 1, 120),
+          s("db-shoulder-press", "vertical_press", 2, 10, 12, 1, 120),
+          s("seated-cable-row", "horizontal_pull", 2, 10, 12, 1, 120),
+          s("db-skullcrusher", "elbow_extension", 2, 12, 15, 0, 60),
+          s("bb-curl", "elbow_flexion", 2, 12, 15, 0, 90),
+        ],
+      },
+      {
+        name: "Lower A",
+        slots: [
+          s("hack-squat", "squat", 1, 4, 6, 1, 180),
+          s("hack-squat", "squat", 1, 8, 10, 1, 180),
+          s("seated-leg-curl", "knee_flexion", 1, 10, 12, 0, 90),
+          s("standing-calf-raise", "calf", 2, 10, 12, 1, 60),
+          s("cable-crunch", "core", 2, 10, 12, 1, 90),
+        ],
+      },
+      {
+        name: "Upper B",
+        slots: [
+          s("bb-row", "horizontal_pull", 2, 8, 10, 1, 120),
+          s("machine-shoulder-press", "vertical_press", 2, 10, 12, 1, 120),
+          s("weighted-pullup", "vertical_pull", 2, 8, 10, 1, 120),
+          s("machine-chest-press", "horizontal_press", 2, 10, 12, 1, 120),
+          s("cable-curl", "elbow_flexion", 2, 12, 15, 0, 60),
+          s("cable-pushdown", "elbow_extension", 2, 12, 15, 0, 90),
+          s("db-lateral-raise", "lateral_raise", 1, 12, 15, 0, 90),
+        ],
+      },
+      {
+        name: "Lower B",
+        slots: [
+          s("bb-rdl", "hinge", 2, 10, 12, 1, 120),
+          s("leg-press", "squat", 3, 10, 12, 1, 120),
+          s("leg-extension", "knee_extension", 1, 10, 12, 1, 90),
+          s("standing-calf-raise", "calf", 2, 12, 15, 0, 60),
+          s("cable-crunch", "core", 2, 12, 15, 0, 90),
+        ],
+      },
+    ],
+  },
+  {
+    id: "essentials-5x",
+    name: "Essentials 5x (Jeff Nippard)",
+    description:
+      "Jeff Nippard's Essentials Program, 5 days: Upper / Lower / Push / Pull / Legs. Same " +
+      "structure and mappings as the 3x/4x versions; the close-grip push-up AMRAP finisher " +
+      "is dropped (unloadable), facepulls mapped to reverse pec deck.",
+    tags: ["intermediate", "hypertrophy", "5-day", "nippard"],
+    weeks: 4,
+    days: [
+      {
+        name: "Upper",
+        slots: [
+          s("db-bench", "horizontal_press", 1, 4, 6, 1, 180),
+          s("db-bench", "horizontal_press", 1, 8, 10, 1, 180),
+          s("lat-pulldown", "vertical_pull", 2, 10, 12, 1, 120),
+          s("db-shoulder-press", "vertical_press", 2, 10, 12, 1, 120),
+          s("seated-cable-row", "horizontal_pull", 2, 10, 12, 1, 120),
+          s("db-skullcrusher", "elbow_extension", 2, 12, 15, 0, 60),
+          s("bb-curl", "elbow_flexion", 2, 12, 15, 0, 90),
+        ],
+      },
+      {
+        name: "Lower",
+        slots: [
+          s("hack-squat", "squat", 1, 4, 6, 1, 180),
+          s("hack-squat", "squat", 1, 8, 10, 1, 180),
+          s("seated-leg-curl", "knee_flexion", 1, 10, 12, 0, 90),
+          s("standing-calf-raise", "calf", 2, 10, 12, 1, 60),
+          s("cable-crunch", "core", 2, 10, 12, 1, 90),
+        ],
+      },
+      {
+        name: "Push",
+        slots: [
+          s("machine-shoulder-press", "vertical_press", 3, 8, 10, 1, 120),
+          s("machine-chest-press", "horizontal_press", 2, 10, 12, 1, 120),
+          s("cable-pushdown", "elbow_extension", 2, 12, 15, 1, 90),
+          s("db-lateral-raise", "lateral_raise", 2, 12, 15, 0, 90),
+        ],
+      },
+      {
+        name: "Pull",
+        slots: [
+          s("lat-pulldown", "vertical_pull", 1, 10, 12, 2, 90),
+          s("weighted-pullup", "vertical_pull", 3, 6, 8, 1, 120),
+          s("bb-row", "horizontal_pull", 2, 8, 10, 1, 120),
+          s("cable-curl", "elbow_flexion", 2, 12, 15, 0, 90),
+          s("reverse-pec-deck", "rear_delt", 2, 10, 12, 0, 90),
+        ],
+      },
+      {
+        name: "Legs",
+        slots: [
+          s("bb-rdl", "hinge", 2, 10, 12, 1, 120),
+          s("leg-press", "squat", 3, 10, 12, 1, 120),
+          s("leg-extension", "knee_extension", 1, 10, 12, 1, 90),
+          s("standing-calf-raise", "calf", 2, 12, 15, 0, 60),
+          s("cable-crunch", "core", 2, 12, 15, 0, 90),
+        ],
+      },
+    ],
+  },
+  {
+    id: "ultimate-ppl-4x",
+    name: "Ultimate PPL 4x (Jeff Nippard)",
+    description:
+      "Phase 1 (Base Hypertrophy) of Jeff Nippard's Ultimate Push Pull Legs System, 4 days: " +
+      "Legs / Push / Pull / Full Body. Top-set + back-off barbell work; feeder-set ramps " +
+      "simplified to straight sets; specialty cable variations mapped to the nearest catalog " +
+      "movement; stretch holds and AMRAP push-ups dropped. Phases 2-3 shift intensity and " +
+      "volume, not structure — adjust RIR if you want to run them.",
+    tags: ["intermediate", "hypertrophy", "4-day", "nippard"],
+    weeks: 4,
+    days: [
+      {
+        name: "Legs",
+        slots: [
+          s("bb-back-squat", "squat", 1, 2, 4, 1, 180),
+          s("bb-back-squat", "squat", 2, 5, 5, 1, 180),
+          s("bb-rdl", "hinge", 3, 8, 10, 1, 150),
+          s("db-step-up", "lunge", 2, 10, 10, 1, 150),
+          s("seated-leg-curl", "knee_flexion", 3, 10, 12, 1, 90),
+          s("standing-calf-raise", "calf", 4, 10, 12, 1, 90),
+          s("cable-crunch", "core", 3, 10, 12, 1, 90),
+        ],
+      },
+      {
+        name: "Push",
+        slots: [
+          s("bb-bench", "horizontal_press", 1, 3, 5, 1, 180),
+          s("bb-bench", "horizontal_press", 2, 10, 10, 1, 180),
+          s("db-shoulder-press", "vertical_press", 3, 8, 10, 1, 150),
+          s("pec-deck", "horizontal_press", 2, 12, 15, 1, 90),
+          s("cable-lateral-raise", "lateral_raise", 3, 12, 15, 1, 90),
+          s("cable-pushdown", "elbow_extension", 3, 12, 15, 1, 90),
+          s("db-skullcrusher", "elbow_extension", 2, 10, 12, 0, 90),
+        ],
+      },
+      {
+        name: "Pull",
+        slots: [
+          s("lat-pulldown", "vertical_pull", 4, 10, 10, 2, 150),
+          s("machine-row", "horizontal_pull", 3, 10, 12, 1, 150),
+          s("reverse-pec-deck", "rear_delt", 3, 12, 15, 1, 90),
+          s("bb-curl", "elbow_flexion", 3, 6, 8, 1, 90),
+          s("cable-curl", "elbow_flexion", 2, 10, 12, 0, 90),
+        ],
+      },
+      {
+        name: "Full Body",
+        slots: [
+          s("bb-deadlift", "hinge", 1, 5, 5, 1, 180),
+          s("bb-rdl", "hinge", 2, 8, 8, 1, 180),
+          s("bb-incline-bench", "horizontal_press", 3, 8, 12, 1, 180),
+          s("weighted-pullup", "vertical_pull", 2, 8, 10, 1, 150),
+          s("leg-press", "squat", 3, 10, 12, 1, 150),
+          s("db-row", "horizontal_pull", 2, 10, 12, 1, 150),
+        ],
+      },
+    ],
+  },
+  {
+    id: "pure-bodybuilding-ul",
+    name: "Pure Bodybuilding Upper/Lower (Jeff Nippard)",
+    description:
+      "The 5-week Build Phase of Jeff Nippard's Pure Bodybuilding Program, Upper/Lower " +
+      "split, 5 days: two upper days, two lower days, and an arms + weak-point day. " +
+      "Intensity techniques (myo-reps, dropsets, long-length partials) encoded as straight " +
+      "RIR 0-1 sets; assisted pull-ups/dips log assistance as negative added weight; hip " +
+      "adduction and the choose-your-own weak-point slots are omitted — add your own.",
+    tags: ["advanced", "hypertrophy", "5-day", "nippard"],
+    weeks: 5,
+    days: [
+      {
+        name: "Upper #1",
+        slots: [
+          s("cable-lateral-raise", "lateral_raise", 3, 10, 12, 1, 90),
+          s("lat-pulldown", "vertical_pull", 3, 10, 12, 1, 150),
+          s("bb-incline-bench", "horizontal_press", 4, 8, 10, 1, 150),
+          s("machine-row", "horizontal_pull", 3, 8, 10, 1, 150),
+          s("cable-pushdown", "elbow_extension", 2, 8, 10, 1, 150),
+          s("lat-pulldown", "vertical_pull", 3, 12, 15, 1, 90),
+          s("pec-deck", "horizontal_press", 3, 12, 15, 1, 90),
+        ],
+      },
+      {
+        name: "Lower #1",
+        slots: [
+          s("seated-leg-curl", "knee_flexion", 3, 8, 10, 1, 150),
+          s("hack-squat", "squat", 3, 4, 8, 1, 180),
+          s("leg-extension", "knee_extension", 3, 10, 12, 1, 90),
+          s("standing-calf-raise", "calf", 3, 12, 15, 1, 90),
+        ],
+      },
+      {
+        name: "Upper #2",
+        slots: [
+          s("seated-cable-row", "horizontal_pull", 3, 10, 12, 1, 90),
+          s("machine-shoulder-press", "vertical_press", 3, 10, 12, 1, 90),
+          s("weighted-pullup", "vertical_pull", 3, 8, 10, 1, 150),
+          s("weighted-dip", "horizontal_press", 3, 8, 10, 1, 150),
+          s("db-curl", "elbow_flexion", 2, 10, 12, 1, 90),
+          s("db-lateral-raise", "lateral_raise", 3, 12, 15, 1, 60),
+          s("reverse-pec-deck", "rear_delt", 3, 10, 12, 0, 90),
+        ],
+      },
+      {
+        name: "Lower #2",
+        slots: [
+          s("seated-leg-curl", "knee_flexion", 3, 8, 10, 1, 90),
+          s("leg-press", "squat", 3, 8, 8, 1, 90),
+          s("bb-rdl", "hinge", 2, 8, 8, 3, 180),
+          s("leg-extension", "knee_extension", 3, 10, 12, 2, 60),
+          s("standing-calf-raise", "calf", 3, 10, 12, 1, 90),
+        ],
+      },
+      {
+        name: "Arms & Weak Points",
+        slots: [
+          s("cable-curl", "elbow_flexion", 3, 10, 12, 1, 90),
+          s("db-skullcrusher", "elbow_extension", 3, 10, 10, 1, 90),
+          s("db-curl", "elbow_flexion", 2, 12, 15, 1, 90),
+          s("cable-pushdown", "elbow_extension", 2, 12, 15, 1, 90),
+          s("cable-crunch", "core", 3, 10, 12, 1, 90),
+        ],
+      },
+    ],
+  },
+  {
+    id: "warrior-shred",
+    name: "Warrior Shred Protocol (Kinobody)",
+    description:
+      "Greg O'Gallagher's Warrior Shred lifting routine: three heavy, low-volume days — " +
+      "chest/biceps/rear delts, lower body/abs, shoulders/back/triceps — each muscle hit " +
+      "hard once a week. Reverse Pyramid Training encoded as low RIR over the rep range " +
+      "with long rest, as with the Ripped Artiste protocols. Bent-over flyes mapped to " +
+      "reverse pec deck, side-to-side knee raises to cable crunch, one-arm overhead " +
+      "triceps to dumbbell skullcrusher.",
+    tags: ["intermediate", "strength", "3-day", "kinobody"],
+    weeks: 4,
+    days: [
+      {
+        name: "Chest & Arms",
+        slots: [
+          s("db-incline-bench", "horizontal_press", 2, 6, 10, 1, 180),
+          s("weighted-dip", "horizontal_press", 1, 8, 10, 1, 180),
+          s("db-curl", "elbow_flexion", 3, 4, 8, 1, 150),
+          s("reverse-pec-deck", "rear_delt", 2, 8, 15, 1, 120),
+        ],
+      },
+      {
+        name: "Lower Body & Abs",
+        slots: [
+          s("db-split-squat", "lunge", 3, 6, 8, 1, 180),
+          s("bb-rdl", "hinge", 3, 10, 12, 1, 180),
+          s("leg-extension", "knee_extension", 2, 10, 12, 1, 120),
+          s("cable-crunch", "core", 2, 10, 15, 1, 120),
+        ],
+      },
+      {
+        name: "Shoulders & Back",
+        slots: [
+          s("db-shoulder-press", "vertical_press", 2, 6, 10, 1, 180),
+          s("weighted-pullup", "vertical_pull", 2, 4, 6, 1, 180),
+          s("db-skullcrusher", "elbow_extension", 2, 8, 12, 1, 120),
+          s("db-lateral-raise", "lateral_raise", 2, 8, 15, 1, 90),
+        ],
+      },
+    ],
+  },
 ];
 
 export const TEMPLATE_BY_ID: Record<string, ProgramTemplate> = Object.fromEntries(

@@ -229,7 +229,7 @@ export function ProgramBuilder({
               value={draft.weeks}
               step={1}
               min={4}
-              max={6}
+              max={12}
               onChange={(v) => update((d) => ({ ...d, weeks: v }))}
             />
             <span className="text-muted">weeks</span>

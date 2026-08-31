@@ -342,8 +342,8 @@ Cherry-pick by value; none are load-bearing for "run a real block."
       thing no per-exercise chart shows. Strongest first-principles story for a writeup.
 - [ ] **Stalled-lift detector** — exercises whose e1RM hasn't risen in N sessions; actionable
       nudge (deload / swap / check recovery). Directly serves the progressive-overload thesis.
-- [ ] **Adherence / consistency** — sessions completed vs the block's planned cadence
-      (`finished_at` count vs program weeks × days), plus a simple streak. Behavior, not strength.
+- [ ] **Adherence / consistency** — weekly completed-vs-planned sessions now ships in the
+      Coach check-in export; block-wide cadence and a streak remain unbuilt.
 - [ ] **Rep-quality drift** — average RIR at a fixed load over time (are sets getting easier =
       hidden progress the weight number doesn't show). Nice-to-have.
 

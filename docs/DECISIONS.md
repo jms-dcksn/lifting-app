@@ -273,6 +273,17 @@ needed by analytics UI are exported alongside the seeded exercise catalog. Kept 
 `coefficients.ts` because it is the canonical home of pattern-level knowledge in the strength
 engine.
 
+**Weekly coaching is a derived export, not new mutable workout state.** The Coach check-in
+card builds a seven-day, paste-ready summary from finished `workout_session` and `set_log`
+rows: adherence, RIR distribution, 0–1 RIR hard sets by pattern, and latest lift performance.
+It intentionally adds no schema before the first real block. Subjective recovery notes remain
+a later feature once actual check-ins show which fields are worth persisting.
+
+**Classic blocks can span 4–12 weeks.** The original 4–6 week builder cap prevented a complete
+two-mesocycle plan from being represented as one program. The database already stores an
+unconstrained integer, so validation and the builder now allow 12 while retaining 4 as the
+minimum. Existing programs are unchanged.
+
 ## Phase A decisions (program gallery + tags)
 
 Phase A of `docs/superpowers/specs/2026-06-20-program-gallery-tags-rest-timer-design.md`

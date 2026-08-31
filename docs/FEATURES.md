@@ -69,7 +69,7 @@ Adaptive plateau engine under §5.
   (trim, drop empties, case-insensitive dedupe).
 - **Progression style toggle** — Classic vs Adaptive. Choosing Adaptive hides the weeks
   stepper (the program runs indefinitely) and reveals a per-slot patience control.
-- **Weeks stepper** — sets the block length (classic only).
+- **Weeks stepper** — sets a 4–12 week block length (classic only).
 - **Days** — add / name / reorder / remove training days.
 - **Slots per day** — each slot references a **movement pattern**, an exercise, rep range
   (`rep_min`/`rep_max`), target RIR, and weight increment.
@@ -218,17 +218,21 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 
 ## 8. Progress analytics (`/analytics`, nav label "Progress")
 
-Pure analytics in `src/lib/analytics.ts`; the page renders five server-side cards:
+Pure analytics in `src/lib/analytics.ts` plus the weekly export in
+`src/lib/coach-check-in.ts`; the page renders six server-side cards:
 
-1. **Total volume** — session tonnage chart (`sessionTonnage`, sums `effectiveLoad × reps`;
+1. **Coach check-in** — copies a paste-ready seven-day summary: completed vs planned sessions,
+   working-set and RIR distribution, 0–1 RIR hard sets by pattern, and the latest top set plus
+   e1RM change for each trained exercise. Only finished sessions count.
+2. **Total volume** — session tonnage chart (`sessionTonnage`, sums `effectiveLoad × reps`;
    bodyweight sets with unknown bodyweight are excluded and counted, never zeroed).
-2. **Training balance** — latest training week's per-pattern horizontal bars: total working
+3. **Training balance** — latest training week's per-pattern horizontal bars: total working
    sets with the hard-set portion (RIR ≤ 2) overlaid; "{n} sets · {m} hard".
-3. **e1RM progression highlights** — top gainers with signed-delta trend pills.
-4. **Pattern strength** — trained patterns with current reference-lift e1RM and a signed
+4. **e1RM progression highlights** — top gainers with signed-delta trend pills.
+5. **Pattern strength** — trained patterns with current reference-lift e1RM and a signed
    trend; patterns with <2 sessions show "new" (`patternStrengthTrend`, replays sessions
    chronologically).
-5. **All exercises** — searchable list funneling into `history/[exerciseId]`.
+6. **All exercises** — searchable list funneling into `history/[exerciseId]`.
 
 Other pure analytics available: `e1rmPrFeed` (chronological PR events), `weightPrs` (all-time
 heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `latestWeekBalance`.

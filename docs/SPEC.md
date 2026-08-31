@@ -7,7 +7,7 @@ Where this conflicts with `PLAN.md`, this wins. `PLAN.md` stays as the original 
 ## North star
 
 Done = I run a real training block in the app: build one week of a 3–5 day program, set it
-to repeat 4–6 weeks, then have the app walk me through each session — log working sets with
+to repeat 4–12 weeks, then have the app walk me through each session — log working sets with
 RIR, see a recommended weight per slot, swap a movement if a machine is taken, and see my
 e1RM trend and whether I beat last time. Built for me first; public-readiness is a later pass.
 
@@ -138,7 +138,7 @@ Magic-link email form → `/` on success.
 - Last finished session summary (date, total working sets, top e1RM per lift).
 
 ### `/program` — builder
-- Create/edit a program: name, weeks (4–6), `is_active`.
+- Create/edit a program: name, weeks (4–12), `is_active`.
 - Add/reorder **days** (named).
 - Within a day, add/reorder **slots**: exercise picker + target sets + rep range (min/max) +
   target RIR.

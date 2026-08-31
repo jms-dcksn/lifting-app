@@ -9,10 +9,10 @@ describe("program templates", () => {
     expect(Object.keys(TEMPLATE_BY_ID).length).toBe(ids.length);
   });
 
-  it("stay within the builder's 4-6 week block range", () => {
+  it("stay within the builder's 4-12 week block range", () => {
     for (const t of PROGRAM_TEMPLATES) {
       expect(t.weeks, t.id).toBeGreaterThanOrEqual(4);
-      expect(t.weeks, t.id).toBeLessThanOrEqual(6);
+      expect(t.weeks, t.id).toBeLessThanOrEqual(12);
     }
   });
 

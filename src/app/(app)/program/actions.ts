@@ -56,7 +56,7 @@ export async function saveProgram(input: SaveProgramInput) {
   const name = input.name.trim() || "My Program";
   const description = input.description?.trim() || null;
   const tags = normalizeTags(input.tags);
-  const weeks = Math.min(6, Math.max(4, Math.round(input.weeks)));
+  const weeks = Math.min(12, Math.max(4, Math.round(input.weeks)));
 
   // Single active program per user (enforced by a partial unique index): clear others first.
   await supabase

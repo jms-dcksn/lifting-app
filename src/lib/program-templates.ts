@@ -7,7 +7,7 @@
 //   - Linear progression is encoded as repMin === repMax: hitting repMax on the first set
 //     triggers the weight bump in progression.ts — exactly "add weight when you hit 5x5".
 //   - Percent-based work (5/3/1 waves, GZCLP tiers) is approximated with RIR targets.
-//   - `weeks` is this app's 4-6 week block length, not the program's total run; these
+//   - `weeks` is this app's 4-12 week block length, not necessarily the program's total run; these
 //     routines are meant to be repeated cycle after cycle.
 //   - Machine slots reference generic templates; the session flow instantiates them to a
 //     brand/type variant as usual.
@@ -49,6 +49,70 @@ const s = (
 ): TemplateSlot => ({ exerciseId, pattern, targetSets, repMin, repMax, targetRir, restSeconds });
 
 export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
+  {
+    id: "james-hit-specialization",
+    name: "James · HIT Upper / Lower",
+    description:
+      "A 12-week, four-day HIT hypertrophy block built for 45-minute sessions with extra " +
+      "delts, arms, and legs. Run in order: Upper A Tuesday, Lower A Wednesday, Upper B " +
+      "Friday, Lower B Saturday. Weeks 1 and 7 calibrate at 2 RIR; weeks 2-3 and 8-9 use " +
+      "1 RIR; weeks 4-5 and 10-11 use 0-1 RIR. Weeks 6 and 12 are deloads: perform half " +
+      "the listed sets at 3-4 RIR. Log actual RIR on every working set.",
+    tags: ["personal", "HIT", "hypertrophy", "4-day", "specialization"],
+    weeks: 12,
+    days: [
+      {
+        name: "Tue · Upper A",
+        slots: [
+          s("bb-incline-bench", "horizontal_press", 2, 6, 10, 1, 150),
+          s("lat-pulldown", "vertical_pull", 2, 8, 12, 1, 120),
+          s("machine-row", "horizontal_pull", 2, 8, 12, 1, 120),
+          s("machine-shoulder-press", "vertical_press", 1, 8, 12, 1, 120),
+          s("cable-lateral-raise", "lateral_raise", 2, 12, 20, 1, 75),
+          s("cable-curl", "elbow_flexion", 2, 8, 12, 1, 75),
+          s("cable-pushdown", "elbow_extension", 2, 8, 12, 1, 75),
+        ],
+      },
+      {
+        name: "Wed · Lower A",
+        slots: [
+          s("seated-leg-curl", "knee_flexion", 2, 8, 12, 1, 90),
+          s("hack-squat", "squat", 2, 6, 10, 1, 180),
+          s("leg-press", "squat", 1, 10, 15, 1, 150),
+          s("leg-extension", "knee_extension", 1, 10, 15, 1, 90),
+          s("standing-calf-raise", "calf", 2, 8, 12, 1, 75),
+          s("cable-lateral-raise", "lateral_raise", 2, 12, 20, 1, 75),
+        ],
+      },
+      {
+        name: "Fri · Upper B",
+        slots: [
+          s("machine-shoulder-press", "vertical_press", 1, 6, 10, 1, 150),
+          s("weighted-pullup", "vertical_pull", 1, 6, 10, 1, 150),
+          s("machine-chest-press", "horizontal_press", 1, 8, 12, 1, 120),
+          s("seated-cable-row", "horizontal_pull", 1, 10, 15, 1, 120),
+          s("cable-lateral-raise", "lateral_raise", 2, 12, 20, 1, 75),
+          s("reverse-pec-deck", "rear_delt", 1, 12, 20, 1, 75),
+          s("bb-curl", "elbow_flexion", 2, 8, 12, 1, 90),
+          s("db-skullcrusher", "elbow_extension", 2, 8, 12, 1, 90),
+          s("db-curl", "elbow_flexion", 1, 10, 15, 1, 75),
+          s("cable-pushdown", "elbow_extension", 1, 10, 15, 1, 75),
+        ],
+      },
+      {
+        name: "Sat · Lower B",
+        slots: [
+          s("bb-rdl", "hinge", 2, 6, 10, 1, 180),
+          s("hack-squat", "squat", 2, 8, 12, 1, 150),
+          s("db-split-squat", "lunge", 1, 8, 12, 1, 120),
+          s("seated-leg-curl", "knee_flexion", 2, 8, 12, 1, 90),
+          s("leg-extension", "knee_extension", 1, 12, 15, 1, 90),
+          s("standing-calf-raise", "calf", 2, 10, 15, 1, 75),
+          s("reverse-pec-deck", "rear_delt", 2, 12, 20, 1, 75),
+        ],
+      },
+    ],
+  },
   {
     id: "ppl-simple",
     name: "Push / Pull / Legs",

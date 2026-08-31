@@ -11,11 +11,14 @@ import {
 } from "@/lib/analytics";
 import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
+import { buildCoachCheckIn } from "@/lib/coach-check-in";
+import { getActiveProgram } from "@/lib/program";
 import { PATTERN_LABEL, type ExerciseDef } from "@/lib/strength/coefficients";
 import { Card, CardLabel } from "@/components/ui/card";
 import { cx } from "@/components/ui/cx";
 import { ExerciseList, type ExerciseListItem } from "./exercise-list";
 import { VolumeChart, type VolumeChartPoint } from "./volume-chart";
+import { CoachCheckIn } from "./coach-check-in";
 
 type AnalyticsQueryRow = {
   id: string;
@@ -61,7 +64,10 @@ export default async function AnalyticsPage() {
 
   if (error) throw new Error(error.message);
 
-  const catalog = await getCatalogMap(supabase, userId);
+  const [catalog, program] = await Promise.all([
+    getCatalogMap(supabase, userId),
+    getActiveProgram(supabase, userId),
+  ]);
   const analyticsRows = normalizeRows((rows ?? []) as AnalyticsQueryRow[]);
   const bodyweight = profile?.bodyweight ?? null;
   const volume = sessionTonnage(analyticsRows, catalog, bodyweight);
@@ -113,6 +119,10 @@ export default async function AnalyticsPage() {
     sessionCount: summary.sessionCount,
     delta: summary.delta,
   }));
+  const coachCheckIn = buildCoachCheckIn(analyticsRows, catalog, {
+    programName: program?.name,
+    plannedSessions: program?.days.length,
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
@@ -133,6 +143,15 @@ export default async function AnalyticsPage() {
         </Card>
       ) : (
         <>
+          <Card>
+            <CardLabel className="mb-1">Coach check-in</CardLabel>
+            <p className="mb-3 text-body text-muted">
+              Copies the last seven days of adherence, RIR, hard sets, and lift trends in a
+              format ready for our weekly review.
+            </p>
+            <CoachCheckIn text={coachCheckIn} />
+          </Card>
+
           <Card>
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>

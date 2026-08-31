@@ -39,6 +39,7 @@ Tests run on **vitest**, scoped to the pure modules under `src/lib/` (config:
 native tsconfig-paths). The strength engine and analytics are framework-free, so the suite
 loads no Next.js/React. Co-locate new tests as `*.test.ts` next to the module. Current
 coverage: `e1rm`, `recommend`, `progression`, `plateau`, `program-tags`, `program-templates`,
+`coach-check-in`,
 `rest`, `coefficients`, `catalog`, `exercise-id`.
 
 ## Architecture
@@ -146,8 +147,9 @@ selected/mapped by `assemble()` so builder edits preserve it.
 
 Built-in program templates live in `src/lib/program-templates.ts` (pure data, validated by
 `program-templates.test.ts`: every slot's exercise id must resolve in `coefficients.ts` with
-a matching pattern, and `weeks` must sit in the builder's 4-6 range). Fourteen templates: the
-simple Push/Pull/Legs, five community programs (Reddit PPL, GZCLP, 5/3/1 BBB, PHUL, PHAT),
+a matching pattern, and `weeks` must sit in the builder's 4-12 range). Fifteen templates: the
+personalized 12-week James HIT Upper/Lower block, the simple Push/Pull/Legs, five community
+programs (Reddit PPL, GZCLP, 5/3/1 BBB, PHUL, PHAT),
 both Kinobody Ripped Artiste protocols (`kino-strength-density`, `kino-physique-mastery`),
 and six transcribed from the source files in `docs/` — Jeff Nippard's Essentials 3x/4x/5x
 (`essentials-3x/4x/5x`), Ultimate PPL 4x Phase 1 (`ultimate-ppl-4x`), Pure Bodybuilding
@@ -276,19 +278,22 @@ like the strength engine):
 `coefficients.ts` now also exports `PATTERN_LABEL: Record<Pattern, string>` —
 human-readable movement-pattern names for analytics UI (e.g. `"Hip Hinge"`).
 
-The Progress page (`analytics/page.tsx`) renders five server-side cards, top to bottom:
-1. **Total volume** — session tonnage chart (Recharts `volume-chart.tsx`)
-2. **Training balance** — latest training week's per-pattern horizontal bar list;
+The Progress page (`analytics/page.tsx`) renders six server-side cards, top to bottom:
+1. **Coach check-in** — client copy button over a server-derived seven-day coaching payload
+   from `coach-check-in.ts` (finished-session adherence, RIR, hard sets, and lift trends)
+2. **Total volume** — session tonnage chart (Recharts `volume-chart.tsx`)
+3. **Training balance** — latest training week's per-pattern horizontal bar list;
    total working sets (faint bar) with hard-set portion overlaid (foreground bar);
    caption "{n} sets · {m} hard"; footnote "Hard = RIR ≤ 2 (near failure)"
-3. **e1RM progression highlights** — top gainers with signed-delta `TrendPill`
-4. **Pattern strength** — list of trained patterns, current reference-lift e1RM,
+4. **e1RM progression highlights** — top gainers with signed-delta `TrendPill`
+5. **Pattern strength** — list of trained patterns, current reference-lift e1RM,
    signed-delta `TrendPill`; patterns with <2 sessions show "new" instead of a trend
-5. **All exercises** — searchable list (`exercise-list.tsx`) → `history/[exerciseId]`
+6. **All exercises** — searchable list (`exercise-list.tsx`) → `history/[exerciseId]`
 
 The hub deliberately funnels lift rows into the existing `history/[exerciseId]` route
 instead of creating a second per-exercise drill-down. Keep client code small: client
-pieces are only `volume-chart.tsx` (Recharts) and `exercise-list.tsx` (search).
+pieces are only `coach-check-in.tsx` (clipboard), `volume-chart.tsx` (Recharts), and
+`exercise-list.tsx` (search).
 Training balance and pattern strength are monochrome list cards — not colored multi-line
 charts — to preserve the "color is semantic only" Phase 6 contract.
 

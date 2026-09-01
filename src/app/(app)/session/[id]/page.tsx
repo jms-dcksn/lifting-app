@@ -7,6 +7,7 @@ import { recentExerciseIds } from "@/lib/program";
 import { getCatalogMap } from "@/lib/catalog";
 import { foldPrescription, type AdaptationRow } from "@/lib/strength/plateau";
 import { loadPendingSuggestions } from "@/lib/fluid";
+import { phaseForWeek, resolvePrescription, type ProgramPhase } from "@/lib/periodization";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
 
 export default async function SessionPage({
@@ -27,7 +28,7 @@ export default async function SessionPage({
     .maybeSingle();
   if (!session?.program_day_id) notFound();
 
-  const [{ data: day }, { data: program }, { data: daySlots }] = await Promise.all([
+  const [{ data: day }, { data: program }, { data: daySlots }, { data: phaseRows }] = await Promise.all([
     supabase.from("program_day").select("name").eq("id", session.program_day_id).maybeSingle(),
     session.program_id
       ? supabase.from("program").select("weeks, style").eq("id", session.program_id).maybeSingle()
@@ -37,6 +38,13 @@ export default async function SessionPage({
       .select("id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, position")
       .eq("program_day_id", session.program_day_id)
       .order("position", { ascending: true }),
+    session.program_id
+      ? supabase
+          .from("program_phase")
+          .select("id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
+          .eq("program_id", session.program_id)
+          .order("position", { ascending: true })
+      : Promise.resolve({ data: [] }),
   ]);
   if (!day) notFound();
 
@@ -136,18 +144,44 @@ export default async function SessionPage({
     }
   }
 
+  const phases: ProgramPhase[] = (phaseRows ?? []).map((phase) => ({
+    id: phase.id,
+    position: phase.position,
+    name: phase.name,
+    description: phase.description,
+    weekStart: phase.week_start,
+    weekEnd: phase.week_end,
+    targetRirMin: phase.target_rir_min,
+    targetRirMax: phase.target_rir_max,
+    setMultiplier: phase.set_multiplier,
+  }));
+  const sessionWeek = session.week_index ?? 1;
+  const activePhase = phaseForWeek(phases, sessionWeek);
+
   const slots: SlotView[] = (daySlots ?? []).map((slot) => {
     const folded = foldedBySlot.get(slot.id);
+    const effective = resolvePrescription(
+      {
+        targetSets: slot.target_sets,
+        repMin: folded?.repMin ?? slot.rep_min,
+        repMax: folded?.repMax ?? slot.rep_max,
+        targetRir: slot.target_rir,
+      },
+      sessionWeek,
+      phases,
+    );
     return {
       programSlotId: slot.id,
       // In-session swap wins; else the folded current exercise (fluid) or program default.
       exerciseId: sessionExercise.get(slot.id) ?? folded?.exerciseId ?? slot.exercise_id,
       pattern: slot.pattern as Pattern,
       prescription: {
-        targetSets: slot.target_sets,
-        repMin: folded?.repMin ?? slot.rep_min,
-        repMax: folded?.repMax ?? slot.rep_max,
-        targetRir: slot.target_rir,
+        targetSets: effective.targetSets,
+        repMin: effective.repMin,
+        repMax: effective.repMax,
+        targetRir: effective.targetRir,
+        targetRirMin: effective.targetRirMin,
+        targetRirMax: effective.targetRirMax,
       },
       lastByExercise: lastBySlot.get(slot.id) ?? {},
       restSeconds: slot.rest_seconds,
@@ -181,8 +215,9 @@ export default async function SessionPage({
     <ActiveSession
       sessionId={id}
       dayName={day.name}
-      week={session.week_index ?? 1}
+      week={sessionWeek}
       weeks={program?.weeks ?? 5}
+      phase={activePhase}
       bodyweight={profile?.bodyweight ?? null}
       defaultRestSeconds={profile?.default_rest_seconds ?? 120}
       alreadyFinished={!!session.finished_at}

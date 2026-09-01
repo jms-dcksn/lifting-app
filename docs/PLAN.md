@@ -16,7 +16,7 @@ beat last time. Done = I use it for a real block.
 
 - [x] Add reusable program phases, generated DB types, a pure prescription resolver, and
       boundary/rounding/validation tests.
-- [ ] Resolve the active workout from its stored week and use effective sets/RIR throughout.
+- [x] Resolve the active workout from its stored week and use effective sets/RIR throughout.
 - [ ] Seed, display, edit, save, and clone weekly phases; close issue #4.
 
 ## What exists

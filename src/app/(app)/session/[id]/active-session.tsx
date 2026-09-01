@@ -10,6 +10,7 @@ import {
   type SessionTarget,
 } from "@/lib/strength/progression";
 import type { ExerciseStat } from "@/lib/strength/recommend";
+import { rirLabel, type EffectivePrescription, type ProgramPhase } from "@/lib/periodization";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card, CardLabel } from "@/components/ui/card";
 import { Stepper } from "@/components/ui/stepper";
@@ -37,7 +38,7 @@ export interface SlotView {
   programSlotId: string;
   exerciseId: string; // last logged this session, else the program slot's exercise
   pattern: Pattern;
-  prescription: { targetSets: number; repMin: number; repMax: number; targetRir: number };
+  prescription: Omit<EffectivePrescription, "phase">;
   lastByExercise: Record<string, LastPerformance>;
   restSeconds: number | null;
   sets: LoggedSet[];
@@ -49,6 +50,7 @@ export function ActiveSession({
   dayName,
   week,
   weeks,
+  phase,
   bodyweight,
   defaultRestSeconds,
   alreadyFinished,
@@ -61,6 +63,7 @@ export function ActiveSession({
   dayName: string;
   week: number;
   weeks: number;
+  phase: ProgramPhase | null;
   bodyweight: number | null;
   defaultRestSeconds: number;
   alreadyFinished: boolean;
@@ -80,6 +83,7 @@ export function ActiveSession({
   );
   const [summary, setSummary] = useState<SessionSummary | null>(null);
   const [finishing, startFinish] = useTransition();
+  const phasePrescription = slots[0]?.prescription;
 
   function handleFinish() {
     startFinish(async () => setSummary(await finishSession(sessionId)));
@@ -100,6 +104,19 @@ export function ActiveSession({
           {bodyweight ? ` · BW ${bodyweight} lb` : ""}
         </p>
       </header>
+
+      {phase && phasePrescription ? (
+        <Card tone="active">
+          <CardLabel>Week {week} · {phase.name}</CardLabel>
+          <p className="mt-1 text-body">
+            {phase.description ?? `Follow the week ${week} prescription shown on each exercise.`}
+          </p>
+          <p className="mt-2 text-caption text-muted">
+            Effective RIR: {rirLabel(phasePrescription)}
+            {phase.setMultiplier != null ? ` · ${Math.round(phase.setMultiplier * 100)}% working sets` : ""}
+          </p>
+        </Card>
+      ) : null}
 
       {slots.map((slot, i) => (
         <SlotCard
@@ -295,7 +312,7 @@ function SlotCard({
 
       <div className="mt-1 flex items-center justify-between gap-3">
         <span className="text-caption text-muted">
-          {p.targetSets} × {p.repMin}–{p.repMax} @ {p.targetRir} RIR
+          {p.targetSets} × {p.repMin}–{p.repMax} @ {rirLabel(p)} RIR
         </span>
         <ProgressDots done={done} target={p.targetSets} />
       </div>

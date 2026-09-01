@@ -226,6 +226,12 @@ longer revert silently. `TargetLine` shows weight × reps at heading weight with
 lines below (the old inline `confidenceBadge` helper is gone); the recommendation line is
 suppressed entirely once `done > 0` (it goes stale the moment the first set is logged).
 
+Classic sessions resolve every slot through `resolvePrescription()` using the session's stored
+`week_index`. Effective sets drive progress dots, current/completed state, and set-entry defaults;
+RIR ranges render in full while recommendation APIs receive the conservative upper bound. A
+session-level phase card explains calibration, intensification, and deload weeks. Programs with
+no phases retain their static slot prescription.
+
 **Rest timer.** `active-session.tsx` owns one `useRestTimer()` (`rest-timer.tsx`) for the
 whole session — only one rest countdown runs at a time, regardless of how many slots are in
 play. The hook tracks an absolute end timestamp (not a decrementing counter) so a 250ms tick

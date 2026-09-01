@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   effectiveSetCount,
+  rirLabel,
   resolvePrescription,
   validateProgramPhases,
   type ProgramPhase,
@@ -57,6 +58,13 @@ describe("effectiveSetCount", () => {
     expect(effectiveSetCount(4, 0.5)).toBe(2);
     expect(effectiveSetCount(3, 0.5)).toBe(2);
     expect(effectiveSetCount(1, 0.5)).toBe(1);
+  });
+});
+
+describe("rirLabel", () => {
+  it("renders single targets and ranges", () => {
+    expect(rirLabel({ targetRirMin: 2, targetRirMax: 2 })).toBe("2");
+    expect(rirLabel({ targetRirMin: 0, targetRirMax: 1 })).toBe("0–1");
   });
 });
 

@@ -107,7 +107,9 @@ machines predict like free weights.
 
 ### Data model (`supabase/migrations/`)
 
-Eight applied migrations: `0001_init.sql` (base schema), `0002_program_builder.sql` (program/day/slot tables, `profile.bodyweight`, `set_log.program_slot_id`), `0003_harden_signup_trigger.sql` (signup trigger hardening), `0004_session_finished_at.sql` (adds nullable `finished_at timestamptz` to `workout_session`), `0005_goal_weight.sql` (adds nullable `profile.goal_weight`), `0006_program_metadata.sql` (renames the unused `program.notes` → `program.description`, adds `program.tags text[] not null default '{}'`), `0007_rest_timer.sql` (adds `profile.default_rest_seconds int not null default 120` and nullable `program_slot.rest_seconds int`, null = use the profile default), `0008_machine_variants.sql` (adds `exercise.machine_type` and `exercise.base_exercise_id`, plus the partial unique index `exercise_variant_unique` for variant dedup — activates the previously dormant `exercise` table). Typed DB types at `src/lib/supabase/types.ts`.
+Migrations are sequential through `0010_program_phases.sql`. The phase table adds reusable,
+program-level week ranges with optional RIR-range and working-set-multiplier overrides. Typed DB
+types live at `src/lib/supabase/types.ts`.
 
 - **`set_log` is the source of truth.** `user_exercise_stat` is a derived cache (current e1RM
   + personal coefficient) that is rebuildable from `set_log` — never let it drift.
@@ -139,6 +141,9 @@ Eight applied migrations: `0001_init.sql` (base schema), `0002_program_builder.s
 ### Program loader (`src/lib/program.ts`)
 
 `getProgram` assembles one complete program for home, detail, edit, and session flows.
+It also loads ordered `program_phase` rows. `src/lib/periodization.ts` is the framework-free
+source of truth for resolving an effective prescription from a stored session week; odd
+fractional set counts round up with a minimum of one set.
 `listProgramSummaries` powers `/program` with three batched queries (programs, days, slots)
 and returns counts without assembling every program tree. Pure aggregation and ordering live
 in `src/lib/program-summary.ts`: active first, then newest first. `ProgramSlot` carries

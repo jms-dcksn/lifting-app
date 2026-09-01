@@ -234,6 +234,59 @@ export type Database = {
           },
         ]
       }
+      program_phase: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          position: number
+          program_id: string
+          set_multiplier: number | null
+          target_rir_max: number | null
+          target_rir_min: number | null
+          user_id: string
+          week_end: number
+          week_start: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          position: number
+          program_id: string
+          set_multiplier?: number | null
+          target_rir_max?: number | null
+          target_rir_min?: number | null
+          user_id: string
+          week_end: number
+          week_start: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          position?: number
+          program_id?: string
+          set_multiplier?: number | null
+          target_rir_max?: number | null
+          target_rir_min?: number | null
+          user_id?: string
+          week_end?: number
+          week_start?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_phase_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "program"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       program_slot: {
         Row: {
           created_at: string

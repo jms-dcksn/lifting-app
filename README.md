@@ -5,7 +5,7 @@ recommends a working weight for any exercise — including when you swap movemen
 (dumbbell → barbell → machine) — and summarizes training progress across sessions.
 
 Programs come in two styles. **Classic** programs run a fixed weekly cycle with
-double-progression. **Fluid (adaptive)** programs keep the cycle fixed but adapt the *movement*:
+double-progression and can apply week-specific set/RIR phases. **Fluid (adaptive)** programs keep the cycle fixed but adapt the *movement*:
 per-exercise e1RM plateau detection drives a laddered intervention — widen the rep range first,
 then swap to a ranked alternative in the same pattern — surfaced in-session as recommend-and-confirm.
 
@@ -45,6 +45,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/lib/exercise-id.ts` — pure variant-id / variant-name / custom-slug helpers
 - `src/lib/analytics.ts` — framework-free aggregation helpers for the Progress hub
 - `src/lib/coach-check-in.ts` — paste-ready weekly coaching summary from finished-session logs
+- `src/lib/periodization.ts` — resolves week-specific working-set and RIR overrides for classic programs
 - `src/lib/program.ts` — server-side program loader; assembles nested program (days → slots) from DB
 - `src/components/ui/` — shared UI primitives (Button, Stepper, Card, Input, Sheet, Skeleton) and design tokens (`src/app/globals.css`)
 - `src/lib/supabase/` — browser client, server client, and `middleware.ts` (`updateSession` helper for `proxy.ts`)

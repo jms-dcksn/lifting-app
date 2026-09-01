@@ -107,9 +107,10 @@ machines predict like free weights.
 
 ### Data model (`supabase/migrations/`)
 
-Migrations are sequential through `0010_program_phases.sql`. The phase table adds reusable,
-program-level week ranges with optional RIR-range and working-set-multiplier overrides. Typed DB
-types live at `src/lib/supabase/types.ts`.
+Migrations are sequential through `0011_backfill_james_hit_phases.sql`. `0010` adds reusable,
+program-level week ranges with optional RIR-range and working-set-multiplier overrides; `0011`
+idempotently gives existing 12-week James HIT copies the same phases as new template instances.
+Typed DB types live at `src/lib/supabase/types.ts`.
 
 - **`set_log` is the source of truth.** `user_exercise_stat` is a derived cache (current e1RM
   + personal coefficient) that is rebuildable from `set_log` — never let it drift.
@@ -184,6 +185,9 @@ remain a compact list below the owned-program grid.
 renders nothing when no programs have tags. `tag-input.tsx` edits tags in the builder
 (Enter/comma to add, ×/Backspace to remove). `saveProgram` persists normalized tags and the
 description. Each slot also has an optional rest override; save and clone preserve it.
+Classic programs can also author ordered weekly phases. Save validates non-overlapping ranges
+and preserves phase ids; template creation and cloning copy phases. Program detail renders the
+phase schedule before the day cards. Fluid programs persist no phases and never resolve them.
 
 `src/lib/program-tags.ts` is pure tag logic shared by the gallery and the builder:
 `normalizeTags` (trim, drop empties, case-insensitive dedupe preserving first form),

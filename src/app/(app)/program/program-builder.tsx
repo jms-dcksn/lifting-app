@@ -4,18 +4,20 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
 import type { Program } from "@/lib/program";
+import { validateProgramPhases, type ProgramPhase } from "@/lib/periodization";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Stepper } from "@/components/ui/stepper";
 import { withViewTransition } from "@/components/ui/view-transition";
-import { saveProgram, type SaveDayInput, type SaveSlotInput } from "./actions";
+import { saveProgram, type SaveDayInput, type SavePhaseInput, type SaveSlotInput } from "./actions";
 import { ExercisePicker } from "./exercise-picker";
 import { TagInput } from "./tag-input";
 
 const uid = () => crypto.randomUUID();
 
 const MAX_DAYS = 6;
+const MAX_PHASES = 12;
 
 function blankProgram(): Program {
   return { id: uid(), name: "", description: null, tags: [], weeks: 5, style: "classic", isActive: true, phases: [], days: [] };
@@ -51,6 +53,46 @@ export function ProgramBuilder({
   function addDay() {
     update((d) => {
       d.days.push({ id: uid(), name: `Day ${d.days.length + 1}`, slots: [] });
+      return d;
+    });
+  }
+
+  function addPhase() {
+    update((d) => {
+      const priorEnd = d.phases.at(-1)?.weekEnd ?? 0;
+      const week = Math.min(d.weeks, priorEnd + 1);
+      d.phases.push({
+        id: uid(),
+        position: d.phases.length,
+        name: `Phase ${d.phases.length + 1}`,
+        description: null,
+        weekStart: week,
+        weekEnd: week,
+        targetRirMin: 2,
+        targetRirMax: 2,
+        setMultiplier: null,
+      });
+      return d;
+    });
+  }
+
+  function updatePhase(id: string, patch: Partial<ProgramPhase>) {
+    update((d) => {
+      const phase = d.phases.find((candidate) => candidate.id === id);
+      if (phase) Object.assign(phase, patch);
+      return d;
+    });
+  }
+
+  function removePhase(id: string) {
+    update((d) => ({ ...d, phases: d.phases.filter((phase) => phase.id !== id) }));
+  }
+
+  function movePhase(index: number, direction: -1 | 1) {
+    update((d) => {
+      const destination = index + direction;
+      if (destination < 0 || destination >= d.phases.length) return d;
+      [d.phases[index], d.phases[destination]] = [d.phases[destination], d.phases[index]];
       return d;
     });
   }
@@ -133,6 +175,14 @@ export function ProgramBuilder({
       setError("Add at least one day with one exercise.");
       return;
     }
+    const phaseErrors = validateProgramPhases(
+      draft.phases.map((phase, position) => ({ ...phase, position })),
+      draft.weeks,
+    );
+    if (draft.style === "classic" && phaseErrors.length) {
+      setError(phaseErrors[0]);
+      return;
+    }
     startSave(async () => {
       try {
         await saveProgram({
@@ -142,6 +192,16 @@ export function ProgramBuilder({
           tags: draft.tags,
           weeks: draft.weeks,
           style: draft.style,
+          phases: draft.phases.map<SavePhaseInput>((phase) => ({
+            id: phase.id,
+            name: phase.name,
+            description: phase.description,
+            weekStart: phase.weekStart,
+            weekEnd: phase.weekEnd,
+            targetRirMin: phase.targetRirMin,
+            targetRirMax: phase.targetRirMax,
+            setMultiplier: phase.setMultiplier,
+          })),
           days: draft.days.map<SaveDayInput>((d) => ({
             id: d.id,
             name: d.name,
@@ -234,6 +294,80 @@ export function ProgramBuilder({
             />
             <span className="text-muted">weeks</span>
           </div>
+        )}
+
+        {draft.style === "classic" && (
+          <section className="mt-2 flex flex-col gap-3 rounded-card border border-border p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-heading">Weekly phases</h2>
+                <p className="mt-1 text-caption text-muted">
+                  Optional week ranges override every exercise&apos;s working sets and RIR target.
+                </p>
+              </div>
+              {draft.phases.length < MAX_PHASES && (
+                <Button type="button" variant="secondary" size="sm" onClick={addPhase}>
+                  Add phase
+                </Button>
+              )}
+            </div>
+
+            {draft.phases.map((phase, index) => (
+              <div key={phase.id} className="rounded-control bg-surface p-3">
+                <div className="flex items-center gap-1">
+                  <Input
+                    value={phase.name}
+                    onChange={(event) => updatePhase(phase.id, { name: event.target.value })}
+                    aria-label={`Phase ${index + 1} name`}
+                    className="h-11 flex-1 px-2 font-medium"
+                  />
+                  <ReorderButtons
+                    what={phase.name}
+                    onUp={() => movePhase(index, -1)}
+                    onDown={() => movePhase(index, 1)}
+                  />
+                  <RemoveButton what={phase.name} onClick={() => removePhase(phase.id)} />
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <NumField label="Week from" value={phase.weekStart} min={1} max={draft.weeks}
+                    onChange={(value) => updatePhase(phase.id, { weekStart: value })} />
+                  <NumField label="Week to" value={phase.weekEnd} min={1} max={draft.weeks}
+                    onChange={(value) => updatePhase(phase.id, { weekEnd: value })} />
+                  <NumField label="RIR min" value={phase.targetRirMin ?? 0} min={0} max={10}
+                    onChange={(value) => updatePhase(phase.id, { targetRirMin: value })} />
+                  <NumField label="RIR max" value={phase.targetRirMax ?? 0} min={0} max={10}
+                    onChange={(value) => updatePhase(phase.id, { targetRirMax: value })} />
+                </div>
+                <label className="mt-2 flex items-center justify-between gap-2 text-caption text-muted">
+                  <span className="uppercase tracking-wide">Working-set volume</span>
+                  <select
+                    value={phase.setMultiplier ?? ""}
+                    onChange={(event) => updatePhase(phase.id, {
+                      setMultiplier: event.target.value === "" ? null : Number(event.target.value),
+                    })}
+                    className="h-9 rounded-control border border-border-strong bg-background px-2 text-sm font-semibold"
+                  >
+                    <option value="">Normal</option>
+                    <option value="0.75">75%</option>
+                    <option value="0.5">50%</option>
+                  </select>
+                </label>
+                <textarea
+                  value={phase.description ?? ""}
+                  onChange={(event) => updatePhase(phase.id, { description: event.target.value || null })}
+                  placeholder="Explain this phase to the lifter"
+                  rows={2}
+                  className="mt-2 w-full resize-none rounded-control border border-border-strong bg-background p-2 text-body outline-none"
+                />
+              </div>
+            ))}
+
+            {draft.phases.length === 0 && (
+              <p className="rounded-control bg-surface p-3 text-body text-muted">
+                No weekly overrides. Every week uses the exercise prescriptions below.
+              </p>
+            )}
+          </section>
         )}
       </div>
 

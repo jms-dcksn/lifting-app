@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import type { Program, ProgramSlot } from "@/lib/program";
+import { rirLabel, type ProgramPhase } from "@/lib/periodization";
 import { programEditHref, programIndexHref } from "@/lib/program-routes";
 import {
   PATTERN_LABEL,
@@ -62,6 +63,34 @@ export function ProgramDetail({
           </div>
         )}
       </header>
+
+      {program.phases.length > 0 && (
+        <Card>
+          <h2 className="text-heading">Weekly phases</h2>
+          <p className="mt-1 text-caption text-muted">
+            These rules replace the default set and RIR prescription during their week range.
+          </p>
+          <ol className="mt-3 flex flex-col gap-2">
+            {program.phases.map((phase) => (
+              <li key={phase.id} className="rounded-control bg-surface p-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h3 className="text-body font-medium">{phase.name}</h3>
+                  <span className="shrink-0 text-caption tabular-nums text-muted">
+                    {weekRange(phase)}
+                  </span>
+                </div>
+                <p className="mt-1 text-caption text-muted">
+                  {phaseRir(phase)}
+                  {phase.setMultiplier != null
+                    ? ` · ${Math.round(phase.setMultiplier * 100)}% working sets`
+                    : " · normal working sets"}
+                </p>
+                {phase.description && <p className="mt-2 text-body">{phase.description}</p>}
+              </li>
+            ))}
+          </ol>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
         {program.days.map((day) => (
@@ -164,4 +193,16 @@ function equipmentLabel(equipment: Equipment) {
 
 function repRange(slot: ProgramSlot) {
   return slot.repMin === slot.repMax ? slot.repMin : `${slot.repMin}-${slot.repMax}`;
+}
+
+function weekRange(phase: ProgramPhase) {
+  return phase.weekStart === phase.weekEnd
+    ? `Week ${phase.weekStart}`
+    : `Weeks ${phase.weekStart}–${phase.weekEnd}`;
+}
+
+function phaseRir(phase: ProgramPhase) {
+  return phase.targetRirMin == null || phase.targetRirMax == null
+    ? "Default RIR"
+    : `${rirLabel({ targetRirMin: phase.targetRirMin, targetRirMax: phase.targetRirMax })} RIR`;
 }

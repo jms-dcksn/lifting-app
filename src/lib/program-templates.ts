@@ -13,6 +13,7 @@
 //     brand/type variant as usual.
 
 import type { Pattern } from "@/lib/strength/coefficients";
+import type { ProgramPhase } from "@/lib/periodization";
 
 export interface TemplateSlot {
   exerciseId: string;
@@ -35,6 +36,7 @@ export interface ProgramTemplate {
   description: string;
   tags: string[];
   weeks: number;
+  phases?: Omit<ProgramPhase, "id">[];
   days: TemplateDay[];
 }
 
@@ -60,6 +62,16 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
       "the listed sets at 3-4 RIR. Log actual RIR on every working set.",
     tags: ["personal", "HIT", "hypertrophy", "4-day", "specialization"],
     weeks: 12,
+    phases: [
+      { position: 0, name: "Calibration", description: "Leave two clean reps in reserve while establishing repeatable loads and technique.", weekStart: 1, weekEnd: 1, targetRirMin: 2, targetRirMax: 2, setMultiplier: null },
+      { position: 1, name: "Build", description: "Push every working set to one rep in reserve without adding sets.", weekStart: 2, weekEnd: 3, targetRirMin: 1, targetRirMax: 1, setMultiplier: null },
+      { position: 2, name: "Intensification", description: "Work within zero to one RIR. Stop compound sets at technical failure and do not use forced reps.", weekStart: 4, weekEnd: 5, targetRirMin: 0, targetRirMax: 1, setMultiplier: null },
+      { position: 3, name: "Deload", description: "Perform half the normal working sets and keep three to four reps in reserve.", weekStart: 6, weekEnd: 6, targetRirMin: 3, targetRirMax: 4, setMultiplier: 0.5 },
+      { position: 4, name: "Recalibration", description: "Re-establish repeatable loads after the deload with two reps in reserve.", weekStart: 7, weekEnd: 7, targetRirMin: 2, targetRirMax: 2, setMultiplier: null },
+      { position: 5, name: "Build", description: "Push every working set to one rep in reserve without adding sets.", weekStart: 8, weekEnd: 9, targetRirMin: 1, targetRirMax: 1, setMultiplier: null },
+      { position: 6, name: "Intensification", description: "Work within zero to one RIR. Stop compound sets at technical failure and do not use forced reps.", weekStart: 10, weekEnd: 11, targetRirMin: 0, targetRirMax: 1, setMultiplier: null },
+      { position: 7, name: "Deload", description: "Perform half the normal working sets and keep three to four reps in reserve.", weekStart: 12, weekEnd: 12, targetRirMin: 3, targetRirMax: 4, setMultiplier: 0.5 },
+    ],
     days: [
       {
         name: "Tue · Upper A",

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
 import { PROGRAM_TEMPLATES, TEMPLATE_BY_ID } from "./program-templates";
+import { resolvePrescription, validateProgramPhases } from "./periodization";
 
 describe("program templates", () => {
   it("have unique ids", () => {
@@ -50,5 +51,27 @@ describe("program templates", () => {
         }
       }
     }
+  });
+
+  it("has valid non-overlapping phase rules", () => {
+    for (const template of PROGRAM_TEMPLATES) {
+      expect(validateProgramPhases(
+        (template.phases ?? []).map((phase, index) => ({ ...phase, id: `${template.id}-${index}` })),
+        template.weeks,
+      ), template.id).toEqual([]);
+    }
+  });
+
+  it("encodes the James HIT block boundaries", () => {
+    const template = TEMPLATE_BY_ID["james-hit-specialization"];
+    const phases = template.phases!.map((phase, index) => ({ ...phase, id: `phase-${index}` }));
+    const base = { targetSets: 3, repMin: 8, repMax: 12, targetRir: 1 };
+
+    expect(resolvePrescription(base, 1, phases)).toMatchObject({ targetRirMin: 2, targetRirMax: 2 });
+    expect(resolvePrescription(base, 2, phases)).toMatchObject({ targetRirMin: 1, targetRirMax: 1 });
+    expect(resolvePrescription(base, 4, phases)).toMatchObject({ targetRirMin: 0, targetRirMax: 1 });
+    expect(resolvePrescription(base, 6, phases)).toMatchObject({ targetSets: 2, targetRirMin: 3, targetRirMax: 4 });
+    expect(resolvePrescription(base, 7, phases)).toMatchObject({ targetRirMin: 2, targetRirMax: 2 });
+    expect(resolvePrescription(base, 12, phases)).toMatchObject({ targetSets: 2, targetRirMin: 3, targetRirMax: 4 });
   });
 });

@@ -42,6 +42,7 @@ first matching phase, providing deterministic behavior if malformed historical d
 2. **Active workout:** resolve from stored session week, use effective sets for progress/current
    slot state, show phase guidance and effective RIR range.
 3. **Authoring and lifecycle:** seed the James HIT phases and preserve phases through template
-   creation, program save, clone, builder, and detail UI.
+   creation, program save, clone, builder, and detail UI. Backfill existing 12-week James HIT
+   programs so the active block does not require re-creation.
 
 The three slices are delivered as stacked PRs. The final PR closes #4 after the stack merges.

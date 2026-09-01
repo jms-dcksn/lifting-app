@@ -144,7 +144,7 @@ export default async function SessionPage({
     }
   }
 
-  const phases: ProgramPhase[] = (phaseRows ?? []).map((phase) => ({
+  const phases: ProgramPhase[] = (program?.style === "classic" ? phaseRows ?? [] : []).map((phase) => ({
     id: phase.id,
     position: phase.position,
     name: phase.name,

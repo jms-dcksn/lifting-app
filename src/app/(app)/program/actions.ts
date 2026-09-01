@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { normalizeTags } from "@/lib/program-tags";
 import { TEMPLATE_BY_ID } from "@/lib/program-templates";
 import { programDetailHref } from "@/lib/program-routes";
+import { validateProgramPhases } from "@/lib/periodization";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -33,6 +34,17 @@ export interface SaveDayInput {
   slots: SaveSlotInput[];
 }
 
+export interface SavePhaseInput {
+  id: string;
+  name: string;
+  description: string | null;
+  weekStart: number;
+  weekEnd: number;
+  targetRirMin: number | null;
+  targetRirMax: number | null;
+  setMultiplier: number | null;
+}
+
 export interface SaveProgramInput {
   id: string;
   name: string;
@@ -40,6 +52,7 @@ export interface SaveProgramInput {
   tags: string[];
   weeks: number;
   style: "classic" | "fluid";
+  phases: SavePhaseInput[];
   days: SaveDayInput[];
 }
 
@@ -57,6 +70,12 @@ export async function saveProgram(input: SaveProgramInput) {
   const description = input.description?.trim() || null;
   const tags = normalizeTags(input.tags);
   const weeks = Math.min(12, Math.max(4, Math.round(input.weeks)));
+  const phaseInputs = input.style === "classic" ? input.phases : [];
+  const phaseErrors = validateProgramPhases(
+    phaseInputs.map((phase, position) => ({ ...phase, position })),
+    weeks,
+  );
+  if (phaseErrors.length) throw new Error(phaseErrors[0]);
 
   // Single active program per user (enforced by a partial unique index): clear others first.
   await supabase
@@ -69,6 +88,30 @@ export async function saveProgram(input: SaveProgramInput) {
     .from("program")
     .upsert({ id: input.id, user_id: userId, name, description, tags, weeks, style: input.style, is_active: true });
   if (progErr) throw new Error(progErr.message);
+
+  const phaseRows = phaseInputs.map((phase, position) => ({
+    id: phase.id,
+    user_id: userId,
+    program_id: input.id,
+    position,
+    name: phase.name.trim() || `Phase ${position + 1}`,
+    description: phase.description?.trim() || null,
+    week_start: Math.round(phase.weekStart),
+    week_end: Math.round(phase.weekEnd),
+    target_rir_min: phase.targetRirMin,
+    target_rir_max: phase.targetRirMax,
+    set_multiplier: phase.setMultiplier,
+  }));
+  if (phaseRows.length) {
+    const { error } = await supabase.from("program_phase").upsert(phaseRows);
+    if (error) throw new Error(error.message);
+  }
+  {
+    let q = supabase.from("program_phase").delete().eq("program_id", input.id);
+    if (phaseRows.length) q = q.not("id", "in", `(${phaseRows.map((phase) => phase.id).join(",")})`);
+    const { error } = await q;
+    if (error) throw new Error(error.message);
+  }
 
   // Days: upsert incoming, then delete any removed (cascade drops their slots).
   const dayRows = input.days.map((d, i) => ({
@@ -155,6 +198,24 @@ export async function createFromTemplate(templateId: string) {
     .single();
   if (error || !prog) throw new Error(error?.message ?? "Could not create program");
 
+  if (template.phases?.length) {
+    const { error: phaseError } = await supabase.from("program_phase").insert(
+      template.phases.map((phase) => ({
+        user_id: userId,
+        program_id: prog.id,
+        position: phase.position,
+        name: phase.name,
+        description: phase.description,
+        week_start: phase.weekStart,
+        week_end: phase.weekEnd,
+        target_rir_min: phase.targetRirMin,
+        target_rir_max: phase.targetRirMax,
+        set_multiplier: phase.setMultiplier,
+      })),
+    );
+    if (phaseError) throw new Error(phaseError.message);
+  }
+
   for (const [di, day] of template.days.entries()) {
     const { data: newDay } = await supabase
       .from("program_day")
@@ -226,6 +287,23 @@ export async function cloneProgram(id: string): Promise<string> {
     .select("id")
     .single();
   if (progErr || !newProg) throw new Error(progErr?.message ?? "Could not clone program");
+
+  const { data: phases, error: phaseLoadError } = await supabase
+    .from("program_phase")
+    .select("position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
+    .eq("program_id", id)
+    .order("position", { ascending: true });
+  if (phaseLoadError) throw new Error(phaseLoadError.message);
+  if (phases?.length) {
+    const { error: phaseError } = await supabase.from("program_phase").insert(
+      phases.map((phase) => ({
+        user_id: userId,
+        program_id: newProg.id,
+        ...phase,
+      })),
+    );
+    if (phaseError) throw new Error(phaseError.message);
+  }
 
   const { data: days } = await supabase
     .from("program_day")

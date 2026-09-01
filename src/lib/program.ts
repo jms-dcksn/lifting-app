@@ -6,6 +6,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import type { Pattern } from "@/lib/strength/coefficients";
+import type { ProgramPhase } from "@/lib/periodization";
 import {
   buildProgramSummaries,
   type ProgramSummary,
@@ -39,6 +40,7 @@ export interface Program {
   weeks: number;
   isActive: boolean;
   style: "classic" | "fluid";
+  phases: ProgramPhase[];
   days: ProgramDay[];
 }
 
@@ -54,11 +56,18 @@ async function assemble(
     style: string;
   },
 ): Promise<Program> {
-  const { data: days } = await supabase
-    .from("program_day")
-    .select("id, name, position")
-    .eq("program_id", row.id)
-    .order("position", { ascending: true });
+  const [{ data: days }, { data: phases }] = await Promise.all([
+    supabase
+      .from("program_day")
+      .select("id, name, position")
+      .eq("program_id", row.id)
+      .order("position", { ascending: true }),
+    supabase
+      .from("program_phase")
+      .select("id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
+      .eq("program_id", row.id)
+      .order("position", { ascending: true }),
+  ]);
 
   const dayIds = (days ?? []).map((d) => d.id);
   const { data: slots } = dayIds.length
@@ -94,6 +103,17 @@ async function assemble(
     weeks: row.weeks ?? 5,
     isActive: row.is_active,
     style: (row.style as "classic" | "fluid") ?? "classic",
+    phases: (phases ?? []).map((phase) => ({
+      id: phase.id,
+      position: phase.position,
+      name: phase.name,
+      description: phase.description,
+      weekStart: phase.week_start,
+      weekEnd: phase.week_end,
+      targetRirMin: phase.target_rir_min,
+      targetRirMax: phase.target_rir_max,
+      setMultiplier: phase.set_multiplier,
+    })),
     days: (days ?? []).map((d) => ({
       id: d.id,
       name: d.name,

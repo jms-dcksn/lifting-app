@@ -12,6 +12,13 @@ beat last time. Done = I use it for a real block.
 > Next.js 16 has breaking changes from older versions. Before writing framework code in any
 > phase, check `node_modules/next/dist/docs/` (see `AGENTS.md`).
 
+## Coach loop — prescription correctness (#4)
+
+- [x] Add reusable program phases, generated DB types, a pure prescription resolver, and
+      boundary/rounding/validation tests.
+- [ ] Resolve the active workout from its stored week and use effective sets/RIR throughout.
+- [ ] Seed, display, edit, save, and clone weekly phases; close issue #4.
+
 ## What exists
 
 Committed:

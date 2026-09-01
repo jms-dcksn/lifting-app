@@ -18,7 +18,7 @@ const uid = () => crypto.randomUUID();
 const MAX_DAYS = 6;
 
 function blankProgram(): Program {
-  return { id: uid(), name: "", description: null, tags: [], weeks: 5, style: "classic", isActive: true, days: [] };
+  return { id: uid(), name: "", description: null, tags: [], weeks: 5, style: "classic", isActive: true, phases: [], days: [] };
 }
 
 // Local editable mirror of SaveProgramInput. Program type already matches closely.

@@ -21,11 +21,20 @@ export async function saveProfile(formData: FormData) {
   const defaultRestSeconds =
     Number.isFinite(rawRest) && rawRest > 0 ? Math.min(600, Math.round(rawRest)) : 120;
 
-  await supabase.from("profile").update({
-    bodyweight,
-    goal_weight: goalWeight,
-    default_rest_seconds: defaultRestSeconds,
-  }).eq("id", userId);
+  const { error } = await supabase
+    .from("profile")
+    .update({
+      bodyweight,
+      goal_weight: goalWeight,
+      default_rest_seconds: defaultRestSeconds,
+    })
+    .eq("id", userId)
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new Error(`Unable to save profile: ${error.message}`);
+  }
 
   revalidatePath("/settings");
   revalidatePath("/");

@@ -10,11 +10,15 @@ export default async function SettingsPage() {
   const userId = claims?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
 
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from("profile")
     .select("bodyweight, goal_weight, default_rest_seconds")
     .eq("id", userId)
     .maybeSingle();
+
+  if (error) {
+    throw new Error(`Unable to load profile: ${error.message}`);
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-6 px-6 py-10">

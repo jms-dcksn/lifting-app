@@ -24,8 +24,8 @@ go" without any service-worker/PWA caching concerns.
    supabase link --project-ref <project-ref>
    supabase db push
    ```
-   This applies every migration in `supabase/migrations/` in sequence:
-   `0001_init.sql` → `0009_fluid_programs.sql`. These are idempotent-by-design (no
+   This applies every migration in `supabase/migrations/` in sequence, from `0001_init.sql`
+   through the latest timestamped migration. These are idempotent-by-design (no
    `down` migrations exist in-repo) — review the list against the project's migration
    history if the project was ever partially initialized.
 3. Verify RLS is enabled on every table (the migrations enable it per-table; this is a

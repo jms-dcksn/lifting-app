@@ -19,6 +19,16 @@ beat last time. Done = I use it for a real block.
 - [x] Resolve the active workout from its stored week and use effective sets/RIR throughout.
 - [x] Seed, display, edit, save, and clone weekly phases; close issue #4.
 
+## Coach loop — minimal session feedback (#5)
+
+- [x] Capture optional readiness (1–5) before the first working set.
+- [x] Capture optional joint pain and a 280-character note when finishing; allow later edits.
+- [x] Persist feedback on the RLS-protected workout session with database constraints and
+      generated types.
+- [x] Include feedback in the weekly Coach check-in and elevate significant pain without
+      diagnosing it.
+- [x] Add pure validation/export coverage and a pgTAP ownership test.
+
 ## What exists
 
 Committed:
@@ -40,10 +50,10 @@ yours to run a full block; recommendation/swap (P5) is the differentiator.
 
 ## Testing approach
 
-No test runner configured. The strength engine is pure — verify changes ad hoc with
-`npx tsx --eval` importing from `src/lib/strength/` (see git history for the pattern). The new
-`recompute` module (P2) is pure and should get the same treatment. UI is verified manually on
-a phone (or Playwright MCP if useful). Don't add a runner unless a phase genuinely needs one.
+Vitest covers framework-free modules under `src/lib/`; Supabase ownership behavior lives in
+pgTAP SQL under `supabase/tests/`. Every shipped slice runs lint, TypeScript, unit tests, and a
+production build. UI is also verified manually on a phone or browser when authenticated state
+is available.
 
 ---
 

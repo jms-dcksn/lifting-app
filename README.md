@@ -45,6 +45,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/lib/exercise-id.ts` — pure variant-id / variant-name / custom-slug helpers
 - `src/lib/analytics.ts` — framework-free aggregation helpers for the Progress hub
 - `src/lib/coach-check-in.ts` — paste-ready weekly coaching summary from finished-session logs
+- `src/lib/session-feedback.ts` — readiness/pain/note contract and input validation
 - `src/lib/periodization.ts` — resolves week-specific working-set and RIR overrides for classic programs
 - `src/lib/program.ts` — server-side program loader; assembles nested program (days → slots) from DB
 - `src/components/ui/` — shared UI primitives (Button, Stepper, Card, Input, Sheet, Skeleton) and design tokens (`src/app/globals.css`)
@@ -53,6 +54,6 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/app/(app)/program/` — summary tile grid + dedicated read-only detail route + builder (Classic/Adaptive style, catalog-driven picker, custom exercises, server actions)
 - `src/app/(app)/exercise/actions.ts` — `resolveVariant` (find-or-create a machine brand/type variant) and `createCustomExercise` server actions
 - `src/app/(app)/settings/` — bodyweight, goal weight, and default rest-between-sets editor
-- `src/app/(app)/analytics/` — Progress hub: coach check-in export, session volume, e1RM gainers, record feed, searchable exercise list
+- `src/app/(app)/analytics/` — Progress hub: coach check-in export (including session feedback), session volume, e1RM gainers, record feed, searchable exercise list
 - `src/app/(app)/history/[exerciseId]/` — per-exercise history: e1RM line chart (Recharts) + overload signal vs the previous session
-- `supabase/migrations/` — database schema with row-level security
+- `supabase/migrations/` — database schema with row-level security; `supabase/tests/` holds pgTAP ownership checks

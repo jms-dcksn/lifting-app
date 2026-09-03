@@ -8,6 +8,7 @@ import { getCatalogMap } from "@/lib/catalog";
 import { foldPrescription, type AdaptationRow } from "@/lib/strength/plateau";
 import { loadPendingSuggestions } from "@/lib/fluid";
 import { phaseForWeek, resolvePrescription, type ProgramPhase } from "@/lib/periodization";
+import type { JointPain } from "@/lib/session-feedback";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
 
 export default async function SessionPage({
@@ -23,7 +24,7 @@ export default async function SessionPage({
 
   const { data: session } = await supabase
     .from("workout_session")
-    .select("id, week_index, finished_at, program_id, program_day_id")
+    .select("id, week_index, finished_at, program_id, program_day_id, readiness, joint_pain, notes")
     .eq("id", id)
     .maybeSingle();
   if (!session?.program_day_id) notFound();
@@ -221,6 +222,11 @@ export default async function SessionPage({
       bodyweight={profile?.bodyweight ?? null}
       defaultRestSeconds={profile?.default_rest_seconds ?? 120}
       alreadyFinished={!!session.finished_at}
+      initialFeedback={{
+        readiness: session.readiness,
+        jointPain: session.joint_pain as JointPain | null,
+        note: session.notes,
+      }}
       stats={stats}
       recentIds={recentIds}
       slots={slots}

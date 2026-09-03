@@ -46,7 +46,8 @@ exercise *templates* live in `coefficients.ts` (app code); the `exercise` table 
 user-created brand/type variants and fully-custom exercises, merged with the seeded set by
 `src/lib/catalog.ts`. Schema across migrations `0001`–`0008` (see Phase C below for `0008`);
 `0002` adds program/day/slot + `profile.bodyweight` + `set_log.program_slot_id`, `0004` adds
-`workout_session.finished_at`. Typed DB types at `src/lib/supabase/types.ts`.
+`workout_session.finished_at`; the session row also owns optional readiness, joint-pain, and
+plain-text note feedback. Typed DB types live at `src/lib/supabase/types.ts`.
 
 ## Phase 2 decisions
 
@@ -104,10 +105,10 @@ stronger over time" regardless of which slot/program it was logged under, includ
 across a swap.
 
 **`finishSession` now verifies session ownership via a select before updating.** Needed to
-read `performed_at` for the overload-delta query anyway, so the existing
-`.eq("user_id", userId)` filter on the update was replaced by an explicit
-ownership-checked select (throws `"Session not found"` if missing/not owned) followed by
-an unfiltered-by-user update scoped by `id` + `is("finished_at", null)`.
+read `performed_at` for the overload-delta query anyway. The action performs an explicit
+ownership-checked select (throws `"Session not found"` if missing/not owned), then retains
+the user filter on the update as defense in depth alongside RLS. `is("finished_at", null)`
+keeps repeat summary views from moving the original finish time.
 
 **Charts: Recharts, client component, no server-side rendering of chart data.** The
 history page (`src/app/(app)/history/[exerciseId]/page.tsx`) is a Server Component that
@@ -276,8 +277,17 @@ engine.
 **Weekly coaching is a derived export, not new mutable workout state.** The Coach check-in
 card builds a seven-day, paste-ready summary from finished `workout_session` and `set_log`
 rows: adherence, RIR distribution, 0–1 RIR hard sets by pattern, and latest lift performance.
-It intentionally adds no schema before the first real block. Subjective recovery notes remain
-a later feature once actual check-ins show which fields are worth persisting.
+The original version intentionally added no schema before the first real block. Issue #5 then
+added the deliberately narrow signals actual coaching needs: readiness 1–5 before the first
+set, joint pain at finish, and one 280-character session note.
+
+**Subjective feedback is stored on `workout_session`, not in a general wellness model.** These
+signals describe one training exposure and share the session's existing ownership/RLS boundary.
+The unused `workout_session.notes` column is now the capped plain-text note; `readiness` and
+`joint_pain` are nullable constrained columns. Readiness writes are rejected after the first
+set. Pain and notes remain optional and editable after finishing, while `finished_at` retains
+its original value. Significant pain is surfaced as a reason to pause progression advice, never
+as a medical diagnosis.
 
 **Classic blocks can span 4–12 weeks.** The original 4–6 week builder cap prevented a complete
 two-mesocycle plan from being represented as one program. The database already stores an

@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      coach_recommendation_decision: {
+        Row: {
+          deferred_until: string | null
+          recommendation_key: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          deferred_until?: string | null
+          recommendation_key: string
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          deferred_until?: string | null
+          recommendation_key?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bodyweight_log: {
         Row: {
           created_at: string

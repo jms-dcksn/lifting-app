@@ -49,6 +49,20 @@ beat last time. Done = I use it for a real block.
 - [x] Cover window boundaries, substitutions, deloads, missing RIR, thin data, trend stability,
       and prior-window comparisons with unit tests.
 
+## Coach loop — reviewable recommendations (#8)
+
+- [x] Generate deterministic next-step proposals from finished, slot-linked exposures.
+- [x] Delegate ordinary load/rep targets to `sessionTarget()` and plateau calls to the existing
+      hysteresis detector rather than introducing competing progression rules.
+- [x] Suppress overload during deloads and after significant pain; require repeated RIR misses
+      before proposing a load reduction and keep a movement after one isolated regression.
+- [x] Include action, rationale, evidence window, and explicit confidence/data sufficiency.
+- [x] Render recommendations in the Coach check-in, include them in the clipboard export, and
+      persist accept/dismiss/seven-day-defer decisions without mutating the program.
+- [x] Protect decision state with ownership RLS, database constraints, and pgTAP coverage.
+- [x] Cover progress, flat performance, regression, RIR misses, plateau, deload, pain, and thin
+      data with pure tests.
+
 ## What exists
 
 Committed:

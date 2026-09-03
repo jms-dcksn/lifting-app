@@ -63,3 +63,26 @@ The current schema does not snapshot a slot prescription when a workout starts. 
 the current definition of the historical slot plus the session's stored week. If a slot is
 edited after training, the old session's displayed prescription can reflect that edit; unmatched
 or deleted slots are surfaced as data-quality warnings rather than guessed.
+
+## Reviewable recommendations
+
+`src/lib/coach-recommendations.ts` is a separate deterministic proposal layer over this factual
+report and its source rows. Keeping it separate preserves the v1 report contract while allowing
+the Progress workflow and clipboard export to add coaching actions.
+
+- Normal load and rep proposals call `sessionTarget()` with the latest first working set, so the
+  Coach view cannot disagree with the active workout's double-progression target.
+- Two consecutive comparable exposures that are harder than the effective RIR range are required
+  before proposing a one-increment load reduction. One RIR entry never triggers it.
+- Plateau review calls the existing `detectPlateau()` and equipment-specific patience rule; one
+  down exposure explicitly produces a keep-the-movement recommendation instead.
+- An effective deload phase suppresses normal overload. Significant pain in the current report
+  window suppresses all progression advice and surfaces a conservative review prompt, not a
+  diagnosis.
+- With no finished slot-linked exposure, the engine returns `insufficient_data` rather than using
+  cross-exercise estimates for a weekly progression decision.
+
+Every proposal carries an opaque key, action, rationale, evidence window/count, supporting set
+summary, confidence, and a plain-language data-sufficiency statement. Accept, dismiss, and defer
+write only to `coach_recommendation_decision`; they never alter a program, slot, set, or session.
+A deferred proposal is hidden for seven days, while a new exposure produces a new proposal key.

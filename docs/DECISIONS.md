@@ -291,6 +291,14 @@ labels require four exposures split into two adjacent pairs, with both recent ma
 1% margin, so a single poor session cannot create a decline. Exact definitions live in
 `docs/COACH-REPORT.md`.
 
+**Coach recommendations are derived proposals with separately persisted review state.** Issue #8
+keeps the factual `CoachCheckInReport` v1 shape stable and computes proposals in the pure
+`coach-recommendations.ts` layer. Normal overload delegates to `sessionTarget()`; stalls delegate
+to `detectPlateau()`. Deload and significant-pain gates run before overload, and RIR-based load
+reductions require two consecutive comparable misses. The only new mutable state is the user's
+accepted/dismissed/deferred response keyed to that evidence snapshot. Accepting does not rewrite
+a program: the established slot/exercise log chain remains the source of the next workout target.
+
 **Bodyweight observations are date-keyed; `profile.bodyweight` is the preserved fallback.**
 `bodyweight_log` permits one observation per user per calendar date. A repeated date replaces
 that reading, and moving an edit onto an occupied date does the same. The latest observation is

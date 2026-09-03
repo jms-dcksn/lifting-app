@@ -230,7 +230,10 @@ Pure analytics in `src/lib/analytics.ts` plus the versioned canonical report in
    prescribed RIR, per-session prescriptions and working sets, stable four-exposure lift trends,
    fixed-load rep progress, specialization working/hard sets, bodyweight and optional session
    feedback. Open, unmatched, implausible, and missing-RIR data are flagged. See
-   `docs/COACH-REPORT.md` for the exact contract.
+   `docs/COACH-REPORT.md` for the exact contract. A deterministic proposal layer adds reviewable
+   load/rep, recalibration, keep-movement, plateau, deload, pain, and insufficient-data actions.
+   Every action shows its rationale, evidence, and confidence. Accept/dismiss/defer persists the
+   review state only; it never rewrites the program.
 2. **Total volume** — session tonnage chart (`sessionTonnage`, sums `effectiveLoad × reps`;
    bodyweight sets with unknown bodyweight are excluded and counted, never zeroed).
 3. **Training balance** — latest training week's per-pattern horizontal bars: total working

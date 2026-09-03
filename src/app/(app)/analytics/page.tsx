@@ -28,6 +28,14 @@ import { VolumeChart, type VolumeChartPoint } from "./volume-chart";
 import { CoachCheckIn } from "./coach-check-in";
 import { CoachReportSummary } from "./coach-report-summary";
 import { bodyweightTrend, dateKey, type BodyweightEntry } from "@/lib/bodyweight";
+import {
+  buildCoachRecommendations,
+  formatCoachRecommendations,
+} from "@/lib/coach-recommendations";
+import {
+  CoachRecommendationList,
+  type RecommendationDecision,
+} from "./coach-recommendation-list";
 
 type AnalyticsQueryRow = {
   id: string;
@@ -73,6 +81,7 @@ export default async function AnalyticsPage() {
     { data: dayRows, error: dayError },
     { data: slotRows, error: slotError },
     { data: phaseRows, error: phaseError },
+    { data: decisionRows, error: decisionError },
   ] = await Promise.all([
     supabase
       .from("set_log")
@@ -104,6 +113,10 @@ export default async function AnalyticsPage() {
       .from("program_phase")
       .select("id, program_id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
       .eq("user_id", userId),
+    supabase
+      .from("coach_recommendation_decision")
+      .select("recommendation_key, status, deferred_until")
+      .eq("user_id", userId),
   ]);
 
   if (error) throw new Error(error.message);
@@ -113,6 +126,7 @@ export default async function AnalyticsPage() {
   if (dayError) throw new Error(dayError.message);
   if (slotError) throw new Error(slotError.message);
   if (phaseError) throw new Error(phaseError.message);
+  if (decisionError) throw new Error(decisionError.message);
 
   const [catalog, program] = await Promise.all([
     getCatalogMap(supabase, userId),
@@ -239,7 +253,27 @@ export default async function AnalyticsPage() {
     currentBodyweight: bodyweight,
     bodyweightTrend: weightTrend,
   });
-  const coachCheckIn = formatCoachCheckIn(coachReport);
+  const coachRecommendations = buildCoachRecommendations({
+    report: coachReport,
+    activeProgramId: program?.id ?? null,
+    sessions: coachSessions,
+    sets: coachSets,
+    slots: coachSlots,
+    phases: coachPhases,
+    definitions: catalog,
+    currentBodyweight: bodyweight,
+  });
+  const coachCheckIn = `${formatCoachCheckIn(coachReport)}\n\n${formatCoachRecommendations(coachRecommendations)}`;
+  const recommendationDecisions: RecommendationDecision[] = (decisionRows ?? []).flatMap((row) => {
+    if (row.status !== "accepted" && row.status !== "dismissed" && row.status !== "deferred") {
+      return [];
+    }
+    return [{
+      recommendationKey: row.recommendation_key,
+      status: row.status,
+      deferredUntil: row.deferred_until,
+    }];
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
@@ -258,6 +292,11 @@ export default async function AnalyticsPage() {
           future Coach API.
         </p>
         <CoachReportSummary report={coachReport} />
+        <CoachRecommendationList
+          recommendations={coachRecommendations}
+          decisions={recommendationDecisions}
+          currentTime={coachReport.generatedAt}
+        />
         <CoachCheckIn text={coachCheckIn} />
       </Card>
 

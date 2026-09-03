@@ -29,7 +29,8 @@ go" without any service-worker/PWA caching concerns.
    `down` migrations exist in-repo) — review the list against the project's migration
    history if the project was ever partially initialized.
    The bodyweight-history migration must land before deploying application code that queries
-   `bodyweight_log`; preview and production environments need the same schema version.
+   `bodyweight_log`; the coach-recommendation-decisions migration must likewise precede code
+   that renders `/analytics`. Preview and production environments need the same schema version.
 3. Verify RLS is enabled on every table (the migrations enable it per-table; this is a
    sanity check, not a manual step) — every table is keyed on `auth.uid()` and the
    signup trigger (hardened in `0003`) auto-creates a `profile` row.

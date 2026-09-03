@@ -310,6 +310,10 @@ The Progress page (`analytics/page.tsx`) renders six server-side cards, top to b
    completed/effective prescribed sets, actual/effective prescribed RIR, session prescriptions,
    stable four-exposure trends, fixed-load rep progress, specialization volume, and data-quality
    warnings. Exact definitions and privacy rules: `docs/COACH-REPORT.md`.
+   `coach-recommendations.ts` layers deterministic, reviewable proposals over that report and
+   source history. It reuses `sessionTarget()` and `detectPlateau()`, gates on deload/pain, and
+   requires repeated RIR misses. Accept/dismiss/seven-day-defer state is stored separately and
+   never mutates program prescriptions.
 2. **Total volume** — session tonnage chart (Recharts `volume-chart.tsx`)
 3. **Training balance** — latest training week's per-pattern horizontal bar list;
    total working sets (faint bar) with hard-set portion overlaid (foreground bar);

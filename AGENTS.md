@@ -25,6 +25,11 @@ Server Actions).
 Before writing any framework code, check `node_modules/next/dist/docs/` for the installed
 version's behavior — Next.js 16 has additional breaking changes beyond the ones listed here.
 
+The weekly Coach API is the sole elevated read path. `GET /api/coach/v1/weekly` uses a
+server-only Supabase secret and `COACH_API_USER_ID`; every query must retain an explicit user
+predicate because the secret bypasses RLS. Its high-entropy capability auth must remain
+read-only, no-store, and noindex.
+
 ---
 
 @CLAUDE.md

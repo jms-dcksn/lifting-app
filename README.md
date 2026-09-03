@@ -47,6 +47,8 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/lib/coach-check-in.ts` — versioned canonical coach report plus its clipboard formatter
 - `src/lib/coach-recommendations.ts` — deterministic, evidence-backed weekly proposals with
   deload/pain/RIR/plateau guardrails
+- `src/lib/coach-api.ts` / `src/lib/coach-weekly-data.ts` — authenticated, read-only weekly Coach
+  API contract and explicitly user-scoped server data loader
 - `src/lib/bodyweight.ts` — pure seven-day bodyweight windows, sparse averages, and week-over-week trend
 - `src/lib/current-bodyweight.ts` — latest-observation lookup with preserved profile baseline fallback
 - `src/lib/session-feedback.ts` — readiness/pain/note contract and input validation
@@ -60,6 +62,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/app/(app)/settings/` — bodyweight history/trend, goal weight, and default rest-between-sets editor
 - `src/app/(app)/analytics/` — Progress hub: canonical coach snapshot/export, reviewable coaching
   proposals, session volume, e1RM gainers, record feed, searchable exercise list
+- `src/app/api/coach/v1/weekly/` — private, no-store endpoint for the scheduled Coach check-in
 - `docs/COACH-REPORT.md` — exact v1 windows, metrics, trend rules, privacy contract, and limitations
 - `src/app/(app)/history/[exerciseId]/` — per-exercise history: e1RM line chart (Recharts) + overload signal vs the previous session
 - `supabase/migrations/` — database schema with row-level security; `supabase/tests/` holds pgTAP ownership checks

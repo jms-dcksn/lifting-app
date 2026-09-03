@@ -1,6 +1,7 @@
 import type { AnalyticsSetRow } from "./analytics";
 import { exerciseSummaries } from "./analytics";
 import { PATTERN_LABEL, type ExerciseDef, type Pattern } from "./strength/coefficients";
+import type { JointPain } from "./session-feedback";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -8,6 +9,16 @@ export interface CoachCheckInOptions {
   now?: Date;
   programName?: string;
   plannedSessions?: number;
+  sessionFeedback?: CoachSessionFeedback[];
+}
+
+export interface CoachSessionFeedback {
+  sessionId: string;
+  performedAt: string;
+  finishedAt: string | null;
+  readiness: number | null;
+  jointPain: JointPain | null;
+  note: string | null;
 }
 
 // Produce a compact, paste-ready coaching payload from the data the app already records.
@@ -49,6 +60,13 @@ export function buildCoachCheckIn(
     exerciseSummaries(allFinished).map((summary) => [summary.exerciseId, summary]),
   );
   const latestByExercise = latestExercisePerformances(finished, defs);
+  const feedback = (options.sessionFeedback ?? [])
+    .filter((session) => {
+      if (!session.finishedAt) return false;
+      const at = new Date(session.finishedAt).getTime();
+      return at >= start.getTime() && at <= now.getTime();
+    })
+    .sort((a, b) => a.performedAt.localeCompare(b.performedAt));
 
   const lines = [
     "WEEKLY TRAINING CHECK-IN",
@@ -74,6 +92,16 @@ export function buildCoachCheckIn(
           return `${def?.name ?? exerciseId}: ${weight} lb × ${reps} @ ${rir ?? "?"} RIR · e1RM ${e1rm == null ? "n/a" : `${Math.round(e1rm)} lb`} · ${trend}`;
         })
       : ["No finished-session performances in this window."]),
+    "",
+    "SESSION FEEDBACK",
+    ...(feedback.length > 0
+      ? feedback.map((session) => {
+          const pain = session.jointPain ?? "not logged";
+          const painFlag = session.jointPain === "significant" ? " — SIGNIFICANT; pause progression advice and review" : "";
+          const note = session.note ? ` · Note: ${session.note}` : "";
+          return `${dateLabel(new Date(session.performedAt))}: readiness ${session.readiness ?? "not logged"}${session.readiness == null ? "" : "/5"} · joint pain ${pain}${painFlag}${note}`;
+        })
+      : ["No session feedback logged in this window."]),
     "",
     "COACH REVIEW",
     "Assess progression, fatigue, RIR accuracy, exercise changes, and next-week load/rep targets.",

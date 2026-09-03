@@ -39,7 +39,7 @@ Tests run on **vitest**, scoped to the pure modules under `src/lib/` (config:
 native tsconfig-paths). The strength engine and analytics are framework-free, so the suite
 loads no Next.js/React. Co-locate new tests as `*.test.ts` next to the module. Current
 coverage: `e1rm`, `recommend`, `progression`, `plateau`, `program-tags`, `program-templates`,
-`coach-check-in`,
+`coach-check-in`, `session-feedback`,
 `rest`, `coefficients`, `catalog`, `exercise-id`.
 
 ## Architecture
@@ -107,9 +107,11 @@ machines predict like free weights.
 
 ### Data model (`supabase/migrations/`)
 
-Migrations are sequential through `0011_backfill_james_hit_phases.sql`. `0010` adds reusable,
+Migrations are sequential through the timestamped session-feedback migration. `0010` adds reusable,
 program-level week ranges with optional RIR-range and working-set-multiplier overrides; `0011`
 idempotently gives existing 12-week James HIT copies the same phases as new template instances.
+The session-feedback migration adds constrained nullable readiness and joint-pain fields and
+activates the existing session `notes` field with a 280-character cap.
 Typed DB types live at `src/lib/supabase/types.ts`.
 
 - **`set_log` is the source of truth.** `user_exercise_stat` is a derived cache (current e1RM

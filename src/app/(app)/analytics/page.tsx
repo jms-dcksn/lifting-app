@@ -11,7 +11,7 @@ import {
 } from "@/lib/analytics";
 import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
-import { buildCoachCheckIn } from "@/lib/coach-check-in";
+import { buildCoachCheckIn, type CoachSessionFeedback } from "@/lib/coach-check-in";
 import { getActiveProgram } from "@/lib/program";
 import { PATTERN_LABEL, type ExerciseDef } from "@/lib/strength/coefficients";
 import { Card, CardLabel } from "@/components/ui/card";
@@ -50,7 +50,7 @@ export default async function AnalyticsPage() {
   const userId = claims?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
 
-  const [{ data: rows, error }, { data: profile }] = await Promise.all([
+  const [{ data: rows, error }, { data: profile }, { data: feedbackRows, error: feedbackError }] = await Promise.all([
     supabase
       .from("set_log")
       .select(
@@ -60,9 +60,15 @@ export default async function AnalyticsPage() {
       .eq("is_warmup", false)
       .order("created_at", { ascending: true }),
     supabase.from("profile").select("bodyweight").eq("id", userId).maybeSingle(),
+    supabase
+      .from("workout_session")
+      .select("id, performed_at, finished_at, readiness, joint_pain, notes")
+      .eq("user_id", userId)
+      .not("finished_at", "is", null),
   ]);
 
   if (error) throw new Error(error.message);
+  if (feedbackError) throw new Error(feedbackError.message);
 
   const [catalog, program] = await Promise.all([
     getCatalogMap(supabase, userId),
@@ -122,6 +128,14 @@ export default async function AnalyticsPage() {
   const coachCheckIn = buildCoachCheckIn(analyticsRows, catalog, {
     programName: program?.name,
     plannedSessions: program?.days.length,
+    sessionFeedback: (feedbackRows ?? []).map((session): CoachSessionFeedback => ({
+      sessionId: session.id,
+      performedAt: session.performed_at,
+      finishedAt: session.finished_at,
+      readiness: session.readiness,
+      jointPain: session.joint_pain as CoachSessionFeedback["jointPain"],
+      note: session.notes,
+    })),
   });
 
   return (

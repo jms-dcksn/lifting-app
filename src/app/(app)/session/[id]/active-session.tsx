@@ -11,6 +11,7 @@ import {
 } from "@/lib/strength/progression";
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { rirLabel, type EffectivePrescription, type ProgramPhase } from "@/lib/periodization";
+import type { SessionFeedback } from "@/lib/session-feedback";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card, CardLabel } from "@/components/ui/card";
 import { Stepper } from "@/components/ui/stepper";
@@ -21,10 +22,12 @@ import {
   editSet,
   deleteSet,
   finishSession,
+  updateSessionFeedback,
   acceptAdaptation,
   dismissAdaptation,
   type SessionSummary,
 } from "../actions";
+import { ReadinessPrompt, SessionFeedbackCard, SessionFeedbackSheet } from "./session-feedback";
 
 export interface LoggedSet {
   id: string;
@@ -54,6 +57,7 @@ export function ActiveSession({
   bodyweight,
   defaultRestSeconds,
   alreadyFinished,
+  initialFeedback,
   stats,
   recentIds,
   slots,
@@ -67,6 +71,7 @@ export function ActiveSession({
   bodyweight: number | null;
   defaultRestSeconds: number;
   alreadyFinished: boolean;
+  initialFeedback: SessionFeedback;
   stats: ExerciseStat[];
   recentIds: string[];
   slots: SlotView[];
@@ -82,14 +87,51 @@ export function ActiveSession({
     [],
   );
   const [summary, setSummary] = useState<SessionSummary | null>(null);
+  const [feedback, setFeedback] = useState(initialFeedback);
+  const [feedbackSheet, setFeedbackSheet] = useState<"finish" | "edit" | null>(null);
   const [finishing, startFinish] = useTransition();
   const phasePrescription = slots[0]?.prescription;
+  const hasLoggedSets = slots.some((slot) => slot.sets.length > 0);
 
-  function handleFinish() {
-    startFinish(async () => setSummary(await finishSession(sessionId)));
+  function handleFinish(nextFeedback: Pick<SessionFeedback, "jointPain" | "note">) {
+    return new Promise<void>((resolve, reject) => {
+      startFinish(async () => {
+        try {
+          const nextSummary = await finishSession(sessionId, nextFeedback);
+          setFeedback(nextSummary.feedback);
+          setSummary(nextSummary);
+          setFeedbackSheet(null);
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
   }
 
-  if (summary) return <Summary dayName={dayName} summary={summary} />;
+  async function handleFeedbackEdit(nextFeedback: Pick<SessionFeedback, "jointPain" | "note">) {
+    const saved = await updateSessionFeedback({ sessionId, ...nextFeedback });
+    const updated = { ...feedback, ...saved };
+    setFeedback(updated);
+    setSummary((current) => (current ? { ...current, feedback: updated } : current));
+    setFeedbackSheet(null);
+  }
+
+  if (summary) {
+    return (
+      <>
+        <Summary dayName={dayName} summary={summary} onEditFeedback={() => setFeedbackSheet("edit")} />
+        {feedbackSheet === "edit" && (
+          <SessionFeedbackSheet
+            initial={feedback}
+            mode="edit"
+            onClose={() => setFeedbackSheet(null)}
+            onSubmit={handleFeedbackEdit}
+          />
+        )}
+      </>
+    );
+  }
 
   // Current slot = first one not yet at its target set count (server truth; re-derives
   // after each logged set revalidates). Earlier slots recede, the current one reads active.
@@ -118,6 +160,14 @@ export function ActiveSession({
         </Card>
       ) : null}
 
+      {!alreadyFinished && !hasLoggedSets && initialFeedback.readiness == null ? (
+        <ReadinessPrompt sessionId={sessionId} />
+      ) : null}
+
+      {alreadyFinished ? (
+        <SessionFeedbackCard feedback={feedback} onEdit={() => setFeedbackSheet("edit")} />
+      ) : null}
+
       {slots.map((slot, i) => (
         <SlotCard
           key={slot.programSlotId}
@@ -139,12 +189,27 @@ export function ActiveSession({
           type="button"
           size="lg"
           className="w-full"
-          onClick={handleFinish}
+          onClick={() => {
+            if (alreadyFinished) {
+              startFinish(async () => setSummary(await finishSession(sessionId)));
+            } else {
+              setFeedbackSheet("finish");
+            }
+          }}
           pending={finishing}
         >
           {alreadyFinished ? "View summary" : "Finish workout"}
         </Button>
       </div>
+
+      {feedbackSheet && (
+        <SessionFeedbackSheet
+          initial={feedback}
+          mode={feedbackSheet}
+          onClose={() => setFeedbackSheet(null)}
+          onSubmit={feedbackSheet === "finish" ? handleFinish : handleFeedbackEdit}
+        />
+      )}
     </div>
   );
 }
@@ -678,7 +743,15 @@ function SetEntry({
   );
 }
 
-function Summary({ dayName, summary }: { dayName: string; summary: SessionSummary }) {
+function Summary({
+  dayName,
+  summary,
+  onEditFeedback,
+}: {
+  dayName: string;
+  summary: SessionSummary;
+  onEditFeedback: () => void;
+}) {
   // Staggered rise so the payoff screen lands as a moment, not a flash.
   let step = 0;
   const delay = () => ({ animationDelay: `${step++ * 70}ms` });
@@ -711,6 +784,10 @@ function Summary({ dayName, summary }: { dayName: string; summary: SessionSummar
           </ul>
         </Card>
       )}
+
+      <div className="animate-rise" style={delay()}>
+        <SessionFeedbackCard feedback={summary.feedback} onEdit={onEditFeedback} />
+      </div>
 
       <Link href="/" className={buttonClasses("primary", "lg", "w-full animate-rise")} style={delay()}>
         Done

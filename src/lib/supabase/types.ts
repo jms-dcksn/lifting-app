@@ -447,30 +447,36 @@ export type Database = {
         Row: {
           finished_at: string | null
           id: string
+          joint_pain: string | null
           notes: string | null
           performed_at: string
           program_day_id: string | null
           program_id: string | null
+          readiness: number | null
           user_id: string
           week_index: number | null
         }
         Insert: {
           finished_at?: string | null
           id?: string
+          joint_pain?: string | null
           notes?: string | null
           performed_at?: string
           program_day_id?: string | null
           program_id?: string | null
+          readiness?: number | null
           user_id: string
           week_index?: number | null
         }
         Update: {
           finished_at?: string | null
           id?: string
+          joint_pain?: string | null
           notes?: string | null
           performed_at?: string
           program_day_id?: string | null
           program_id?: string | null
+          readiness?: number | null
           user_id?: string
           week_index?: number | null
         }

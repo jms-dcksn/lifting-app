@@ -9,6 +9,13 @@ import { computeE1rm } from "@/lib/strength/e1rm";
 import { recomputeStat, effectiveLoad } from "@/lib/strength/recompute";
 import { estimatePatternStrength, type ExerciseStat } from "@/lib/strength/recommend";
 import { getActiveProgram } from "@/lib/program";
+import {
+  normalizeJointPain,
+  normalizeSessionNote,
+  validateReadiness,
+  type JointPain,
+  type SessionFeedback,
+} from "@/lib/session-feedback";
 
 // auth.uid() for RLS; getClaims() is the trusted server-side check (see AGENTS.md).
 async function requireUser() {
@@ -280,28 +287,104 @@ export async function deleteSet(setId: string) {
 
 export interface SessionSummary {
   totalSets: number;
+  feedback: SessionFeedback;
   // prevE1rm: best e1RM from the previous session of that exact exercise (null = first time).
   topE1rm: { exerciseId: string; name: string; e1rm: number; prevE1rm: number | null }[];
 }
 
+export async function saveSessionReadiness(input: {
+  sessionId: string;
+  readiness: number;
+}): Promise<number> {
+  const { supabase, userId } = await requireUser();
+  const readiness = validateReadiness(input.readiness);
+
+  const [{ data: session }, { count: loggedSets }] = await Promise.all([
+    supabase
+      .from("workout_session")
+      .select("id")
+      .eq("id", input.sessionId)
+      .eq("user_id", userId)
+      .is("finished_at", null)
+      .maybeSingle(),
+    supabase
+      .from("set_log")
+      .select("id", { count: "exact", head: true })
+      .eq("session_id", input.sessionId)
+      .eq("user_id", userId),
+  ]);
+  if (!session) throw new Error("Open session not found");
+  if ((loggedSets ?? 0) > 0) throw new Error("Readiness can only be logged before the first set");
+
+  const { error } = await supabase
+    .from("workout_session")
+    .update({ readiness })
+    .eq("id", input.sessionId)
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/session/${input.sessionId}`);
+  return readiness;
+}
+
+export async function updateSessionFeedback(input: {
+  sessionId: string;
+  jointPain: JointPain | null;
+  note: string | null;
+}): Promise<Pick<SessionFeedback, "jointPain" | "note">> {
+  const { supabase, userId } = await requireUser();
+  const jointPain = normalizeJointPain(input.jointPain);
+  const note = normalizeSessionNote(input.note);
+
+  const { data, error } = await supabase
+    .from("workout_session")
+    .update({ joint_pain: jointPain, notes: note })
+    .eq("id", input.sessionId)
+    .eq("user_id", userId)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Session not found");
+
+  revalidatePath(`/session/${input.sessionId}`);
+  revalidatePath("/analytics");
+  return { jointPain, note };
+}
+
 // Mark finished, return the summary (total working sets, top e1RM per lift, overload delta).
-export async function finishSession(sessionId: string): Promise<SessionSummary> {
+export async function finishSession(
+  sessionId: string,
+  feedback?: { jointPain: JointPain | null; note: string | null },
+): Promise<SessionSummary> {
   const { supabase, userId } = await requireUser();
   const catalog = await getCatalogMap(supabase, userId);
 
   const { data: session } = await supabase
     .from("workout_session")
-    .select("performed_at")
+    .select("performed_at, finished_at, readiness, joint_pain, notes")
     .eq("id", sessionId)
     .eq("user_id", userId)
     .maybeSingle();
   if (!session) throw new Error("Session not found");
+
+  const jointPain = feedback ? normalizeJointPain(feedback.jointPain) : normalizeJointPain(session.joint_pain);
+  const note = feedback ? normalizeSessionNote(feedback.note) : session.notes;
+
+  if (feedback) {
+    const { error } = await supabase
+      .from("workout_session")
+      .update({ joint_pain: jointPain, notes: note })
+      .eq("id", sessionId)
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+  }
 
   // `is finished_at null` keeps the original finish time when re-viewing the summary.
   const { error } = await supabase
     .from("workout_session")
     .update({ finished_at: new Date().toISOString() })
     .eq("id", sessionId)
+    .eq("user_id", userId)
     .is("finished_at", null);
   if (error) throw new Error(error.message);
 
@@ -354,7 +437,16 @@ export async function finishSession(sessionId: string): Promise<SessionSummary> 
     .sort((a, b) => b.e1rm - a.e1rm);
 
   revalidatePath("/");
-  return { totalSets: sets?.length ?? 0, topE1rm };
+  revalidatePath("/analytics");
+  return {
+    totalSets: sets?.length ?? 0,
+    topE1rm,
+    feedback: {
+      readiness: session.readiness,
+      jointPain,
+      note,
+    },
+  };
 }
 
 // Fluid programs: record an accepted plateau intervention (rep-range change or swap) to the

@@ -48,4 +48,44 @@ describe("buildCoachCheckIn", () => {
     expect(output).toContain("Working sets: 0");
     expect(output).toContain("No finished-session performances in this window.");
   });
+
+  it("includes optional feedback and explicitly flags significant joint pain", () => {
+    const output = buildCoachCheckIn([row({})], EXERCISE_BY_ID, {
+      now: new Date("2026-08-31T12:00:00Z"),
+      sessionFeedback: [
+        {
+          sessionId: "session-1",
+          performedAt: "2026-08-29T12:00:00Z",
+          finishedAt: "2026-08-29T13:00:00Z",
+          readiness: 2,
+          jointPain: "significant",
+          note: "Right shoulder hurt during pressing.",
+        },
+      ],
+    });
+
+    expect(output).toContain("SESSION FEEDBACK");
+    expect(output).toContain("readiness 2/5");
+    expect(output).toContain("joint pain significant — SIGNIFICANT; pause progression advice and review");
+    expect(output).toContain("Note: Right shoulder hurt during pressing.");
+  });
+
+  it("handles missing and unfinished feedback without inventing a fatigue signal", () => {
+    const output = buildCoachCheckIn([row({})], EXERCISE_BY_ID, {
+      now: new Date("2026-08-31T12:00:00Z"),
+      sessionFeedback: [
+        {
+          sessionId: "open-session",
+          performedAt: "2026-08-30T12:00:00Z",
+          finishedAt: null,
+          readiness: 1,
+          jointPain: null,
+          note: null,
+        },
+      ],
+    });
+
+    expect(output).toContain("No session feedback logged in this window.");
+    expect(output).not.toContain("readiness 1/5");
+  });
 });

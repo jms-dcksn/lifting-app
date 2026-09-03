@@ -113,6 +113,9 @@ Adaptive plateau engine under §5.
   applies the change for this and future sessions; the card self-clears once accepted.
 - **Finish session** — `finishSession` stamps `finished_at` and returns a per-lift summary
   with overload deltas (latest session vs that exercise's previous session).
+- **Minimal session feedback** — a skippable 1–5 readiness tap appears before the first set;
+  finish opens an optional joint-pain + short-note sheet. Finished sessions show the saved
+  values and allow pain/note edits without changing the original finish time.
 
 ### Rest timer
 - **Auto-start on log** — logging a set starts a single session-wide rest countdown with
@@ -222,8 +225,9 @@ Pure analytics in `src/lib/analytics.ts` plus the weekly export in
 `src/lib/coach-check-in.ts`; the page renders six server-side cards:
 
 1. **Coach check-in** — copies a paste-ready seven-day summary: completed vs planned sessions,
-   working-set and RIR distribution, 0–1 RIR hard sets by pattern, and the latest top set plus
-   e1RM change for each trained exercise. Only finished sessions count.
+   working-set and RIR distribution, 0–1 RIR hard sets by pattern, the latest top set plus
+   e1RM change for each trained exercise, and optional readiness/pain/note context. Only
+   finished sessions count; significant pain is explicitly flagged for conservative review.
 2. **Total volume** — session tonnage chart (`sessionTonnage`, sums `effectiveLoad × reps`;
    bodyweight sets with unknown bodyweight are excluded and counted, never zeroed).
 3. **Training balance** — latest training week's per-pattern horizontal bars: total working

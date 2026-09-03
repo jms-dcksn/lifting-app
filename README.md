@@ -44,7 +44,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/lib/catalog.ts` — merges seeded templates with the user's DB `exercise` rows (brand/type variants + custom exercises) into the `Record<id, ExerciseDef>` the engine consumes
 - `src/lib/exercise-id.ts` — pure variant-id / variant-name / custom-slug helpers
 - `src/lib/analytics.ts` — framework-free aggregation helpers for the Progress hub
-- `src/lib/coach-check-in.ts` — paste-ready weekly coaching summary from finished-session logs
+- `src/lib/coach-check-in.ts` — versioned canonical coach report plus its clipboard formatter
 - `src/lib/bodyweight.ts` — pure seven-day bodyweight windows, sparse averages, and week-over-week trend
 - `src/lib/current-bodyweight.ts` — latest-observation lookup with preserved profile baseline fallback
 - `src/lib/session-feedback.ts` — readiness/pain/note contract and input validation
@@ -56,6 +56,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/app/(app)/program/` — summary tile grid + dedicated read-only detail route + builder (Classic/Adaptive style, catalog-driven picker, custom exercises, server actions)
 - `src/app/(app)/exercise/actions.ts` — `resolveVariant` (find-or-create a machine brand/type variant) and `createCustomExercise` server actions
 - `src/app/(app)/settings/` — bodyweight history/trend, goal weight, and default rest-between-sets editor
-- `src/app/(app)/analytics/` — Progress hub: coach check-in export (including session feedback and bodyweight trend), session volume, e1RM gainers, record feed, searchable exercise list
+- `src/app/(app)/analytics/` — Progress hub: canonical coach snapshot/export, session volume, e1RM gainers, record feed, searchable exercise list
+- `docs/COACH-REPORT.md` — exact v1 windows, metrics, trend rules, privacy contract, and limitations
 - `src/app/(app)/history/[exerciseId]/` — per-exercise history: e1RM line chart (Recharts) + overload signal vs the previous session
 - `supabase/migrations/` — database schema with row-level security; `supabase/tests/` holds pgTAP ownership checks

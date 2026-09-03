@@ -221,14 +221,16 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 
 ## 8. Progress analytics (`/analytics`, nav label "Progress")
 
-Pure analytics in `src/lib/analytics.ts` plus the weekly export in
+Pure analytics in `src/lib/analytics.ts` plus the versioned canonical report in
 `src/lib/coach-check-in.ts`; the page renders six server-side cards:
 
-1. **Coach check-in** — copies a paste-ready seven-day summary: completed vs planned sessions,
-   working-set and RIR distribution, 0–1 RIR hard sets by pattern, the latest top set plus
-   e1RM change for each trained exercise, optional readiness/pain/note context, and the current
-   seven-day bodyweight average/change. Only finished sessions count; significant pain is
-   explicitly flagged for conservative review.
+1. **Coach check-in** — one `CoachCheckInReport` powers both an on-screen snapshot and the
+   paste-ready text. It includes explicit current/prior seven-day windows, completed vs planned
+   sessions, average duration vs 45 minutes, completed vs effective prescribed sets, actual vs
+   prescribed RIR, per-session prescriptions and working sets, stable four-exposure lift trends,
+   fixed-load rep progress, specialization working/hard sets, bodyweight and optional session
+   feedback. Open, unmatched, implausible, and missing-RIR data are flagged. See
+   `docs/COACH-REPORT.md` for the exact contract.
 2. **Total volume** — session tonnage chart (`sessionTonnage`, sums `effectiveLoad × reps`;
    bodyweight sets with unknown bodyweight are excluded and counted, never zeroed).
 3. **Training balance** — latest training week's per-pattern horizontal bars: total working

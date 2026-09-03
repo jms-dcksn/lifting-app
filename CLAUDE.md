@@ -304,8 +304,12 @@ like the strength engine):
 human-readable movement-pattern names for analytics UI (e.g. `"Hip Hinge"`).
 
 The Progress page (`analytics/page.tsx`) renders six server-side cards, top to bottom:
-1. **Coach check-in** — client copy button over a server-derived seven-day coaching payload
-   from `coach-check-in.ts` (finished-session adherence, RIR, hard sets, and lift trends)
+1. **Coach check-in** — compact server-rendered snapshot plus client copy button, both derived
+   exclusively from the versioned `CoachCheckInReport` in `coach-check-in.ts`. Its pure builder
+   reports explicit current/prior seven-day windows, adherence, duration vs 45 minutes,
+   completed/effective prescribed sets, actual/effective prescribed RIR, session prescriptions,
+   stable four-exposure trends, fixed-load rep progress, specialization volume, and data-quality
+   warnings. Exact definitions and privacy rules: `docs/COACH-REPORT.md`.
 2. **Total volume** — session tonnage chart (Recharts `volume-chart.tsx`)
 3. **Training balance** — latest training week's per-pattern horizontal bar list;
    total working sets (faint bar) with hard-set portion overlaid (foreground bar);

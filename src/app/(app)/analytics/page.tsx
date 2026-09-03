@@ -11,7 +11,14 @@ import {
 } from "@/lib/analytics";
 import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
-import { buildCoachCheckIn, type CoachSessionFeedback } from "@/lib/coach-check-in";
+import {
+  buildCoachCheckInReport,
+  formatCoachCheckIn,
+  type CoachPhaseInput,
+  type CoachSessionInput,
+  type CoachSetInput,
+  type CoachSlotInput,
+} from "@/lib/coach-check-in";
 import { getActiveProgram } from "@/lib/program";
 import { PATTERN_LABEL, type ExerciseDef } from "@/lib/strength/coefficients";
 import { Card, CardLabel } from "@/components/ui/card";
@@ -19,6 +26,7 @@ import { cx } from "@/components/ui/cx";
 import { ExerciseList, type ExerciseListItem } from "./exercise-list";
 import { VolumeChart, type VolumeChartPoint } from "./volume-chart";
 import { CoachCheckIn } from "./coach-check-in";
+import { CoachReportSummary } from "./coach-report-summary";
 import { bodyweightTrend, dateKey, type BodyweightEntry } from "@/lib/bodyweight";
 
 type AnalyticsQueryRow = {
@@ -31,16 +39,22 @@ type AnalyticsQueryRow = {
   e1rm: number | null;
   created_at: string;
   is_warmup: boolean;
+  program_slot_id: string | null;
+  set_index: number;
   workout_session:
     | {
         performed_at: string;
         finished_at: string | null;
         program_id: string | null;
+        program_day_id: string | null;
+        week_index: number | null;
       }
     | {
         performed_at: string;
         finished_at: string | null;
         program_id: string | null;
+        program_day_id: string | null;
+        week_index: number | null;
       }[]
     | null;
 };
@@ -54,13 +68,16 @@ export default async function AnalyticsPage() {
   const [
     { data: rows, error },
     { data: profile, error: profileError },
-    { data: feedbackRows, error: feedbackError },
+    { data: sessionRows, error: sessionError },
     { data: bodyweightRows, error: bodyweightError },
+    { data: dayRows, error: dayError },
+    { data: slotRows, error: slotError },
+    { data: phaseRows, error: phaseError },
   ] = await Promise.all([
     supabase
       .from("set_log")
       .select(
-        "id, session_id, exercise_id, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at, finished_at, program_id)",
+        "id, session_id, program_slot_id, exercise_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at, finished_at, program_id, program_day_id, week_index)",
       )
       .eq("user_id", userId)
       .eq("is_warmup", false)
@@ -68,20 +85,34 @@ export default async function AnalyticsPage() {
     supabase.from("profile").select("bodyweight").eq("id", userId).maybeSingle(),
     supabase
       .from("workout_session")
-      .select("id, performed_at, finished_at, readiness, joint_pain, notes")
-      .eq("user_id", userId)
-      .not("finished_at", "is", null),
+      .select("id, performed_at, finished_at, program_id, program_day_id, week_index, readiness, joint_pain, notes")
+      .eq("user_id", userId),
     supabase
       .from("bodyweight_log")
       .select("id, logged_on, weight")
       .eq("user_id", userId)
       .order("logged_on", { ascending: false }),
+    supabase
+      .from("program_day")
+      .select("id, program_id, name")
+      .eq("user_id", userId),
+    supabase
+      .from("program_slot")
+      .select("id, program_day_id, exercise_id, target_sets, rep_min, rep_max, target_rir")
+      .eq("user_id", userId),
+    supabase
+      .from("program_phase")
+      .select("id, program_id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
+      .eq("user_id", userId),
   ]);
 
   if (error) throw new Error(error.message);
   if (profileError) throw new Error(profileError.message);
-  if (feedbackError) throw new Error(feedbackError.message);
+  if (sessionError) throw new Error(sessionError.message);
   if (bodyweightError) throw new Error(bodyweightError.message);
+  if (dayError) throw new Error(dayError.message);
+  if (slotError) throw new Error(slotError.message);
+  if (phaseError) throw new Error(phaseError.message);
 
   const [catalog, program] = await Promise.all([
     getCatalogMap(supabase, userId),
@@ -144,20 +175,71 @@ export default async function AnalyticsPage() {
     sessionCount: summary.sessionCount,
     delta: summary.delta,
   }));
-  const coachCheckIn = buildCoachCheckIn(analyticsRows, catalog, {
+  const dayById = new Map((dayRows ?? []).map((day) => [day.id, day]));
+  const coachSessions: CoachSessionInput[] = (sessionRows ?? []).map((session) => ({
+    id: session.id,
+    performedAt: session.performed_at,
+    finishedAt: session.finished_at,
+    programId: session.program_id,
+    programDayId: session.program_day_id,
+    programDayName: session.program_day_id
+      ? dayById.get(session.program_day_id)?.name ?? null
+      : null,
+    weekIndex: session.week_index,
+    readiness: session.readiness,
+    jointPain: session.joint_pain as CoachSessionInput["jointPain"],
+    note: session.notes,
+  }));
+  const coachSets: CoachSetInput[] = ((rows ?? []) as AnalyticsQueryRow[]).map((row) => ({
+    sessionId: row.session_id,
+    programSlotId: row.program_slot_id,
+    exerciseId: row.exercise_id,
+    setIndex: row.set_index,
+    weight: row.weight,
+    reps: row.reps,
+    rir: row.rir,
+    e1rm: row.e1rm,
+    isWarmup: row.is_warmup,
+    createdAt: row.created_at,
+  }));
+  const coachSlots: CoachSlotInput[] = (slotRows ?? []).flatMap((slot) => {
+    const day = dayById.get(slot.program_day_id);
+    if (!day) return [];
+    return [{
+      id: slot.id,
+      programId: day.program_id,
+      programDayId: slot.program_day_id,
+      exerciseId: slot.exercise_id,
+      targetSets: slot.target_sets,
+      repMin: slot.rep_min,
+      repMax: slot.rep_max,
+      targetRir: slot.target_rir,
+    }];
+  });
+  const coachPhases: CoachPhaseInput[] = (phaseRows ?? []).map((phase) => ({
+    id: phase.id,
+    programId: phase.program_id,
+    position: phase.position,
+    name: phase.name,
+    description: phase.description,
+    weekStart: phase.week_start,
+    weekEnd: phase.week_end,
+    targetRirMin: phase.target_rir_min,
+    targetRirMax: phase.target_rir_max,
+    setMultiplier: phase.set_multiplier,
+  }));
+  const coachReport = buildCoachCheckInReport({
     programName: program?.name,
     plannedSessions: program?.days.length,
+    sessions: coachSessions,
+    sets: coachSets,
+    slots: coachSlots,
+    phases: coachPhases,
+    definitions: catalog,
     currentBodyweight: bodyweight,
     bodyweightTrend: weightTrend,
-    sessionFeedback: (feedbackRows ?? []).map((session): CoachSessionFeedback => ({
-      sessionId: session.id,
-      performedAt: session.performed_at,
-      finishedAt: session.finished_at,
-      readiness: session.readiness,
-      jointPain: session.joint_pain as CoachSessionFeedback["jointPain"],
-      note: session.notes,
-    })),
   });
+  const coachCheckIn = formatCoachCheckIn(coachReport);
 
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
@@ -169,6 +251,16 @@ export default async function AnalyticsPage() {
         </p>
       </header>
 
+      <Card>
+        <CardLabel className="mb-1">Coach check-in</CardLabel>
+        <p className="mb-3 text-body text-muted">
+          One factual weekly report powers this snapshot, the clipboard export, and the
+          future Coach API.
+        </p>
+        <CoachReportSummary report={coachReport} />
+        <CoachCheckIn text={coachCheckIn} />
+      </Card>
+
       {analyticsRows.length === 0 ? (
         <Card>
           <CardLabel className="mb-2">No training data yet</CardLabel>
@@ -178,15 +270,6 @@ export default async function AnalyticsPage() {
         </Card>
       ) : (
         <>
-          <Card>
-            <CardLabel className="mb-1">Coach check-in</CardLabel>
-            <p className="mb-3 text-body text-muted">
-              Copies the last seven days of adherence, RIR, hard sets, and lift trends in a
-              format ready for our weekly review.
-            </p>
-            <CoachCheckIn text={coachCheckIn} />
-          </Card>
-
           <Card>
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>

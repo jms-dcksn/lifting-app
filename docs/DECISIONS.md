@@ -281,6 +281,16 @@ The original version intentionally added no schema before the first real block. 
 added the deliberately narrow signals actual coaching needs: readiness 1–5 before the first
 set, joint pain at finish, and one 280-character session note.
 
+**The coach check-in has one versioned report contract.** Issue #7 replaces parallel summary
+logic with a pure `buildCoachCheckInReport()` aggregation. The compact Progress snapshot and
+clipboard formatter accept only its `CoachCheckInReport` output, so visible and exported facts
+cannot drift. The v1 contract uses explicit non-overlapping seven-day windows, reconstructs
+week-specific phase prescriptions (including deloads), and emits data-quality warnings instead
+of filling gaps. It excludes user/auth and internal database identifiers by construction. Trend
+labels require four exposures split into two adjacent pairs, with both recent marks clearing a
+1% margin, so a single poor session cannot create a decline. Exact definitions live in
+`docs/COACH-REPORT.md`.
+
 **Bodyweight observations are date-keyed; `profile.bodyweight` is the preserved fallback.**
 `bodyweight_log` permits one observation per user per calendar date. A repeated date replaces
 that reading, and moving an edit onto an occupied date does the same. The latest observation is

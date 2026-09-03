@@ -39,6 +39,16 @@ beat last time. Done = I use it for a real block.
 - [x] Include current average and prior-seven-day change in the Coach check-in export.
 - [x] Add generated types, pure trend coverage, database constraints, and a pgTAP ownership test.
 
+## Coach loop — canonical coach report (#7)
+
+- [x] Define a versioned, privacy-safe `CoachCheckInReport` built by pure aggregation.
+- [x] Derive the Progress snapshot and clipboard text from the same report.
+- [x] Report explicit current/prior windows, adherence, duration, prescriptions, set/RIR
+      execution, fixed-load progress, stable exercise trends, and specialization volume.
+- [x] Surface thin or imperfect data rather than silently inventing values.
+- [x] Cover window boundaries, substitutions, deloads, missing RIR, thin data, trend stability,
+      and prior-window comparisons with unit tests.
+
 ## What exists
 
 Committed:

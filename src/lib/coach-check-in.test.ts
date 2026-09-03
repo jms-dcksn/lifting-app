@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { AnalyticsSetRow } from "./analytics";
 import { buildCoachCheckIn } from "./coach-check-in";
 import { EXERCISE_BY_ID } from "./strength/coefficients";
+import { bodyweightTrend } from "./bodyweight";
 
 const row = (overrides: Partial<AnalyticsSetRow>): AnalyticsSetRow => ({
   id: "set-1",
@@ -87,5 +88,25 @@ describe("buildCoachCheckIn", () => {
 
     expect(output).toContain("No session feedback logged in this window.");
     expect(output).not.toContain("readiness 1/5");
+  });
+
+  it("includes the current bodyweight average and prior-window change", () => {
+    const trend = bodyweightTrend(
+      [
+        { id: "prior", loggedOn: "2026-08-23", weight: 182 },
+        { id: "current-1", loggedOn: "2026-08-28", weight: 180 },
+        { id: "current-2", loggedOn: "2026-08-31", weight: 179 },
+      ],
+      "2026-08-31",
+    );
+    const output = buildCoachCheckIn([row({})], EXERCISE_BY_ID, {
+      now: new Date("2026-08-31T12:00:00Z"),
+      currentBodyweight: 179,
+      bodyweightTrend: trend,
+    });
+
+    expect(output).toContain("Latest: 179 lb");
+    expect(output).toContain("Current 7-day average: 179.5 lb (2 observations)");
+    expect(output).toContain("Change vs prior 7 days: -2.5 lb");
   });
 });

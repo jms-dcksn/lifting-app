@@ -9,6 +9,7 @@ import { computeE1rm } from "@/lib/strength/e1rm";
 import { recomputeStat, effectiveLoad } from "@/lib/strength/recompute";
 import { estimatePatternStrength, type ExerciseStat } from "@/lib/strength/recommend";
 import { getActiveProgram } from "@/lib/program";
+import { getCurrentBodyweight } from "@/lib/current-bodyweight";
 import {
   normalizeJointPain,
   normalizeSessionNote,
@@ -24,18 +25,6 @@ async function requireUser() {
   const userId = data?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
   return { supabase, userId };
-}
-
-async function getBodyweight(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string,
-): Promise<number | null> {
-  const { data } = await supabase
-    .from("profile")
-    .select("bodyweight")
-    .eq("id", userId)
-    .maybeSingle();
-  return data?.bodyweight ?? null;
 }
 
 // Rebuild user_exercise_stat.current_e1rm for one exercise from its set_log rows.
@@ -193,7 +182,7 @@ export async function logSet(input: LogSetInput) {
         .eq("id", input.sessionId)
         .eq("user_id", userId)
         .maybeSingle(),
-      getBodyweight(supabase, userId),
+      getCurrentBodyweight(supabase, userId),
       setIndexQuery,
       // First-ever set on a machine that needs calibration is a calibration set (P5 uses this).
       supabase
@@ -251,7 +240,7 @@ export async function editSet(input: EditSetInput) {
 
   const catalog = await getCatalogMap(supabase, userId);
   const def = catalog[existing.exercise_id];
-  const bodyweight = await getBodyweight(supabase, userId);
+  const bodyweight = await getCurrentBodyweight(supabase, userId);
   const load = def ? effectiveLoad(def, input.weight, bodyweight) : input.weight;
   const e1rm =
     load != null && load > 0 && input.reps > 0 ? computeE1rm(load, input.reps, input.rir) : null;
@@ -280,7 +269,7 @@ export async function deleteSet(setId: string) {
   if (error) throw new Error(error.message);
 
   const catalog = await getCatalogMap(supabase, userId);
-  const bodyweight = await getBodyweight(supabase, userId);
+  const bodyweight = await getCurrentBodyweight(supabase, userId);
   await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight, catalog);
   revalidatePath(`/session/${existing.session_id}`);
 }

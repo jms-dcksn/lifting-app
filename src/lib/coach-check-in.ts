@@ -2,6 +2,7 @@ import type { AnalyticsSetRow } from "./analytics";
 import { exerciseSummaries } from "./analytics";
 import { PATTERN_LABEL, type ExerciseDef, type Pattern } from "./strength/coefficients";
 import type { JointPain } from "./session-feedback";
+import type { BodyweightTrend } from "./bodyweight";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -10,6 +11,8 @@ export interface CoachCheckInOptions {
   programName?: string;
   plannedSessions?: number;
   sessionFeedback?: CoachSessionFeedback[];
+  bodyweightTrend?: BodyweightTrend;
+  currentBodyweight?: number | null;
 }
 
 export interface CoachSessionFeedback {
@@ -75,6 +78,11 @@ export function buildCoachCheckIn(
     `Adherence: ${sessionIds.size}${planned ? `/${planned}` : ""} sessions`,
     `Working sets: ${finished.length}`,
     `RIR: ${averageRir == null ? "not logged" : `${averageRir.toFixed(1)} average`} · ${rirZero} at 0 · ${rirOne} at 1 · ${rirTwoPlus} at 2+`,
+    "",
+    "BODYWEIGHT",
+    `Latest: ${options.currentBodyweight == null ? "not logged" : `${options.currentBodyweight} lb`}`,
+    `Current 7-day average: ${formatBodyweightAverage(options.bodyweightTrend?.current.average, options.bodyweightTrend?.current.observationCount)}`,
+    `Change vs prior 7 days: ${options.bodyweightTrend?.change == null ? "not available" : `${signedDecimal(options.bodyweightTrend.change)} lb`}`,
     "",
     "PATTERN VOLUME (sets / hard sets at 0–1 RIR)",
     ...(patterns.size > 0
@@ -147,6 +155,16 @@ function latestExercisePerformances(
 function signed(value: number) {
   const rounded = Math.round(value);
   return rounded > 0 ? `+${rounded}` : `${rounded}`;
+}
+
+function signedDecimal(value: number) {
+  const rounded = Math.round(value * 10) / 10;
+  return rounded > 0 ? `+${rounded.toFixed(1)}` : rounded.toFixed(1);
+}
+
+function formatBodyweightAverage(average?: number | null, count?: number) {
+  if (average == null) return "not available (no observations)";
+  return `${average.toFixed(1)} lb (${count ?? 0} observation${count === 1 ? "" : "s"})`;
 }
 
 function dateLabel(date: Date) {

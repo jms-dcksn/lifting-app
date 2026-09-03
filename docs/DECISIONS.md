@@ -281,6 +281,14 @@ The original version intentionally added no schema before the first real block. 
 added the deliberately narrow signals actual coaching needs: readiness 1–5 before the first
 set, joint pain at finish, and one 280-character session note.
 
+**Bodyweight observations are date-keyed; `profile.bodyweight` is the preserved fallback.**
+`bodyweight_log` permits one observation per user per calendar date. A repeated date replaces
+that reading, and moving an edit onto an occupied date does the same. The latest observation is
+the current value for bodyweight/assisted exercise calculations. The original profile field is
+not overwritten, so an account with no history—or one whose history is removed—retains its
+pre-feature baseline. Seven-day trends use available observations in explicit current and prior
+non-overlapping windows; they do not require daily weighing.
+
 **Subjective feedback is stored on `workout_session`, not in a general wellness model.** These
 signals describe one training exposure and share the session's existing ownership/RLS boundary.
 The unused `workout_session.notes` column is now the capped plain-text note; `readiness` and

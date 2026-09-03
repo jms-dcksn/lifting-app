@@ -29,6 +29,16 @@ beat last time. Done = I use it for a real block.
       diagnosing it.
 - [x] Add pure validation/export coverage and a pgTAP ownership test.
 
+## Coach loop — bodyweight history (#6)
+
+- [x] Add date-keyed bodyweight observations with deterministic same-date replacement.
+- [x] Show the latest reading, sparse-data seven-day average, prior-week change, and recent history.
+- [x] Support editing and removing individual observations; encourage three morning readings weekly.
+- [x] Preserve `profile.bodyweight` as the no-history baseline while all live strength calculations
+      prefer the latest dated observation.
+- [x] Include current average and prior-seven-day change in the Coach check-in export.
+- [x] Add generated types, pure trend coverage, database constraints, and a pgTAP ownership test.
+
 ## What exists
 
 Committed:

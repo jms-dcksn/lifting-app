@@ -9,6 +9,7 @@ import { foldPrescription, type AdaptationRow } from "@/lib/strength/plateau";
 import { loadPendingSuggestions } from "@/lib/fluid";
 import { phaseForWeek, resolvePrescription, type ProgramPhase } from "@/lib/periodization";
 import type { JointPain } from "@/lib/session-feedback";
+import { getCurrentBodyweight } from "@/lib/current-bodyweight";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
 
 export default async function SessionPage({
@@ -49,13 +50,14 @@ export default async function SessionPage({
   ]);
   if (!day) notFound();
 
-  const [{ data: profile }, { data: statRows }, { data: thisSessionSets }, recentIds] =
+  const [{ data: profile }, bodyweight, { data: statRows }, { data: thisSessionSets }, recentIds] =
     await Promise.all([
       supabase
         .from("profile")
-        .select("bodyweight, default_rest_seconds")
+        .select("default_rest_seconds")
         .eq("id", userId)
         .maybeSingle(),
+      getCurrentBodyweight(supabase, userId),
       supabase
         .from("user_exercise_stat")
         .select("exercise_id, current_e1rm, personal_coefficient, coeff_confidence_n")
@@ -207,7 +209,7 @@ export default async function SessionPage({
       })),
       catalog,
       stats,
-      profile?.bodyweight ?? null,
+      bodyweight,
     );
     for (const s of slots) s.pendingSuggestion = suggestions[s.programSlotId] ?? null;
   }
@@ -219,7 +221,7 @@ export default async function SessionPage({
       week={sessionWeek}
       weeks={program?.weeks ?? 5}
       phase={activePhase}
-      bodyweight={profile?.bodyweight ?? null}
+      bodyweight={bodyweight}
       defaultRestSeconds={profile?.default_rest_seconds ?? 120}
       alreadyFinished={!!session.finished_at}
       initialFeedback={{

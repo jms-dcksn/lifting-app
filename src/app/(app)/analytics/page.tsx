@@ -19,6 +19,7 @@ import { cx } from "@/components/ui/cx";
 import { ExerciseList, type ExerciseListItem } from "./exercise-list";
 import { VolumeChart, type VolumeChartPoint } from "./volume-chart";
 import { CoachCheckIn } from "./coach-check-in";
+import { bodyweightTrend, dateKey, type BodyweightEntry } from "@/lib/bodyweight";
 
 type AnalyticsQueryRow = {
   id: string;
@@ -50,7 +51,12 @@ export default async function AnalyticsPage() {
   const userId = claims?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
 
-  const [{ data: rows, error }, { data: profile }, { data: feedbackRows, error: feedbackError }] = await Promise.all([
+  const [
+    { data: rows, error },
+    { data: profile, error: profileError },
+    { data: feedbackRows, error: feedbackError },
+    { data: bodyweightRows, error: bodyweightError },
+  ] = await Promise.all([
     supabase
       .from("set_log")
       .select(
@@ -65,17 +71,30 @@ export default async function AnalyticsPage() {
       .select("id, performed_at, finished_at, readiness, joint_pain, notes")
       .eq("user_id", userId)
       .not("finished_at", "is", null),
+    supabase
+      .from("bodyweight_log")
+      .select("id, logged_on, weight")
+      .eq("user_id", userId)
+      .order("logged_on", { ascending: false }),
   ]);
 
   if (error) throw new Error(error.message);
+  if (profileError) throw new Error(profileError.message);
   if (feedbackError) throw new Error(feedbackError.message);
+  if (bodyweightError) throw new Error(bodyweightError.message);
 
   const [catalog, program] = await Promise.all([
     getCatalogMap(supabase, userId),
     getActiveProgram(supabase, userId),
   ]);
   const analyticsRows = normalizeRows((rows ?? []) as AnalyticsQueryRow[]);
-  const bodyweight = profile?.bodyweight ?? null;
+  const bodyweightEntries: BodyweightEntry[] = (bodyweightRows ?? []).map((row) => ({
+    id: row.id,
+    loggedOn: row.logged_on,
+    weight: row.weight,
+  }));
+  const weightTrend = bodyweightTrend(bodyweightEntries, dateKey(new Date()));
+  const bodyweight = weightTrend.latest?.weight ?? profile?.bodyweight ?? null;
   const volume = sessionTonnage(analyticsRows, catalog, bodyweight);
   const summaries = exerciseSummaries(analyticsRows);
   const e1rmRecords = e1rmPrFeed(analyticsRows);
@@ -128,6 +147,8 @@ export default async function AnalyticsPage() {
   const coachCheckIn = buildCoachCheckIn(analyticsRows, catalog, {
     programName: program?.name,
     plannedSessions: program?.days.length,
+    currentBodyweight: bodyweight,
+    bodyweightTrend: weightTrend,
     sessionFeedback: (feedbackRows ?? []).map((session): CoachSessionFeedback => ({
       sessionId: session.id,
       performedAt: session.performed_at,

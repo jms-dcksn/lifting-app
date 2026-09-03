@@ -226,8 +226,9 @@ Pure analytics in `src/lib/analytics.ts` plus the weekly export in
 
 1. **Coach check-in** — copies a paste-ready seven-day summary: completed vs planned sessions,
    working-set and RIR distribution, 0–1 RIR hard sets by pattern, the latest top set plus
-   e1RM change for each trained exercise, and optional readiness/pain/note context. Only
-   finished sessions count; significant pain is explicitly flagged for conservative review.
+   e1RM change for each trained exercise, optional readiness/pain/note context, and the current
+   seven-day bodyweight average/change. Only finished sessions count; significant pain is
+   explicitly flagged for conservative review.
 2. **Total volume** — session tonnage chart (`sessionTonnage`, sums `effectiveLoad × reps`;
    bodyweight sets with unknown bodyweight are excluded and counted, never zeroed).
 3. **Training balance** — latest training week's per-pattern horizontal bars: total working
@@ -243,7 +244,11 @@ heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `lates
 
 ## 9. Settings (`/settings`)
 
-- **Bodyweight (lb)** — used for pull-ups and assisted lifts.
+- **Bodyweight history** — quick date/weight logging, edit/remove, recent readings, latest value,
+  sparse seven-day average, and change from the preceding seven days. Same-date submissions
+  replace that date deterministically; roughly three morning readings per week are encouraged.
+- **Current bodyweight rule** — the newest dated observation drives pull-up/assisted calculations;
+  the pre-existing `profile.bodyweight` remains the baseline when no history exists.
 - **Goal weight (lb)**.
 - **Default rest between sets (seconds)** — default 120; per-slot overrides take precedence.
 

@@ -39,7 +39,7 @@ Tests run on **vitest**, scoped to the pure modules under `src/lib/` (config:
 native tsconfig-paths). The strength engine and analytics are framework-free, so the suite
 loads no Next.js/React. Co-locate new tests as `*.test.ts` next to the module. Current
 coverage: `e1rm`, `recommend`, `progression`, `plateau`, `program-tags`, `program-templates`,
-`coach-check-in`, `session-feedback`,
+`coach-check-in`, `session-feedback`, `bodyweight`,
 `rest`, `coefficients`, `catalog`, `exercise-id`.
 
 ## Architecture
@@ -107,12 +107,18 @@ machines predict like free weights.
 
 ### Data model (`supabase/migrations/`)
 
-Migrations are sequential through the timestamped session-feedback migration. `0010` adds reusable,
+Migrations are sequential through the timestamped bodyweight-history migration. `0010` adds reusable,
 program-level week ranges with optional RIR-range and working-set-multiplier overrides; `0011`
 idempotently gives existing 12-week James HIT copies the same phases as new template instances.
 The session-feedback migration adds constrained nullable readiness and joint-pain fields and
-activates the existing session `notes` field with a 280-character cap.
+activates the existing session `notes` field with a 280-character cap. The bodyweight-history
+migration adds one constrained, RLS-protected observation per user/date.
 Typed DB types live at `src/lib/supabase/types.ts`.
+
+- **Bodyweight source of truth:** `getCurrentBodyweight()` prefers the newest
+  `bodyweight_log.logged_on` row and falls back to the preserved `profile.bodyweight` only when
+  no history exists. All live bodyweight/assisted calculations must use that helper or equivalent
+  latest-then-baseline logic. Seven-day trend windows live in the pure `src/lib/bodyweight.ts`.
 
 - **`set_log` is the source of truth.** `user_exercise_stat` is a derived cache (current e1RM
   + personal coefficient) that is rebuildable from `set_log` — never let it drift.

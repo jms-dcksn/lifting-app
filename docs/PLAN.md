@@ -63,6 +63,11 @@ beat last time. Done = I use it for a real block.
 - [x] Cover progress, flat performance, regression, RIR misses, plateau, deload, pain, and thin
       data with pure tests.
 
+## Coach loop — quality-of-life follow-up
+
+- [x] Add one-tap acceptance for all actionable, currently visible Coach proposals.
+- [x] Preview the next workout's exercises and effective weekly prescriptions on Home.
+
 ## What exists
 
 Committed:

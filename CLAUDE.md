@@ -161,6 +161,10 @@ in `src/lib/program-summary.ts`: active first, then newest first. `ProgramSlot` 
 `restSeconds: number | null` (the per-slot rest override; `null` = use the profile default),
 selected/mapped by `assemble()` so builder edits preserve it.
 
+Home previews the upcoming day's complete exercise list with the effective week-specific
+sets, rep range, and RIR prescription. It uses the same completed-session-derived week/day
+position and `resolvePrescription()` path as session creation and the active session screen.
+
 Built-in program templates live in `src/lib/program-templates.ts` (pure data, validated by
 `program-templates.test.ts`: every slot's exercise id must resolve in `coefficients.ts` with
 a matching pattern, and `weeks` must sit in the builder's 4-12 range). Fifteen templates: the

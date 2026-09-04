@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveProgram } from "@/lib/program";
 import { getCatalogMap } from "@/lib/catalog";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
+import { resolvePrescription, rirLabel } from "@/lib/periodization";
 import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button-styles";
 import { Card, CardLabel } from "@/components/ui/card";
@@ -65,6 +66,15 @@ export default async function Home() {
 
   const catalog = await getCatalogMap(supabase, userId);
   const lastSummary = lastFinished ? await summarize(supabase, lastFinished, catalog) : null;
+  const nextWorkout = nextDay.slots.map((slot) => ({
+    ...slot,
+    exerciseName: catalog[slot.exerciseId]?.name ?? slot.exerciseId,
+    prescription: resolvePrescription(slot, week, program.phases),
+  }));
+  const nextWorkingSets = nextWorkout.reduce(
+    (total, slot) => total + slot.prescription.targetSets,
+    0,
+  );
 
   const totalSessions = program.days.length * program.weeks;
 
@@ -99,6 +109,30 @@ export default async function Home() {
           </Button>
         </form>
       )}
+
+      <Card>
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <CardLabel>Next workout</CardLabel>
+            <p className="text-heading">{nextDay.name}</p>
+          </div>
+          <p className="shrink-0 text-caption tabular-nums text-muted">
+            {nextWorkout.length} exercise{nextWorkout.length === 1 ? "" : "s"} · {nextWorkingSets} set{nextWorkingSets === 1 ? "" : "s"}
+          </p>
+        </div>
+        <ul className="divide-y divide-border">
+          {nextWorkout.map((slot) => (
+            <li key={slot.id} className="flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0">
+              <span className="text-body font-medium">{slot.exerciseName}</span>
+              <span className="shrink-0 text-caption tabular-nums text-muted">
+                {slot.prescription.targetSets} × {slot.prescription.repMin}
+                {slot.prescription.repMin === slot.prescription.repMax ? "" : `–${slot.prescription.repMax}`}
+                {" · "}{rirLabel(slot.prescription)} RIR
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Card>
 
       {lastSummary && (
         <Card>

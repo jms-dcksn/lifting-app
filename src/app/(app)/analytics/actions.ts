@@ -41,3 +41,36 @@ export async function saveCoachRecommendationDecision(formData: FormData) {
 
   revalidatePath("/analytics");
 }
+
+export async function acceptAllCoachRecommendations(formData: FormData) {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub as string | undefined;
+  if (!userId) redirect("/login");
+
+  const recommendationKeys = [
+    ...new Set(formData.getAll("recommendation_key").map(String)),
+  ];
+  if (
+    recommendationKeys.length === 0
+    || recommendationKeys.length > 100
+    || recommendationKeys.some((key) => !RECOMMENDATION_KEY.test(key))
+  ) {
+    throw new Error("Invalid recommendation keys.");
+  }
+
+  const now = new Date().toISOString();
+  const { error } = await supabase.from("coach_recommendation_decision").upsert(
+    recommendationKeys.map((recommendationKey) => ({
+      user_id: userId,
+      recommendation_key: recommendationKey,
+      status: "accepted" as const,
+      deferred_until: null,
+      updated_at: now,
+    })),
+    { onConflict: "user_id,recommendation_key" },
+  );
+  if (error) throw new Error(`Unable to accept recommendations: ${error.message}`);
+
+  revalidatePath("/analytics");
+}

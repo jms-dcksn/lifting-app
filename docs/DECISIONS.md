@@ -299,6 +299,15 @@ reductions require two consecutive comparable misses. The only new mutable state
 accepted/dismissed/deferred response keyed to that evidence snapshot. Accepting does not rewrite
 a program: the established slot/exercise log chain remains the source of the next workout target.
 
+**The scheduled Coach API is a narrow capability, not a second account session.** Issue #9 exposes
+the canonical report and proposal layer through one read-only route. A server-held Supabase secret
+is necessary because a scheduled task has no browser session, but every elevated query still
+includes the one configured user scope. The public credential is a separately revocable,
+high-entropy capability token compared via fixed-length SHA-256 digests and never returned or
+logged. Bearer auth is preferred; a query capability is retained only because ChatGPT scheduled
+tasks do not currently expose custom request headers. Both forms receive the same no-store,
+noindex response policy and cannot mutate training or recommendation-decision state.
+
 **Bodyweight observations are date-keyed; `profile.bodyweight` is the preserved fallback.**
 `bodyweight_log` permits one observation per user per calendar date. A repeated date replaces
 that reading, and moving an edit onto an occupied date does the same. The latest observation is

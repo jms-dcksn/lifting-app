@@ -234,6 +234,9 @@ Pure analytics in `src/lib/analytics.ts` plus the versioned canonical report in
    load/rep, recalibration, keep-movement, plateau, deload, pain, and insufficient-data actions.
    Every action shows its rationale, evidence, and confidence. Accept/dismiss/defer persists the
    review state only; it never rewrites the program.
+   The same report and proposals are available to the configured Coach integration at
+   `GET /api/coach/v1/weekly`. The endpoint is read-only, capability-authenticated, explicitly
+   user-scoped, and never cached or indexed; see `docs/COACH-REPORT.md` for setup and rotation.
 2. **Total volume** — session tonnage chart (`sessionTonnage`, sums `effectiveLoad × reps`;
    bodyweight sets with unknown bodyweight are excluded and counted, never zeroed).
 3. **Training balance** — latest training week's per-pattern horizontal bars: total working

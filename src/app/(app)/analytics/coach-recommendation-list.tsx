@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
 import type { CoachRecommendation } from "@/lib/coach-recommendations";
-import { saveCoachRecommendationDecision } from "./actions";
+import {
+  acceptAllCoachRecommendations,
+  saveCoachRecommendationDecision,
+} from "./actions";
 
 export interface RecommendationDecision {
   recommendationKey: string;
@@ -29,6 +32,10 @@ export function CoachRecommendationList({
     ) return false;
     return true;
   });
+  const pending = visible.filter((item) => (
+    item.kind !== "insufficient_data"
+    && decisionByKey.get(item.key)?.status !== "accepted"
+  ));
 
   if (visible.length === 0) {
     return (
@@ -41,12 +48,26 @@ export function CoachRecommendationList({
   return (
     <div className="mb-4 flex flex-col gap-4 border-y border-border py-4">
       <div>
-        <p className="text-caption font-semibold uppercase tracking-wide text-muted">
-          Proposed next steps
-        </p>
-        <p className="text-caption text-muted">
-          Evidence-backed proposals only. Nothing changes your program automatically.
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-caption font-semibold uppercase tracking-wide text-muted">
+              Proposed next steps
+            </p>
+            <p className="text-caption text-muted">
+              Evidence-backed proposals only. Nothing changes your program automatically.
+            </p>
+          </div>
+          {pending.length > 0 && (
+            <form action={acceptAllCoachRecommendations} className="shrink-0">
+              {pending.map((item) => (
+                <input key={item.key} type="hidden" name="recommendation_key" value={item.key} />
+              ))}
+              <Button type="submit" size="sm">
+                Accept all ({pending.length})
+              </Button>
+            </form>
+          )}
+        </div>
       </div>
       {visible.map((item) => {
         const accepted = decisionByKey.get(item.key)?.status === "accepted";

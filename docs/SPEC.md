@@ -102,6 +102,8 @@ corrupt the chain. Algorithm for a slot when starting a session:
    `targetReps = rep_min`. This is the e1RM handoff; it carries the recommender's confidence.
 2. **Has prior performance** → look at the most recent session's **first working set** for this
    slot+exercise:
+   - `firstSetReps < rep_min` → estimate a load that reaches `rep_min` at the target RIR,
+     never increase the last load, and set `targetReps = rep_min`.
    - `firstSetReps >= rep_max` → `weight = lastWeight + exercise.increment`, `targetReps = rep_min`.
    - else → `weight = lastWeight`, `targetReps = min(rep_max, firstSetReps + 1)`.
 

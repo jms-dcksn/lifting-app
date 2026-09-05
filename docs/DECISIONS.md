@@ -131,6 +131,13 @@ performance" case, and the UI also calls it directly to recompute the suggested 
 as the user edits reps/RIR before the first set (the weight field follows reps/RIR until the
 user manually touches weight).
 
+**A missed rep floor is a load-calibration failure, not a progression step.** When the most
+recent first set falls below `rep_min`, `sessionTarget()` estimates the load needed for
+`rep_min` at the prescribed RIR from that observed set. The calculation uses total effective
+load for bodyweight movements before converting back to added/assisted load, and it is capped
+at the prior logged load. This keeps both the active-session target and weekly Coach proposal
+inside the programmed range without rewarding an overweight set.
+
 **Progression "last performance" is now `(program_slot_id, exercise_id)`-keyed.** Previously
 keyed on `program_slot_id` alone (Phase 3). A swapped exercise now resumes its own
 progression chain within that slot, independent of whatever exercise the slot held before.

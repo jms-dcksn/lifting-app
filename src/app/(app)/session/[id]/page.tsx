@@ -87,7 +87,7 @@ export default async function SessionPage({
   const { data: priorSets } = slotIds.length
     ? await supabase
         .from("set_log")
-        .select("program_slot_id, exercise_id, weight, reps, created_at")
+        .select("program_slot_id, exercise_id, weight, reps, rir, created_at")
         .eq("user_id", userId)
         .eq("set_index", 0)
         .eq("is_warmup", false)
@@ -101,7 +101,7 @@ export default async function SessionPage({
     if (!row.program_slot_id) continue;
     const byExercise = lastBySlot.get(row.program_slot_id) ?? {};
     if (!byExercise[row.exercise_id]) {
-      byExercise[row.exercise_id] = { weight: row.weight, reps: row.reps };
+      byExercise[row.exercise_id] = { weight: row.weight, reps: row.reps, rir: row.rir };
     }
     lastBySlot.set(row.program_slot_id, byExercise);
   }

@@ -144,6 +144,7 @@ The heart of the app (`src/lib/strength/`), pure TypeScript, runs client-side.
   the first set.
 - **Double-progression engine** (`progression.ts`):
   - No history → recommend a starting weight at `rep_min` (source `recommendation`).
+  - Below `rep_min` → recalibrate load from the observed reps/RIR and target `rep_min`.
   - Has history → if first-set reps ≥ `rep_max`, bump weight by the slot increment and reset
     to `rep_min`; else hold weight and target +1 rep (source `progression`). Bump is
     reps-only.

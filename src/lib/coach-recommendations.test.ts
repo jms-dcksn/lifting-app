@@ -113,6 +113,49 @@ describe("buildCoachRecommendations", () => {
     });
   });
 
+  it("reduces load and returns to rep_min after a below-range first set", () => {
+    const latest = session(5);
+    const recommendation = build(
+      [latest],
+      [set(latest.id, { weight: 185, reps: 4, rir: 1 })],
+    )[0];
+
+    expect(recommendation).toMatchObject({
+      kind: "reduce_load",
+      action: { targetWeight: 175, targetReps: 6 },
+    });
+    expect(recommendation.rationale).toContain("6–10 rep range");
+  });
+
+  it("keeps weighted pull-up recommendations inside the prescribed rep range", () => {
+    const latest = session(5);
+    const pullupSlot = { ...slot, exerciseId: "weighted-pullup", targetRir: 2 };
+    const reportInput: BuildCoachReportInput = {
+      generatedAt: NOW,
+      sessions: [latest],
+      sets: [set(latest.id, {
+        exerciseId: "weighted-pullup",
+        weight: 60,
+        reps: 2,
+        rir: 2,
+      })],
+      slots: [pullupSlot],
+      phases: [],
+      definitions: EXERCISE_BY_ID,
+      currentBodyweight: 180,
+    };
+    const recommendation = buildCoachRecommendations({
+      ...reportInput,
+      report: buildCoachCheckInReport(reportInput),
+      activeProgramId: "program-1",
+    })[0];
+
+    expect(recommendation).toMatchObject({
+      kind: "reduce_load",
+      action: { targetWeight: 30, targetReps: 6 },
+    });
+  });
+
   it("keeps a movement after one regressed exposure", () => {
     const sessions = [session(4), session(5)];
     const recommendation = build(sessions, [

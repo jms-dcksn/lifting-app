@@ -97,6 +97,22 @@ describe("sessionTarget", () => {
     expect(t.targetReps).toBe(6);
   });
 
+  it("rounds the added load rather than total load for a decimal bodyweight", () => {
+    const last = { weight: 60, reps: 2, rir: 2 };
+    const pullupRange = { ...slot, repMin: 6, repMax: 10, targetRir: 2 };
+    const t = sessionTarget(
+      defs["weighted-pullup"],
+      pullupRange,
+      last,
+      defs,
+      stats,
+      149.2,
+    )!;
+
+    expect(t.weight).toBe(35);
+    expect(t.targetReps).toBe(6);
+  });
+
   it("never increases load after a below-range set with excess RIR", () => {
     const last = { weight: 185, reps: 5, rir: 4 };
     const lowerRange = { ...slot, repMin: 6, repMax: 10, targetRir: 2 };

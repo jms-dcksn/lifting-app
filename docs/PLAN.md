@@ -433,3 +433,10 @@ Cherry-pick by value; none are load-bearing for "run a real block."
 See the decision table in `SPEC.md`. Defaults: lb only, 5 lb steps, RIR 0–5, Recharts,
 double progression (reps then weight; bump on first set hitting `rep_max`, jump by per-exercise
 increment), working sets only, bodyweight included, just-me-first.
+
+## In-workout lift history
+
+- [x] Add an on-demand History sheet to each active exercise, including unresolved machine templates.
+- [x] Show the latest 10 logged sets across the exercise's linked machine variants, excluding the active workout.
+- [x] Display machine, date, weight, reps, and RIR with scroll, loading, empty, and retry states.
+- [x] Cover exercise-family isolation, user scoping, current-session exclusion, deterministic ordering, and limit.

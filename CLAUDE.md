@@ -264,6 +264,18 @@ timer) keeps the screen on for the duration of the session, so the timer fires r
 long as the session screen stays open and unlocked — see `docs/DECISIONS.md` Phase B for the
 narrower-than-expected limitation this leaves (manual lock / backgrounded tab only).
 
+### In-workout exercise history
+
+Each active slot has a History button opening the native Sheet without navigating or
+resetting set entry/rest timer. The authenticated `getExerciseHistory` action fetches
+only on open. `exerciseFamilyIds` follows explicit `baseExerciseId` links to include
+all brands/types for that exercise, never the broader movement pattern. Unlinked custom
+exercises remain separate. The query returns the 10 newest logged sets by `created_at`
+(with id tie-break), across previous workouts/program slots, excluding the active session.
+Rows display variant name, local timestamp, weight in lb, reps, nullable RIR, and warm-up
+labels. Loading, empty, retry, scroll, and dismissal states use the existing Sheet.
+Catalog errors now surface rather than silently dropping machine variants.
+
 ### Exercise history (`src/app/(app)/history/[exerciseId]/`)
 
 Server Component (`page.tsx`) fetches that exercise's working sets via `set_log` joined to

@@ -59,7 +59,8 @@ export async function getCatalogMap(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
 ): Promise<Record<string, ExerciseDef>> {
-  const { data } = await supabase.from("exercise").select(SELECT).eq("user_id", userId);
+  const { data, error } = await supabase.from("exercise").select(SELECT).eq("user_id", userId);
+  if (error) throw new Error("Unable to load exercise catalog. Please try again.");
   return mergeCatalog((data ?? []) as DbExerciseRow[]);
 }
 

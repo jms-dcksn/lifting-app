@@ -163,15 +163,19 @@ function recommendationForSlot(
     const targetWeight = definition.equipment === "bodyweight"
       ? latest.firstSet.weight - definition.increment
       : Math.max(0, latest.firstSet.weight - definition.increment);
+    const targetReps = Math.max(
+      latestPrescription.repMin,
+      Math.min(latestPrescription.repMax, latest.firstSet.reps),
+    );
     return recommendation({
       kind: "reduce_load",
       slotId: slot.id,
       exerciseId,
       exerciseName,
       evidenceEnd,
-      action: `Reduce to ${targetWeight} lb and recalibrate effort`,
+      action: `Reduce to ${targetWeight} lb × ${targetReps} and recalibrate effort`,
       targetWeight,
-      targetReps: latest.firstSet.reps,
+      targetReps,
       rationale: "Actual effort was harder than the effective RIR prescription in two consecutive comparable exposures.",
       confidence: exposures.length >= 3 ? "high" : "medium",
       dataSufficiency: "Two consecutive finished exposures with complete RIR are required for an effort-based load reduction.",
@@ -223,12 +227,46 @@ function recommendationForSlot(
   const target = sessionTarget(
     definition,
     latestPrescription,
-    { weight: latest.firstSet.weight, reps: latest.firstSet.reps },
+    { weight: latest.firstSet.weight, reps: latest.firstSet.reps, rir: latest.firstSet.rir },
     input.definitions,
     [],
     input.currentBodyweight ?? null,
   );
   const confidence = exposureConfidence(exposures.length);
+  if (latest.firstSet.reps < latestPrescription.repMin) {
+    const targetWeight = target?.weight ?? latest.firstSet.weight;
+    const targetReps = latestPrescription.repMin;
+    if (targetWeight < latest.firstSet.weight) {
+      return recommendation({
+        kind: "reduce_load",
+        slotId: slot.id,
+        exerciseId,
+        exerciseName,
+        evidenceEnd,
+        action: `Reduce to ${targetWeight} lb and target ${targetReps} reps`,
+        targetWeight,
+        targetReps,
+        rationale: `The first working set fell below the ${latestPrescription.repMin}–${latestPrescription.repMax} rep range, so the load is recalibrated to the rep floor at the prescribed effort.`,
+        confidence,
+        dataSufficiency: `${exposures.length} comparable exposure${exposures.length === 1 ? "" : "s"}; the action exactly matches sessionTarget() and remains inside the prescribed rep range.`,
+        ...evidence,
+      });
+    }
+    return recommendation({
+      kind: "add_rep",
+      slotId: slot.id,
+      exerciseId,
+      exerciseName,
+      evidenceEnd,
+      action: `Hold ${targetWeight} lb and target ${targetReps} reps`,
+      targetWeight,
+      targetReps,
+      rationale: `The first working set fell below the ${latestPrescription.repMin}–${latestPrescription.repMax} rep range, but the recorded RIR supports holding load and returning to the rep floor.`,
+      confidence,
+      dataSufficiency: `${exposures.length} comparable exposure${exposures.length === 1 ? "" : "s"}; the action exactly matches sessionTarget() and remains inside the prescribed rep range.`,
+      ...evidence,
+    });
+  }
   if (target && target.weight > latest.firstSet.weight) {
     return recommendation({
       kind: "add_load",

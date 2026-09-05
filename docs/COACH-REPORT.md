@@ -96,6 +96,9 @@ the Progress workflow and clipboard export to add coaching actions.
 
 - Normal load and rep proposals call `sessionTarget()` with the latest first working set, so the
   Coach view cannot disagree with the active workout's double-progression target.
+- A first set below `rep_min` produces a rep-floor target, with load recalibrated from the
+  observed reps/RIR (including bodyweight for weighted movements); generated targets never
+  prescribe repetitions outside the slot's range.
 - Two consecutive comparable exposures that are harder than the effective RIR range are required
   before proposing a one-increment load reduction. One RIR entry never triggers it.
 - Plateau review calls the existing `detectPlateau()` and equipment-specific patience rule; one

@@ -2,6 +2,7 @@
 //
 // Structure (sets x rep-range @ RIR) is fixed across the block. Week-over-week overload
 // comes from advancing the target off the last logged performance:
+//   - first working set missed rep_min    -> recalibrate load, target rep_min
 //   - first working set reached rep_max  -> add increment, reset reps to rep_min
 //   - otherwise                          -> hold weight, target +1 rep toward rep_max
 // No prior performance (first session or a fresh swap) -> hand off to the e1RM recommender
@@ -10,7 +11,7 @@
 // Keys on (program_slot_id, exercise_id) so a swap never corrupts the chain. Pure.
 
 import { recommend, type ExerciseStat, type Confidence } from "./recommend";
-import { roundToIncrement } from "./e1rm";
+import { computeE1rm, roundToIncrement, weightForTarget } from "./e1rm";
 import type { ExerciseDef } from "./coefficients";
 
 export interface SlotPrescription {
@@ -22,6 +23,7 @@ export interface SlotPrescription {
 export interface LastPerformance {
   weight: number; // recorded load of the most recent first working set for this slot+exercise
   reps: number;
+  rir?: number | null;
 }
 
 export type TargetSource = "recommendation" | "progression";
@@ -81,6 +83,37 @@ export function sessionTarget(
   }
 
   // Has prior performance — double progression off the most recent first working set.
+  // A below-floor set is a calibration miss, not a new progression rung. Derive a load
+  // expected to reach rep_min at the prescribed RIR and never increase the recorded load.
+  if (last.reps < slot.repMin) {
+    const observedLoad = def.equipment === "bodyweight"
+      ? bodyweight == null ? null : bodyweight + last.weight
+      : last.weight;
+    let targetWeight = last.weight;
+    if (observedLoad != null && observedLoad > 0) {
+      const estimatedE1rm = computeE1rm(
+        observedLoad,
+        last.reps,
+        last.rir ?? slot.targetRir,
+      );
+      const targetLoad = roundToIncrement(
+        weightForTarget(estimatedE1rm, slot.repMin, slot.targetRir),
+        def.increment,
+      );
+      const loggedTarget = def.equipment === "bodyweight"
+        ? targetLoad - (bodyweight as number)
+        : targetLoad;
+      targetWeight = Math.min(last.weight, loggedTarget);
+    }
+    return {
+      weight: targetWeight,
+      targetReps: slot.repMin,
+      targetRir: slot.targetRir,
+      source: "progression",
+      last,
+    };
+  }
+
   if (last.reps >= slot.repMax) {
     return {
       weight: last.weight + def.increment,

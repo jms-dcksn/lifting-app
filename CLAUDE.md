@@ -91,8 +91,9 @@ Five modules that must be understood together:
    is unknown). `sessionTarget(def, slot, last, defs, stats, bodyweight)`: no prior history →
    delegates to `startingWeight()` at `rep_min` (source `"recommendation"`, carries confidence);
    has prior → if first-set reps ≥ `rep_max`, bumps weight by `def.increment` and resets to
-   `rep_min`, else holds weight and targets +1 rep (source `"progression"`). Bump test is
-   reps-only. `startingWeight` is also called client-side to recompute the suggested weight
+   `rep_min`; a first set below `rep_min` recalibrates load and targets the floor; otherwise it
+   holds weight and targets +1 rep (source `"progression"`). Bump test is reps-only.
+   `startingWeight` is also called client-side to recompute the suggested weight
    live as the user edits reps/RIR before the first set.
 
 **Machines are special.** You cannot predict absolute machine loads from free weights (arbitrary

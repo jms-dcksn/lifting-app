@@ -72,6 +72,40 @@ describe("sessionTarget", () => {
     expect(t.targetReps).toBe(10);
   });
 
+  it("recalibrates load and targets rep_min after a below-range set", () => {
+    const last = { weight: 185, reps: 4, rir: 1 };
+    const lowerRange = { ...slot, repMin: 6, repMax: 10, targetRir: 1 };
+    const t = sessionTarget(defs["bb-bench"], lowerRange, last, defs, stats, null)!;
+
+    expect(t.weight).toBe(175);
+    expect(t.targetReps).toBe(6);
+  });
+
+  it("accounts for bodyweight when recalibrating a below-range weighted pull-up", () => {
+    const last = { weight: 60, reps: 2, rir: 2 };
+    const pullupRange = { ...slot, repMin: 6, repMax: 10, targetRir: 2 };
+    const t = sessionTarget(
+      defs["weighted-pullup"],
+      pullupRange,
+      last,
+      defs,
+      stats,
+      180,
+    )!;
+
+    expect(t.weight).toBe(30);
+    expect(t.targetReps).toBe(6);
+  });
+
+  it("never increases load after a below-range set with excess RIR", () => {
+    const last = { weight: 185, reps: 5, rir: 4 };
+    const lowerRange = { ...slot, repMin: 6, repMax: 10, targetRir: 2 };
+    const t = sessionTarget(defs["bb-bench"], lowerRange, last, defs, stats, null)!;
+
+    expect(t.weight).toBe(185);
+    expect(t.targetReps).toBe(6);
+  });
+
   it("never targets beyond rep_max when holding", () => {
     const last = { weight: 135, reps: slot.repMax - 1 };
     const t = sessionTarget(defs["bb-bench"], slot, last, defs, stats, null)!;

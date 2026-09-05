@@ -96,13 +96,16 @@ export function sessionTarget(
         last.reps,
         last.rir ?? slot.targetRir,
       );
-      const targetLoad = roundToIncrement(
-        weightForTarget(estimatedE1rm, slot.repMin, slot.targetRir),
+      const targetLoad = weightForTarget(estimatedE1rm, slot.repMin, slot.targetRir);
+      // Round the value the user actually loads. For bodyweight work, rounding total
+      // effective load before subtracting a decimal weigh-in creates impossible plates
+      // such as +35.8 lb.
+      const loggedTarget = roundToIncrement(
+        def.equipment === "bodyweight"
+          ? targetLoad - (bodyweight as number)
+          : targetLoad,
         def.increment,
       );
-      const loggedTarget = def.equipment === "bodyweight"
-        ? targetLoad - (bodyweight as number)
-        : targetLoad;
       targetWeight = Math.min(last.weight, loggedTarget);
     }
     return {

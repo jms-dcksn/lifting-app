@@ -66,16 +66,16 @@ export default async function SettingsPage() {
           </p>
         </div>
 
-        <form action={saveBodyweightEntry} className="grid grid-cols-[1fr_1fr] gap-3">
-          <label className="flex flex-col gap-2 text-caption text-muted">
+        <form action={saveBodyweightEntry} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="flex min-w-0 flex-col gap-2 text-caption text-muted">
             Date
-            <Input name="logged_on" type="date" defaultValue={today} max={today} required />
+            <Input className="min-w-0 max-w-full" name="logged_on" type="date" defaultValue={today} max={today} required />
           </label>
-          <label className="flex flex-col gap-2 text-caption text-muted">
+          <label className="flex min-w-0 flex-col gap-2 text-caption text-muted">
             Weight (lb)
-            <Input name="weight" type="number" inputMode="decimal" step="0.1" min="1" max="1500" required placeholder="e.g. 185.4" />
+            <Input className="min-w-0 max-w-full" name="weight" type="number" inputMode="decimal" step="0.1" min="1" max="1500" required placeholder="e.g. 185.4" />
           </label>
-          <Button type="submit" className="col-span-2" size="lg">Log weigh-in</Button>
+          <Button type="submit" className="col-span-full" size="lg">Log weigh-in</Button>
         </form>
 
         <p className="text-caption text-muted">
@@ -97,10 +97,10 @@ export default async function SettingsPage() {
                   </div>
                   <details className="mt-1">
                     <summary className="cursor-pointer text-caption text-muted">Edit or remove</summary>
-                    <form action={saveBodyweightEntry} className="mt-3 grid grid-cols-2 gap-2">
+                    <form action={saveBodyweightEntry} className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                       <input type="hidden" name="entry_id" value={entry.id} />
-                      <Input aria-label="Weigh-in date" name="logged_on" type="date" defaultValue={entry.loggedOn} max={today} required />
-                      <Input aria-label="Bodyweight in pounds" name="weight" type="number" inputMode="decimal" step="0.1" min="1" max="1500" defaultValue={entry.weight} required />
+                      <Input className="min-w-0 max-w-full" aria-label="Weigh-in date" name="logged_on" type="date" defaultValue={entry.loggedOn} max={today} required />
+                      <Input className="min-w-0 max-w-full" aria-label="Bodyweight in pounds" name="weight" type="number" inputMode="decimal" step="0.1" min="1" max="1500" defaultValue={entry.weight} required />
                       <Button type="submit" variant="secondary">Save</Button>
                     </form>
                     <form action={deleteBodyweightEntry} className="mt-2">

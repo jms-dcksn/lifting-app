@@ -146,6 +146,8 @@ Typed DB types live at `src/lib/supabase/types.ts`.
   activates the saved program.
 - **Every table has RLS** keyed on `auth.uid()`; every row carries `user_id`. New tables must
   follow this pattern. A trigger auto-creates a `profile` row on signup.
+- Settings weigh-in forms (new and edit) stack date/weight fields below `sm`; inputs
+  have explicit width constraints so native date controls cannot overflow narrow cards.
 - Settings treats profile reads and writes as verified operations: database errors must surface
   instead of rendering empty values or presenting a failed save as successful.
 

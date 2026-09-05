@@ -25,10 +25,12 @@ export function useSheetDismiss() {
 export function Sheet({
   onClose,
   className,
+  ariaLabel,
   children,
 }: {
   onClose: () => void;
   className?: string;
+  ariaLabel?: string;
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -64,6 +66,7 @@ export function Sheet({
   return (
     <dialog
       ref={ref}
+      aria-label={ariaLabel}
       onCancel={(e) => {
         e.preventDefault();
         dismiss();

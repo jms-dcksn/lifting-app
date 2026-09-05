@@ -66,3 +66,10 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `docs/COACH-REPORT.md` — exact v1 windows, metrics, trend rules, privacy contract, and limitations
 - `src/app/(app)/history/[exerciseId]/` — per-exercise history: e1RM line chart (Recharts) + overload signal vs the previous session
 - `supabase/migrations/` — database schema with row-level security; `supabase/tests/` holds pgTAP ownership checks
+
+### Quick lift history
+
+During a workout, tap **History** on an exercise to open a scrollable sheet with its
+10 most recent logged sets from previous workouts. Machine exercises include all linked
+brands and machine types, with each machine named alongside the date, weight, reps,
+and RIR. Close the sheet to resume your workout without losing your set inputs.

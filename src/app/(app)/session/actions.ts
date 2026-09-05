@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
+import { exerciseFamilyIds, loadExerciseHistory } from "@/lib/exercise-history";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { computeE1rm } from "@/lib/strength/e1rm";
 import { recomputeStat, effectiveLoad } from "@/lib/strength/recompute";
@@ -25,6 +26,14 @@ async function requireUser() {
   const userId = data?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
   return { supabase, userId };
+}
+
+export async function getExerciseHistory(exerciseId: string, sessionId: string) {
+  const { supabase, userId } = await requireUser();
+  const catalog = await getCatalogMap(supabase, userId);
+  if (!catalog[exerciseId]) throw new Error("Exercise not found. Please reopen history.");
+  const rows = await loadExerciseHistory(supabase, userId, exerciseFamilyIds(exerciseId, catalog), sessionId);
+  return rows.map((row) => ({ ...row, name: catalog[row.exercise_id]?.name ?? row.exercise_id }));
 }
 
 // Rebuild user_exercise_stat.current_e1rm for one exercise from its set_log rows.

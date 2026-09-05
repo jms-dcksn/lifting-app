@@ -17,6 +17,7 @@ import { Card, CardLabel } from "@/components/ui/card";
 import { Stepper } from "@/components/ui/stepper";
 import { ExercisePicker } from "../../program/exercise-picker";
 import { RestBar, useRestTimer } from "./rest-timer";
+import { ExerciseHistory } from "./exercise-history";
 import {
   logSet,
   editSet,
@@ -255,6 +256,7 @@ function SlotCard({
   // original program_slot_id, so each exercise's progression chain stays intact.
   const [exerciseId, setExerciseId] = useState(slot.exerciseId);
   const [swapping, setSwapping] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   // Fluid plateau suggestion: shown before any set is logged this session; accepting writes a
   // movement_adaptation row, "Keep going" snoozes it.
   const [dismissed, setDismissed] = useState(false);
@@ -374,6 +376,15 @@ function SlotCard({
           {isTemplate ? "Choose machine" : "Swap"}
         </Button>
       </div>
+
+      <Button type="button" variant="secondary" size="sm" className="mt-3" onClick={() => setShowHistory(true)} aria-label={`View history for ${name}`}>
+        History
+      </Button>
+      {showHistory && (
+        <ExerciseHistory key={exerciseId} exerciseId={exerciseId} sessionId={sessionId}
+          name={catalog[def?.baseExerciseId ?? exerciseId]?.name ?? name}
+          isBodyweight={isBodyweight} onClose={() => setShowHistory(false)} />
+      )}
 
       <div className="mt-1 flex items-center justify-between gap-3">
         <span className="text-caption text-muted">

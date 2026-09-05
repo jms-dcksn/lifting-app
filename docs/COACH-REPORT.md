@@ -110,3 +110,11 @@ Every proposal carries an opaque key, action, rationale, evidence window/count, 
 summary, confidence, and a plain-language data-sufficiency statement. Accept, dismiss, and defer
 write only to `coach_recommendation_decision`; they never alter a program, slot, set, or session.
 A deferred proposal is hidden for seven days, while a new exposure produces a new proposal key.
+
+The Proposed next steps UI shows only actionable proposals awaiting review. Accepted and
+dismissed items disappear after a successful save and stay hidden across reloads; active
+deferrals stay hidden until their deadline. Insufficient-data kinds or confidence never render
+as next-step cards. The remaining section is collapsible (initially open), with an actionable
+count and rationale/evidence collapsed per suggestion. If nothing needs review, one compact
+empty-state line replaces the list. The API and coaching export retain the full diagnostic
+recommendations; this is a presentation change, not a change to the recommendation engine.

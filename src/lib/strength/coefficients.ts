@@ -119,10 +119,13 @@ export const EXERCISES: ExerciseDef[] = [
   // --- Lunge (ref: dumbbell Bulgarian split squat; log one dumbbell's weight) ---
   { id: "db-split-squat", name: "Bulgarian Split Squat", pattern: "lunge", equipment: "dumbbell", coefficient: 1.0, isReference: true, increment: 5 },
   { id: "db-step-up", name: "Dumbbell Step-Up", pattern: "lunge", equipment: "dumbbell", coefficient: 0.9, increment: 5 },
+  { id: "bb-reverse-lunge", name: "Barbell Reverse Lunges", pattern: "lunge", equipment: "barbell", coefficient: 1.0, increment: 5 },
 
   // --- Hip thrust ---
   { id: "bb-hip-thrust", name: "Barbell Hip Thrust", pattern: "hip_thrust", equipment: "barbell", coefficient: 1.0, isReference: true, increment: 5 },
   { id: "glute-drive", name: "Glute Drive", pattern: "hip_thrust", equipment: "machine", coefficient: 0.9, needsCalibration: true, machineTemplate: true, increment: 10 },
+  // Preserve the imported Kino program's grouping in the existing pattern taxonomy.
+  { id: "seated-hip-abduction", name: "Seated Hip Abduction", pattern: "hip_thrust", equipment: "machine", coefficient: 1.0, needsCalibration: true, machineTemplate: true, increment: 10 },
 
   // --- Knee extension / flexion ---
   { id: "leg-extension", name: "Leg Extension", pattern: "knee_extension", equipment: "machine", coefficient: 1.0, isReference: true, needsCalibration: true, machineTemplate: true, increment: 10 },
@@ -139,16 +142,20 @@ export const EXERCISES: ExerciseDef[] = [
   { id: "bb-curl", name: "Barbell Curl", pattern: "elbow_flexion", equipment: "barbell", coefficient: 1.0, isReference: true, increment: 5 },
   { id: "db-curl", name: "Dumbbell Curl", pattern: "elbow_flexion", equipment: "dumbbell", coefficient: 0.45, increment: 5 },
   { id: "cable-curl", name: "Cable Curl", pattern: "elbow_flexion", equipment: "cable", coefficient: 0.9, needsCalibration: true, increment: 10 },
+  { id: "hammer-rope-curl", name: "Hammer Rope Curls", pattern: "elbow_flexion", equipment: "cable", coefficient: 1.0, needsCalibration: true, increment: 10 },
   { id: "cable-pushdown", name: "Cable Triceps Pushdown", pattern: "elbow_extension", equipment: "cable", coefficient: 1.0, isReference: true, needsCalibration: true, increment: 10 },
   { id: "db-skullcrusher", name: "Dumbbell Skullcrusher", pattern: "elbow_extension", equipment: "dumbbell", coefficient: 0.5, increment: 5 },
 
   // --- Delts ---
   { id: "db-lateral-raise", name: "Dumbbell Lateral Raise", pattern: "lateral_raise", equipment: "dumbbell", coefficient: 1.0, isReference: true, increment: 5 },
   { id: "cable-lateral-raise", name: "Cable Lateral Raise", pattern: "lateral_raise", equipment: "cable", coefficient: 0.9, needsCalibration: true, increment: 5 },
+  { id: "machine-lateral-raise", name: "Machine Lateral Raise", pattern: "lateral_raise", equipment: "machine", coefficient: 1.0, needsCalibration: true, machineTemplate: true, increment: 10 },
   { id: "reverse-pec-deck", name: "Reverse Pec Deck (Rear Delt)", pattern: "rear_delt", equipment: "machine", coefficient: 1.0, isReference: true, needsCalibration: true, machineTemplate: true, increment: 10 },
 
   // --- Core ---
   { id: "cable-crunch", name: "Cable Crunch", pattern: "core", equipment: "cable", coefficient: 1.0, isReference: true, needsCalibration: true, increment: 10 },
+  { id: "machine-ab-crunch", name: "Machine Ab Crunch", pattern: "core", equipment: "machine", coefficient: 1.0, needsCalibration: true, machineTemplate: true, increment: 10 },
+  { id: "hanging-knee-raise", name: "Hanging Knee Raises", pattern: "core", equipment: "bodyweight", coefficient: 1.0, increment: 10 },
 ];
 
 export const EXERCISE_BY_ID: Record<string, ExerciseDef> = Object.fromEntries(

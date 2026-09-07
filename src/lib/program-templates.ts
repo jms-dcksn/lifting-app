@@ -52,6 +52,47 @@ const s = (
 
 export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
   {
+    id: "kino-goddess-phase-1",
+    name: "Phase 1 · Kino Goddess",
+    description:
+      "An eight-week Kino Goddess Phase 1 block with three workouts per cycle: " +
+      "Lower + Abs, Upper, and Glutes + Core. Keep two reps in reserve on all working " +
+      "sets and rest two minutes between sets. Choose your gym's machine variants " +
+      "when starting each machine exercise.",
+    tags: ["kinobody", "hypertrophy", "3-day", "goddess"],
+    weeks: 8,
+    days: [
+      {
+        name: "Workout A · Lower + Abs",
+        slots: [
+          s("bb-back-squat", "squat", 3, 8, 10, 2, 120),
+          s("bb-rdl", "hinge", 3, 8, 10, 2, 120),
+          s("seated-hip-abduction", "hip_thrust", 3, 8, 10, 2, 120),
+          s("machine-ab-crunch", "core", 3, 10, 12, 2, 120),
+        ],
+      },
+      {
+        name: "Workout B · Upper",
+        slots: [
+          s("db-incline-bench", "horizontal_press", 2, 8, 10, 2, 120),
+          s("lat-pulldown", "vertical_pull", 2, 8, 10, 2, 120),
+          s("cable-pushdown", "elbow_extension", 2, 8, 10, 2, 120),
+          s("hammer-rope-curl", "elbow_flexion", 2, 8, 10, 2, 120),
+          s("machine-lateral-raise", "lateral_raise", 2, 8, 10, 2, 120),
+        ],
+      },
+      {
+        name: "Workout C · Glutes + Core",
+        slots: [
+          s("glute-drive", "hip_thrust", 3, 8, 10, 2, 120),
+          s("bb-reverse-lunge", "lunge", 3, 8, 10, 2, 120),
+          s("back-extension", "hinge", 3, 8, 10, 2, 120),
+          s("hanging-knee-raise", "core", 3, 10, 12, 2, 120),
+        ],
+      },
+    ],
+  },
+  {
     id: "james-hit-specialization",
     name: "James · HIT Upper / Lower",
     description:

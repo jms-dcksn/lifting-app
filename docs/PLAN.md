@@ -97,6 +97,12 @@ is available.
 
 ---
 
+## Shared Kino Goddess template
+
+- [x] Publish the DB-authored Phase 1 block as an eight-week, three-day built-in template.
+- [x] Replace private custom exercise references with shared catalog entries and generic machines.
+- [x] Preserve exercise order, working sets, rep ranges, RIR, and rest periods for new copies.
+
 ## Phase 0 — Backend (blocking, ~2 hrs) — DONE except one item
 
 - [x] Create Supabase project; put URL + anon key in `.env.local`

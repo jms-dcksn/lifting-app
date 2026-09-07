@@ -13,6 +13,12 @@ then swap to a ranked alternative in the same pattern — surfaced in-session as
 
 See [docs/DECISIONS.md](docs/DECISIONS.md) for architecture and the recommendation algorithm.
 
+**Phase 1 · Kino Goddess** is available to all signed-in users under Program templates,
+including first-time setup. The eight-week block has three workouts (Lower + Abs, Upper,
+Glutes + Core), 2 RIR targets, and two-minute rests. Its exercises resolve from the shared
+catalog; machine slots prompt for each user's brand/type. Adding it to an existing account
+creates an inactive copy, leaving the current program selected.
+
 ## Stack
 
 Next.js (App Router) · Supabase (Postgres + Auth + RLS) · TypeScript recommender · Recharts · Vercel.

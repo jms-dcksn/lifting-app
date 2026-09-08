@@ -85,23 +85,23 @@ const input = (overrides: Partial<BuildCoachReportInput> = {}): BuildCoachReport
 });
 
 describe("buildCoachCheckInReport", () => {
-  it("builds versioned, non-overlapping windows and strips internal row identifiers", () => {
+  it("builds Monday-anchored, non-overlapping weeks and strips internal row identifiers", () => {
     const sessions = [
       session("prior-session-secret", "2026-08-27T15:00:00Z"),
-      session("current-session-secret", "2026-08-28T15:00:00Z"),
+      session("current-session-secret", "2026-09-01T15:00:00Z"),
     ];
     const report = buildCoachCheckInReport(input({
       sessions,
       sets: [
         set(sessions[0].id, "bb-bench", { createdAt: "2026-08-27T15:05:00Z" }),
-        set(sessions[1].id, "bb-bench", { createdAt: "2026-08-28T15:05:00Z" }),
+        set(sessions[1].id, "bb-bench", { createdAt: "2026-09-01T15:05:00Z" }),
       ],
     }));
 
     expect(report.version).toBe(COACH_REPORT_VERSION);
     expect(report.windows).toEqual({
-      current: { startDate: "2026-08-28", endDate: "2026-09-03" },
-      prior: { startDate: "2026-08-21", endDate: "2026-08-27" },
+      current: { startDate: "2026-08-31", endDate: "2026-09-06" },
+      prior: { startDate: "2026-08-24", endDate: "2026-08-30" },
     });
     expect(report.current.adherence.completedSessions).toBe(1);
     expect(report.prior.adherence.completedSessions).toBe(1);
@@ -109,6 +109,30 @@ describe("buildCoachCheckInReport", () => {
     expect(serialized).not.toContain("current-session-secret");
     expect(serialized).not.toContain("slot-secret");
     expect(serialized).not.toContain("program-secret");
+  });
+
+  it("keeps Sep 7 in the Sep 7-13 week instead of a rolling seven-day window", () => {
+    const priorSessions = [
+      session("p1", "2026-09-02T15:00:00Z"),
+      session("p2", "2026-09-04T15:00:00Z"),
+      session("p3", "2026-09-05T15:00:00Z"),
+    ];
+    const current = session("current", "2026-09-07T15:00:00Z");
+    const report = buildCoachCheckInReport(input({
+      generatedAt: new Date("2026-09-08T11:14:07.533Z"),
+      sessions: [...priorSessions, current],
+      sets: [
+        ...priorSessions.map((item) => set(item.id, "bb-bench", { createdAt: item.performedAt })),
+        set(current.id, "bb-bench", { createdAt: current.performedAt }),
+      ],
+    }));
+
+    expect(report.windows).toEqual({
+      current: { startDate: "2026-09-07", endDate: "2026-09-13" },
+      prior: { startDate: "2026-08-31", endDate: "2026-09-06" },
+    });
+    expect(report.current.adherence.completedSessions).toBe(1);
+    expect(report.prior.adherence.completedSessions).toBe(3);
   });
 
   it("uses effective deload prescriptions and retains them through a substitution", () => {
@@ -287,6 +311,7 @@ describe("buildCoachCheckInReport", () => {
     const output = formatCoachCheckIn(report);
 
     expect(output).toContain("Report schema: 1.0");
+    expect(output).toContain("Week progress: 1/4 sessions completed");
     expect(output).toContain("Duration: 45.0 min average · target 45 min");
     expect(output).toContain("Current 7-day average: 179.5 lb (2 observations)");
     expect(output).toContain("Delts: 0 / 0");

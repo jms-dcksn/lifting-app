@@ -13,6 +13,7 @@ import {
 import { weeklyResponse, type CoachWeeklyResponse } from "./coach-api";
 import { buildCoachRecommendations } from "./coach-recommendations";
 import { mergeCatalog, type DbExerciseRow } from "./catalog";
+import { workoutIdentity } from "./program-day";
 import type { Database } from "./supabase/types";
 
 type Client = SupabaseClient<Database>;
@@ -100,7 +101,10 @@ export async function loadCoachWeeklyWithClient(
     programId: session.program_id,
     programDayId: session.program_day_id,
     programDayName: session.program_day_id
-      ? dayById.get(session.program_day_id)?.name ?? null
+      ? (() => {
+          const name = dayById.get(session.program_day_id)?.name;
+          return name ? workoutIdentity(name) : null;
+        })()
       : null,
     weekIndex: session.week_index,
     readiness: session.readiness,

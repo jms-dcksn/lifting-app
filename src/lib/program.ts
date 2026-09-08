@@ -7,6 +7,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import type { Pattern } from "@/lib/strength/coefficients";
 import type { ProgramPhase } from "@/lib/periodization";
+import { workoutIdentity } from "@/lib/program-day";
 import {
   buildProgramSummaries,
   type ProgramSummary,
@@ -116,7 +117,7 @@ async function assemble(
     })),
     days: (days ?? []).map((d) => ({
       id: d.id,
-      name: d.name,
+      name: workoutIdentity(d.name),
       slots: slotsByDay.get(d.id) ?? [],
     })),
   };

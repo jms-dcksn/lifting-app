@@ -254,8 +254,8 @@ export function buildCoachCheckInReport(
 ): CoachCheckInReport {
   const generatedAt = input.generatedAt ?? new Date();
   const timeZone = input.timeZone ?? COACH_REPORT_TIMEZONE;
-  const endDate = dateKey(generatedAt, timeZone);
-  const currentWindow = windowEnding(endDate, 7);
+  const today = dateKey(generatedAt, timeZone);
+  const currentWindow = mondayAnchoredWeek(today);
   const priorWindow = {
     startDate: shiftDateKey(currentWindow.startDate, -7),
     endDate: shiftDateKey(currentWindow.endDate, -7),
@@ -313,7 +313,7 @@ export function formatCoachCheckIn(report: CoachCheckInReport): string {
     `Program: ${report.program.name ?? "Not specified"}`,
     "",
     "SESSION EXECUTION",
-    `Adherence: ${current.adherence.completedSessions}/${current.adherence.plannedSessions || "?"} sessions (prior ${prior.adherence.completedSessions}/${prior.adherence.plannedSessions || "?"})`,
+    `Week progress: ${current.adherence.completedSessions}/${current.adherence.plannedSessions || "?"} sessions completed (prior week ${prior.adherence.completedSessions}/${prior.adherence.plannedSessions || "?"})`,
     `Duration: ${duration == null ? "not available" : `${formatDecimal(duration)} min average`} · target ${current.duration.targetMinutes} min${current.duration.deltaFromTargetMinutes == null ? "" : ` · ${signedDecimal(current.duration.deltaFromTargetMinutes)} min vs target`}`,
     `Working sets: ${current.setExecution.completedWorkingSets}/${current.setExecution.prescribedWorkingSets || "?"} completed${current.setExecution.completionRate == null ? "" : ` (${Math.round(current.setExecution.completionRate * 100)}%)`} · prior ${prior.setExecution.completedWorkingSets}/${prior.setExecution.prescribedWorkingSets || "?"}`,
     `RIR actual: ${rir.averageActual == null ? "not logged" : `${formatDecimal(rir.averageActual)} average`} · ${rir.zeroRirSets} at 0 · ${rir.oneRirSets} at 1 · ${rir.twoPlusRirSets} at 2+ · ${rir.missingSets} missing`,
@@ -760,8 +760,11 @@ function timestampInWindow(timestamp: string, window: CoachWindow, timeZone: str
   return key >= window.startDate && key <= window.endDate;
 }
 
-function windowEnding(endDate: string, days: number): CoachWindow {
-  return { startDate: shiftDateKey(endDate, -(days - 1)), endDate };
+function mondayAnchoredWeek(value: string): CoachWindow {
+  const dayOfWeek = new Date(`${value}T00:00:00Z`).getUTCDay();
+  const daysSinceMonday = (dayOfWeek + 6) % 7;
+  const startDate = shiftDateKey(value, -daysSinceMonday);
+  return { startDate, endDate: shiftDateKey(startDate, 6) };
 }
 
 function shiftDateKey(value: string, days: number) {

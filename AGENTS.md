@@ -22,6 +22,10 @@ Server Actions).
 
 ## General guidance
 
+Shared program templates live in `src/lib/program-templates.ts`; adding one does not
+require a database seed or migration. Strong Foundations uses executable 12-week
+phases; its time budget and coaching rationale are in `docs/STRONG-FOUNDATIONS.md`.
+
 Before writing any framework code, check `node_modules/next/dist/docs/` for the installed
 version's behavior — Next.js 16 has additional breaking changes beyond the ones listed here.
 

@@ -52,6 +52,72 @@ const s = (
 
 export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
   {
+    id: "strong-foundations-women-3x",
+    name: "Strong Foundations · Women's Glutes & Legs",
+    description:
+      "A 12-week beginner/intermediate strength and muscle-building plan for women, " +
+      "prioritizing glutes and thighs with modest upper-body work. Train three nonconsecutive " +
+      "days (for example Mon/Wed/Fri). Budget 35-44 minutes including 5-8 minutes of warm-up " +
+      "and light ramp-up sets; each day has six exercises and 12 working sets. Use the listed " +
+      "rest timers, work one station at a time, and swap unavailable equipment rather than wait. " +
+      "Choose your machine brand/type before logging. Glute drive can swap to barbell hip thrust; " +
+      "leg press to hack squat; chest press to dumbbell bench. Keep abduction as abduction. " +
+      "Start with controlled loads and follow the weekly RIR (reps in reserve) targets. " +
+      "Add reps within the range; the app suggests more weight and resets to the rep floor " +
+      "when the first working set reaches the ceiling. Only take the increase if technique " +
+      "and prescribed RIR hold; log actual RIR and lower the load if needed. Weeks 6 and 12 " +
+      "halve working sets at 4 RIR: reduce load as needed instead of chasing progression. " +
+      "At minute 40, finish the current exercise and skip remaining accessories to stay under " +
+      "45 minutes. A lean, defined appearance also depends on nutrition and body composition; " +
+      "this plan builds muscle and strength without promising a specific body shape.",
+    tags: ["women", "beginner", "intermediate", "strength", "hypertrophy", "3-day", "glutes", "legs", "under-45-min"],
+    weeks: 12,
+    phases: [
+      { position: 0, name: "Learn & calibrate", description: "Leave three clean reps in reserve. Practice repeatable technique and calibrate each machine with light ramp-up sets before working sets.", weekStart: 1, weekEnd: 2, targetRirMin: 3, targetRirMax: 3, setMultiplier: null },
+      { position: 1, name: "Build consistency", description: "Leave two reps in reserve. Add reps within the prescribed range, then load when the suggested increase still allows clean reps at the target RIR.", weekStart: 3, weekEnd: 5, targetRirMin: 2, targetRirMax: 2, setMultiplier: null },
+      { position: 2, name: "Recovery", description: "One working set per exercise at four RIR. Reduce weight as needed; progression suggestions are optional during recovery.", weekStart: 6, weekEnd: 6, targetRirMin: 4, targetRirMax: 4, setMultiplier: 0.5 },
+      { position: 3, name: "Rebuild", description: "Return to two working sets with three reps in reserve. Recalibrate load after the easier week.", weekStart: 7, weekEnd: 7, targetRirMin: 3, targetRirMax: 3, setMultiplier: null },
+      { position: 4, name: "Progress", description: "Leave two reps in reserve and build on the first block's clean performances without adding sets.", weekStart: 8, weekEnd: 9, targetRirMin: 2, targetRirMax: 2, setMultiplier: null },
+      { position: 5, name: "Confident strength", description: "Work at one to two RIR; beginners should stay at two. End each set before technique breaks down. No forced reps or failure testing.", weekStart: 10, weekEnd: 11, targetRirMin: 1, targetRirMax: 2, setMultiplier: null },
+      { position: 6, name: "Recover & review", description: "One working set per exercise at four RIR, reducing load as needed. Review rep and load improvements before repeating the block.", weekStart: 12, weekEnd: 12, targetRirMin: 4, targetRirMax: 4, setMultiplier: 0.5 },
+    ],
+    days: [
+      {
+        name: "A · Glutes & Thighs + Push/Pull",
+        slots: [
+          s("leg-press", "squat", 2, 6, 10, 2, 120),
+          s("glute-drive", "hip_thrust", 2, 8, 12, 2, 120),
+          s("seated-leg-curl", "knee_flexion", 2, 10, 15, 2, 90),
+          s("machine-chest-press", "horizontal_press", 2, 8, 12, 2, 90),
+          s("seated-cable-row", "horizontal_pull", 2, 8, 12, 2, 90),
+          s("seated-hip-abduction", "hip_thrust", 2, 12, 20, 2, 60),
+        ],
+      },
+      {
+        name: "B · Posterior Chain & Quads + Shoulders/Back",
+        slots: [
+          s("bb-rdl", "hinge", 2, 8, 10, 2, 150),
+          s("leg-press", "squat", 2, 8, 12, 2, 120),
+          s("leg-extension", "knee_extension", 2, 10, 15, 2, 90),
+          s("lat-pulldown", "vertical_pull", 2, 8, 12, 2, 90),
+          s("db-shoulder-press", "vertical_press", 2, 8, 12, 2, 90),
+          s("standing-calf-raise", "calf", 2, 10, 15, 2, 60),
+        ],
+      },
+      {
+        name: "C · Glute Strength & Legs + Push/Pull/Core",
+        slots: [
+          s("glute-drive", "hip_thrust", 2, 6, 10, 2, 120),
+          s("leg-press", "squat", 2, 10, 15, 2, 120),
+          s("seated-leg-curl", "knee_flexion", 2, 10, 15, 2, 90),
+          s("machine-chest-press", "horizontal_press", 2, 8, 12, 2, 90),
+          s("seated-cable-row", "horizontal_pull", 2, 8, 12, 2, 90),
+          s("cable-crunch", "core", 2, 10, 15, 2, 60),
+        ],
+      },
+    ],
+  },
+  {
     id: "kino-goddess-phase-1",
     name: "Phase 1 · Kino Goddess",
     description:

@@ -74,4 +74,33 @@ describe("program templates", () => {
     expect(resolvePrescription(base, 7, phases)).toMatchObject({ targetRirMin: 2, targetRirMax: 2 });
     expect(resolvePrescription(base, 12, phases)).toMatchObject({ targetSets: 2, targetRirMin: 3, targetRirMax: 4 });
   });
+
+  it("keeps the women's three-day block within its time budget in every week", () => {
+    const template = TEMPLATE_BY_ID["strong-foundations-women-3x"];
+    const phases = template.phases!.map((phase, index) => ({ ...phase, id: `women-${index}` }));
+    expect(template.weeks).toBe(12);
+    expect(template.days).toHaveLength(3);
+
+    for (let week = 1; week <= template.weeks; week += 1) {
+      for (const day of template.days) {
+        const prescriptions = day.slots.map((slot) => resolvePrescription(slot, week, phases));
+        expect(prescriptions.every((p) => p.phase !== null)).toBe(true);
+        expect(prescriptions.reduce((sets, p) => sets + p.targetSets, 0))
+          .toBe([6, 12].includes(week) ? 6 : 12);
+        // Conservative planning allowance: 8 min warm-up, 1 min setup per station,
+        // 45 sec per working set, and full prescribed rest even after the final set.
+        // Queueing is excluded; the description supplies swaps and a time cutoff.
+        const seconds = 8 * 60 + day.slots.length * 60 + prescriptions.reduce(
+          (total, p, index) => total + p.targetSets * (45 + day.slots[index].restSeconds!), 0,
+        );
+        expect(seconds, `${day.name}, week ${week}`).toBeLessThan(45 * 60);
+        prescriptions.forEach((p, index) => {
+          expect(p.repMin).toBe(day.slots[index].repMin);
+          expect(p.repMax).toBe(day.slots[index].repMax);
+          expect(p.targetRirMin).toBeGreaterThanOrEqual(1);
+          if ([6, 12].includes(week)) expect(p.targetRir).toBe(4);
+        });
+      }
+    }
+  });
 });

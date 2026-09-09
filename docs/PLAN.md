@@ -14,6 +14,9 @@ beat last time. Done = I use it for a real block.
 
 ## Coach loop — prescription correctness (#4)
 
+- [x] Add Strong Foundations, a shared 12-week women's glute/leg template with three
+      time-budgeted sessions, phase-based effort/recovery, and equipment/progression guidance.
+
 - [x] Add reusable program phases, generated DB types, a pure prescription resolver, and
       boundary/rounding/validation tests.
 - [x] Resolve the active workout from its stored week and use effective sets/RIR throughout.

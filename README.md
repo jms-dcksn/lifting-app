@@ -19,6 +19,12 @@ Glutes + Core), 2 RIR targets, and two-minute rests. Its exercises resolve from 
 catalog; machine slots prompt for each user's brand/type. Adding it to an existing account
 creates an inactive copy, leaving the current program selected.
 
+**Strong Foundations · Women's Glutes & Legs** is a shared 12-week, three-day template
+for beginner/intermediate lifters. It prioritizes glutes and thighs, retains modest
+upper-body work, and budgets 35–44 minutes per session. Weekly phases guide effort
+and halve working sets in weeks 6 and 12. See [the program guide](docs/STRONG-FOUNDATIONS.md)
+for exercises, equipment swaps, progression, time assumptions, and research sources.
+
 ## Stack
 
 Next.js (App Router) · Supabase (Postgres + Auth + RLS) · TypeScript recommender · Recharts · Vercel.

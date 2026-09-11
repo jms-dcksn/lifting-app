@@ -457,3 +457,11 @@ increment), working sets only, bodyweight included, just-me-first.
 - [x] Persist choices before logging; update only the matching program-day slot for program scope.
 - [x] Preserve logged sets, show their original exercise after a mid-workout swap, and support fluid programs.
 - [x] Verify database ownership, finished-session rejection, scope isolation, and adaptive prescription handling.
+
+## Pre-workout planning
+
+- [x] Make the Home preview a link to a full-page workout planner.
+- [x] Show effective prescriptions, rest times, and phase details before starting.
+- [x] Reuse machine selection/exercise swaps and retain workout-only choices across reloads.
+- [x] Carry choices into either Start entry point without starting the timer during planning.
+- [x] Verify stale/user/workout isolation, reset, failed saves/starts, and existing-session resume.

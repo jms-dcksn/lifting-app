@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveProgram } from "@/lib/program";
-import { getCatalogMap } from "@/lib/catalog";
+import { loadNextWorkout } from "@/lib/next-workout";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
-import { resolvePrescription, rirLabel } from "@/lib/periodization";
+import { rirLabel } from "@/lib/periodization";
 import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button-styles";
 import { Card, CardLabel } from "@/components/ui/card";
@@ -31,23 +31,8 @@ export default async function Home() {
     );
   }
 
-  const [{ count: finishedCount }, { data: open }, { data: lastFinished }] = await Promise.all([
-    supabase
-      .from("workout_session")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("program_id", program.id)
-      .not("finished_at", "is", null),
-    supabase
-      .from("workout_session")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("program_id", program.id)
-      .not("program_day_id", "is", null)
-      .is("finished_at", null)
-      .order("performed_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+  const [next, { data: lastFinished }] = await Promise.all([
+    loadNextWorkout(supabase, userId, program),
     supabase
       .from("workout_session")
       .select("id, program_day_id")
@@ -59,17 +44,11 @@ export default async function Home() {
       .maybeSingle(),
   ]);
 
-  const completed = finishedCount ?? 0;
-  const dayIndex = completed % program.days.length;
-  const week = Math.floor(completed / program.days.length) + 1;
-  const nextDay = program.days[dayIndex];
-
-  const catalog = await getCatalogMap(supabase, userId);
+  const { completed, week, day: nextDay, catalog, open } = next;
   const lastSummary = lastFinished ? await summarize(supabase, lastFinished, catalog) : null;
-  const nextWorkout = nextDay.slots.map((slot) => ({
+  const nextWorkout = next.slots.map((slot) => ({
     ...slot,
     exerciseName: catalog[slot.exerciseId]?.name ?? slot.exerciseId,
-    prescription: resolvePrescription(slot, week, program.phases),
   }));
   const nextWorkingSets = nextWorkout.reduce(
     (total, slot) => total + slot.prescription.targetSets,
@@ -110,29 +89,34 @@ export default async function Home() {
         </form>
       )}
 
-      <Card>
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div>
-            <CardLabel>Next workout</CardLabel>
-            <p className="text-heading">{nextDay.name}</p>
+      <Link href={open ? `/session/${open.id}` : "/workout/next"}
+        aria-label={`View and plan ${nextDay.name}`}
+        className="block rounded-card focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground">
+        <Card className="transition-colors hover:border-border-strong">
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <CardLabel>Next workout</CardLabel>
+              <p className="text-heading">{nextDay.name}</p>
+            </div>
+            <p className="shrink-0 text-caption tabular-nums text-muted">
+              {nextWorkout.length} exercise{nextWorkout.length === 1 ? "" : "s"} · {nextWorkingSets} set{nextWorkingSets === 1 ? "" : "s"}
+            </p>
           </div>
-          <p className="shrink-0 text-caption tabular-nums text-muted">
-            {nextWorkout.length} exercise{nextWorkout.length === 1 ? "" : "s"} · {nextWorkingSets} set{nextWorkingSets === 1 ? "" : "s"}
-          </p>
-        </div>
-        <ul className="divide-y divide-border">
-          {nextWorkout.map((slot) => (
-            <li key={slot.id} className="flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0">
-              <span className="text-body font-medium">{slot.exerciseName}</span>
-              <span className="shrink-0 text-caption tabular-nums text-muted">
-                {slot.prescription.targetSets} × {slot.prescription.repMin}
-                {slot.prescription.repMin === slot.prescription.repMax ? "" : `–${slot.prescription.repMax}`}
-                {" · "}{rirLabel(slot.prescription)} RIR
-              </span>
-            </li>
-          ))}
-        </ul>
-      </Card>
+          <ul className="divide-y divide-border">
+            {nextWorkout.map((slot) => (
+              <li key={slot.id} className="flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0">
+                <span className="text-body font-medium">{slot.exerciseName}</span>
+                <span className="shrink-0 text-caption tabular-nums text-muted">
+                  {slot.prescription.targetSets} × {slot.prescription.repMin}
+                  {slot.prescription.repMin === slot.prescription.repMax ? "" : `–${slot.prescription.repMax}`}
+                  {" · "}{rirLabel(slot.prescription)} RIR
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-caption font-medium">{open ? "Open workout" : "View details & plan workout"} →</p>
+        </Card>
+      </Link>
 
       {lastSummary && (
         <Card>

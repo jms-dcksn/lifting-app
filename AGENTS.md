@@ -59,3 +59,11 @@ session and slot ownership and atomically saves the choice plus an optional prog
 Run `supabase/tests/exercise_swap_scope.sql` as postgres for rollback-only database regression checks.
 Fluid `manual_swap` events preserve rep ranges and reset plateau state; keep them distinct from
 coach `swap` interventions. See `docs/EXERCISE-SWAPS.md`.
+
+## Pre-workout planning
+
+`loadNextWorkout` shares sequence, phase/fluid prescriptions, catalog, and draft choices
+across Home, `/workout/next`, and session creation. Planning writes only a validated,
+HTTP-only browser cookie; never create a session to preview one. Draft identity includes
+user, program, day, and completed count. Start inserts choices into `exercise_swaps` in the
+same write as the session, then clears the cookie. See `docs/WORKOUT-PLANNING.md`.

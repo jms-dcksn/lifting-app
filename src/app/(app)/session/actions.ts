@@ -1,6 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { loadNextWorkout } from "@/lib/next-workout";
+import { WORKOUT_PLAN_COOKIE } from "@/lib/workout-plan";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
@@ -110,36 +113,23 @@ async function recomputeAndUpsertStat(
 // Resume an in-progress session or start the next one. Day/week derive from the count of
 // finished sessions of the active program; days run in sequence.
 export async function startNextSession() {
+  return startSession();
+}
+
+export async function startPlannedSession(planKey: string) {
+  return startSession(planKey);
+}
+
+async function startSession(planKey?: string) {
   const { supabase, userId } = await requireUser();
 
   const program = await getActiveProgram(supabase, userId);
   if (!program || program.days.length === 0) redirect("/program");
 
-  // Resume an unfinished session rather than starting a duplicate. Sessions whose day was
-  // deleted from the program (program_day_id nulled by FK) are unloadable — skip them.
-  const { data: open } = await supabase
-    .from("workout_session")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("program_id", program.id)
-    .not("program_day_id", "is", null)
-    .is("finished_at", null)
-    .order("performed_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (open) redirect(`/session/${open.id}`);
-
-  const { count } = await supabase
-    .from("workout_session")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("program_id", program.id)
-    .not("finished_at", "is", null);
-
-  const completed = count ?? 0;
-  const dayIndex = completed % program.days.length;
-  const week = Math.floor(completed / program.days.length) + 1;
-  const day = program.days[dayIndex];
+  const next = await loadNextWorkout(supabase, userId, program);
+  if (next.open) redirect(`/session/${next.open.id}`);
+  if (planKey && planKey !== next.key) redirect("/workout/next");
+  const { day, week, choices } = next;
 
   const { data, error } = await supabase
     .from("workout_session")
@@ -148,11 +138,14 @@ export async function startNextSession() {
       program_id: program.id,
       program_day_id: day.id,
       week_index: week,
+      exercise_swaps: choices,
     })
     .select("id")
     .single();
 
   if (error || !data) throw new Error(error?.message ?? "Could not start session");
+  (await cookies()).delete(WORKOUT_PLAN_COOKIE);
+  revalidatePath("/");
   redirect(`/session/${data.id}`);
 }
 

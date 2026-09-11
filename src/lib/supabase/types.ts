@@ -496,6 +496,7 @@ export type Database = {
       }
       workout_session: {
         Row: {
+          exercise_swaps: Json
           finished_at: string | null
           id: string
           joint_pain: string | null
@@ -508,6 +509,7 @@ export type Database = {
           week_index: number | null
         }
         Insert: {
+          exercise_swaps?: Json
           finished_at?: string | null
           id?: string
           joint_pain?: string | null
@@ -520,6 +522,7 @@ export type Database = {
           week_index?: number | null
         }
         Update: {
+          exercise_swaps?: Json
           finished_at?: string | null
           id?: string
           joint_pain?: string | null
@@ -553,7 +556,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      swap_session_exercise: {
+        Args: { p_session_id: string; p_slot_id: string; p_exercise_id: string; p_pattern: string; p_scope: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

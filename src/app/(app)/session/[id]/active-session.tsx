@@ -13,12 +13,14 @@ import type { ExerciseStat } from "@/lib/strength/recommend";
 import { rirLabel, type EffectivePrescription, type ProgramPhase } from "@/lib/periodization";
 import type { SessionFeedback } from "@/lib/session-feedback";
 import { Button, buttonClasses } from "@/components/ui/button";
+import { Sheet } from "@/components/ui/sheet";
 import { Card, CardLabel } from "@/components/ui/card";
 import { Stepper } from "@/components/ui/stepper";
 import { ExercisePicker } from "../../program/exercise-picker";
 import { RestBar, useRestTimer } from "./rest-timer";
 import { ExerciseHistory } from "./exercise-history";
 import {
+  swapSessionExercise,
   logSet,
   editSet,
   deleteSet,
@@ -32,6 +34,7 @@ import { ReadinessPrompt, SessionFeedbackCard, SessionFeedbackSheet } from "./se
 
 export interface LoggedSet {
   id: string;
+  exerciseId: string;
   weight: number;
   reps: number;
   rir: number | null;
@@ -175,6 +178,7 @@ export function ActiveSession({
           sessionId={sessionId}
           slot={slot}
           isCurrent={i === currentIndex}
+          alreadyFinished={alreadyFinished}
           stats={stats}
           bodyweight={bodyweight}
           recentIds={recentIds}
@@ -220,6 +224,7 @@ type OptimisticAction =
   | { type: "delete"; id: string };
 
 function SlotCard({
+  alreadyFinished,
   sessionId,
   slot,
   isCurrent,
@@ -230,6 +235,7 @@ function SlotCard({
   onResolve,
   startRest,
 }: {
+  alreadyFinished: boolean;
   sessionId: string;
   slot: SlotView;
   isCurrent: boolean;
@@ -256,6 +262,27 @@ function SlotCard({
   // original program_slot_id, so each exercise's progression chain stays intact.
   const [exerciseId, setExerciseId] = useState(slot.exerciseId);
   const [swapping, setSwapping] = useState(false);
+  const [pickedSwap, setPickedSwap] = useState<ExerciseDef | null>(null);
+  const [savingSwap, startSwap] = useTransition();
+  const [swapError, setSwapError] = useState<string | null>(null);
+  const [swapNotice, setSwapNotice] = useState<string | null>(null);
+  function confirmSwap(scope: "workout" | "program") {
+    if (!pickedSwap || savingSwap) return;
+    const picked = pickedSwap;
+    setSwapError(null);
+    startSwap(async () => {
+      try {
+        await swapSessionExercise({ sessionId, programSlotId: slot.programSlotId, exerciseId: picked.id, scope });
+        onResolve(picked);
+        setExerciseId(picked.id);
+        setDismissed(true);
+        setPickedSwap(null);
+        setSwapNotice(scope === "program" ? "Saved for this day for the rest of your program." : "Saved for this workout only.");
+      } catch (err) {
+        setSwapError(err instanceof Error ? err.message : "Could not save swap. Please try again.");
+      }
+    });
+  }
   const [showHistory, setShowHistory] = useState(false);
   // Fluid plateau suggestion: shown before any set is logged this session; accepting writes a
   // movement_adaptation row, "Keep going" snoozes it.
@@ -313,7 +340,7 @@ function SlotCard({
     startTransition(async () => {
       applyOptimistic({
         type: "add",
-        set: { id: `temp-${Date.now()}`, weight, reps, rir, setIndex: optimisticSets.length },
+        set: { id: `temp-${Date.now()}`, exerciseId, weight, reps, rir, setIndex: optimisticSets.length },
       });
       try {
         await logSet({
@@ -370,6 +397,7 @@ function SlotCard({
           variant="secondary"
           size="sm"
           onClick={() => setSwapping(true)}
+          disabled={alreadyFinished || savingSwap}
           aria-label={`Swap ${name} for another exercise`}
           className="shrink-0"
         >
@@ -510,12 +538,32 @@ function SlotCard({
           patternFilter={slot.pattern}
           resolveMachines
           onPick={(picked) => {
-            onResolve(picked);
-            setExerciseId(picked.id);
+            setSwapError(null);
+            setPickedSwap(picked);
           }}
           onClose={() => setSwapping(false)}
         />
       )}
+
+      {pickedSwap && !swapping && (
+        <Sheet ariaLabel="Apply exercise swap" dismissible={!savingSwap} onClose={() => setPickedSwap(null)}>
+          <div className="flex flex-col gap-3 px-4 pb-6 pt-2">
+            <h2 className="text-heading">Use {pickedSwap.name} for…</h2>
+            <p className="text-body text-muted">Replace {name}. Sets already logged stay unchanged.</p>
+            <Button type="button" pending={savingSwap} onClick={() => confirmSwap("workout")}>
+              This workout only
+            </Button>
+            <p className="text-caption text-muted">Your usual exercise returns next time.</p>
+            <Button type="button" variant="secondary" pending={savingSwap} onClick={() => confirmSwap("program")}>
+              Remainder of program
+            </Button>
+            <p className="text-caption text-muted">This workout and future workouts for this exercise slot on this program day.</p>
+            {swapError && <p role="alert" className="text-caption text-danger">{swapError}</p>}
+            <Button type="button" variant="ghost" disabled={savingSwap} onClick={() => setPickedSwap(null)}>Cancel</Button>
+          </div>
+        </Sheet>
+      )}
+      {swapNotice && <p role="status" className="mt-2 text-caption text-muted">{swapNotice}</p>}
 
       {optimisticSets.length > 0 && (
         <ul className="mt-3 flex flex-col gap-1">
@@ -542,6 +590,7 @@ function SlotCard({
                   <span className="text-faint">{i + 1}.</span>{" "}
                   {s.weight} lb × {s.reps}
                   {s.rir != null ? ` @ ${s.rir}` : ""}
+                  {s.exerciseId !== exerciseId && <span className="block text-caption text-muted">{catalog[s.exerciseId]?.name ?? s.exerciseId}</span>}
                 </span>
                 <span className="flex items-center gap-1 text-caption">
                   <button
@@ -571,7 +620,7 @@ function SlotCard({
 
       {isTemplate ? (
         <div className="mt-3">
-          <Button type="button" className="w-full" onClick={() => setSwapping(true)}>
+          <Button type="button" className="w-full" disabled={alreadyFinished || savingSwap} onClick={() => setSwapping(true)}>
             Choose machine (brand &amp; type)
           </Button>
         </div>

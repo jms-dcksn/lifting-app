@@ -158,3 +158,17 @@ describe("foldPrescription", () => {
     expect(f).toMatchObject({ exerciseId: "db-bench", repMin: 8, repMax: 12, lastDismissAt: "2026-02-10T00:00:00Z" });
   });
 });
+
+
+describe("manual program substitutions", () => {
+  it("overrides earlier adaptive swaps, preserves the current rep range and resets plateau state", () => {
+    const result = foldPrescription({ exerciseId: "bb-bench", repMin: 6, repMax: 8 }, [
+      { action: "swap", newExerciseId: "db-bench", newRepMin: null, newRepMax: null, createdAt: "2026-09-01" },
+      { action: "rep_change", newExerciseId: null, newRepMin: 10, newRepMax: 12, createdAt: "2026-09-02" },
+      { action: "dismiss", newExerciseId: null, newRepMin: null, newRepMax: null, createdAt: "2026-09-03" },
+      { action: "manual_swap", newExerciseId: "machine-chest-press", newRepMin: null, newRepMax: null, createdAt: "2026-09-04" },
+    ]);
+    expect(result).toEqual({ exerciseId: "machine-chest-press", repMin: 10, repMax: 12,
+      ladderStep: 0, phaseStartAt: "2026-09-04", recentBands: [], lastDismissAt: null });
+  });
+});

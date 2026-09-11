@@ -221,8 +221,12 @@ component with `ExerciseStat[]`, `recentExerciseIds`, and a per-slot
 swap re-derives instantly with no round-trip. `ActiveSession` holds the merged `catalog`
 (hydrated from `page.tsx` via `getCatalogMap`) in state and exposes `addToCatalog`, so a
 variant resolved in-session is merged in and immediately drives that slot's name/target.
-A slot's effective exercise id is the most recently logged exercise in that slot this session
-(falling back to the program slot's exercise), so an in-session swap survives a page reload.
+A slot's effective exercise id first uses the persisted `workout_session.exercise_swaps` choice,
+then the most recently logged exercise, then the folded/program default. Swaps survive reload
+before logging. After the picker, a confirmation sheet chooses workout-only or remainder of
+program; the latter atomically updates the same slot via `swap_session_exercise`.
+Fluid `manual_swap` events preserve the rep range while resetting plateau state.
+See `docs/EXERCISE-SWAPS.md`.
 Swap is a `secondary` `Button` on the slot card that opens `ExercisePicker`
 (`program/exercise-picker.tsx`, a `Sheet`) filtered to the slot's pattern, with a "show all
 patterns" escape hatch; subsequent sets log against the swapped `exercise_id` + the original

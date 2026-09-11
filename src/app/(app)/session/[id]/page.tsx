@@ -25,7 +25,7 @@ export default async function SessionPage({
 
   const { data: session } = await supabase
     .from("workout_session")
-    .select("id, week_index, finished_at, program_id, program_day_id, readiness, joint_pain, notes")
+    .select("id, week_index, finished_at, program_id, program_day_id, readiness, joint_pain, notes, exercise_swaps")
     .eq("id", id)
     .maybeSingle();
   if (!session?.program_day_id) notFound();
@@ -114,7 +114,7 @@ export default async function SessionPage({
   for (const s of thisSessionSets ?? []) {
     if (!s.program_slot_id) continue;
     const list = setsBySlot.get(s.program_slot_id) ?? [];
-    list.push({ id: s.id, weight: s.weight, reps: s.reps, rir: s.rir, setIndex: s.set_index });
+    list.push({ id: s.id, exerciseId: s.exercise_id, weight: s.weight, reps: s.reps, rir: s.rir, setIndex: s.set_index });
     setsBySlot.set(s.program_slot_id, list);
     sessionExercise.set(s.program_slot_id, s.exercise_id);
   }
@@ -161,6 +161,9 @@ export default async function SessionPage({
   const sessionWeek = session.week_index ?? 1;
   const activePhase = phaseForWeek(phases, sessionWeek);
 
+  const swaps = session.exercise_swaps;
+  const sessionSwaps = swaps && typeof swaps === "object" && !Array.isArray(swaps) ? swaps : {};
+
   const slots: SlotView[] = (daySlots ?? []).map((slot) => {
     const folded = foldedBySlot.get(slot.id);
     const effective = resolvePrescription(
@@ -175,8 +178,10 @@ export default async function SessionPage({
     );
     return {
       programSlotId: slot.id,
-      // In-session swap wins; else the folded current exercise (fluid) or program default.
-      exerciseId: sessionExercise.get(slot.id) ?? folded?.exerciseId ?? slot.exercise_id,
+      // Explicit choice wins even before logging; legacy sessions fall back to their sets.
+      exerciseId: typeof sessionSwaps[slot.id] === "string"
+        ? sessionSwaps[slot.id] as string
+        : sessionExercise.get(slot.id) ?? folded?.exerciseId ?? slot.exercise_id,
       pattern: slot.pattern as Pattern,
       prescription: {
         targetSets: effective.targetSets,

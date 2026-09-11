@@ -26,11 +26,13 @@ export function Sheet({
   onClose,
   className,
   ariaLabel,
+  dismissible = true,
   children,
 }: {
   onClose: () => void;
   className?: string;
   ariaLabel?: string;
+  dismissible?: boolean;
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -43,14 +45,14 @@ export function Sheet({
 
   const dismiss = useCallback(() => {
     const dialog = ref.current;
-    if (!dialog || closing.current) return;
+    if (!dismissible || !dialog || closing.current) return;
     closing.current = true;
     dialog.setAttribute("data-closing", "");
     setTimeout(() => {
       dialog.close();
       onClose();
     }, EXIT_MS);
-  }, [onClose]);
+  }, [onClose, dismissible]);
 
   function endDrag(e: React.PointerEvent, allowDismiss: boolean) {
     if (dragStartY.current == null) return;

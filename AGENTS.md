@@ -50,3 +50,12 @@ This project has a `ship-phase` skill (`.agents/skills/ship-phase/SKILL.md`) for
 repeatable build-to-commit workflow. Use it when building or wrapping up a phase of work.
 It covers: build → refresh docs → commit → reflect → write session summary. Do not skip
 the summary step — it is how the next session knows what happened.
+
+## Scoped exercise swaps
+
+`workout_session.exercise_swaps` stores explicit per-slot exercise choices, including before
+any set is logged. `swap_session_exercise` is a SECURITY INVOKER RPC that validates the open
+session and slot ownership and atomically saves the choice plus an optional program-slot update.
+Run `supabase/tests/exercise_swap_scope.sql` as postgres for rollback-only database regression checks.
+Fluid `manual_swap` events preserve rep ranges and reset plateau state; keep them distinct from
+coach `swap` interventions. See `docs/EXERCISE-SWAPS.md`.

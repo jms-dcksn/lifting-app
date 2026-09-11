@@ -477,6 +477,10 @@ export async function acceptAdaptation(input: {
   });
   if (error) throw new Error(error.message);
 
+  if (input.action === "swap" && input.newExerciseId) {
+    await swapSessionExercise({ sessionId: input.sessionId, programSlotId: input.programSlotId,
+      exerciseId: input.newExerciseId, scope: "workout" });
+  }
   revalidatePath(`/session/${input.sessionId}`);
 }
 
@@ -494,4 +498,31 @@ export async function dismissAdaptation(input: {
     action: "dismiss",
   });
   if (error) throw new Error(error.message);
+}
+
+// The RPC checks session/slot ownership and saves both scopes in one transaction.
+export async function swapSessionExercise(input: {
+  sessionId: string;
+  programSlotId: string;
+  exerciseId: string;
+  scope: "workout" | "program";
+}): Promise<void> {
+  const { supabase, userId } = await requireUser();
+  if (input.scope !== "workout" && input.scope !== "program") throw new Error("Invalid swap scope");
+  const catalog = await getCatalogMap(supabase, userId);
+  const exercise = catalog[input.exerciseId];
+  if (!exercise || exercise.machineTemplate) throw new Error("Choose a specific exercise or machine first.");
+  const { error } = await supabase.rpc("swap_session_exercise", {
+    p_session_id: input.sessionId,
+    p_slot_id: input.programSlotId,
+    p_exercise_id: exercise.id,
+    p_pattern: exercise.pattern,
+    p_scope: input.scope,
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath(`/session/${input.sessionId}`);
+  if (input.scope === "program") {
+    revalidatePath("/");
+    revalidatePath("/program", "layout");
+  }
 }

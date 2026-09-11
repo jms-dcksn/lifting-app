@@ -131,7 +131,7 @@ export function rankSwapCandidates(cands: SwapCandidateInput[]): SwapCandidateIn
 }
 
 export interface AdaptationRow {
-  action: AdaptationAction | "dismiss";
+  action: AdaptationAction | "manual_swap" | "dismiss";
   newExerciseId: string | null;
   newRepMin: number | null;
   newRepMax: number | null;
@@ -179,6 +179,13 @@ export function foldPrescription(
       state.ladderStep = 0;
       state.phaseStartAt = row.createdAt;
       state.recentBands = [];
+    } else if (row.action === "manual_swap" && row.newExerciseId) {
+      // User substitutions preserve the current rep range, unlike plateau interventions.
+      state.exerciseId = row.newExerciseId;
+      state.ladderStep = 0;
+      state.phaseStartAt = row.createdAt;
+      state.recentBands = [];
+      state.lastDismissAt = null;
     } else if (row.action === "dismiss") {
       state.lastDismissAt = row.createdAt;
     }

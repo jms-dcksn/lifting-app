@@ -11,6 +11,11 @@ below the rep floor recalibrates load instead of prescribing another out-of-rang
 per-exercise e1RM plateau detection drives a laddered intervention — widen the rep range first,
 then swap to a ranked alternative in the same pattern — surfaced in-session as recommend-and-confirm.
 
+In an active workout, **Swap → choose exercise → This workout only / Remainder of program**
+saves the replacement immediately. Program scope changes only that slot on that program day;
+workout scope leaves the next occurrence unchanged. Already logged sets retain their exercise,
+weight, reps, and RIR. See [exercise swap behavior](docs/EXERCISE-SWAPS.md).
+
 See [docs/DECISIONS.md](docs/DECISIONS.md) for architecture and the recommendation algorithm.
 
 **Phase 1 · Kino Goddess** is available to all signed-in users under Program templates,

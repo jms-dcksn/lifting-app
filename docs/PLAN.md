@@ -450,3 +450,10 @@ increment), working sets only, bodyweight included, just-me-first.
 - [x] Show the latest 10 logged sets across the exercise's linked machine variants, excluding the active workout.
 - [x] Display machine, date, weight, reps, and RIR with scroll, loading, empty, and retry states.
 - [x] Cover exercise-family isolation, user scoping, current-session exclusion, deterministic ordering, and limit.
+
+## Scoped exercise substitutions
+
+- [x] Offer workout-only or remainder-of-program scope after selecting a replacement.
+- [x] Persist choices before logging; update only the matching program-day slot for program scope.
+- [x] Preserve logged sets, show their original exercise after a mid-workout swap, and support fluid programs.
+- [x] Verify database ownership, finished-session rejection, scope isolation, and adaptive prescription handling.

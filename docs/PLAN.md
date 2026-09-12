@@ -473,3 +473,12 @@ increment), working sets only, bodyweight included, just-me-first.
 - [x] Consolidate both types in a completion recap with pre-workout deltas and quiet first entries.
 - [x] Preserve historical comparisons after later workouts and recalculate edits/deletions.
 - [x] Verify eligibility, bodyweight/assistance, precision, pagination, save failures, and summary reuse.
+
+## Progress epic #27 — increment 1: weight calendar (#28)
+
+- [x] Shared month calendar and weight Sheet on Home, Progress, and Settings.
+- [x] Range-scoped history, month jumping, accessible day markers and keyboard navigation.
+- [x] Strict Chicago/date-only validation, explicit conflicts, atomic corrections/replacements.
+- [x] Refresh Home, Settings, Progress, workout preview, and active sessions after mutations.
+- [x] Focused action/date tests and rollback-only database ownership/replacement tests.
+- [ ] User reviews the branch's Vercel preview before merging or starting #29.

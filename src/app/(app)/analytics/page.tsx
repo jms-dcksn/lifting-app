@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogWeightButton } from "@/components/weight-calendar";
 import { redirect } from "next/navigation";
 import {
   e1rmPrFeed,
@@ -284,6 +285,8 @@ export default async function AnalyticsPage() {
           {summaries.length === 1 ? "" : "s"} logged
         </p>
       </header>
+
+      <LogWeightButton today={dateKey(new Date())} className="w-full" />
 
       <Card>
         <CardLabel className="mb-1">Coach check-in</CardLabel>

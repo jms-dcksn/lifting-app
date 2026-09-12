@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { LogWeightButton } from "@/components/weight-calendar";
+import { dateKey } from "@/lib/bodyweight";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveProgram } from "@/lib/program";
 import { loadNextWorkout } from "@/lib/next-workout";
@@ -27,6 +29,7 @@ export default async function Home() {
         <Link href="/program" className={buttonClasses("primary", "lg", "w-full")}>
           Build your program
         </Link>
+        <LogWeightButton today={dateKey(new Date())} className="w-full" />
       </div>
     );
   }
@@ -117,6 +120,8 @@ export default async function Home() {
           <p className="mt-4 text-caption font-medium">{open ? "Open workout" : "View details & plan workout"} →</p>
         </Card>
       </Link>
+
+      <LogWeightButton today={dateKey(new Date())} className="w-full" />
 
       {lastSummary && (
         <Card>

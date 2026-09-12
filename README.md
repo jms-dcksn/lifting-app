@@ -93,3 +93,7 @@ During a workout, tap **History** on an exercise to open a scrollable sheet with
 10 most recent logged sets from previous workouts. Machine exercises include all linked
 brands and machine types, with each machine named alongside the date, weight, reps,
 and RIR. Close the sheet to resume your workout without losing your set inputs.
+
+Weight history can be browsed and edited through a shared calendar on Home, Progress,
+and Settings, including backdated entries and atomic date corrections. See
+[Weight calendar](docs/WEIGHT-CALENDAR.md) for the data contract and preview checklist.

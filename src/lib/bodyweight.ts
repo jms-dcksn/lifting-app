@@ -90,7 +90,7 @@ function safeParseDateKey(value: string) {
   }
 }
 
-function parseDateKey(value: string) {
+export function parseDateKey(value: string) {
   if (!DATE_KEY.test(value)) throw new Error(`Invalid date key: ${value}`);
   const timestamp = Date.parse(`${value}T00:00:00Z`);
   if (!Number.isFinite(timestamp) || toDateKey(timestamp) !== value) {

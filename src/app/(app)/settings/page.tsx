@@ -4,11 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardLabel } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { bodyweightTrend, dateKey, type BodyweightEntry } from "@/lib/bodyweight";
-import {
-  deleteBodyweightEntry,
-  saveBodyweightEntry,
-  saveProfile,
-} from "./actions";
+import { saveProfile } from "./actions";
+import { LogWeightButton } from "@/components/weight-calendar";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -66,23 +63,13 @@ export default async function SettingsPage() {
           </p>
         </div>
 
-        <form action={saveBodyweightEntry} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="flex min-w-0 flex-col gap-2 text-caption text-muted">
-            Date
-            <Input className="min-w-0 max-w-full" name="logged_on" type="date" defaultValue={today} max={today} required />
-          </label>
-          <label className="flex min-w-0 flex-col gap-2 text-caption text-muted">
-            Weight (lb)
-            <Input className="min-w-0 max-w-full" name="weight" type="number" inputMode="decimal" step="0.1" min="1" max="1500" required placeholder="e.g. 185.4" />
-          </label>
-          <Button type="submit" className="col-span-full" size="lg">Log weigh-in</Button>
-        </form>
+        <LogWeightButton today={today} className="w-full" />
 
         <p className="text-caption text-muted">
           {trend.current.observationCount >= 3
             ? "Three morning weigh-ins logged this week — enough to smooth daily noise."
             : `${trend.current.observationCount}/3 morning weigh-ins this week. Aim for roughly three; consistency matters more than daily logging.`}
-          {" "}Logging the same date replaces that date&apos;s reading.
+          {" "}Open the calendar to log an earlier day or correct a reading.
         </p>
 
         {entries.length > 0 && (
@@ -95,19 +82,7 @@ export default async function SettingsPage() {
                     <span className="text-body">{longDate(entry.loggedOn)}</span>
                     <span className="text-body font-semibold tabular-nums">{entry.weight} lb</span>
                   </div>
-                  <details className="mt-1">
-                    <summary className="cursor-pointer text-caption text-muted">Edit or remove</summary>
-                    <form action={saveBodyweightEntry} className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      <input type="hidden" name="entry_id" value={entry.id} />
-                      <Input className="min-w-0 max-w-full" aria-label="Weigh-in date" name="logged_on" type="date" defaultValue={entry.loggedOn} max={today} required />
-                      <Input className="min-w-0 max-w-full" aria-label="Bodyweight in pounds" name="weight" type="number" inputMode="decimal" step="0.1" min="1" max="1500" defaultValue={entry.weight} required />
-                      <Button type="submit" variant="secondary">Save</Button>
-                    </form>
-                    <form action={deleteBodyweightEntry} className="mt-2">
-                      <input type="hidden" name="entry_id" value={entry.id} />
-                      <Button type="submit" variant="destructive" className="w-full">Remove reading</Button>
-                    </form>
-                  </details>
+                  <LogWeightButton today={today} initialDate={entry.loggedOn} label="Edit or remove" className="mt-2 w-full" />
                 </li>
               ))}
             </ul>

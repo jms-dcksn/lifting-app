@@ -77,3 +77,11 @@ paginate all eligible history. Bodyweight record loads and historical edits must
 the bodyweight recoverable from stored e1RM, never today's profile. Records derive only
 from saved sets after revalidation. See `docs/DECISIONS.md#workout-records` for precision, first-entry,
 historical stability, and test contracts.
+
+## Weight calendar
+
+Home/Progress/Settings share `components/weight-calendar.tsx`; date/month helpers are in
+`lib/weight-calendar.ts`. Weight writes live in `(app)/weight/actions.ts`, using the
+SECURITY INVOKER `save_bodyweight_entry` RPC for atomic, explicitly confirmed replacements.
+Never restore the old upsert-then-delete move. See `docs/WEIGHT-CALENDAR.md` for contracts
+and the rollback-only SQL regression test.

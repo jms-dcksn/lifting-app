@@ -556,6 +556,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      save_bodyweight_entry: {
+        Args: { p_entry_id: string | null; p_logged_on: string; p_weight: number; p_replace_entry_id?: string | null }
+        Returns: string
+      }
       swap_session_exercise: {
         Args: { p_session_id: string; p_slot_id: string; p_exercise_id: string; p_pattern: string; p_scope: string }
         Returns: undefined

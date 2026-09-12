@@ -465,3 +465,11 @@ increment), working sets only, bodyweight included, just-me-first.
 - [x] Reuse machine selection/exercise swaps and retain workout-only choices across reloads.
 - [x] Carry choices into either Start entry point without starting the timer during planning.
 - [x] Verify stale/user/workout isolation, reset, failed saves/starts, and existing-session resume.
+
+## Workout achievements (#24–#26)
+
+- [x] Detect fixed-load rep PRs and canonical e1RM records with exact exercise/equipment scope.
+- [x] Show persistent, compact pills after successful saves and on resume.
+- [x] Consolidate both types in a completion recap with pre-workout deltas and quiet first entries.
+- [x] Preserve historical comparisons after later workouts and recalculate edits/deletions.
+- [x] Verify eligibility, bodyweight/assistance, precision, pagination, save failures, and summary reuse.

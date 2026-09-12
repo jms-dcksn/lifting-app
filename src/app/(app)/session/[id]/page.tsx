@@ -9,6 +9,7 @@ import { foldPrescription, type AdaptationRow } from "@/lib/strength/plateau";
 import { loadPendingSuggestions } from "@/lib/fluid";
 import { phaseForWeek, resolvePrescription, type ProgramPhase } from "@/lib/periodization";
 import type { JointPain } from "@/lib/session-feedback";
+import { loadWorkoutRecords } from "@/lib/workout-records";
 import { getCurrentBodyweight } from "@/lib/current-bodyweight";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
 
@@ -25,8 +26,9 @@ export default async function SessionPage({
 
   const { data: session } = await supabase
     .from("workout_session")
-    .select("id, week_index, finished_at, program_id, program_day_id, readiness, joint_pain, notes, exercise_swaps")
+    .select("id, performed_at, week_index, finished_at, program_id, program_day_id, readiness, joint_pain, notes, exercise_swaps")
     .eq("id", id)
+    .eq("user_id", userId)
     .maybeSingle();
   if (!session?.program_day_id) notFound();
 
@@ -71,6 +73,8 @@ export default async function SessionPage({
     ]);
 
   const catalog = await getCatalogMap(supabase, userId);
+
+  const { achievements } = await loadWorkoutRecords(supabase, userId, id, session.performed_at, catalog);
 
   // Hydrated to the client: targets (and swap re-derivation) compute client-side.
   const stats: ExerciseStat[] = (statRows ?? []).map((r) => ({
@@ -238,6 +242,7 @@ export default async function SessionPage({
       recentIds={recentIds}
       slots={slots}
       catalog={catalog}
+      achievements={achievements}
     />
   );
 }

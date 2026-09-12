@@ -464,3 +464,86 @@ disposable, and old brand-baked ids (`hs-chest-press`, etc.) are simply gone.
 > (program gallery + tags, done) and Phase B (rest timer, done) come from a separate
 > spec/plan pair under `docs/superpowers/` — see "Phase A decisions" and "Phase B decisions"
 > above.
+
+
+## Workout records
+
+Issues #24, #25, and #26 share `strength/records.ts` and the paginated,
+authenticated `loadWorkoutRecords` read path. No schema migration is required.
+
+### What the lifter sees
+
+- Successfully saved working sets earn persistent **Rep PR** and **e1RM PR** pills
+  on their exercise card. Pills have text and a star as well as semantic color.
+- Both types can appear together. Records from an exercise swapped out mid-workout
+  retain their original exercise name. Completed cards with records remain readable.
+- Finish shows a compact achievement count and one row per exercise/equipment scope.
+  Several improvements at one load collapse to the best reps; distinct loads remain.
+  One best e1RM is included per scope. The existing top-e1RM table and feedback remain.
+- Reopening a finished session shows its recap above the editable set cards. The
+  **View summary** button reloads the completion summary. Edits/deletions update records.
+- No records means no extra section. No toast, celebration effect, or announcement
+  is replayed on rerender, refresh, or resume. Optimistic rows never earn records.
+
+### Comparability and eligibility
+
+The identity is `(user_id, exercise_id, equipment_instance_id)`, across programs and
+slots. Machine variant slugs already distinguish brands and selectorized/plate-loaded
+equipment. Broad movement patterns and the history sheet's exercise families are not
+record comparison scopes. Unresolved machine templates cannot earn records.
+
+Working sets require finite load, positive whole-number reps, and valid RIR (0–5).
+Legacy null RIR uses the canonical default of 2; missing load/reps is never zero-filled.
+Warmups, invalid sets, and nonpositive effective loads are excluded. Calibration working
+sets are eligible observations; being the first observation alone is never a PR.
+
+Barbell/machine/cable loads use recorded total load; dumbbells use one dumbbell's load.
+Bodyweight exercises use **historical total effective load** (bodyweight plus added
+weight; negative added weight means assistance) for fixed-load comparison. Equal added
+weights at different bodyweights are not the same fixed load. The pill displays total
+load plus the recorded addition/assistance so this comparison is explicit.
+
+Load identity is normalized to 0.001 lb to remove floating-point noise. e1RM uses the
+existing RIR load model in `strength/e1rm.ts`, compared/displayed at 0.1 lb precision.
+Rounded ties do not earn records, and improvements cannot display as `+0`.
+
+### Historical bodyweight
+
+The app already stores `set_log.e1rm` using the canonical formula at save time. For a
+bodyweight set, `e1rm × pctOf1RM(reps + RIR)` recovers that set's effective load. Subtract
+the recorded added weight to recover the bodyweight used then. New record calculation
+never consults current profile weight or the mutable `user_exercise_stat` cache.
+
+Editing a bodyweight set preserves this recovered historical bodyweight. If the original
+e1RM/bodyweight was unavailable, the edit keeps e1RM unknown; today's weigh-in does not
+retroactively fill the gap. Such sets cannot establish comparable records.
+
+### Replay and recap stability
+
+History includes only same-user sets from other workouts **finished by this workout's
+start**, with both their workout start and set creation before this workout's start.
+This excludes unfinished/overlapping sessions, future workouts, and sets added later
+to an old workout. History is paginated, ordered by creation and ID, without the usual
+1,000-row truncation. Read errors surface instead of inventing an empty baseline.
+
+The engine folds historical bests, then replays current saved sets in creation/ID order.
+A strict increase over prior history or an earlier current set earns a record. Final
+deltas always use the pre-workout best, not the intermediate set. A within-workout
+improvement with no pre-workout observation is labeled **improved this workout**, with
+no fabricated historical delta. A lone first observation stays quiet.
+
+The recap is derived from persisted set truth with this fixed time boundary; there is
+no achievement cache to drift. Later workouts cannot erase it. Editing/deleting a
+relevant current or earlier set intentionally corrects the result on the next load.
+Repeated saves with identical performance, duplicate query rows, and resumed rendering
+do not add achievement counts. Set IDs identify the winning slot for card placement.
+
+### Verification
+
+- `strength/records.test.ts`: mixed/consolidated records, scope, numeric eligibility,
+  precision, bodyweight/assistance, first observations, edits, deletes, and replay stability.
+- `workout-records.test.ts`: authenticated query scoping, time boundary, pagination past
+  1,000 historical sets, empty sessions, and failed reads.
+- `record-actions.test.ts`: real save/edit/delete/finish actions through the loader and
+  engine with an in-memory database adapter, failed writes/retries, feedback, reopened
+  summaries, and preservation of historical bodyweight during edits.

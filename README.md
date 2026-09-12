@@ -21,6 +21,11 @@ and phase details. Choose specific machines or swap exercises before starting; s
 apply to that workout and persist in the same browser. Start from either Home or the planner
 with those choices intact. See [workout planning](docs/WORKOUT-PLANNING.md).
 
+Saved sets highlight **rep PRs at a fixed load** and **estimated 1RM records** on the
+exercise card. Finish shows a concise achievement recap that remains available when
+reopening the workout and updates after set edits/deletions. Records compare the same
+exercise and equipment across programs. See [workout records](docs/DECISIONS.md#workout-records).
+
 See [docs/DECISIONS.md](docs/DECISIONS.md) for architecture and the recommendation algorithm.
 
 
@@ -52,8 +57,10 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
   - `recommend.ts` — pattern-strength model + cross-exercise weight recommendation
   - `recompute.ts` — rebuild `user_exercise_stat` from `set_log` rows
   - `progression.ts` — double-progression session target (weight + reps) per slot
+  - `records.ts` — shared rep/e1RM record replay with stable pre-workout comparisons
   - `plateau.ts` — fluid-program engine: per-movement e1RM plateau detection (hysteresis) and the laddered rep-range → swap intervention (unit-tested)
 - `src/lib/fluid.ts` — server loader that turns logged history into pending in-session adaptation suggestions
+- `src/lib/workout-records.ts` — user-scoped, paginated record history for live cards and completion recaps
 - `src/lib/catalog.ts` — merges seeded templates with the user's DB `exercise` rows (brand/type variants + custom exercises) into the `Record<id, ExerciseDef>` the engine consumes
 - `src/lib/exercise-id.ts` — pure variant-id / variant-name / custom-slug helpers
 - `src/lib/analytics.ts` — framework-free aggregation helpers for the Progress hub

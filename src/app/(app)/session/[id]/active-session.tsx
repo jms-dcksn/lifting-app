@@ -30,6 +30,8 @@ import {
   dismissAdaptation,
   type SessionSummary,
 } from "../actions";
+import { AchievementPills, AchievementRecap } from "./achievements";
+import { recordsForSlot, type ExerciseRecords } from "@/lib/strength/records";
 import { ReadinessPrompt, SessionFeedbackCard, SessionFeedbackSheet } from "./session-feedback";
 
 export interface LoggedSet {
@@ -66,6 +68,7 @@ export function ActiveSession({
   recentIds,
   slots,
   catalog: initialCatalog,
+  achievements,
 }: {
   sessionId: string;
   dayName: string;
@@ -80,6 +83,7 @@ export function ActiveSession({
   recentIds: string[];
   slots: SlotView[];
   catalog: Record<string, ExerciseDef>;
+  achievements: ExerciseRecords[];
 }) {
   useScreenWakeLock();
   const rest = useRestTimer();
@@ -94,6 +98,7 @@ export function ActiveSession({
   const [feedback, setFeedback] = useState(initialFeedback);
   const [feedbackSheet, setFeedbackSheet] = useState<"finish" | "edit" | null>(null);
   const [finishing, startFinish] = useTransition();
+  const [summaryError, setSummaryError] = useState<string | null>(null);
   const phasePrescription = slots[0]?.prescription;
   const hasLoggedSets = slots.some((slot) => slot.sets.length > 0);
 
@@ -172,11 +177,14 @@ export function ActiveSession({
         <SessionFeedbackCard feedback={feedback} onEdit={() => setFeedbackSheet("edit")} />
       ) : null}
 
+      {alreadyFinished && <AchievementRecap groups={achievements} />}
+
       {slots.map((slot, i) => (
         <SlotCard
           key={slot.programSlotId}
           sessionId={sessionId}
           slot={slot}
+          achievements={recordsForSlot(achievements, slot.programSlotId)}
           isCurrent={i === currentIndex}
           alreadyFinished={alreadyFinished}
           stats={stats}
@@ -190,13 +198,21 @@ export function ActiveSession({
 
       <div className="sticky bottom-0 -mx-4 mt-2 flex flex-col gap-2 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
         <RestBar timer={rest} />
+        {summaryError && <p role="alert" className="text-caption text-danger">{summaryError}</p>}
         <Button
           type="button"
           size="lg"
           className="w-full"
           onClick={() => {
+            setSummaryError(null);
             if (alreadyFinished) {
-              startFinish(async () => setSummary(await finishSession(sessionId)));
+              startFinish(async () => {
+                try {
+                  setSummary(await finishSession(sessionId));
+                } catch {
+                  setSummaryError("Couldn’t load your summary. Please try again.");
+                }
+              });
             } else {
               setFeedbackSheet("finish");
             }
@@ -234,6 +250,7 @@ function SlotCard({
   catalog,
   onResolve,
   startRest,
+  achievements,
 }: {
   alreadyFinished: boolean;
   sessionId: string;
@@ -245,6 +262,7 @@ function SlotCard({
   catalog: Record<string, ExerciseDef>;
   onResolve: (def: ExerciseDef) => void;
   startRest: () => void;
+  achievements: ExerciseRecords[];
 }) {
   const [optimisticSets, applyOptimistic] = useOptimistic(
     slot.sets,
@@ -330,7 +348,7 @@ function SlotCard({
 
   const done = optimisticSets.length;
   const complete = done >= p.targetSets;
-  const tone = complete ? "done" : isCurrent ? "active" : "default";
+  const tone = complete && achievements.length === 0 ? "done" : isCurrent ? "active" : "default";
 
   function handleLog(weight: number, reps: number, rir: number) {
     setError(null);
@@ -378,9 +396,14 @@ function SlotCard({
   }
 
   function handleEdit(id: string, weight: number, reps: number, rir: number) {
-    setEditingId(null);
+    setError(null);
     startTransition(async () => {
-      await editSet({ setId: id, weight, reps, rir });
+      try {
+        await editSet({ setId: id, weight, reps, rir });
+        setEditingId(null);
+      } catch {
+        setError("Couldn’t save those changes. Please try again.");
+      }
     });
   }
 
@@ -420,6 +443,8 @@ function SlotCard({
         </span>
         <ProgressDots done={done} target={p.targetSets} />
       </div>
+
+      <AchievementPills groups={achievements} exerciseId={exerciseId} />
 
       <TargetLine target={target} isBodyweight={isBodyweight} done={done} />
 
@@ -821,6 +846,8 @@ function Summary({
         <h1 className="text-display">{dayName} done</h1>
         <p className="text-body text-muted">{summary.totalSets} working sets logged</p>
       </header>
+
+      <AchievementRecap groups={summary.achievements} />
 
       {summary.topE1rm.length > 0 && (
         <Card className="animate-rise" style={delay()}>

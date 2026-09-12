@@ -9,6 +9,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
 import { exerciseFamilyIds, loadExerciseHistory } from "@/lib/exercise-history";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
+import { loadWorkoutRecords } from "@/lib/workout-records";
+import { historicalBodyweight, validSetNumbers, type ExerciseRecords } from "@/lib/strength/records";
 import { computeE1rm } from "@/lib/strength/e1rm";
 import { recomputeStat, effectiveLoad } from "@/lib/strength/recompute";
 import { estimatePatternStrength, type ExerciseStat } from "@/lib/strength/recommend";
@@ -165,6 +167,10 @@ export async function logSet(input: LogSetInput) {
   const def = catalog[input.exerciseId];
   if (!def) throw new Error(`Unknown exercise: ${input.exerciseId}`);
 
+  if (!validSetNumbers(input) || input.rir == null || (def.equipment !== "bodyweight" && input.weight <= 0) || def.machineTemplate) {
+    throw new Error("Enter a valid weight, whole-number reps, and RIR from 0 to 5.");
+  }
+
   // set_index is per (session, slot) so a duplicated exercise across two slots keeps
   // independent set chains; ad-hoc sets (no slot) fall back to per (session, exercise).
   let setIndexQuery = supabase
@@ -232,10 +238,12 @@ export interface EditSetInput {
 
 export async function editSet(input: EditSetInput) {
   const { supabase, userId } = await requireUser();
+  if (!validSetNumbers(input) || input.rir == null) throw new Error("Enter a valid weight, whole-number reps, and RIR from 0 to 5.");
 
   const { data: existing } = await supabase
     .from("set_log")
-    .select("exercise_id, session_id")
+    .select("exercise_id, session_id, weight, reps, rir, e1rm")
+    .eq("user_id", userId)
     .eq("id", input.setId)
     .single();
   if (!existing) throw new Error("Set not found");
@@ -243,14 +251,19 @@ export async function editSet(input: EditSetInput) {
   const catalog = await getCatalogMap(supabase, userId);
   const def = catalog[existing.exercise_id];
   const bodyweight = await getCurrentBodyweight(supabase, userId);
-  const load = def ? effectiveLoad(def, input.weight, bodyweight) : input.weight;
+  if (!def || (def.equipment !== "bodyweight" && input.weight <= 0)) throw new Error("Invalid exercise or load");
+  // Preserve the bodyweight used by the original saved set, including historical edits.
+  // If it was unknown then, keep e1RM unknown rather than substituting today's weigh-in.
+  const setBodyweight = def.equipment === "bodyweight" ? historicalBodyweight(existing) : bodyweight;
+  const load = effectiveLoad(def, input.weight, setBodyweight);
   const e1rm =
     load != null && load > 0 && input.reps > 0 ? computeE1rm(load, input.reps, input.rir) : null;
 
   const { error } = await supabase
     .from("set_log")
     .update({ weight: input.weight, reps: input.reps, rir: input.rir, e1rm })
-    .eq("id", input.setId);
+    .eq("id", input.setId)
+    .eq("user_id", userId);
   if (error) throw new Error(error.message);
 
   await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight, catalog);
@@ -277,6 +290,7 @@ export async function deleteSet(setId: string) {
 }
 
 export interface SessionSummary {
+  achievements: ExerciseRecords[];
   totalSets: number;
   feedback: SessionFeedback;
   // prevE1rm: best e1RM from the previous session of that exact exercise (null = first time).
@@ -361,6 +375,10 @@ export async function finishSession(
   const jointPain = feedback ? normalizeJointPain(feedback.jointPain) : normalizeJointPain(session.joint_pain);
   const note = feedback ? normalizeSessionNote(feedback.note) : session.notes;
 
+  const { current: sets, history: prior, achievements } = await loadWorkoutRecords(
+    supabase, userId, sessionId, session.performed_at, catalog,
+  );
+
   if (feedback) {
     const { error } = await supabase
       .from("workout_session")
@@ -379,15 +397,9 @@ export async function finishSession(
     .is("finished_at", null);
   if (error) throw new Error(error.message);
 
-  const { data: sets } = await supabase
-    .from("set_log")
-    .select("exercise_id, e1rm")
-    .eq("session_id", sessionId)
-    .eq("is_warmup", false);
-
   const best = new Map<string, number>();
-  for (const set of sets ?? []) {
-    if (set.e1rm == null) continue;
+  for (const set of sets) {
+    if (set.is_warmup || set.e1rm == null) continue;
     const cur = best.get(set.exercise_id) ?? 0;
     if (set.e1rm > cur) best.set(set.exercise_id, set.e1rm);
   }
@@ -395,18 +407,9 @@ export async function finishSession(
   // Overload signal: best e1RM from each exercise's most recent earlier session.
   const prevBest = new Map<string, number>();
   if (best.size > 0) {
-    const { data: prior } = await supabase
-      .from("set_log")
-      .select("exercise_id, e1rm, session_id, workout_session!inner(performed_at)")
-      .eq("user_id", userId)
-      .neq("session_id", sessionId)
-      .eq("is_warmup", false)
-      .not("e1rm", "is", null)
-      .in("exercise_id", [...best.keys()])
-      .lt("workout_session.performed_at", session.performed_at);
-
     const latestSession = new Map<string, { performedAt: string; e1rm: number }>();
-    for (const row of prior ?? []) {
+    for (const row of prior) {
+      if (row.e1rm == null) continue;
       const at = row.workout_session.performed_at;
       const cur = latestSession.get(row.exercise_id);
       if (!cur || at > cur.performedAt) {
@@ -429,8 +432,10 @@ export async function finishSession(
 
   revalidatePath("/");
   revalidatePath("/analytics");
+  revalidatePath(`/session/${sessionId}`);
   return {
-    totalSets: sets?.length ?? 0,
+    totalSets: sets.filter((s) => !s.is_warmup).length,
+    achievements,
     topE1rm,
     feedback: {
       readiness: session.readiness,

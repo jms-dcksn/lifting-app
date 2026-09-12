@@ -67,3 +67,13 @@ across Home, `/workout/next`, and session creation. Planning writes only a valid
 HTTP-only browser cookie; never create a session to preview one. Draft identity includes
 user, program, day, and completed count. Start inserts choices into `exercise_swaps` in the
 same write as the session, then clears the cookie. See `docs/WORKOUT-PLANNING.md`.
+
+## Workout records
+
+Live PR pills and completion recaps share `strength/records.ts` via `loadWorkoutRecords`.
+Compare exact exercise/equipment identity across programs, never exercise families or
+the mutable stat cache. Only history finished before the session's start contributes;
+paginate all eligible history. Bodyweight record loads and historical edits must use
+the bodyweight recoverable from stored e1RM, never today's profile. Records derive only
+from saved sets after revalidation. See `docs/DECISIONS.md#workout-records` for precision, first-entry,
+historical stability, and test contracts.

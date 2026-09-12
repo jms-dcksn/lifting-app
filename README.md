@@ -23,17 +23,6 @@ with those choices intact. See [workout planning](docs/WORKOUT-PLANNING.md).
 
 See [docs/DECISIONS.md](docs/DECISIONS.md) for architecture and the recommendation algorithm.
 
-**Phase 1 · Kino Goddess** is available to all signed-in users under Program templates,
-including first-time setup. The eight-week block has three workouts (Lower + Abs, Upper,
-Glutes + Core), 2 RIR targets, and two-minute rests. Its exercises resolve from the shared
-catalog; machine slots prompt for each user's brand/type. Adding it to an existing account
-creates an inactive copy, leaving the current program selected.
-
-**Strong Foundations · Women's Glutes & Legs** is a shared 12-week, three-day template
-for beginner/intermediate lifters. It prioritizes glutes and thighs, retains modest
-upper-body work, and budgets 35–44 minutes per session. Weekly phases guide effort
-and halve working sets in weeks 6 and 12. See [the program guide](docs/STRONG-FOUNDATIONS.md)
-for exercises, equipment swaps, progression, time assumptions, and research sources.
 
 ## Stack
 

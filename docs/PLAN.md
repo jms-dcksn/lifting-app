@@ -482,3 +482,13 @@ increment), working sets only, bodyweight included, just-me-first.
 - [x] Refresh Home, Settings, Progress, workout preview, and active sessions after mutations.
 - [x] Focused action/date tests and rollback-only database ownership/replacement tests.
 - [ ] User reviews the branch's Vercel preview before merging or starting #29.
+
+## Progress epic #27 — increment 2: weight trends (#29)
+
+- [x] Prior weight-calendar slice merged in PR #34; next-slice work authorized.
+- [x] Raw readings, canonical rolling means, goal distance/reference, four ranges.
+- [x] Complete owner-scoped paginated history, lookback, sparse/gap/stale states.
+- [x] Calendar editing from dots/table, accessible values and optional weekly bars.
+- [x] Pure math/pagination tests, typecheck, lint, production build.
+- [ ] Authenticated mobile review on Vercel (local browser access blocked).
+- [ ] Review/merge this slice before proceeding to monthly metrics (#30).

@@ -85,3 +85,11 @@ Home/Progress/Settings share `components/weight-calendar.tsx`; date/month helper
 SECURITY INVOKER `save_bodyweight_entry` RPC for atomic, explicitly confirmed replacements.
 Never restore the old upsert-then-delete move. See `docs/WEIGHT-CALENDAR.md` for contracts
 and the rollback-only SQL regression test.
+
+## Weight trends
+
+Progress's `weight-trend-card.tsx` uses pure `weight-trends.ts`, which delegates
+rolling math to `bodyweightTrend`. `loadWeightHistory` paginates by date with an
+explicit owner predicate; never replace it with a latest-row sample. Chart ranges
+do not change today's summary. Goals have no frozen baseline: use distance only,
+never derive a completion percentage from the selected range. See `docs/WEIGHT-TRENDS.md`.

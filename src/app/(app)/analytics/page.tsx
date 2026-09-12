@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { LogWeightButton } from "@/components/weight-calendar";
+import { WeightTrendCard } from "./weight-trend-card";
+import { loadWeightHistory } from "@/lib/weight-history";
 import { redirect } from "next/navigation";
 import {
   e1rmPrFeed,
@@ -28,7 +29,7 @@ import { ExerciseList, type ExerciseListItem } from "./exercise-list";
 import { VolumeChart, type VolumeChartPoint } from "./volume-chart";
 import { CoachCheckIn } from "./coach-check-in";
 import { CoachReportSummary } from "./coach-report-summary";
-import { bodyweightTrend, dateKey, type BodyweightEntry } from "@/lib/bodyweight";
+import { bodyweightTrend, dateKey } from "@/lib/bodyweight";
 import {
   buildCoachRecommendations,
   formatCoachRecommendations,
@@ -74,11 +75,12 @@ export default async function AnalyticsPage() {
   const userId = claims?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
 
+  const today = dateKey(new Date());
   const [
     { data: rows, error },
     { data: profile, error: profileError },
     { data: sessionRows, error: sessionError },
-    { data: bodyweightRows, error: bodyweightError },
+    bodyweightEntries,
     { data: dayRows, error: dayError },
     { data: slotRows, error: slotError },
     { data: phaseRows, error: phaseError },
@@ -92,16 +94,12 @@ export default async function AnalyticsPage() {
       .eq("user_id", userId)
       .eq("is_warmup", false)
       .order("created_at", { ascending: true }),
-    supabase.from("profile").select("bodyweight").eq("id", userId).maybeSingle(),
+    supabase.from("profile").select("bodyweight, goal_weight").eq("id", userId).maybeSingle(),
     supabase
       .from("workout_session")
       .select("id, performed_at, finished_at, program_id, program_day_id, week_index, readiness, joint_pain, notes")
       .eq("user_id", userId),
-    supabase
-      .from("bodyweight_log")
-      .select("id, logged_on, weight")
-      .eq("user_id", userId)
-      .order("logged_on", { ascending: false }),
+    loadWeightHistory(supabase, userId, today),
     supabase
       .from("program_day")
       .select("id, program_id, name")
@@ -123,7 +121,6 @@ export default async function AnalyticsPage() {
   if (error) throw new Error(error.message);
   if (profileError) throw new Error(profileError.message);
   if (sessionError) throw new Error(sessionError.message);
-  if (bodyweightError) throw new Error(bodyweightError.message);
   if (dayError) throw new Error(dayError.message);
   if (slotError) throw new Error(slotError.message);
   if (phaseError) throw new Error(phaseError.message);
@@ -134,12 +131,7 @@ export default async function AnalyticsPage() {
     getActiveProgram(supabase, userId),
   ]);
   const analyticsRows = normalizeRows((rows ?? []) as AnalyticsQueryRow[]);
-  const bodyweightEntries: BodyweightEntry[] = (bodyweightRows ?? []).map((row) => ({
-    id: row.id,
-    loggedOn: row.logged_on,
-    weight: row.weight,
-  }));
-  const weightTrend = bodyweightTrend(bodyweightEntries, dateKey(new Date()));
+  const weightTrend = bodyweightTrend(bodyweightEntries, today);
   const bodyweight = weightTrend.latest?.weight ?? profile?.bodyweight ?? null;
   const volume = sessionTonnage(analyticsRows, catalog, bodyweight);
   const summaries = exerciseSummaries(analyticsRows);
@@ -286,7 +278,7 @@ export default async function AnalyticsPage() {
         </p>
       </header>
 
-      <LogWeightButton today={dateKey(new Date())} className="w-full" />
+      <WeightTrendCard entries={bodyweightEntries} today={today} goal={profile?.goal_weight ?? null} />
 
       <Card>
         <CardLabel className="mb-1">Coach check-in</CardLabel>

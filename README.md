@@ -97,3 +97,7 @@ and RIR. Close the sheet to resume your workout without losing your set inputs.
 Weight history can be browsed and edited through a shared calendar on Home, Progress,
 and Settings, including backdated entries and atomic date corrections. See
 [Weight calendar](docs/WEIGHT-CALENDAR.md) for the data contract and preview checklist.
+
+Progress includes bodyweight dots, seven-day trend averages, a goal reference,
+30/90-day, six-month and all-history views, plus optional weekly averages. Tap a
+reading to edit it in the weight calendar. See [weight trend contracts](docs/WEIGHT-TRENDS.md).

@@ -14,7 +14,7 @@ After shipping a phase, scan the turn for durable learnings worth persisting to 
 - Anything the repo already records: code structure, file locations, schema, past fixes.
 - Anything reconstructable from `git log`.
 - Conversation-only detail that won't matter next session.
-- A restatement of what's already in `docs/` or `CLAUDE.md`.
+- A restatement of what's already in `docs/` or `AGENTS.md`.
 
 If asked to remember something the repo already records, save what was *non-obvious* about it
 instead — the reasoning, not the fact.

@@ -16,13 +16,15 @@ uncompleted phase.
 - Read `docs/PLAN.md` for the phase's checklist; read `AGENTS.md` for conventions.
 - This is Next.js 16 — check `node_modules/next/dist/docs/` before writing framework code.
 - Implement every checklist item for the phase. Follow existing patterns; keep code simple.
-- Verify before claiming done: `npx tsc --noEmit` and `npm run build` (and `npx tsx --eval`
-  sanity checks for any pure strength-engine module). Do not assert success without running them.
+- For application changes, run `npm test`, `npm run lint`, `npx tsc --noEmit`, and
+  `npm run build`; verify changed UI flows when authenticated state is available. For docs-only
+  work, check links and claims against source. Report only checks actually run.
 
 ## 2. Refresh docs
 
 - Review what changed this phase (files, schema, commands, decisions) and update `docs/`,
-  `AGENTS.md`, and `README.md` to stay current.
+  `AGENTS.md`, and `README.md` to stay current. Use `docs/README.md` to find the owning
+  contract; keep `CLAUDE.md` exactly `@AGENTS.md`.
 - Tick the completed items in `docs/PLAN.md` for this phase.
 
 ## 3. Stage and commit

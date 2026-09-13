@@ -1,8 +1,10 @@
 # MVP Spec
 
 Detailed spec derived from `PLAN.md` via interview, then reshaped around a program builder.
-Where this conflicts with `PLAN.md`, this wins. `PLAN.md` stays as the original effort view;
-`docs/DECISIONS.md` holds architecture rationale. This is the behavior contract.
+This is the original MVP baseline, not the complete current behavior contract. Later
+[decisions](DECISIONS.md) and [feature contracts](README.md) supersede it for weekly phases,
+Fluid programs, catalog variants, routes, swaps, records, and analytics. `PLAN.md` retains
+the build sequence. Use [Features](FEATURES.md) for shipped behavior.
 
 ## North star
 
@@ -98,8 +100,8 @@ A pure module `src/lib/strength/progression.ts` computes each slot's **session t
 comparison window, so swaps and different slot prescriptions remain independent while repeated
 weekly uses of the same exercise can share newer performance. Algorithm when starting a session:
 
-1. **No prior performance of this exercise in this slot** (first session, or just swapped to a
-   new exercise) → `weight = recommend(exercise, rep_min, target_rir).suggestedWeight`,
+1. **No usable exact-exercise performance** (including the recent-exposure fallback) →
+   `weight = recommend(exercise, rep_min, target_rir).suggestedWeight`,
    `targetReps = rep_min`. This is the e1RM handoff; it carries the recommender's confidence.
 2. **Has prior performance** → begin with this slot+exercise's latest exposure, then select the
    highest-e1RM first set for the exact exercise at or after that exposure. With no slot-specific

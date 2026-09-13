@@ -2,7 +2,7 @@
 
 An exhaustive inventory of what the app does, organized by area. This is a descriptive
 catalog of shipped behavior — for the *why* behind design choices see `DECISIONS.md`, and
-for architecture see `CLAUDE.md`.
+for architecture see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 The defining feature is **cross-exercise weight recommendation**: log sets with RIR, and when
 you swap a movement (dumbbell → barbell → machine) the app recommends a working weight from
@@ -43,6 +43,8 @@ Adaptive plateau engine under §5.
   for the right program day. Auto-pending so a double-tap can't start two sessions.
 - **Resume workout** — if an unfinished session exists, the CTA becomes "Resume workout"
   linking back into it.
+- **Next workout planner** — `/workout/next` previews effective prescriptions and saves
+  workout-only exercise choices in this browser before Start; [contract](WORKOUT-PLANNING.md).
 - **Last session summary card** — day name, working-set count, and the top lift (highest
   e1RM) with its rounded e1RM, linking to that exercise's history.
 
@@ -69,6 +71,8 @@ Adaptive plateau engine under §5.
   (trim, drop empties, case-insensitive dedupe).
 - **Progression style toggle** — Classic vs Adaptive. Choosing Adaptive hides the weeks
   stepper (the program runs indefinitely) and reveals a per-slot patience control.
+- **Weekly phases** — classic programs can author, display, and clone ordered set/RIR
+  overrides; workouts use their stored week to resolve effective prescriptions.
 - **Weeks stepper** — sets a 4–12 week block length (classic only).
 - **Days** — add / name / reorder / remove training days.
 - **Slots per day** — each slot references a **movement pattern**, an exercise, rep range
@@ -106,12 +110,18 @@ Adaptive plateau engine under §5.
   lines below the target.
 - **Swap exercise** — a secondary button opens the picker filtered to the slot's pattern;
   subsequent sets log against the swapped `exercise_id` but the original `program_slot_id`,
-  so the swap resumes its own progression chain. Swaps survive a page reload (the slot's
-  effective exercise = the most recently logged exercise this session).
+  so the swap resumes its own progression chain. Explicit choices persist before logging and
+  survive reload. Confirmation chooses This workout only or Remainder of program; explicit
+  session choice precedes legacy logged exercise and the adaptive/program default.
+  See [exercise swaps](EXERCISE-SWAPS.md).
 - **Plateau recommendation card** (fluid programs) — when a movement has stalled, the slot
   shows a "Plateau detected" card before set entry: a rep-range change (with starting weight)
   or ranked swap candidates, each with **Accept / Keep going / Other options**. Accepting
   applies the change for this and future sessions; the card self-clears once accepted.
+- **Workout records** — saved sets show exact-exercise rep/e1RM PRs; completion recaps replay
+  the same records and update after edits/deletions. [Eligibility](DECISIONS.md#workout-records).
+- **Quick history** — a Sheet loads ten latest sets from previous workouts across explicitly
+  linked exercise variants without resetting set entry or the rest timer.
 - **Finish session** — `finishSession` stamps `finished_at` and returns a per-lift summary
   with overload deltas (latest session vs that exercise's previous session).
 - **Minimal session feedback** — a skippable 1–5 readiness tap appears before the first set;
@@ -224,7 +234,7 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 ## 8. Progress analytics (`/analytics`, nav label "Progress")
 
 Pure analytics in `src/lib/analytics.ts` plus the versioned canonical report in
-`src/lib/coach-check-in.ts`; the page renders six server-side cards:
+`src/lib/coach-check-in.ts`. The hub includes:
 
 1. **Coach check-in** — one `CoachCheckInReport` powers both an on-screen snapshot and the
    paste-ready text. It includes explicit current/prior seven-day windows, completed vs planned
@@ -247,7 +257,14 @@ Pure analytics in `src/lib/analytics.ts` plus the versioned canonical report in
 5. **Pattern strength** — trained patterns with current reference-lift e1RM and a signed
    trend; patterns with <2 sessions show "new" (`patternStrengthTrend`, replays sessions
    chronologically).
-6. **All exercises** — searchable list funneling into `history/[exerciseId]`.
+6. **Records feed** — legacy e1RM events and heaviest raw loads from `analytics.ts`;
+   distinct from the canonical workout-record replay used by live pills, recaps, and monthly totals.
+7. **All exercises** — searchable list funneling into `history/[exerciseId]`.
+
+Progress opens with the shared weight calendar entry point and interactive bodyweight trends
+([contract](WEIGHT-TRENDS.md)). The monthly review link opens `/analytics/month` for date-window
+comparisons, canonical PR totals, and exact-equipment strength evidence
+([contract and remaining work](MONTHLY-PROGRESS.md)).
 
 Other pure analytics available: `e1rmPrFeed` (chronological PR events), `weightPrs` (all-time
 heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `latestWeekBalance`.
@@ -255,8 +272,9 @@ heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `lates
 ## 9. Settings (`/settings`)
 
 - **Bodyweight history** — quick date/weight logging, edit/remove, recent readings, latest value,
-  sparse seven-day average, and change from the preceding seven days. Same-date submissions
-  replace that date deterministically; roughly three morning readings per week are encouraged.
+  sparse seven-day average, and change from the preceding seven days. Home, Progress, and
+  Settings share the calendar; moves onto occupied dates require explicit replacement
+  confirmation and use an atomic RPC. See [weight calendar](WEIGHT-CALENDAR.md).
 - **Current bodyweight rule** — the newest dated observation drives pull-up/assisted calculations;
   the pre-existing `profile.bodyweight` remains the baseline when no history exists.
 - **Goal weight (lb)**.
@@ -294,5 +312,3 @@ heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `lates
   RLS), deployed on Vercel.
 - **Online by design** — assumes connectivity during workouts; there is intentionally **no**
   offline/local-first layer (see `DECISIONS.md`).
-</content>
-</invoke>

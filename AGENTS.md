@@ -1,109 +1,59 @@
-# Next.js 16 Breaking Changes
+# Working in lifting-app
 
-## `middleware.ts` renamed to `proxy.ts`
+Personal progressive-overload lifting tracker: Next.js App Router, Supabase, and a pure
+TypeScript strength engine. Workouts require connectivity; there is no offline sync layer.
 
-In Next.js 16, the session/edge middleware convention changed:
+## Start here
 
-- **File**: `src/proxy.ts` (was `src/middleware.ts`)
-- **Export**: `export function proxy(...)` (was `export function middleware(...)`)
-- **Matcher config**: still exported as `export const config = { matcher: [...] }`
-- **Default runtime**: Node.js (was Edge)
+1. Read `.claude/LAST_SESSION.md` if present. Check its commit against `git log` and the
+   working tree before treating its status or next action as current.
+2. Read the relevant reference below before changing that area. Use
+   [the docs index](docs/README.md) to distinguish current contracts from historical plans.
+3. Before framework changes, check the installed docs in `node_modules/next/dist/docs/`.
+   This app uses `src/proxy.ts` → `updateSession()` for refresh; auth gates use `getClaims()`.
 
-Any docs or examples referencing `middleware.ts` / `middleware` for session refresh are
-stale. This project uses `src/proxy.ts` → calls `updateSession()` from
-`src/lib/supabase/middleware.ts`.
+## Working rules
 
-## Supabase SSR: use `getClaims()` not `getUser()`/`getSession()`
+- Keep code simple and modular, comments concise, and explanations direct. No emojis.
+- Proceed with reversible work in the approved direction. Present a Decision Card before
+  unapproved hard-to-reverse architecture, spending, external-facing changes, new scope, or unvalidated underlying assumptions:
+  recommendation, reason, risk, and decision needed.
+- Keep credentials in ignored environment files or deployment settings. Preserve owner-scoped
+  RLS. The weekly Coach API is the sole elevated application read path; its queries require
+  explicit user predicates. Keep it read-only, no-store, and noindex.
+- Keep `set_log` authoritative and strength statistics rebuildable. Preserve exact exercise
+  identity and historical bodyweight when comparing records or editing saved sets.
+- Use existing UI primitives and semantic tokens. Keep strength/report calculations pure and
+  share their canonical helpers across consumers.
 
-Modern `@supabase/ssr` uses `supabase.auth.getClaims()` to refresh and validate the session
-server-side. `getSession()` does not refresh tokens; `getUser()` makes a network call.
-`getClaims()` is the correct method for both refresh (in proxy) and auth gates (in layouts /
-Server Actions).
+## Verification and continuity
 
-## General guidance
+Commands are defined in `package.json`: `npm run dev`, `npm test`, `npm run lint`,
+`npm run build`; typecheck with `npx tsc --noEmit`. Vitest discovers `src/lib/**/*.test.ts`
+in Node, including pure logic and mocked action/data-boundary tests. Co-locate tests there;
+SQL ownership/atomicity checks live in `supabase/tests/` with execution notes in feature docs.
+For application changes run tests, lint, typecheck, and build; verify changed UI flows in a
+browser when authenticated state is available. For docs-only edits, check references and
+claims against source. Record what was actually verified and any remaining limits.
 
-Shared program templates live in `src/lib/program-templates.ts`; adding one does not
-require a database seed or migration. Strong Foundations uses executable 12-week
-phases; its time budget and coaching rationale are in `docs/STRONG-FOUNDATIONS.md`.
+Use [ship-phase](.agents/skills/ship-phase/SKILL.md) when building or wrapping up a planned
+phase. Refresh the owning docs and write `.claude/LAST_SESSION.md` with the current HEAD,
+changes, checks, open work, and commit/push status. Keep `CLAUDE.md` exactly `@AGENTS.md`;
+put new detail in the relevant reference and add a trigger here only when needed.
 
-Before writing any framework code, check `node_modules/next/dist/docs/` for the installed
-version's behavior — Next.js 16 has additional breaking changes beyond the ones listed here.
+## Read before changing
 
-The weekly Coach API is the sole elevated read path. `GET /api/coach/v1/weekly` uses a
-server-only Supabase secret and `COACH_API_USER_ID`; every query must retain an explicit user
-predicate because the secret bypasses RLS. Its high-entropy capability auth must remain
-read-only, no-store, and noindex.
-
-Active targets and weekly Coach proposals share `selectProgressionReference()`: anchor history
-on the latest exact `(program_slot_id, exercise_id)` exposure, then allow a stronger exact-
-exercise first set performed after that anchor to drive the next target. Do not regress to
-slot-only history or an unbounded all-time best. Effort-based Coach reductions use first-set RIR;
-hard back-off sets must not reduce an accurately loaded top set.
-
----
-
-@CLAUDE.md
-
-## Session continuity
-
-At the start of every session, read `.claude/LAST_SESSION.md` if it exists. It records what
-shipped last session, the current phase, open threads, and gotchas. Use it to pick up where
-the last session left off without repeating context-gathering.
-
-## Ship-phase skill
-
-This project has a `ship-phase` skill (`.agents/skills/ship-phase/SKILL.md`) for the
-repeatable build-to-commit workflow. Use it when building or wrapping up a phase of work.
-It covers: build → refresh docs → commit → reflect → write session summary. Do not skip
-the summary step — it is how the next session knows what happened.
-
-## Scoped exercise swaps
-
-`workout_session.exercise_swaps` stores explicit per-slot exercise choices, including before
-any set is logged. `swap_session_exercise` is a SECURITY INVOKER RPC that validates the open
-session and slot ownership and atomically saves the choice plus an optional program-slot update.
-Run `supabase/tests/exercise_swap_scope.sql` as postgres for rollback-only database regression checks.
-Fluid `manual_swap` events preserve rep ranges and reset plateau state; keep them distinct from
-coach `swap` interventions. See `docs/EXERCISE-SWAPS.md`.
-
-## Pre-workout planning
-
-`loadNextWorkout` shares sequence, phase/fluid prescriptions, catalog, and draft choices
-across Home, `/workout/next`, and session creation. Planning writes only a validated,
-HTTP-only browser cookie; never create a session to preview one. Draft identity includes
-user, program, day, and completed count. Start inserts choices into `exercise_swaps` in the
-same write as the session, then clears the cookie. See `docs/WORKOUT-PLANNING.md`.
-
-## Workout records
-
-Live PR pills and completion recaps share `strength/records.ts` via `loadWorkoutRecords`.
-Compare exact exercise/equipment identity across programs, never exercise families or
-the mutable stat cache. Only history finished before the session's start contributes;
-paginate all eligible history. Bodyweight record loads and historical edits must use
-the bodyweight recoverable from stored e1RM, never today's profile. Records derive only
-from saved sets after revalidation. See `docs/DECISIONS.md#workout-records` for precision, first-entry,
-historical stability, and test contracts.
-
-## Weight calendar
-
-Home/Progress/Settings share `components/weight-calendar.tsx`; date/month helpers are in
-`lib/weight-calendar.ts`. Weight writes live in `(app)/weight/actions.ts`, using the
-SECURITY INVOKER `save_bodyweight_entry` RPC for atomic, explicitly confirmed replacements.
-Never restore the old upsert-then-delete move. See `docs/WEIGHT-CALENDAR.md` for contracts
-and the rollback-only SQL regression test.
-
-## Weight trends
-
-Progress's `weight-trend-card.tsx` uses pure `weight-trends.ts`, which delegates
-rolling math to `bodyweightTrend`. `loadWeightHistory` paginates by date with an
-explicit owner predicate; never replace it with a latest-row sample. Chart ranges
-do not change today's summary. Goals have no frozen baseline: use distance only,
-never derive a completion percentage from the selected range. See `docs/WEIGHT-TRENDS.md`.
-
-## Monthly progress
-
-`monthly-progress.ts` owns versioned monthly windows and comparisons; `monthly-progress-data.ts`
-loads complete owner-scoped history via UUID keyset pagination. `/analytics/month` consumes it.
-PR totals replay `workoutRecords`, while monthly best strength uses stored eligible e1RMs.
-Do not classify flat monthly results as stalls. #30's shared phase-aware stall contract remains
-open; see `docs/MONTHLY-PROGRESS.md` for existing Coach/Fluid differences and the next slice.
+| Area | Reference |
+| --- | --- |
+| Strength, calibration, catalog identity, program loading, data ownership, auth | [Architecture](docs/ARCHITECTURE.md) and [decisions](docs/DECISIONS.md) |
+| UI primitives, motion, overlays, server/client boundaries | [UI conventions](docs/UI.md) |
+| Program templates or weekly phases | [Architecture: programs](docs/ARCHITECTURE.md#programs-and-prescriptions); [Strong Foundations](docs/STRONG-FOUNDATIONS.md) for that template |
+| Active swaps or Fluid adaptation events | [Exercise swaps](docs/EXERCISE-SWAPS.md) |
+| Home preview, planner cookies, or session creation | [Workout planning](docs/WORKOUT-PLANNING.md) |
+| PR pills, completion recaps, or historical set edits | [Workout records](docs/DECISIONS.md#workout-records) |
+| Coach report, proposals, progression references, or private weekly API | [Coach contract](docs/COACH-REPORT.md) and [architecture: strength](docs/ARCHITECTURE.md#strength-and-exercise-identity) |
+| Weight writes, date moves, or shared calendar | [Weight calendar](docs/WEIGHT-CALENDAR.md) |
+| Weight charts, history pagination, or goal distance | [Weight trends](docs/WEIGHT-TRENDS.md) |
+| Monthly comparisons, PR totals, or stall classification | [Monthly progress](docs/MONTHLY-PROGRESS.md); shared phase-aware stalls remain unfinished |
+| Setup, environment variables, migrations, or deployment | [Deployment](DEPLOY.md) |
+| Feature scope or selecting planned work | [Features](docs/FEATURES.md) and [build plan](docs/PLAN.md); verify old checklist status against code |

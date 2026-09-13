@@ -36,5 +36,6 @@ setting changes now also revalidate Progress.
   correct a reading onto an occupied date, and confirm or cancel replacement.
 
 The additive migration must be available in the preview's database before testing saves.
-Weight charts (#29), monthly reviews (#30–31), and period tracking (#32–33) are subsequent
-increments and are not included here.
+Weight charts (#29) and the first monthly review (#30) are now implemented in separate slices;
+see [trends](WEIGHT-TRENDS.md) and [monthly progress](MONTHLY-PROGRESS.md) for current scope
+and the remaining dashboard/stall work. Period tracking (#32–33) remains planned.

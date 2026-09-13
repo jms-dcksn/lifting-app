@@ -75,20 +75,16 @@ beat last time. Done = I use it for a real block.
 - [x] Hide accepted and insufficient-data next steps; collapse the pending section and per-item explanations.
 - [x] Preview the next workout's exercises and effective weekly prescriptions on Home.
 
-## What exists
+## Current code baseline (2026-09-13)
 
-Committed:
-- Next.js (App Router, TS, Tailwind) scaffold
-- Strength engine: `e1rm.ts`, `coefficients.ts` (~38 Lifetime exercises), `recommend.ts` — typechecks, math sanity-checked
-- Supabase clients (browser/server, `@supabase/ssr`) + base schema with RLS in `supabase/migrations/0001_init.sql`
-- Architecture in `docs/DECISIONS.md`
+Program building, classic phases, Fluid adaptations, scoped swaps, pre-workout planning,
+workout records, Coach reports/API/proposals, weight calendar/trends, and the first monthly
+review are implemented. See [Features](FEATURES.md) and [Monthly progress](MONTHLY-PROGRESS.md)
+for current behavior and the remaining shared stall contract/richer dashboard work.
+Migrations and generated types are committed; remote migration/Auth state needs a live check.
+The numbered phase sections below retain the original build sequence and historical checks.
 
-On disk and applied to remote DB (not yet committed):
-- `supabase/migrations/0002_program_builder.sql` — program/day/slot tables, `set_log.program_slot_id`, `profile.bodyweight`, RLS
-- `supabase/migrations/0003_harden_signup_trigger.sql` — hardens the trigger that auto-creates a `profile` row on signup
-- `src/lib/supabase/types.ts` — generated typed DB types (504 lines)
-
-## Estimate
+## Original estimate
 
 ~32–38 hrs of focused work ≈ 3–4 weeks at 10 hrs/wk. First milestone to chase: log one real
 session end-to-end against a hardcoded program (P0–P2). The program builder (P3) makes it
@@ -97,7 +93,7 @@ yours to run a full block; recommendation/swap (P5) is the differentiator.
 ## Testing approach
 
 Vitest covers framework-free modules under `src/lib/`; Supabase ownership behavior lives in
-pgTAP SQL under `supabase/tests/`. Every shipped slice runs lint, TypeScript, unit tests, and a
+SQL regression scripts under `supabase/tests/`. Every shipped slice runs lint, TypeScript, unit tests, and a
 production build. UI is also verified manually on a phone or browser when authenticated state
 is available.
 
@@ -123,8 +119,8 @@ is available.
   - [x] `profile`: add `bodyweight numeric`
 - [x] `supabase/migrations/0003_harden_signup_trigger.sql` — hardens the `profile` row
       auto-create trigger on signup (written and applied; not in original plan)
-- [ ] Enable Auth provider: Email magic-link in Supabase Auth dashboard (manual step; not yet done)
-- [x] Generate typed DB types → `src/lib/supabase/types.ts` (504 lines)
+- [ ] Enable Auth provider: Email magic-link in Supabase Auth dashboard (historical unchecked item; verify the target environment before deployment)
+- [x] Generate typed DB types → `src/lib/supabase/types.ts`
 
 ## Phase 1 — Auth + shell + PWA (~3 hrs) — DONE
 
@@ -152,7 +148,7 @@ this screen being right.
       and resets to `rep_min`, else holds weight and targets +1 rep (source "progression"). Bump
       test is reps-only. Keys on `(program_slot_id, exercise_id)`. Verified with tsx.
 - [x] Bodyweight e1RM convention in the engine: `effectiveLoad` adds bodyweight for BW exercises,
-      subtracts assist for assisted. `logSet` reads bodyweight from `profile`.
+      subtracts assist for assisted. `logSet` now reads bodyweight via `getCurrentBodyweight()` (history, then profile fallback).
 - [x] `src/app/(app)/session/seed.ts` — hardcoded `SEED_PROGRAM` (3-day Push/Pull/Legs, 5 weeks)
       shaped like program/day/slot data. P3 replaces with real active program.
 - [x] `src/app/(app)/session/actions.ts`:

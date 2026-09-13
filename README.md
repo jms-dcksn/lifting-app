@@ -26,7 +26,8 @@ exercise card. Finish shows a concise achievement recap that remains available w
 reopening the workout and updates after set edits/deletions. Records compare the same
 exercise and equipment across programs. See [workout records](docs/DECISIONS.md#workout-records).
 
-See [docs/DECISIONS.md](docs/DECISIONS.md) for architecture and the recommendation algorithm.
+See the [documentation map](docs/README.md) for architecture, feature contracts, and plans.
+Agent instructions live in [AGENTS.md](AGENTS.md); deployment configuration in [DEPLOY.md](DEPLOY.md).
 
 
 ## Stack
@@ -44,7 +45,7 @@ npm run dev
 Apply the schema to your Supabase project:
 
 ```bash
-supabase db push   # applies all migrations in supabase/migrations/
+npx supabase db push   # applies all migrations in supabase/migrations/
 ```
 
 Enable the Email (magic-link) provider in the Supabase Auth dashboard.
@@ -76,7 +77,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/lib/program.ts` — server-side program loader; assembles nested program (days → slots) from DB
 - `src/components/ui/` — shared UI primitives (Button, Stepper, Card, Input, Sheet, Skeleton) and design tokens (`src/app/globals.css`)
 - `src/lib/supabase/` — browser client, server client, and `middleware.ts` (`updateSession` helper for `proxy.ts`)
-- `src/proxy.ts` — Next.js 16 session proxy (replaces `middleware.ts`); refreshes Supabase session on every request
+- `src/proxy.ts` — Next.js 16 session proxy (replaces `middleware.ts`); refreshes Supabase session on matched requests
 - `src/app/(app)/program/` — summary tile grid + dedicated read-only detail route + builder (Classic/Adaptive style, catalog-driven picker, custom exercises, server actions)
 - `src/app/(app)/exercise/actions.ts` — `resolveVariant` (find-or-create a machine brand/type variant) and `createCustomExercise` server actions
 - `src/app/(app)/settings/` — bodyweight history/trend, goal weight, and default rest-between-sets editor
@@ -85,7 +86,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/app/api/coach/v1/weekly/` — private, no-store endpoint for the scheduled Coach check-in
 - `docs/COACH-REPORT.md` — exact v1 windows, metrics, trend rules, privacy contract, and limitations
 - `src/app/(app)/history/[exerciseId]/` — per-exercise history: e1RM line chart (Recharts) + overload signal vs the previous session
-- `supabase/migrations/` — database schema with row-level security; `supabase/tests/` holds pgTAP ownership checks
+- `supabase/migrations/` — database schema with row-level security; `supabase/tests/` holds ownership and atomic-write regression checks
 
 ### Quick lift history
 

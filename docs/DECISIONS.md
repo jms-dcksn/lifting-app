@@ -44,7 +44,7 @@ dropdown seed; any other brand is free-text).
 slots reference movement patterns, so "swap exercise" is a first-class operation. Seeded
 exercise *templates* live in `coefficients.ts` (app code); the `exercise` table holds
 user-created brand/type variants and fully-custom exercises, merged with the seeded set by
-`src/lib/catalog.ts`. Schema across migrations `0001`–`0008` (see Phase C below for `0008`);
+`src/lib/catalog.ts`. Schema is defined by all files in `supabase/migrations/`;
 `0002` adds program/day/slot + `profile.bodyweight` + `set_log.program_slot_id`, `0004` adds
 `workout_session.finished_at`; the session row also owns optional readiness, joint-pain, and
 plain-text note feedback. Typed DB types live at `src/lib/supabase/types.ts`.
@@ -62,8 +62,9 @@ demonstrated current strength. Per-session overload deltas (progress visualizati
 computed live from `set_log` in Phase 4 (history page, finish-session summary) and are not
 stored in `user_exercise_stat`.
 
-**Block position (week/day) is fully derived, not stored.** Day and week are derived from the
-count of finished sessions with matching `program_id`, not stored on the session row. Seed
+**Next block position (week/day) is derived.** Day and week come from the count of finished
+sessions with matching `program_id`; creation stores `program_day_id` and `week_index` on the
+session so historical phase resolution uses that workout's week. Seed
 sessions from Phase 2 have `program_slot_id = null`; from Phase 3 onward all sessions carry
 a real `program_slot_id` and progression keys on that column.
 
@@ -83,8 +84,8 @@ re-derived from array order on save.
 is a partial unique index on `(user_id) WHERE is_active`. Saving any program unconditionally
 activates it (clears the old active flag first). `cloneProgram` creates an inactive draft.
 
-**`session/seed.ts` demoted to template-only.** The hardcoded Push/Pull/Legs seed no longer
-drives the runtime program. It is called only by `createFromTemplate` (onboarding shortcut).
+**Seed data moved into shared templates.** `session/seed.ts` was subsequently deleted;
+`createFromTemplate` reads `src/lib/program-templates.ts`, including Push/Pull/Legs.
 All runtime program data comes from the `program`/`program_day`/`program_slot` tables via
 `src/lib/program.ts`.
 
@@ -325,7 +326,9 @@ noindex response policy and cannot mutate training or recommendation-decision st
 
 **Bodyweight observations are date-keyed; `profile.bodyweight` is the preserved fallback.**
 `bodyweight_log` permits one observation per user per calendar date. A repeated date replaces
-that reading, and moving an edit onto an occupied date does the same. The latest observation is
+that reading through the calendar. Moving an edit onto an occupied date requires explicit
+replacement confirmation and an atomic `save_bodyweight_entry` call; see
+[Weight calendar](WEIGHT-CALENDAR.md). The latest observation is
 the current value for bodyweight/assisted exercise calculations. The original profile field is
 not overwritten, so an account with no history—or one whose history is removed—retains its
 pre-feature baseline. Seven-day trends use available observations in explicit current and prior

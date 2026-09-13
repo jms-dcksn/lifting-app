@@ -1,8 +1,8 @@
 # Coach check-in report v1
 
 `src/lib/coach-check-in.ts` defines the versioned `CoachCheckInReport`. It is the single
-derived contract for both the Progress snapshot and its clipboard text. Future coach-facing
-API work should serialize this report rather than reimplementing the aggregation.
+derived contract for both the Progress snapshot and its clipboard text. The weekly API
+serializes this report rather than reimplementing the aggregation.
 
 The builder is pure: callers supply sessions, working sets, program days/slots/phases, the
 exercise catalog, and bodyweight context. It returns facts and classifications only. It does
@@ -71,11 +71,12 @@ same canonical `CoachCheckInReport` used by Progress; the route does not reprodu
 write training data. All database reads are explicitly scoped to `COACH_API_USER_ID`, including
 when the server-only Supabase secret bypasses RLS.
 
-Use `Authorization: Bearer <COACH_API_TOKEN>` for callers that can set headers. ChatGPT scheduled
-tasks do not currently expose a custom-header control, so the supported fallback is a scoped
+Use `Authorization: Bearer <COACH_API_TOKEN>` for callers that can set headers. For callers unable
+to set headers, the supported fallback is a scoped
 capability URL: `/api/coach/v1/weekly?token=<COACH_API_TOKEN>`. Treat the full URL as a secret and
 never paste it into logs, issues, PRs, screenshots, or shared conversations. Responses are marked
-`private, no-store` and `noindex, nofollow`; missing and invalid credentials receive the same 401.
+`private, no-store` and `noindex, nofollow`; missing and invalid caller credentials receive the same 401 when server configuration is valid.
+Missing/invalid server configuration or a loader failure returns 503.
 
 Configure only server-side environment variables (none may use a `NEXT_PUBLIC_` prefix):
 

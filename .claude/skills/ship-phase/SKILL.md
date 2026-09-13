@@ -13,16 +13,17 @@ uncompleted phase.
 
 ## 1. Build the phase
 
-- Read `docs/PLAN.md` for the phase's checklist; read `CLAUDE.md` + `AGENTS.md` for conventions.
+- Read `docs/PLAN.md` for the phase's checklist; read `AGENTS.md` for conventions.
 - This is Next.js 16 — check `node_modules/next/dist/docs/` before writing framework code.
 - Implement every checklist item for the phase. Follow existing patterns; keep code simple.
-- Verify before claiming done: `npx tsc --noEmit` and `npm run build` (and `npx tsx --eval`
-  sanity checks for any pure strength-engine module). Do not assert success without running them.
+- For application changes, run `npm test`, `npm run lint`, `npx tsc --noEmit`, and
+  `npm run build`; verify changed UI flows when authenticated state is available. For docs-only
+  work, check links and claims against source. Report only checks actually run.
 
 ## 2. Refresh docs
 
 - Dispatch the `docs-freshness-keeper` agent with a concrete summary of what changed this phase
-  (files, schema, commands, decisions). Let it reconcile `docs/`, `CLAUDE.md`, `README.md`.
+  (files, schema, commands, decisions). Let it reconcile `docs/`, `AGENTS.md`, `README.md`; keep `CLAUDE.md` exactly `@AGENTS.md`.
 - Tick the completed items in `docs/PLAN.md` for this phase.
 
 ## 3. Stage and commit
@@ -30,8 +31,7 @@ uncompleted phase.
 - `git status` first. Stage only this phase's work: source, migrations, docs.
 - Never stage secrets (`.env.local`) or local-only state (`.claude/settings.local.json`,
   `.claude/LAST_SESSION.md`, `.claude/agent-memory/`). `.gitignore` should already exclude these.
-- Per `CLAUDE.md`: if on the default branch and the change warrants it, branch first.
-- Commit with a descriptive subject + body, ending with the `Co-Authored-By` trailer from CLAUDE.md.
+- Commit with a descriptive subject + body.
 
 ## 4. Reflect and persist learnings
 

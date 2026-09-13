@@ -120,9 +120,9 @@ the SPEC.md default ("Charts: Recharts").
 
 **Session targets compute client-side; the server hydrates state, not targets.** The session
 page no longer calls `sessionTarget()` server-side. It hydrates `ExerciseStat[]`,
-`recentExerciseIds`, and a per-slot `lastByExercise` map; `active-session.tsx` derives each
-slot's target via `useMemo`. This is what lets a swap re-derive the recommendation instantly
-with no server round-trip.
+`recentExerciseIds`, and recent first-set performances grouped by exact exercise;
+`active-session.tsx` derives each slot's target via `useMemo`. This is what lets a swap
+re-derive the recommendation instantly with no server round-trip.
 
 **`startingWeight()` extracted from `sessionTarget()`'s no-prior branch.** Pure helper
 `startingWeight(def, reps, targetRir, defs, stats, bodyweight)` wraps `recommend()` and the
@@ -138,11 +138,16 @@ load for bodyweight movements before converting back to added/assisted load, and
 at the prior logged load. This keeps both the active-session target and weekly Coach proposal
 inside the programmed range without rewarding an overweight set.
 
-**Progression "last performance" is now `(program_slot_id, exercise_id)`-keyed.** Previously
-keyed on `program_slot_id` alone (Phase 3). A swapped exercise now resumes its own
-progression chain within that slot, independent of whatever exercise the slot held before.
-The session page's effective exercise-per-slot is derived from the most recently logged
-exercise in that slot this session, so an in-session swap survives a page reload.
+**Repeated weekly exercises share a bounded progression window.** The latest performance for
+the exact `(program_slot_id, exercise_id)` remains the anchor, preserving different rep ranges
+and swap chains. From that anchor forward, `selectProgressionReference()` chooses the highest
+e1RM first set for the exact exercise across program days; ties prefer recency. This means a
+newer Lower B hack-squat performance can advance Lower A, while an old all-time PR before Lower
+A's last exposure cannot. A slot with no own history uses the best of four recent exposures.
+The active card shows both “Last here” and a distinct “Best recent,” and the editable set entry
+remains the user's final decision. The session page's effective exercise-per-slot is derived
+from the most recently logged exercise in that slot this session, so an in-session swap survives
+a page reload.
 
 **Swap is same-pattern-first with a show-all escape hatch.** `ExercisePicker` gained
 `patternFilter` (already plumbed for swap) plus a "show all patterns" toggle, since a same-
@@ -300,9 +305,12 @@ labels require four exposures split into two adjacent pairs, with both recent ma
 
 **Coach recommendations are derived proposals with separately persisted review state.** Issue #8
 keeps the factual `CoachCheckInReport` v1 shape stable and computes proposals in the pure
-`coach-recommendations.ts` layer. Normal overload delegates to `sessionTarget()`; stalls delegate
-to `detectPlateau()`. Deload and significant-pain gates run before overload, and RIR-based load
-reductions require two consecutive comparable misses. The only new mutable state is the user's
+`coach-recommendations.ts` layer. Normal overload delegates to `sessionTarget()` using the same
+bounded best-recent reference as the active workout; stalls delegate to `detectPlateau()`.
+Deload and significant-pain gates run before overload, and RIR-based load reductions require the
+**first working set** to miss in two consecutive comparable slot exposures—hard back-off sets do
+not downshift a correctly loaded top set. Recommendations carry the program-day name so duplicate
+weekly exercises remain distinguishable. The only new mutable state is the user's
 accepted/dismissed/deferred response keyed to that evidence snapshot. Accepting does not rewrite
 a program: the established slot/exercise log chain remains the source of the next workout target.
 

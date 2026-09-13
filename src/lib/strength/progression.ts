@@ -8,7 +8,10 @@
 // No prior performance (first session or a fresh swap) -> hand off to the e1RM recommender
 // at rep_min. The bump test is reps-only; RIR feeds e1RM but does not gate the bump.
 //
-// Keys on (program_slot_id, exercise_id) so a swap never corrupts the chain. Pure.
+// Progression history stays exercise-specific. A slot uses its latest same-slot exposure as
+// the start of a short comparison window, then may advance from a stronger exposure performed
+// on another day after that point. This lets repeated weekly exercises share useful progress
+// without letting an old all-time PR permanently dictate the target. Pure.
 
 import { recommend, type ExerciseStat, type Confidence } from "./recommend";
 import { computeE1rm, roundToIncrement, weightForTarget } from "./e1rm";
@@ -21,9 +24,21 @@ export interface SlotPrescription {
 }
 
 export interface LastPerformance {
-  weight: number; // recorded load of the most recent first working set for this slot+exercise
+  weight: number;
   reps: number;
   rir?: number | null;
+}
+
+export interface ProgressionPerformance extends LastPerformance {
+  programSlotId: string | null;
+  performedAt: string;
+  e1rm: number | null;
+}
+
+export interface ProgressionReference {
+  lastSameSlot: ProgressionPerformance | null;
+  bestRecent: ProgressionPerformance | null;
+  selected: ProgressionPerformance | null;
 }
 
 export type TargetSource = "recommendation" | "progression";
@@ -35,6 +50,38 @@ export interface SessionTarget {
   source: TargetSource;
   confidence?: Confidence; // present when source = "recommendation"
   last?: LastPerformance; // present when source = "progression"
+}
+
+// Choose the reference for the next target.
+//
+// The latest same-slot exposure defines the beginning of the comparison window. Any newer
+// exposure for the exact exercise may supersede it when it demonstrates a higher e1RM. With no
+// same-slot history (a new slot or swap), use the strongest of the four most recent exposures.
+// Ties prefer recency. Missing e1RM falls back to the most recent performance rather than
+// inventing comparability, which is important for bodyweight sets without historical bodyweight.
+export function selectProgressionReference(
+  performances: ProgressionPerformance[],
+  programSlotId: string,
+): ProgressionReference {
+  const recentFirst = [...performances]
+    .sort((a, b) => b.performedAt.localeCompare(a.performedAt));
+  const lastSameSlot = recentFirst.find((item) => item.programSlotId === programSlotId) ?? null;
+  const window = lastSameSlot
+    ? recentFirst.filter((item) => item.performedAt >= lastSameSlot.performedAt)
+    : recentFirst.slice(0, 4);
+  const comparable = window.filter(
+    (item): item is ProgressionPerformance & { e1rm: number } => item.e1rm != null,
+  );
+  const bestRecent = comparable.reduce<ProgressionPerformance | null>((best, item) => {
+    if (!best || best.e1rm == null || item.e1rm > best.e1rm) return item;
+    return best;
+  }, null) ?? window[0] ?? null;
+
+  return {
+    lastSameSlot,
+    bestRecent,
+    selected: bestRecent ?? lastSameSlot,
+  };
 }
 
 // Recommender-derived starting weight in the unit the UI displays and logs.

@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Pattern } from "@/lib/strength/coefficients";
-import type { LastPerformance } from "@/lib/strength/progression";
+import type { ProgressionPerformance } from "@/lib/strength/progression";
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { recentExerciseIds } from "@/lib/program";
 import { getCatalogMap } from "@/lib/catalog";
@@ -12,6 +12,22 @@ import type { JointPain } from "@/lib/session-feedback";
 import { loadWorkoutRecords } from "@/lib/workout-records";
 import { getCurrentBodyweight } from "@/lib/current-bodyweight";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
+
+type PriorSetRow = {
+  session_id: string;
+  program_slot_id: string | null;
+  exercise_id: string;
+  weight: number;
+  reps: number;
+  rir: number | null;
+  e1rm: number | null;
+  set_index: number;
+  created_at: string;
+  workout_session:
+    | { performed_at: string; finished_at: string | null }
+    | { performed_at: string; finished_at: string | null }[]
+    | null;
+};
 
 export default async function SessionPage({
   params,
@@ -84,30 +100,66 @@ export default async function SessionPage({
     confidenceN: r.coeff_confidence_n,
   }));
 
-  // Last performance per (slot, exercise): first working set of the most recent prior
-  // session. Keyed on exercise too, so a swapped exercise resumes its own progression
-  // chain in the slot without corrupting the original's.
   const slotIds = (daySlots ?? []).map((s) => s.id);
-  const { data: priorSets } = slotIds.length
+  const swaps = session.exercise_swaps;
+  const sessionSwaps = swaps && typeof swaps === "object" && !Array.isArray(swaps) ? swaps : {};
+  const historyExerciseIds = [...new Set([
+    ...recentIds,
+    ...(daySlots ?? []).map((slot) => slot.exercise_id),
+    ...(thisSessionSets ?? []).map((set) => set.exercise_id),
+    ...Object.values(sessionSwaps).filter((value): value is string => typeof value === "string"),
+  ])];
+
+  // Recent first working sets for each exact exercise across every program slot. The active
+  // client selects a best-recent reference within the current slot cycle, allowing Lower A to
+  // benefit from a newer Lower B exposure without letting an old all-time PR dictate the target.
+  // Fetch all working sets because an exercise introduced by a mid-session swap may start at a
+  // set index above zero; grouping below finds its first set within that exposure.
+  const { data: priorSets, error: priorSetsError } = historyExerciseIds.length
     ? await supabase
         .from("set_log")
-        .select("program_slot_id, exercise_id, weight, reps, rir, created_at")
+        .select("session_id, program_slot_id, exercise_id, weight, reps, rir, e1rm, set_index, created_at, workout_session!inner(performed_at, finished_at)")
         .eq("user_id", userId)
-        .eq("set_index", 0)
         .eq("is_warmup", false)
         .neq("session_id", id)
-        .in("program_slot_id", slotIds)
+        .in("exercise_id", historyExerciseIds)
+        .lt("workout_session.performed_at", session.performed_at)
+        .lte("workout_session.finished_at", session.performed_at)
+        .lt("created_at", session.performed_at)
         .order("created_at", { ascending: false })
-    : { data: [] };
+        .limit(500)
+    : { data: [], error: null };
+  if (priorSetsError) throw new Error("Unable to load progression history. Please try again.");
 
-  const lastBySlot = new Map<string, Record<string, LastPerformance>>();
-  for (const row of priorSets ?? []) {
-    if (!row.program_slot_id) continue;
-    const byExercise = lastBySlot.get(row.program_slot_id) ?? {};
-    if (!byExercise[row.exercise_id]) {
-      byExercise[row.exercise_id] = { weight: row.weight, reps: row.reps, rir: row.rir };
+  const firstByExposure = new Map<string, PriorSetRow>();
+  for (const row of (priorSets ?? []) as PriorSetRow[]) {
+    const key = `${row.session_id}:${row.program_slot_id ?? "adhoc"}:${row.exercise_id}`;
+    const current = firstByExposure.get(key);
+    if (!current || row.set_index < current.set_index || (
+      row.set_index === current.set_index && row.created_at < current.created_at
+    )) {
+      firstByExposure.set(key, row);
     }
-    lastBySlot.set(row.program_slot_id, byExercise);
+  }
+  const progressionByExercise: Record<string, ProgressionPerformance[]> = {};
+  for (const row of firstByExposure.values()) {
+    const joined = Array.isArray(row.workout_session)
+      ? row.workout_session[0]
+      : row.workout_session;
+    if (!joined?.finished_at) continue;
+    const list = progressionByExercise[row.exercise_id] ?? [];
+    list.push({
+      programSlotId: row.program_slot_id,
+      performedAt: joined.performed_at,
+      weight: row.weight,
+      reps: row.reps,
+      rir: row.rir,
+      e1rm: row.e1rm,
+    });
+    progressionByExercise[row.exercise_id] = list;
+  }
+  for (const list of Object.values(progressionByExercise)) {
+    list.sort((a, b) => b.performedAt.localeCompare(a.performedAt));
   }
 
   // Group by slot, not exercise, so a duplicated exercise across two slots renders
@@ -165,9 +217,6 @@ export default async function SessionPage({
   const sessionWeek = session.week_index ?? 1;
   const activePhase = phaseForWeek(phases, sessionWeek);
 
-  const swaps = session.exercise_swaps;
-  const sessionSwaps = swaps && typeof swaps === "object" && !Array.isArray(swaps) ? swaps : {};
-
   const slots: SlotView[] = (daySlots ?? []).map((slot) => {
     const folded = foldedBySlot.get(slot.id);
     const effective = resolvePrescription(
@@ -195,7 +244,6 @@ export default async function SessionPage({
         targetRirMin: effective.targetRirMin,
         targetRirMax: effective.targetRirMax,
       },
-      lastByExercise: lastBySlot.get(slot.id) ?? {},
       restSeconds: slot.rest_seconds,
       sets: setsBySlot.get(slot.id) ?? [],
       pendingSuggestion: null,
@@ -241,6 +289,7 @@ export default async function SessionPage({
       stats={stats}
       recentIds={recentIds}
       slots={slots}
+      progressionByExercise={progressionByExercise}
       catalog={catalog}
       achievements={achievements}
     />

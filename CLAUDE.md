@@ -215,10 +215,12 @@ filter; a null tag returns everything). Tested in `program-tags.test.ts`.
 ### Active session targets and swap (`src/app/(app)/session/[id]/`)
 
 `page.tsx` no longer computes session targets server-side — it hydrates the client
-component with `ExerciseStat[]`, `recentExerciseIds`, and a per-slot
-`lastByExercise: Record<exerciseId, LastPerformance>` map. `active-session.tsx`'s
-`SlotCard` calls `sessionTarget()` client-side (`useMemo`) to derive each target, so a
-swap re-derives instantly with no round-trip. `ActiveSession` holds the merged `catalog`
+component with `ExerciseStat[]`, `recentExerciseIds`, and recent first-set performances grouped
+by exact exercise. `active-session.tsx` uses `selectProgressionReference()` to anchor on the
+slot's last exposure and select a stronger exact-exercise exposure occurring after it, then
+calls `sessionTarget()` client-side (`useMemo`). This lets repeated weekly exercises share new
+progress without letting an old all-time PR override the slot, and swaps still re-derive
+instantly with no round-trip. `ActiveSession` holds the merged `catalog`
 (hydrated from `page.tsx` via `getCatalogMap`) in state and exposes `addToCatalog`, so a
 variant resolved in-session is merged in and immediately drives that slot's name/target.
 A slot's effective exercise id first uses the persisted `workout_session.exercise_swaps` choice,

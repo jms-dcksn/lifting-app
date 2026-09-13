@@ -126,3 +126,11 @@ as next-step cards. The remaining section is collapsible (initially open), with 
 count and rationale/evidence collapsed per suggestion. If nothing needs review, one compact
 empty-state line replaces the list. The API and coaching export retain the full diagnostic
 recommendations; this is a presentation change, not a change to the recommendation engine.
+
+## Shared stall evidence
+
+Plateau reviews now consume `stall-report.ts` through the complete owner-scoped loader,
+shared with Fluid and monthly review. Phase/deload/identity/adaptation boundaries reset
+comparison history, and fixed-load rep gains reset the stall clock. Pain/deload/effort
+priorities and the weekly API schema remain unchanged. See the detailed
+[contract and history limits](MONTHLY-PROGRESS.md#shared-stall-contract).

@@ -1,7 +1,7 @@
-# Monthly progress — first increment of #30
+# Monthly progress — canonical metrics (#30)
 
 `/analytics/month?month=YYYY-MM` is an authenticated, read-only consumer of the pure
-version 1.0 `buildMonthlyReport`. Progress links to it. No migration or new secrets.
+version 1.1 `buildMonthlyReport`. Progress links to it. No migration or new secrets.
 
 ## Contract
 
@@ -45,29 +45,86 @@ rep PR and one e1RM PR. The September 2 recap retains its achievement even after
 September 8. August 1–13 has one of each PR against July's baseline. September's
 strength comparison uses its best stored session estimate versus August 2.
 
-## Remaining #30 work (issue stays open)
+## Shared stall contract
 
-Share a context-aware stall contract before adding actionable signals. Inspection found
-that weekly Coach `slotExposures` filters the latest exercise across all matching slots'
-exposures, while Fluid's plateau path operates inside a folded adaptation phase. Coach
-resolves phase prescriptions and suppresses a latest deload, but does not fully reset
-its historical plateau series at phase/rep-range or away-and-back exercise boundaries.
-Do not label monthly flatness as a plateau. Reconcile these paths with adaptation history,
-phase changes, rep gains, 3/4 stalled-exposure patience and 14-day minimum, including
-regressions for deloads and exercise swaps, in the next increment.
+`stall-report.ts` prepares one contiguous series for each program slot. Monthly review,
+weekly Coach (UI/export/API), and Fluid all consume it. `strength/plateau.ts` retains the
+shared threshold calculation and Fluid's intervention ladder.
 
-#31 remains the richer UI slice: ranked insights, sparklines, history-route filters/back
-context, integrated weight trend and supported stall evidence. #32 is design only; #33
-remains blocked. This first preview uses existing finished-session recaps as evidence.
+- Only completed, owner-scoped workouts count, grouped by session ID and ordered by
+  `performed_at`. Logging several workouts on one date does not collapse their exposures.
+- Identity includes the exact exercise and equipment instance. A swap away and back,
+  a mixed-identity workout, a phase change, or a recorded adaptation starts fresh evidence.
+  Phase/rep-range/RIR/set-count context comes from the stored session week and adaptation
+  history. Adaptation rows are ordered by timestamp with ID as a deterministic tie-break.
+- Deloads break the series. A latest deload is internally `deload`; the first subsequent
+  normal workout establishes a new baseline. Invalid/missing estimates and unknown weeks
+  in phased programs also break continuity. Warmups never contribute.
+- Normal patience remains four stalled exposures for barbell and three for other equipment,
+  in addition to the initial baseline, spanning at least 14 elapsed days of training.
+  Existing explicit per-slot patience overrides are honored consistently by all consumers.
+- A running-best e1RM improvement must exceed max(1%, 1 lb), as before. A rep increase
+  at a previously observed canonical effective load also resets the stall clock, even if
+  stored e1RM is flat. First observations at a new load are not rep gains. Bodyweight load
+  is reconstructed from the historical set, never the current profile.
+- Evidence includes dated session links, stored session-best estimates, normalized-load rep
+  bests/gains, last improvement or baseline, exposures, elapsed days, phase, and rep range.
+  `monitoring` and `insufficient_data` are internal states; only `plateau` becomes a card.
+- A change accepted after the latest workout clears the former plateau immediately.
+  Historical monthly views ignore adaptations after the selected window. Late entry of an
+  old workout uses its performed date for context rather than borrowing later adaptations.
+- Monthly best change and plateau status remain separate. A lower monthly best alone
+  cannot trigger this signal. Only series whose latest exposure falls within the selected
+  month/window appear in that monthly report; skipped lifts never become declines/stalls.
+- No recommendation or program change is applied by this report. Coach still prioritizes
+  pain, deload, and repeated effort misses. Fluid retains its dismiss/snooze and confirmation
+  behavior; the report shows the underlying evidence independently of dismissal state.
+
+### Reconciled differences and limits
+
+Previously Coach filtered all history to the latest exercise, potentially joining history
+across an away-and-back swap. Fluid grouped by set creation date and included unfinished
+work. Both now use the same complete, phase-aware session series and rep-progress rule.
+Coach's repeated-effort/decline comparisons also respect the resulting contiguous series.
+
+The schema does not retain snapshots of arbitrary program-builder prescription edits.
+Historical context can only use the stored session week, current phase/slot definitions,
+and recorded adaptations; unrecorded old builder values cannot be reconstructed. Deleted
+slots are omitted from stall classification, while their sets still contribute PR totals.
+Missing/invalid data fails conservatively instead of inventing evidence.
+
+All session, set, slot, day, phase, and adaptation reads use explicit owner predicates and
+keyset pagination, including short server pages. Monthly replay shares its history with
+stall loading. Coach currently loads an additional complete strength history for reliable
+stall evidence; broader weekly-report query pagination remains a separate existing limit.
+Failed reads surface an error rather than a partial, apparently authoritative report.
+No persisted monthly cache; finish/edit/delete revalidate the monthly and Progress routes.
+Weekly response schema/version and record semantics remain unchanged.
+
+#31 is next: ranked improvements, sparklines, history-route filters/back context and
+integrated weight trends. #32 is design only; #33 remains blocked by that design and #31.
+
+### Stall example
+
+Five completed barbell sessions on September 1, 6, 11, 16 and 21, each with stored
+130 lb e1RM and 100 × 8, produce four stalled exposures over 20 days, with September 1
+as the baseline. If September 21 is 100 × 9, the stall clock resets despite the same
+stored 130 lb estimate. If September 16 is a deload or another machine, September 21
+is a fresh baseline and no review card appears.
 
 ## Verification / preview
 
 Pure tests cover partial/completed months, February/leap/year boundaries, Chicago UTC
 midnight/DST, recaps, historical edits/deletion, distant baselines, stored estimates,
 bodyweight, equipment identity, ties, first marks, missing data, user isolation,
-short pages, >1,000 rows and failed reads. Full suite: 272 passing tests.
+short pages, >1,000 rows and failed reads. The first increment had 272 passing tests. Shared-stall coverage adds phase/deload resets,
+rep gains, adaptations, swaps/equipment, incomplete/foreign history, metadata pagination,
+historical month cutoffs, and Fluid integration.
 
 Preview checklist: Progress → Review monthly strength & records; switch months, inspect
 current/prior dates, expand supporting workouts and achievements, follow a recap and
-use browser Back. Check narrow/mobile fit and keyboard month navigation. Authenticated
-visual verification is still pending; no synthetic user records were written.
+use browser Back. Supported stalls appear in Worth reviewing with expandable workout evidence;
+unsupported signals stay hidden. Check narrow/mobile fit and keyboard month navigation. Validation: 296 tests, ESLint, TypeScript and production build pass. The new context
+columns/joins were checked read-only against the live schema. Browser access reaches
+the magic-link sign-in screen; authenticated visual verification remains pending.
+No synthetic user records were written.

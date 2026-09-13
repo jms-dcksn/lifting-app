@@ -1,3 +1,4 @@
+import { loadStallAssessments } from "@/lib/stall-data";
 import Link from "next/link";
 import { WeightTrendCard } from "./weight-trend-card";
 import { loadWeightHistory } from "@/lib/weight-history";
@@ -246,7 +247,9 @@ export default async function AnalyticsPage() {
     currentBodyweight: bodyweight,
     bodyweightTrend: weightTrend,
   });
+  const stalls = await loadStallAssessments(supabase, userId, catalog, new Date(coachReport.generatedAt));
   const coachRecommendations = buildCoachRecommendations({
+    stalls,
     report: coachReport,
     activeProgramId: program?.id ?? null,
     sessions: coachSessions,

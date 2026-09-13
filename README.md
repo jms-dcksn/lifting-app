@@ -105,5 +105,5 @@ reading to edit it in the weight calendar. See [weight trend contracts](docs/WEI
 
 Monthly review: open **Progress → Review monthly strength & records** for exact-date
 month comparisons, canonical workout PR totals, and equipment-specific strength evidence.
-This is the first increment of #30; stall classification and the full #31 dashboard remain
-planned. See [Monthly progress](docs/MONTHLY-PROGRESS.md).
+Supported stalls appear under **Worth reviewing**, with comparable workout evidence shared
+with Coach and Fluid. The richer dashboard remains #31. See [Monthly progress](docs/MONTHLY-PROGRESS.md).

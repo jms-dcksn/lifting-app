@@ -12,6 +12,7 @@ const label = (month: string) => new Date(`${month}-01T12:00:00Z`).toLocaleDateS
 const states = { improving: "Improving", stable: "Stable", declining: "Lower monthly best", new: "No prior comparison", not_trained: "Not trained", unavailable: "No stored estimate" };
 
 export function MonthlyReview({ report }: { report: MonthlyReport }) {
+  const stalls = report.stalls.filter(s => s.state === "plateau");
   const currentMonth = dateKey(new Date(report.generatedAt), report.timeZone).slice(0, 7);
   const metrics = [
     ["Workouts", report.current.workouts, report.prior.workouts],
@@ -73,6 +74,22 @@ export function MonthlyReview({ report }: { report: MonthlyReport }) {
         </li>)}
       </ul>}
     </Card>
+    {stalls.length > 0 && <Card>
+      <CardLabel>Worth reviewing</CardLabel>
+      <p className="mt-2 text-caption text-muted">Repeated comparable workouts without an estimated-strength or fixed-load rep gain. These are review signals; your program is unchanged.</p>
+      <ul className="mt-3 divide-y divide-border">{stalls.map(stall => <li key={stall.slotId} className="py-3">
+        <p className="font-medium">{stall.name}</p>
+        {stall.equipmentInstanceId && <p className="break-all text-caption text-muted">Equipment {stall.equipmentInstanceId}</p>}
+        <p className="mt-1 text-body">{stall.stalledExposures} stalled exposures across {stall.stalledSinceDays} days</p>
+        <p className="text-caption text-muted">{stall.repMin}–{stall.repMax} reps{stall.phaseName ? ` · ${stall.phaseName}` : ""} · Last improvement/baseline: {dateKey(new Date(stall.lastImprovementAt!), report.timeZone)}</p>
+        <details className="mt-1">
+          <summary className="min-h-11 cursor-pointer py-2 text-caption text-muted">Review supporting workouts</summary>
+          <ul>{stall.points.map(point => <li key={point.sessionId}><Link className="flex min-h-11 items-center justify-between gap-2 text-caption underline" href={`/session/${point.sessionId}`}>
+            <span>{dateKey(new Date(point.sessionAt), report.timeZone)}</span><span>{amount(point.bestE1rm)} e1RM{point.repGain ? " · rep gain" : ""}</span>
+          </Link></li>)}</ul>
+        </details>
+      </li>)}</ul>
+    </Card>}
     <Card>
       <CardLabel>Achievements</CardLabel>
       <p className="mt-1 text-caption text-muted">{report.current.exercisesWithRecords} exercises · {report.current.workoutsWithRecords} workouts with records</p>

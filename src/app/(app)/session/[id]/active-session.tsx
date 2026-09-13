@@ -676,7 +676,7 @@ function SlotCard({
             increment={increment}
             defaultRir={p.targetRir}
             initial={{ weight: initialWeight, reps: initialReps, rir: p.targetRir }}
-            label="Add set"
+            label="Log set"
             disabled={isPending}
             liveWeight={liveWeight}
             onSubmit={handleLog}

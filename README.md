@@ -101,3 +101,8 @@ and Settings, including backdated entries and atomic date corrections. See
 Progress includes bodyweight dots, seven-day trend averages, a goal reference,
 30/90-day, six-month and all-history views, plus optional weekly averages. Tap a
 reading to edit it in the weight calendar. See [weight trend contracts](docs/WEIGHT-TRENDS.md).
+
+Monthly review: open **Progress → Review monthly strength & records** for exact-date
+month comparisons, canonical workout PR totals, and equipment-specific strength evidence.
+This is the first increment of #30; stall classification and the full #31 dashboard remain
+planned. See [Monthly progress](docs/MONTHLY-PROGRESS.md).

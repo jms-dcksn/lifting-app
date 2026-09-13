@@ -495,3 +495,13 @@ increment), working sets only, bodyweight included, just-me-first.
 - [x] Pure math/pagination tests, typecheck, lint, production build.
 - [ ] Authenticated mobile review on Vercel (local browser access blocked).
 - [ ] Review/merge this slice before proceeding to monthly metrics (#30).
+
+## Progress epic #27 — increment 3a: monthly records foundation (#30)
+
+- [x] Weight trends merged in PR #35; next slice authorized.
+- [x] Typed, pure monthly windows, recap-reconciled records and stored e1RM comparisons.
+- [x] Owner-scoped keyset pagination with complete historical baselines.
+- [x] Authenticated month-review preview, exact windows, supporting workout links.
+- [x] Boundary, identity, edit, historical-bodyweight and pagination regression tests.
+- [ ] Reconcile Coach/Fluid context-aware stall contract to finish #30.
+- [ ] Authenticated mobile preview review; full dashboard remains #31.

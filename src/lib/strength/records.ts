@@ -63,7 +63,7 @@ export function historicalBodyweight(set: Pick<RecordSet, "weight" | "reps" | "r
   return bodyweight > 0 ? bodyweight : null;
 }
 
-function eligible(set: RecordSet, def: ExerciseDef | undefined) {
+export function eligibleRecordSet(set: RecordSet, def: ExerciseDef | undefined) {
   if (!def || def.machineTemplate || set.is_warmup || !validSetNumbers(set)) return null;
   const weight = set.weight!;
   const reps = set.reps!;
@@ -76,7 +76,7 @@ function eligible(set: RecordSet, def: ExerciseDef | undefined) {
   return { load: loadPrecision(effective), estimate: estimatePrecision(estimate), reps, weight };
 }
 
-function scope(set: RecordSet) {
+export function recordScope(set: RecordSet) {
   return JSON.stringify([set.exercise_id, set.equipment_instance_id]);
 }
 
@@ -102,9 +102,9 @@ export function workoutRecords(
   const priorReps = new Map<string, number>();
   const priorEstimates = new Map<string, number>();
   for (const set of prior) {
-    const values = eligible(set, catalog[set.exercise_id]);
+    const values = eligibleRecordSet(set, catalog[set.exercise_id]);
     if (!values) continue;
-    const key = scope(set);
+    const key = recordScope(set);
     const loadKey = `${key}:${values.load}`;
     priorReps.set(loadKey, Math.max(priorReps.get(loadKey) ?? 0, values.reps));
     priorEstimates.set(key, Math.max(priorEstimates.get(key) ?? 0, values.estimate));
@@ -114,9 +114,9 @@ export function workoutRecords(
   const groups = new Map<string, ExerciseRecords>();
   for (const set of current) {
     const def = catalog[set.exercise_id];
-    const values = eligible(set, def);
+    const values = eligibleRecordSet(set, def);
     if (!values) continue;
-    const key = scope(set);
+    const key = recordScope(set);
     const loadKey = `${key}:${values.load}`;
     const previousReps = bestReps.get(loadKey);
     const previousEstimate = bestEstimates.get(key);

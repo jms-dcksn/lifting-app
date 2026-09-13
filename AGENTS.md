@@ -99,3 +99,11 @@ rolling math to `bodyweightTrend`. `loadWeightHistory` paginates by date with an
 explicit owner predicate; never replace it with a latest-row sample. Chart ranges
 do not change today's summary. Goals have no frozen baseline: use distance only,
 never derive a completion percentage from the selected range. See `docs/WEIGHT-TRENDS.md`.
+
+## Monthly progress
+
+`monthly-progress.ts` owns versioned monthly windows and comparisons; `monthly-progress-data.ts`
+loads complete owner-scoped history via UUID keyset pagination. `/analytics/month` consumes it.
+PR totals replay `workoutRecords`, while monthly best strength uses stored eligible e1RMs.
+Do not classify flat monthly results as stalls. #30's shared phase-aware stall contract remains
+open; see `docs/MONTHLY-PROGRESS.md` for existing Coach/Fluid differences and the next slice.

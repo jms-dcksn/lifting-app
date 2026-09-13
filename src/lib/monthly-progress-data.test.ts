@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { loadMonthlyReport } from "./monthly-progress-data";
+import { loadMonthlyHistory } from "./strength-history-data";
+import { buildMonthlyReport } from "./monthly-progress";
+async function loadMonthlyReport(db: Parameters<typeof loadMonthlyHistory>[0], userId: string, month: string, catalog: typeof EXERCISE_BY_ID, now: Date) {
+  return buildMonthlyReport({ userId, month, catalog, now, ...await loadMonthlyHistory(db, userId, month, now) });
+}
 import { EXERCISE_BY_ID } from "./strength/coefficients";
 function client(results: Array<{ data: unknown[] | null; error: unknown }>) {
   const query = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), not: vi.fn().mockReturnThis(),

@@ -1,3 +1,4 @@
+import { buildStallAssessments } from "./stall-report";
 import { describe, expect, it } from "vitest";
 import {
   buildCoachRecommendations,
@@ -79,7 +80,15 @@ function build(
     definitions: EXERCISE_BY_ID,
     currentBodyweight: 180,
   };
+  const combined = { ...reportInput, ...overrides };
+  const stalls = buildStallAssessments({ userId: "u", sessions, slots: combined.slots, phases: combined.phases, adaptations: [],
+    sets: sets.map((s, i) => ({ id: String(i), user_id: "u", session_id: s.sessionId, program_slot_id: s.programSlotId,
+      exercise_id: s.exerciseId, equipment_instance_id: null, weight: s.weight, reps: s.reps, rir: s.rir, e1rm: s.e1rm,
+      created_at: s.createdAt, is_warmup: s.isWarmup, workout_session: { performed_at: sessions.find(x => x.id === s.sessionId)!.performedAt,
+        finished_at: sessions.find(x => x.id === s.sessionId)!.finishedAt } })),
+  }, combined.definitions, NOW);
   return buildCoachRecommendations({
+    stalls,
     ...reportInput,
     report: buildCoachCheckInReport(reportInput),
     activeProgramId: "program-1",

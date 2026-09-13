@@ -15,7 +15,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |
 | Active substitutions / pre-workout choices | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
 | Weight observations, charts and goal distance | [Calendar](WEIGHT-CALENDAR.md), [trends](WEIGHT-TRENDS.md) |
-| Monthly comparison and unfinished stall work | [Monthly progress](MONTHLY-PROGRESS.md) |
+| Monthly comparisons and shared stall evidence | [Monthly progress](MONTHLY-PROGRESS.md) |
 | Strong Foundations template rationale | [Strong Foundations](STRONG-FOUNDATIONS.md) |
 
 [PLAN](PLAN.md) mixes completed milestones with remaining work; its original estimates and
@@ -25,7 +25,8 @@ baseline, not a current bug list. Files under `superpowers/plans/` and `superpow
 are dated design/implementation records; their commands and file maps are not current runbooks.
 
 As of the code review on 2026-09-13, monthly records and strength comparisons are implemented.
-The shared phase-aware stall contract and richer monthly dashboard remain unfinished; see
+The shared phase-aware stall contract now supports all three consumers; the richer monthly
+dashboard remains #31. See
 [Monthly progress](MONTHLY-PROGRESS.md). Issue numbers here identify planned slices, not a
 live GitHub status check. Historical verification counts describe their original runs.
 

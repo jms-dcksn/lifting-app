@@ -54,6 +54,6 @@ put new detail in the relevant reference and add a trigger here only when needed
 | Coach report, proposals, progression references, or private weekly API | [Coach contract](docs/COACH-REPORT.md) and [architecture: strength](docs/ARCHITECTURE.md#strength-and-exercise-identity) |
 | Weight writes, date moves, or shared calendar | [Weight calendar](docs/WEIGHT-CALENDAR.md) |
 | Weight charts, history pagination, or goal distance | [Weight trends](docs/WEIGHT-TRENDS.md) |
-| Monthly comparisons, PR totals, or stall classification | [Monthly progress](docs/MONTHLY-PROGRESS.md); shared phase-aware stalls remain unfinished |
+| Monthly comparisons, PR totals, or stall classification | [Monthly progress](docs/MONTHLY-PROGRESS.md); Coach/Fluid/monthly share `stall-report.ts` |
 | Setup, environment variables, migrations, or deployment | [Deployment](DEPLOY.md) |
 | Feature scope or selecting planned work | [Features](docs/FEATURES.md) and [build plan](docs/PLAN.md); verify old checklist status against code |

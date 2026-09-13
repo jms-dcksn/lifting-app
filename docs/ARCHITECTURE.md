@@ -47,8 +47,9 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
 
 `plateau.ts` owns Fluid detection, rep-band changes, and swap ranking; `fluid.ts` loads
 adaptation context. Manual swaps preserve rep ranges and reset plateau state, unlike coach
-`swap` interventions. Follow [swap persistence](EXERCISE-SWAPS.md). Coach and Fluid do not
-yet share a complete phase-aware stall contract; see [remaining work](MONTHLY-PROGRESS.md#remaining-30-work-issue-stays-open).
+`swap` interventions. Follow [swap persistence](EXERCISE-SWAPS.md). Coach, Fluid and monthly review share
+`stall-report.ts` and the complete owner-scoped history/context loader in `stall-data.ts`;
+see the [shared stall contract](MONTHLY-PROGRESS.md#shared-stall-contract).
 
 ## Programs and prescriptions
 

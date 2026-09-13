@@ -183,7 +183,9 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 
 - **Per-movement plateau detection** — tracks the best-e1RM-per-session series for the current
   movement *phase* (a `(slot, exercise, rep-range)` period) and flags a plateau with
-  hysteresis: progress = a new running-best beyond a ~1% noise margin (`detectPlateau`).
+  hysteresis: progress = a new running-best beyond max(1%, 1 lb), or more reps at a
+  previously observed effective load (`detectPlateau`). Coach, Fluid and monthly review
+  share completed-session evidence, exact equipment identity and phase/deload/swap resets.
 - **Two-part hysteresis** — flags only when **both** hold: at least `patience` stalled
   exposures (sessions), and the stall spans at least `MIN_PLATEAU_DAYS` (14) of real training
   time. Frequency-independent; a movement hammered daily can't plateau in a few days.
@@ -263,8 +265,8 @@ Pure analytics in `src/lib/analytics.ts` plus the versioned canonical report in
 
 Progress opens with the shared weight calendar entry point and interactive bodyweight trends
 ([contract](WEIGHT-TRENDS.md)). The monthly review link opens `/analytics/month` for date-window
-comparisons, canonical PR totals, and exact-equipment strength evidence
-([contract and remaining work](MONTHLY-PROGRESS.md)).
+comparisons, canonical PR totals, exact-equipment strength evidence, and supported stall reviews
+([contract](MONTHLY-PROGRESS.md)).
 
 Other pure analytics available: `e1rmPrFeed` (chronological PR events), `weightPrs` (all-time
 heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `latestWeekBalance`.

@@ -7,7 +7,7 @@ import type {
 } from "./coach-check-in";
 import { dateKey } from "./bodyweight";
 import { resolvePrescription } from "./periodization";
-import { detectPlateau, defaultPatience } from "./strength/plateau";
+import { isDeload, type StallAssessment } from "./stall-report";
 import {
   selectProgressionReference,
   sessionTarget,
@@ -55,6 +55,7 @@ export interface BuildCoachRecommendationsInput
   > {
   report: CoachCheckInReport;
   activeProgramId: string | null;
+  stalls?: StallAssessment[];
 }
 
 interface Exposure {
@@ -192,13 +193,8 @@ function recommendationForSlot(
     });
   }
 
-  const plateauExposures = exposures.flatMap((exposure) =>
-    exposure.bestE1rm == null
-      ? []
-      : [{ sessionAt: exposure.session.performedAt, bestE1rm: exposure.bestE1rm }],
-  );
-  const plateau = detectPlateau(plateauExposures, defaultPatience(definition));
-  if (plateau.plateaued) {
+  const plateau = input.stalls?.find(s => s.slotId === slot.id && s.exerciseId === exerciseId);
+  if (plateau?.state === "plateau" && plateau.points.at(-1)?.sessionId === latest.session.id) {
     return recommendation({
       kind: "plateau_review",
       slotId: slot.id,
@@ -209,8 +205,12 @@ function recommendationForSlot(
       action: "Review the rep range before considering a substitution",
       rationale: `The existing plateau rule found ${plateau.stalledExposures} stalled exposures across ${plateau.stalledSinceDays} days.`,
       confidence: "high",
-      dataSufficiency: `Meets the ${defaultPatience(definition)}-exposure patience rule and 14-day minimum; a swap remains a proposal requiring confirmation.`,
+      dataSufficiency: `Meets the ${plateau.patience}-exposure patience rule and 14-day minimum; a swap remains a proposal requiring confirmation.`,
       ...evidence,
+      windowStart: plateau.points[0].sessionAt,
+      windowEnd: plateau.points.at(-1)!.sessionAt,
+      exposureCount: plateau.points.length,
+      summary: plateau.points.slice(-4).map(p => `${p.sessionAt.slice(0, 10)} · best e1RM ${trim(p.bestE1rm)}${p.repGain ? " · rep gain" : ""}`),
     });
   }
 
@@ -404,8 +404,16 @@ function slotExposures(input: BuildCoachRecommendationsInput, slot: CoachSlotInp
       targetRirMax: prescription.targetRirMax,
     }];
   });
-  const currentExercise = raw.at(-1)?.firstSet.exerciseId;
-  return raw.filter((exposure) => exposure.firstSet.exerciseId === currentExercise);
+  const latest = raw.at(-1);
+  if (!latest) return [];
+  const phaseKey = (e: Exposure) => resolvePrescription(slot, e.session.weekIndex ?? 1,
+    input.phases.filter(p => p.programId === slot.programId)).phase?.id ?? null;
+  let start = raw.length - 1;
+  while (start > 0 && raw[start - 1].firstSet.exerciseId === latest.firstSet.exerciseId
+    && phaseKey(raw[start - 1]) === phaseKey(latest)) start--;
+  const assessment = input.stalls?.find(s => s.slotId === slot.id);
+  const comparable = assessment ? new Set(assessment.points.map(p => p.sessionId)) : null;
+  return raw.slice(start).filter(e => !comparable || comparable.has(e.session.id) || e === latest);
 }
 
 function finishedSessions(input: Pick<BuildCoachRecommendationsInput, "sessions" | "report">) {
@@ -479,14 +487,6 @@ function recommendation(input: {
     confidence: input.confidence,
     dataSufficiency: input.dataSufficiency,
   };
-}
-
-function isDeload(phase: { name: string; description: string | null; setMultiplier: number | null } | null) {
-  if (!phase) return false;
-  return (
-    (phase.setMultiplier != null && phase.setMultiplier < 1)
-    || `${phase.name} ${phase.description ?? ""}`.toLowerCase().includes("deload")
-  );
 }
 
 function exposureConfidence(count: number): RecommendationConfidence {

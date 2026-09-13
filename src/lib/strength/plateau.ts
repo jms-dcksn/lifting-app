@@ -33,6 +33,7 @@ export function defaultPatience(def: ExerciseDef): number {
 export interface PhaseExposure {
   sessionAt: string; // ISO timestamp of the session
   bestE1rm: number; // best working-set e1RM that session
+  repBests?: { load: number; reps: number }[]; // canonical effective loads, exact identity
 }
 
 export interface PlateauResult {
@@ -56,7 +57,16 @@ export function detectPlateau(
 
   let runningBest = exposures[0].bestE1rm;
   let lastProgressIndex = 0;
+  const repBest = new Map<number, number>();
+  for (const mark of exposures[0].repBests ?? []) repBest.set(mark.load, Math.max(repBest.get(mark.load) ?? 0, mark.reps));
   for (let i = 1; i < exposures.length; i++) {
+    let repGain = false;
+    for (const mark of exposures[i].repBests ?? []) {
+      const prior = repBest.get(mark.load);
+      if (prior != null && mark.reps > prior) repGain = true;
+      repBest.set(mark.load, Math.max(prior ?? 0, mark.reps));
+    }
+    if (repGain) lastProgressIndex = i;
     if (exposures[i].bestE1rm > runningBest + margin(runningBest)) {
       runningBest = exposures[i].bestE1rm;
       lastProgressIndex = i;

@@ -1,3 +1,4 @@
+import type { StallAssessment } from "./stall-report";
 import { dateKey } from "./bodyweight";
 import { monthRange, shiftMonth } from "./weight-calendar";
 import type { ExerciseDef } from "./strength/coefficients";
@@ -8,6 +9,9 @@ export interface MonthlySession {
   user_id: string;
   performed_at: string;
   finished_at: string | null;
+  program_id?: string | null;
+  program_day_id?: string | null;
+  week_index?: number | null;
 }
 export interface MonthWindow { start: string; end: string }
 export interface MonthlyPoint { sessionId: string; date: string; e1rm: number }
@@ -28,7 +32,8 @@ export interface MonthlyLift {
 }
 export interface MonthlyAchievements { sessionId: string; date: string; records: ExerciseRecords[] }
 export interface MonthlyReport {
-  version: "1.0";
+  version: "1.1";
+  stalls: StallAssessment[];
   month: string;
   timeZone: string;
   generatedAt: string;
@@ -60,7 +65,7 @@ const inWindow = (day: string, window: MonthWindow) => day >= window.start && da
 /** Replay the canonical workout recaps; monthly comparisons use persisted estimates. */
 export function buildMonthlyReport(input: {
   userId: string; month: string; sessions: MonthlySession[]; sets: RecordSet[];
-  catalog: Record<string, ExerciseDef>; now?: Date; timeZone?: string;
+  catalog: Record<string, ExerciseDef>; now?: Date; timeZone?: string; stalls?: StallAssessment[];
 }): MonthlyReport {
   const now = input.now ?? new Date();
   const timeZone = input.timeZone ?? "America/Chicago";
@@ -118,7 +123,10 @@ export function buildMonthlyReport(input: {
       percent: delta != null && priorBest != null && priorBest > 0 ? rounded(delta / priorBest * 100) : null,
       state, currentExposures: g.currentIds.size, priorExposures: g.priorIds.size, currentPoints, priorPoints };
   }).sort((a, b) => (b.percent ?? -Infinity) - (a.percent ?? -Infinity) || a.name.localeCompare(b.name) || a.key.localeCompare(b.key));
-  return { version: "1.0", month: input.month, timeZone, generatedAt: now.toISOString(), inProgress,
+  return { version: "1.1", stalls: (input.stalls ?? []).filter(s => {
+    const latest = s.points.at(-1);
+    return latest && inWindow(dateKey(new Date(latest.sessionAt), timeZone), current);
+  }), month: input.month, timeZone, generatedAt: now.toISOString(), inProgress,
     windows: { current, prior }, current: totals(current), prior: totals(prior), lifts, quality,
     achievements: windowSessions(current).map(s => ({ sessionId: s.id, date: dateKey(new Date(s.performed_at), timeZone), records: recaps.get(s.id) ?? [] })).filter(a => a.records.length > 0) };
 }

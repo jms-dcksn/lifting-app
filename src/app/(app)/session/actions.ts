@@ -268,6 +268,8 @@ export async function editSet(input: EditSetInput) {
 
   await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight, catalog);
   revalidatePath(`/session/${existing.session_id}`);
+  revalidatePath("/analytics");
+  revalidatePath("/analytics/month");
 }
 
 export async function deleteSet(setId: string) {
@@ -287,6 +289,8 @@ export async function deleteSet(setId: string) {
   const bodyweight = await getCurrentBodyweight(supabase, userId);
   await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight, catalog);
   revalidatePath(`/session/${existing.session_id}`);
+  revalidatePath("/analytics");
+  revalidatePath("/analytics/month");
 }
 
 export interface SessionSummary {
@@ -432,6 +436,7 @@ export async function finishSession(
 
   revalidatePath("/");
   revalidatePath("/analytics");
+  revalidatePath("/analytics/month");
   revalidatePath(`/session/${sessionId}`);
   return {
     totalSets: sets.filter((s) => !s.is_warmup).length,

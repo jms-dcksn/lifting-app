@@ -1,3 +1,4 @@
+import { loadStallAssessments } from "@/lib/stall-data";
 import "server-only";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
@@ -178,7 +179,9 @@ export async function loadCoachWeeklyWithClient(
     bodyweightTrend: trend,
   });
 
+  const stalls = await loadStallAssessments(supabase, userId, definitions, generatedAt);
   return weeklyResponse(report, buildCoachRecommendations({
+    stalls,
     report,
     activeProgramId: activeProgram?.id ?? null,
     sessions,

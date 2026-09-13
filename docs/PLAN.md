@@ -499,5 +499,14 @@ increment), working sets only, bodyweight included, just-me-first.
 - [x] Owner-scoped keyset pagination with complete historical baselines.
 - [x] Authenticated month-review preview, exact windows, supporting workout links.
 - [x] Boundary, identity, edit, historical-bodyweight and pagination regression tests.
-- [ ] Reconcile Coach/Fluid context-aware stall contract to finish #30.
+- [x] Reconcile Coach/Fluid context-aware stall contract to finish #30.
 - [ ] Authenticated mobile preview review; full dashboard remains #31.
+
+## Progress epic #27 — increment 3b: shared stall evidence (#30)
+
+- [x] Shared completed-session, exact-equipment, phase/adaptation-aware stall contract.
+- [x] Fixed-load rep gains, default/explicit patience, deload and swap resets.
+- [x] Monthly, Coach and Fluid integration with owner-scoped paginated context reads.
+- [x] Monthly supported-signal card with evidence links; edit/delete/finish invalidation.
+- [x] Regression tests, lint, typecheck and production build.
+- [ ] User's authenticated preview review; next implementation issue is #31.

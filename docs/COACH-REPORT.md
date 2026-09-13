@@ -94,13 +94,16 @@ deployment settings if database access is suspected to be exposed.
 report and its source rows. Keeping it separate preserves the v1 report contract while allowing
 the Progress workflow and clipboard export to add coaching actions.
 
-- Normal load and rep proposals call `sessionTarget()` with the latest first working set, so the
-  Coach view cannot disagree with the active workout's double-progression target.
+- Normal load and rep proposals call `sessionTarget()` with the same bounded best-recent reference
+  as the active workout. The slot's latest exact-exercise exposure anchors the window; a stronger
+  first set on another program day after that anchor may advance the target, but an older all-time
+  best cannot.
 - A first set below `rep_min` produces a rep-floor target, with load recalibrated from the
   observed reps/RIR (including bodyweight for weighted movements); generated targets never
   prescribe repetitions outside the slot's range.
-- Two consecutive comparable exposures that are harder than the effective RIR range are required
-  before proposing a one-increment load reduction. One RIR entry never triggers it.
+- The first working set must be harder than the effective RIR range in two consecutive comparable
+  slot exposures before proposing a one-increment load reduction. Harder back-off sets and one
+  isolated first-set miss never trigger it.
 - Plateau review calls the existing `detectPlateau()` and equipment-specific patience rule; one
   down exposure explicitly produces a keep-the-movement recommendation instead.
 - An effective deload phase suppresses normal overload. Significant pain in the current report
@@ -109,8 +112,9 @@ the Progress workflow and clipboard export to add coaching actions.
 - With no finished slot-linked exposure, the engine returns `insufficient_data` rather than using
   cross-exercise estimates for a weekly progression decision.
 
-Every proposal carries an opaque key, action, rationale, evidence window/count, supporting set
-summary, confidence, and a plain-language data-sufficiency statement. Accept, dismiss, and defer
+Every proposal carries an opaque key, program-day context, action, rationale, evidence
+window/count, supporting first-set summary, confidence, and a plain-language data-sufficiency
+statement. Accept, dismiss, and defer
 write only to `coach_recommendation_decision`; they never alter a program, slot, set, or session.
 A deferred proposal is hidden for seven days, while a new exposure produces a new proposal key.
 

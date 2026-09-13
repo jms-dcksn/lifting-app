@@ -65,6 +65,9 @@ beat last time. Done = I use it for a real block.
 - [x] Protect decision state with ownership RLS, database constraints, and pgTAP coverage.
 - [x] Cover progress, flat performance, regression, RIR misses, plateau, deload, pain, and thin
       data with pure tests.
+- [x] Share progression across repeated weekly uses of the exact exercise: advance each slot from
+      the best first set logged since that slot's previous exposure, show last-here and best-recent
+      context, and let first-set—not back-off-set—RIR drive effort reductions.
 
 ## Coach loop — quality-of-life follow-up
 

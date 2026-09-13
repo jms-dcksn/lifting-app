@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { startingWeight, sessionTarget, type SlotPrescription } from "@/lib/strength/progression";
+import {
+  selectProgressionReference,
+  startingWeight,
+  sessionTarget,
+  type ProgressionPerformance,
+  type SlotPrescription,
+} from "@/lib/strength/progression";
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
 
@@ -126,5 +132,61 @@ describe("sessionTarget", () => {
     const last = { weight: 135, reps: slot.repMax - 1 };
     const t = sessionTarget(defs["bb-bench"], slot, last, defs, stats, null)!;
     expect(t.targetReps).toBe(slot.repMax);
+  });
+});
+
+describe("selectProgressionReference", () => {
+  const performance = (
+    performedAt: string,
+    programSlotId: string,
+    reps: number,
+    e1rm: number | null,
+  ): ProgressionPerformance => ({
+    programSlotId,
+    performedAt,
+    weight: 300,
+    reps,
+    rir: 1,
+    e1rm,
+  });
+
+  it("uses a stronger newer exposure from another weekly slot", () => {
+    const lowerA = performance("2026-09-09T10:00:00Z", "lower-a", 8, 394);
+    const lowerB = performance("2026-09-12T10:00:00Z", "lower-b", 9, 406);
+
+    const reference = selectProgressionReference([lowerA, lowerB], "lower-a");
+
+    expect(reference.lastSameSlot).toEqual(lowerA);
+    expect(reference.bestRecent).toEqual(lowerB);
+    expect(reference.selected).toEqual(lowerB);
+  });
+
+  it("does not let an older all-time best override the current slot cycle", () => {
+    const oldBest = performance("2026-08-01T10:00:00Z", "lower-b", 12, 430);
+    const lowerA = performance("2026-09-09T10:00:00Z", "lower-a", 8, 394);
+    const lowerB = performance("2026-09-12T10:00:00Z", "lower-b", 9, 406);
+
+    const reference = selectProgressionReference([oldBest, lowerA, lowerB], "lower-a");
+
+    expect(reference.selected).toEqual(lowerB);
+  });
+
+  it("uses the strongest of four recent exposures for a new slot", () => {
+    const rows = [
+      performance("2026-09-12T10:00:00Z", "other-1", 8, 390),
+      performance("2026-09-10T10:00:00Z", "other-2", 9, 410),
+      performance("2026-09-08T10:00:00Z", "other-3", 10, 405),
+      performance("2026-09-06T10:00:00Z", "other-4", 10, 400),
+      performance("2026-09-01T10:00:00Z", "other-5", 12, 450),
+    ];
+
+    expect(selectProgressionReference(rows, "new-slot").selected).toEqual(rows[1]);
+  });
+
+  it("falls back to the most recent exposure when e1RM is unavailable", () => {
+    const recent = performance("2026-09-12T10:00:00Z", "other", 8, null);
+    const older = performance("2026-09-10T10:00:00Z", "other", 9, null);
+
+    expect(selectProgressionReference([older, recent], "new-slot").selected).toEqual(recent);
   });
 });

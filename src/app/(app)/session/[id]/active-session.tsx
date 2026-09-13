@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
 import {
+  selectProgressionReference,
   sessionTarget,
   startingWeight,
-  type LastPerformance,
+  type ProgressionPerformance,
+  type ProgressionReference,
   type SessionTarget,
 } from "@/lib/strength/progression";
 import type { ExerciseStat } from "@/lib/strength/recommend";
@@ -48,7 +50,6 @@ export interface SlotView {
   exerciseId: string; // last logged this session, else the program slot's exercise
   pattern: Pattern;
   prescription: Omit<EffectivePrescription, "phase">;
-  lastByExercise: Record<string, LastPerformance>;
   restSeconds: number | null;
   sets: LoggedSet[];
   pendingSuggestion: import("@/lib/fluid").PendingSuggestion | null;
@@ -67,6 +68,7 @@ export function ActiveSession({
   stats,
   recentIds,
   slots,
+  progressionByExercise,
   catalog: initialCatalog,
   achievements,
 }: {
@@ -82,6 +84,7 @@ export function ActiveSession({
   stats: ExerciseStat[];
   recentIds: string[];
   slots: SlotView[];
+  progressionByExercise: Record<string, ProgressionPerformance[]>;
   catalog: Record<string, ExerciseDef>;
   achievements: ExerciseRecords[];
 }) {
@@ -184,6 +187,7 @@ export function ActiveSession({
           key={slot.programSlotId}
           sessionId={sessionId}
           slot={slot}
+          progressionByExercise={progressionByExercise}
           achievements={recordsForSlot(achievements, slot.programSlotId)}
           isCurrent={i === currentIndex}
           alreadyFinished={alreadyFinished}
@@ -243,6 +247,7 @@ function SlotCard({
   alreadyFinished,
   sessionId,
   slot,
+  progressionByExercise,
   isCurrent,
   stats,
   bodyweight,
@@ -255,6 +260,7 @@ function SlotCard({
   alreadyFinished: boolean;
   sessionId: string;
   slot: SlotView;
+  progressionByExercise: Record<string, ProgressionPerformance[]>;
   isCurrent: boolean;
   stats: ExerciseStat[];
   bodyweight: number | null;
@@ -320,20 +326,29 @@ function SlotCard({
   const isBodyweight = equipment === "bodyweight";
   const isMachine = equipment.startsWith("machine") || equipment === "cable";
 
-  // Target computes client-side off hydrated stats, so a swap re-derives it instantly.
+  const progressionReference = useMemo(
+    () => selectProgressionReference(
+      progressionByExercise[exerciseId] ?? [],
+      slot.programSlotId,
+    ),
+    [exerciseId, progressionByExercise, slot.programSlotId],
+  );
+
+  // Target computes client-side off hydrated stats and recent exercise-wide history, so a swap
+  // re-derives instantly and repeated weekly exercises share progress safely.
   const target = useMemo(
     () =>
       def
         ? sessionTarget(
             def,
             { repMin: p.repMin, repMax: p.repMax, targetRir: p.targetRir },
-            slot.lastByExercise[exerciseId] ?? null,
+            progressionReference.selected,
             catalog,
             stats,
             bodyweight,
           )
         : null,
-    [def, catalog, exerciseId, p.repMin, p.repMax, p.targetRir, slot.lastByExercise, stats, bodyweight],
+    [def, catalog, p.repMin, p.repMax, p.targetRir, progressionReference.selected, stats, bodyweight],
   );
 
   // Before any history exists, the suggested weight follows reps/RIR edits live.
@@ -446,7 +461,12 @@ function SlotCard({
 
       <AchievementPills groups={achievements} exerciseId={exerciseId} />
 
-      <TargetLine target={target} isBodyweight={isBodyweight} done={done} />
+      <TargetLine
+        target={target}
+        reference={progressionReference}
+        isBodyweight={isBodyweight}
+        done={done}
+      />
 
       {showSuggestion && suggestion && (
         <div className="mt-3 rounded-card border border-border-strong p-3">
@@ -689,10 +709,12 @@ function ProgressDots({ done, target }: { done: number; target: number }) {
 
 function TargetLine({
   target,
+  reference,
   isBodyweight,
   done,
 }: {
   target: SessionTarget | null;
+  reference: ProgressionReference;
   isBodyweight: boolean;
   done: number;
 }) {
@@ -721,12 +743,10 @@ function TargetLine({
           {isRecommendation ? "Start" : "Target"}
         </span>
         {value}
-        {target.source === "progression" && target.last && (
-          <span className="text-caption tabular-nums text-muted">
-            last {target.last.weight} × {target.last.reps}
-          </span>
-        )}
       </div>
+      {target.source === "progression" && (
+        <ProgressionContext reference={reference} isBodyweight={isBodyweight} />
+      )}
       {isRecommendation && target.confidence === "calibrate" && (
         <p className="mt-1 text-caption text-calibrate">
           New machine — feel out the first set, then it calibrates to you.
@@ -736,6 +756,34 @@ function TargetLine({
         <p className="mt-1 text-caption text-muted">Starting estimate from your similar lifts.</p>
       )}
     </div>
+  );
+}
+
+function ProgressionContext({
+  reference,
+  isBodyweight,
+}: {
+  reference: ProgressionReference;
+  isBodyweight: boolean;
+}) {
+  const last = reference.lastSameSlot;
+  const best = reference.bestRecent;
+  if (!last && !best) return null;
+  const bestDiffers = best && (
+    !last
+    || best.performedAt !== last.performedAt
+    || best.programSlotId !== last.programSlotId
+  );
+  const unit = isBodyweight ? " added" : " lb";
+  const label = (item: ProgressionPerformance) =>
+    `${item.weight}${unit} × ${item.reps}${item.rir == null ? "" : ` @ ${item.rir} RIR`}`;
+
+  return (
+    <p className="mt-1 text-caption tabular-nums text-muted">
+      {last ? `Last here: ${label(last)}` : null}
+      {last && bestDiffers ? " · " : null}
+      {best && bestDiffers ? `Best recent: ${label(best)}` : null}
+    </p>
   );
 }
 

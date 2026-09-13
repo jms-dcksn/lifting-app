@@ -8,7 +8,11 @@ import type {
 import { dateKey } from "./bodyweight";
 import { resolvePrescription } from "./periodization";
 import { detectPlateau, defaultPatience } from "./strength/plateau";
-import { sessionTarget } from "./strength/progression";
+import {
+  selectProgressionReference,
+  sessionTarget,
+  type ProgressionPerformance,
+} from "./strength/progression";
 
 export type CoachRecommendationKind =
   | "add_load"
@@ -27,6 +31,7 @@ export interface CoachRecommendation {
   kind: CoachRecommendationKind;
   exerciseId: string | null;
   exerciseName: string | null;
+  programDayName: string | null;
   action: {
     label: string;
     targetWeight: number | null;
@@ -56,7 +61,6 @@ interface Exposure {
   session: CoachSessionInput;
   firstSet: CoachSetInput;
   bestE1rm: number | null;
-  averageRir: number | null;
   targetRirMin: number;
   targetRirMax: number;
 }
@@ -81,6 +85,7 @@ export function buildCoachRecommendations(
       slotId: "session",
       exerciseId: null,
       exerciseName: null,
+      programDayName: latest.programDayName,
       evidenceEnd: latest.performedAt,
       action: "Pause progression and review joint pain",
       rationale: "Significant joint pain was logged. Progression advice is paused until the movement and recovery context are reviewed; this is not a diagnosis.",
@@ -113,6 +118,7 @@ function recommendationForSlot(
     : input.definitions[slot.exerciseId];
   const exerciseId = latest?.firstSet.exerciseId ?? slot.exerciseId;
   const exerciseName = definition?.name ?? exerciseId;
+  const programDayName = latest?.session.programDayName ?? null;
   const evidenceEnd = latest?.session.performedAt ?? input.report.generatedAt;
   const evidence = evidenceFields(input, exposures);
 
@@ -122,6 +128,7 @@ function recommendationForSlot(
       slotId: slot.id,
       exerciseId,
       exerciseName,
+      programDayName,
       evidenceEnd,
       action: `Log ${exerciseName}`,
       rationale: "There is no finished, slot-linked exposure to support a progression recommendation.",
@@ -143,6 +150,7 @@ function recommendationForSlot(
       slotId: slot.id,
       exerciseId,
       exerciseName,
+      programDayName,
       evidenceEnd,
       action: "Follow the deload prescription",
       rationale: "This is a deload exposure, so normal overload recommendations are suppressed.",
@@ -155,7 +163,7 @@ function recommendationForSlot(
   const repeatedHardMisses = exposures.slice(-2).length === 2
     && exposures.slice(-2).every(
       (exposure) =>
-        exposure.averageRir != null && exposure.averageRir < exposure.targetRirMin,
+        exposure.firstSet.rir != null && exposure.firstSet.rir < exposure.targetRirMin,
   );
   if (repeatedHardMisses) {
     // Negative bodyweight loads mean assistance; subtracting an increment correctly adds
@@ -172,13 +180,14 @@ function recommendationForSlot(
       slotId: slot.id,
       exerciseId,
       exerciseName,
+      programDayName,
       evidenceEnd,
       action: `Reduce to ${targetWeight} lb × ${targetReps} and recalibrate effort`,
       targetWeight,
       targetReps,
-      rationale: "Actual effort was harder than the effective RIR prescription in two consecutive comparable exposures.",
+      rationale: "The first working set was harder than the effective RIR prescription in two consecutive comparable exposures.",
       confidence: exposures.length >= 3 ? "high" : "medium",
-      dataSufficiency: "Two consecutive finished exposures with complete RIR are required for an effort-based load reduction.",
+      dataSufficiency: "Two consecutive finished exposures with first-set RIR are required for an effort-based load reduction; harder back-off sets do not trigger it.",
       ...evidence,
     });
   }
@@ -195,6 +204,7 @@ function recommendationForSlot(
       slotId: slot.id,
       exerciseId,
       exerciseName,
+      programDayName,
       evidenceEnd,
       action: "Review the rep range before considering a substitution",
       rationale: `The existing plateau rule found ${plateau.stalledExposures} stalled exposures across ${plateau.stalledSinceDays} days.`,
@@ -203,6 +213,34 @@ function recommendationForSlot(
       ...evidence,
     });
   }
+
+  const progressionReference = exerciseProgressionReference(input, slot, exerciseId);
+  const referenceSet = progressionReference.selected ?? {
+    programSlotId: slot.id,
+    performedAt: latest.session.performedAt,
+    weight: latest.firstSet.weight,
+    reps: latest.firstSet.reps,
+    rir: latest.firstSet.rir,
+    e1rm: latest.firstSet.e1rm,
+  };
+  const target = sessionTarget(
+    definition,
+    latestPrescription,
+    { weight: referenceSet.weight, reps: referenceSet.reps, rir: referenceSet.rir },
+    input.definitions,
+    [],
+    input.currentBodyweight ?? null,
+  );
+  const usedCrossSlotBest = referenceSet.programSlotId !== slot.id;
+  const progressionEvidence = usedCrossSlotBest
+    ? {
+        ...evidence,
+        summary: [
+          ...evidence.summary,
+          `Best recent on another day: ${referenceSet.weight} lb × ${referenceSet.reps} · first-set RIR ${referenceSet.rir ?? "?"} · e1RM ${referenceSet.e1rm == null ? "?" : trim(referenceSet.e1rm)}`,
+        ],
+      }
+    : evidence;
 
   const previous = exposures.at(-2);
   if (
@@ -215,33 +253,31 @@ function recommendationForSlot(
       slotId: slot.id,
       exerciseId,
       exerciseName,
+      programDayName,
       evidenceEnd,
-      action: "Keep the movement and repeat the progression target",
+      action: target
+        ? `Keep the movement: ${target.weight} lb × ${target.targetReps}`
+        : "Keep the movement and repeat the progression target",
+      targetWeight: target?.weight,
+      targetReps: target?.targetReps,
       rationale: "The latest exposure was down, but one poor performance does not meet the existing plateau criteria.",
       confidence: "medium",
       dataSufficiency: "Two comparable exposures support caution, not a stall, deload, or substitution call.",
-      ...evidence,
+      ...progressionEvidence,
     });
   }
 
-  const target = sessionTarget(
-    definition,
-    latestPrescription,
-    { weight: latest.firstSet.weight, reps: latest.firstSet.reps, rir: latest.firstSet.rir },
-    input.definitions,
-    [],
-    input.currentBodyweight ?? null,
-  );
   const confidence = exposureConfidence(exposures.length);
-  if (latest.firstSet.reps < latestPrescription.repMin) {
-    const targetWeight = target?.weight ?? latest.firstSet.weight;
+  if (referenceSet.reps < latestPrescription.repMin) {
+    const targetWeight = target?.weight ?? referenceSet.weight;
     const targetReps = latestPrescription.repMin;
-    if (targetWeight < latest.firstSet.weight) {
+    if (targetWeight < referenceSet.weight) {
       return recommendation({
         kind: "reduce_load",
         slotId: slot.id,
         exerciseId,
         exerciseName,
+        programDayName,
         evidenceEnd,
         action: `Reduce to ${targetWeight} lb and target ${targetReps} reps`,
         targetWeight,
@@ -249,7 +285,7 @@ function recommendationForSlot(
         rationale: `The first working set fell below the ${latestPrescription.repMin}–${latestPrescription.repMax} rep range, so the load is recalibrated to the rep floor at the prescribed effort.`,
         confidence,
         dataSufficiency: `${exposures.length} comparable exposure${exposures.length === 1 ? "" : "s"}; the action exactly matches sessionTarget() and remains inside the prescribed rep range.`,
-        ...evidence,
+        ...progressionEvidence,
       });
     }
     return recommendation({
@@ -257,6 +293,7 @@ function recommendationForSlot(
       slotId: slot.id,
       exerciseId,
       exerciseName,
+      programDayName,
       evidenceEnd,
       action: `Hold ${targetWeight} lb and target ${targetReps} reps`,
       targetWeight,
@@ -264,15 +301,16 @@ function recommendationForSlot(
       rationale: `The first working set fell below the ${latestPrescription.repMin}–${latestPrescription.repMax} rep range, but the recorded RIR supports holding load and returning to the rep floor.`,
       confidence,
       dataSufficiency: `${exposures.length} comparable exposure${exposures.length === 1 ? "" : "s"}; the action exactly matches sessionTarget() and remains inside the prescribed rep range.`,
-      ...evidence,
+      ...progressionEvidence,
     });
   }
-  if (target && target.weight > latest.firstSet.weight) {
+  if (target && target.weight > referenceSet.weight) {
     return recommendation({
       kind: "add_load",
       slotId: slot.id,
       exerciseId,
       exerciseName,
+      programDayName,
       evidenceEnd,
       action: `Add load: ${target.weight} lb × ${target.targetReps}`,
       targetWeight: target.weight,
@@ -280,7 +318,7 @@ function recommendationForSlot(
       rationale: `The first working set reached the ${latestPrescription.repMax}-rep ceiling, so the existing double-progression rule adds one increment.`,
       confidence,
       dataSufficiency: `${exposures.length} comparable exposure${exposures.length === 1 ? "" : "s"}; the action exactly matches sessionTarget().`,
-      ...evidence,
+      ...progressionEvidence,
     });
   }
 
@@ -289,15 +327,51 @@ function recommendationForSlot(
     slotId: slot.id,
     exerciseId,
     exerciseName,
+    programDayName,
     evidenceEnd,
-    action: `Hold ${target?.weight ?? latest.firstSet.weight} lb and target ${target?.targetReps ?? latest.firstSet.reps} reps`,
-    targetWeight: target?.weight ?? latest.firstSet.weight,
-    targetReps: target?.targetReps ?? latest.firstSet.reps,
-    rationale: "The rep ceiling has not been earned, so the existing double-progression rule holds load and advances reps.",
+    action: `Hold ${target?.weight ?? referenceSet.weight} lb and target ${target?.targetReps ?? referenceSet.reps} reps`,
+    targetWeight: target?.weight ?? referenceSet.weight,
+    targetReps: target?.targetReps ?? referenceSet.reps,
+    rationale: usedCrossSlotBest
+      ? "A stronger exposure on another program day occurred after this slot was last trained, so the target advances from that best recent performance."
+      : "The rep ceiling has not been earned, so the existing double-progression rule holds load and advances reps.",
     confidence,
     dataSufficiency: `${exposures.length} comparable exposure${exposures.length === 1 ? "" : "s"}; the action exactly matches sessionTarget().`,
-    ...evidence,
+    ...progressionEvidence,
   });
+}
+
+function exerciseProgressionReference(
+  input: BuildCoachRecommendationsInput,
+  slot: CoachSlotInput,
+  exerciseId: string,
+) {
+  const sessionById = new Map(finishedSessions(input).map((session) => [session.id, session]));
+  const firstByExposure = new Map<string, CoachSetInput>();
+  for (const set of input.sets) {
+    if (set.isWarmup || set.exerciseId !== exerciseId) continue;
+    const session = sessionById.get(set.sessionId);
+    if (!session) continue;
+    const key = `${set.sessionId}:${set.programSlotId ?? "adhoc"}`;
+    const current = firstByExposure.get(key);
+    if (!current || set.setIndex < current.setIndex || (
+      set.setIndex === current.setIndex && set.createdAt < current.createdAt
+    )) {
+      firstByExposure.set(key, set);
+    }
+  }
+  const performances: ProgressionPerformance[] = [...firstByExposure.values()].map((set) => {
+    const session = sessionById.get(set.sessionId) as CoachSessionInput;
+    return {
+      programSlotId: set.programSlotId,
+      performedAt: session.performedAt,
+      weight: set.weight,
+      reps: set.reps,
+      rir: set.rir,
+      e1rm: set.e1rm,
+    };
+  });
+  return selectProgressionReference(performances, slot.id);
 }
 
 function slotExposures(input: BuildCoachRecommendationsInput, slot: CoachSlotInput): Exposure[] {
@@ -321,13 +395,11 @@ function slotExposures(input: BuildCoachRecommendationsInput, slot: CoachSlotInp
     const comparable = sets.filter((set) => set.exerciseId === exerciseId);
     const phases = input.phases.filter((phase) => phase.programId === slot.programId);
     const prescription = resolvePrescription(slot, session.weekIndex ?? 1, phases);
-    const rir = comparable.flatMap((set) => set.rir == null ? [] : [set.rir]);
     const e1rms = comparable.flatMap((set) => set.e1rm == null ? [] : [set.e1rm]);
     return [{
       session,
       firstSet: comparable[0],
       bestE1rm: e1rms.length === 0 ? null : Math.max(...e1rms),
-      averageRir: rir.length === 0 ? null : rir.reduce((sum, value) => sum + value, 0) / rir.length,
       targetRirMin: prescription.targetRirMin,
       targetRirMax: prescription.targetRirMax,
     }];
@@ -354,7 +426,7 @@ function evidenceFields(input: BuildCoachRecommendationsInput, exposures: Exposu
     exposureCount: exposures.length,
     summary: exposures.slice(-4).map((exposure) => {
       const set = exposure.firstSet;
-      return `${set.weight} lb × ${set.reps} · RIR ${exposure.averageRir == null ? "?" : trim(exposure.averageRir)} · e1RM ${exposure.bestE1rm == null ? "?" : trim(exposure.bestE1rm)}`;
+      return `${set.weight} lb × ${set.reps} · first-set RIR ${set.rir == null ? "?" : set.rir} · best e1RM ${exposure.bestE1rm == null ? "?" : trim(exposure.bestE1rm)}`;
     }),
   };
 }
@@ -364,6 +436,7 @@ function recommendation(input: {
   slotId: string;
   exerciseId: string | null;
   exerciseName: string | null;
+  programDayName: string | null;
   evidenceEnd: string;
   action: string;
   targetWeight?: number | null;
@@ -390,6 +463,7 @@ function recommendation(input: {
     kind: input.kind,
     exerciseId: input.exerciseId,
     exerciseName: input.exerciseName,
+    programDayName: input.programDayName,
     action: {
       label: input.action,
       targetWeight: input.targetWeight ?? null,
@@ -450,7 +524,7 @@ export function formatCoachRecommendations(recommendations: CoachRecommendation[
   if (recommendations.length === 0) return [...lines, "No current recommendations."].join("\n");
   for (const item of recommendations) {
     lines.push(
-      `${item.exerciseName ?? "Overall review"}: ${item.action.label}`,
+      `${item.programDayName ? `${item.programDayName} · ` : ""}${item.exerciseName ?? "Overall review"}: ${item.action.label}`,
       `Why: ${item.rationale}`,
       `Evidence: ${item.evidence.exposureCount} exposure${item.evidence.exposureCount === 1 ? "" : "s"}, ${item.evidence.windowStart}–${item.evidence.windowEnd} · confidence ${item.confidence}`,
     );

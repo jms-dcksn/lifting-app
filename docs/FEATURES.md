@@ -91,7 +91,8 @@ Adaptive plateau engine under §5.
 - **Slot cards** — one card per program slot for the day, each showing the prescribed
   exercise, rep/RIR prescription, and a target weight.
 - **Client-side targets** — `sessionTarget()` runs in the browser (`useMemo`), so swaps and
-  edits re-derive instantly with no server round-trip.
+  edits re-derive instantly with no server round-trip. For exercises performed on multiple
+  weekly days, the target advances from the strongest first set since this slot's last exposure.
 - **Set entry** — log weight × reps × RIR per set using large-hit-area steppers
   (press-and-hold auto-repeat, tick animation, select-all on focus).
 - **Edit / delete sets** — inline; deletes play an exit animation before the optimistic
@@ -99,8 +100,8 @@ Adaptive plateau engine under §5.
 - **Progress dots** — filled-vs-target set count next to the prescription.
 - **Slot hierarchy without color** — a completed slot recedes (`tone="done"`, dimmed); the
   current slot reads as current (`tone="active"`, stronger border); others are default.
-- **Target line** — weight × reps with a "Start"/"Target" caption; suppressed once the first
-  set is logged (it goes stale immediately).
+- **Target line** — weight × reps with a "Start"/"Target" caption plus “Last here” and, when
+  different, “Best recent” first-set context. The recommendation remains an editable default.
 - **Confidence states** — `calibrate` and `low` confidence render as their own instruction
   lines below the target.
 - **Swap exercise** — a secondary button opens the picker filtered to the slot's pattern;

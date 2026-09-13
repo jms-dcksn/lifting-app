@@ -184,6 +184,98 @@ describe("buildCoachRecommendations", () => {
     });
   });
 
+  it("does not reduce load when only back-off sets are harder than prescribed", () => {
+    const sessions = [session(4), session(5)];
+    const recommendations = build(sessions, sessions.flatMap((item) => [
+      set(item.id, { setIndex: 0, rir: 1, createdAt: item.performedAt }),
+      set(item.id, { setIndex: 1, weight: 175, rir: 0, createdAt: item.performedAt }),
+    ]));
+
+    expect(recommendations[0]).toMatchObject({
+      kind: "add_rep",
+      action: { targetWeight: 185, targetReps: 9 },
+    });
+  });
+
+  it("advances from a stronger newer exposure on another program day", () => {
+    const lowerA = session(4, {
+      id: "lower-a-session",
+      performedAt: "2026-08-27T15:00:00Z",
+      finishedAt: "2026-08-27T15:45:00Z",
+      programDayId: "lower-a",
+      programDayName: "Lower A",
+    });
+    const lowerB = session(5, {
+      id: "lower-b-session",
+      performedAt: "2026-09-01T15:00:00Z",
+      finishedAt: "2026-09-01T15:45:00Z",
+      programDayId: "lower-b",
+      programDayName: "Lower B",
+    });
+    const lowerASlot: CoachSlotInput = {
+      ...slot,
+      id: "hack-a",
+      programDayId: "lower-a",
+      exerciseId: "hack-squat",
+      repMin: 6,
+      repMax: 10,
+    };
+    const lowerBSlot: CoachSlotInput = {
+      ...slot,
+      id: "hack-b",
+      programDayId: "lower-b",
+      exerciseId: "hack-squat",
+      repMin: 8,
+      repMax: 12,
+    };
+    const sets = [
+      set(lowerA.id, {
+        programSlotId: lowerASlot.id,
+        exerciseId: "hack-squat",
+        weight: 300,
+        reps: 8,
+        rir: 1,
+        e1rm: 394,
+        createdAt: lowerA.performedAt,
+      }),
+      set(lowerB.id, {
+        programSlotId: lowerBSlot.id,
+        exerciseId: "hack-squat",
+        weight: 300,
+        reps: 9,
+        rir: 1,
+        e1rm: 406,
+        createdAt: lowerB.performedAt,
+      }),
+    ];
+    const reportInput: BuildCoachReportInput = {
+      generatedAt: NOW,
+      programName: "Test block",
+      plannedSessions: 2,
+      sessions: [lowerA, lowerB],
+      sets,
+      slots: [lowerASlot, lowerBSlot],
+      phases: [],
+      definitions: EXERCISE_BY_ID,
+      currentBodyweight: 180,
+    };
+    const recommendations = buildCoachRecommendations({
+      ...reportInput,
+      report: buildCoachCheckInReport(reportInput),
+      activeProgramId: "program-1",
+    });
+
+    expect(recommendations[0]).toMatchObject({
+      programDayName: "Lower A",
+      action: { targetWeight: 300, targetReps: 10 },
+    });
+    expect(recommendations[0].rationale).toContain("another program day");
+    expect(recommendations[1]).toMatchObject({
+      programDayName: "Lower B",
+      action: { targetWeight: 300, targetReps: 10 },
+    });
+  });
+
   it("preserves negative assisted-bodyweight load when recalibrating", () => {
     const sessions = [session(4), session(5)];
     const pullupSlot = { ...slot, exerciseId: "weighted-pullup" };
@@ -278,5 +370,6 @@ describe("buildCoachRecommendations", () => {
     expect(output).toContain("Why:");
     expect(output).toContain("Evidence: 1 exposure");
     expect(output).toContain("confidence low");
+    expect(output).toContain("Upper A · Barbell Bench Press");
   });
 });

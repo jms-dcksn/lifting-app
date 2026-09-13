@@ -94,14 +94,16 @@ session at creation for history.
 ## Progression (double progression)
 
 A pure module `src/lib/strength/progression.ts` computes each slot's **session target**
-(weight + reps to aim for). It keys on `(program_slot_id, exercise_id)` so a swap doesn't
-corrupt the chain. Algorithm for a slot when starting a session:
+(weight + reps to aim for). The exact `(program_slot_id, exercise_id)` history anchors a bounded
+comparison window, so swaps and different slot prescriptions remain independent while repeated
+weekly uses of the same exercise can share newer performance. Algorithm when starting a session:
 
 1. **No prior performance of this exercise in this slot** (first session, or just swapped to a
    new exercise) → `weight = recommend(exercise, rep_min, target_rir).suggestedWeight`,
    `targetReps = rep_min`. This is the e1RM handoff; it carries the recommender's confidence.
-2. **Has prior performance** → look at the most recent session's **first working set** for this
-   slot+exercise:
+2. **Has prior performance** → begin with this slot+exercise's latest exposure, then select the
+   highest-e1RM first set for the exact exercise at or after that exposure. With no slot-specific
+   history, use the best of four recent exposures. Apply double progression to that reference:
    - `firstSetReps < rep_min` → estimate a load that reaches `rep_min` at the target RIR,
      never increase the last load, and set `targetReps = rep_min`.
    - `firstSetReps >= rep_max` → `weight = lastWeight + exercise.increment`, `targetReps = rep_min`.
@@ -151,7 +153,8 @@ One session = one `workout_session` tied to a `program_day`.
 1. **Start** → app determines next (week, day) → inserts `workout_session`; acquires
    `navigator.wakeLock`. Renders the day's slots as exercise cards.
 2. Each **slot card** shows the prescription (sets × rep-range @ RIR) + the session target from
-   `progression.ts` ("Target: 50 × 5 · last: 45 × 8"); on a slot's first session or a swap the
+   `progression.ts`, followed by “Last here” and a distinct “Best recent” reference when another
+   program day supplied the stronger new performance. On a slot's first session or a swap the
    target is the e1RM recommendation with its confidence badge. Plus an empty/working set list.
 3. **Log a working set**: weight / reps / RIR via big-tap steppers + numeric keypad.
    - **Optimistic insert** (`useOptimistic`) — row renders instantly.

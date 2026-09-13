@@ -65,7 +65,10 @@ export function CoachRecommendationList({
           <article key={item.key} className="border-t border-border pt-4 first:border-0 first:pt-0">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-heading">{item.exerciseName ?? "Overall review"}</p>
+                <p className="text-heading">
+                  {item.programDayName ? `${item.programDayName} · ` : ""}
+                  {item.exerciseName ?? "Overall review"}
+                </p>
                 <p className="text-body">{item.action.label}</p>
               </div>
               <span className="shrink-0 text-caption uppercase tracking-wide text-muted">

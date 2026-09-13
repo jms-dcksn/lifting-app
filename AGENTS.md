@@ -34,6 +34,12 @@ server-only Supabase secret and `COACH_API_USER_ID`; every query must retain an 
 predicate because the secret bypasses RLS. Its high-entropy capability auth must remain
 read-only, no-store, and noindex.
 
+Active targets and weekly Coach proposals share `selectProgressionReference()`: anchor history
+on the latest exact `(program_slot_id, exercise_id)` exposure, then allow a stronger exact-
+exercise first set performed after that anchor to drive the next target. Do not regress to
+slot-only history or an unbounded all-time best. Effort-based Coach reductions use first-set RIR;
+hard back-off sets must not reduce an accurately loaded top set.
+
 ---
 
 @CLAUDE.md

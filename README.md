@@ -56,7 +56,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
   - `coefficients.ts` — seeded exercise catalog (generic machine *templates*) + population strength priors
   - `recommend.ts` — pattern-strength model + cross-exercise weight recommendation
   - `recompute.ts` — rebuild `user_exercise_stat` from `set_log` rows
-  - `progression.ts` — double-progression session target (weight + reps) per slot
+  - `progression.ts` — double-progression session target using bounded best-recent exact-exercise history across repeated weekly slots
   - `records.ts` — shared rep/e1RM record replay with stable pre-workout comparisons
   - `plateau.ts` — fluid-program engine: per-movement e1RM plateau detection (hysteresis) and the laddered rep-range → swap intervention (unit-tested)
 - `src/lib/fluid.ts` — server loader that turns logged history into pending in-session adaptation suggestions

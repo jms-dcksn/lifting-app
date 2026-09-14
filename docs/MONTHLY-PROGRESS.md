@@ -1,7 +1,7 @@
 # Monthly progress — canonical metrics (#30)
 
 `/analytics/month?month=YYYY-MM` is an authenticated, read-only consumer of the pure
-version 1.1 `buildMonthlyReport`. Progress links to it. No migration or new secrets.
+version 1.2 `buildMonthlyReport`. Progress links to it. No migration or new secrets.
 
 ## Contract
 
@@ -101,8 +101,51 @@ Failed reads surface an error rather than a partial, apparently authoritative re
 No persisted monthly cache; finish/edit/delete revalidate the monthly and Progress routes.
 Weekly response schema/version and record semantics remain unchanged.
 
-#31 is next: ranked improvements, sparklines, history-route filters/back context and
-integrated weight trends. #32 is design only; #33 remains blocked by that design and #31.
+## Monthly dashboard (#31)
+
+Month review shows four compact summary cards, the five largest percentage improvements,
+fixed-effective-load rep gains, supported stall evidence, expandable achievements grouped by
+exact exercise/equipment, and an expandable all-lifts comparison. Stable, lower-best, new,
+not-trained and missing-estimate states stay distinct. Only supported plateaus get a review
+card; current-month signals link to the existing Coach next steps filtered to that exercise.
+Historical monthly signals are not presented as current recommendations.
+
+Version 1.2 adds `repGains` to the canonical lift report: best eligible reps at the same
+normalized effective load in each comparison window. This reuses record eligibility and
+historical bodyweight rules. These monthly gains need not be all-time PRs and do not change
+record totals or e1RM classification. Editing/removing source sets rebuilds the result.
+
+Small server-rendered SVG trends show dated session points, prior dashed and current solid,
+with separate lines and no interpolated bridge across comparison windows. Exact values,
+period labels and workout recap links are in the keyboard-accessible disclosure. Every
+lift links into `/history/[exerciseId]?month=YYYY-MM&equipment=...`; `none` explicitly means
+no equipment instance. This mode consumes the same report and offers a selected-month return
+link. It never blends instances or borrows the older all-history route's aggregate. The
+unfiltered history route retains its existing behavior.
+
+The shared weight card follows the selected month, including rolling lookback before the
+first day. Its summary is as of the selected end date; the goal is explicitly the current
+Settings value, since historical goals are not stored. Log weight remains available with
+zero workouts. Weight edits refresh the monthly route; workout edits/completion also
+invalidate the history drill-down. No cycle reads or UI are enabled; the space after the
+monthly sections remains available for #33's optional context lane.
+
+No new tables, secrets, dependencies or migrations. Existing paginated reads retain the
+complete historical record baseline through the selected cutoff; this slice does not add
+materialized baselines or solve the documented full-history read cost. #32 remains design
+only; #33 waits for its resolved specification.
+
+Verification for #31: 303 tests (including server-rendered review/history checks), lint,
+TypeScript and production build. Authenticated phone/keyboard/screen-reader review remains
+part of the Vercel preview review; server-rendered tests do not replace browser verification.
+
+Preview checklist:
+1. Open Progress → Month review; compare current and completed months and their dates.
+2. Open an improved lift, inspect supporting workouts, and return to the selected month.
+3. Expand achievements and All lifts; verify machine names and rep-only improvements.
+4. Follow a supported current stall to the filtered Coach next steps, then Show all.
+5. Review weight in the same month; edit a reading and verify its rolling average updates.
+6. Choose an empty month: weight access remains and unsupported insight cards stay absent.
 
 ### Stall example
 

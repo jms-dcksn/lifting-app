@@ -103,7 +103,7 @@ Progress includes bodyweight dots, seven-day trend averages, a goal reference,
 30/90-day, six-month and all-history views, plus optional weekly averages. Tap a
 reading to edit it in the weight calendar. See [weight trend contracts](docs/WEIGHT-TRENDS.md).
 
-Monthly review: open **Progress → Review monthly strength & records** for exact-date
+Monthly review: open **Progress → Month review** for exact-date
 month comparisons, canonical workout PR totals, and equipment-specific strength evidence.
 Supported stalls appear under **Worth reviewing**, with comparable workout evidence shared
-with Coach and Fluid. The richer dashboard remains #31. See [Monthly progress](docs/MONTHLY-PROGRESS.md).
+with Coach and Fluid. The dashboard includes ranked improvements, rep gains, grouped achievements, exact-equipment drill-downs, and selected-month weight trends. See [Monthly progress](docs/MONTHLY-PROGRESS.md).

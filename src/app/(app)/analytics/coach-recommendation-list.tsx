@@ -36,14 +36,14 @@ export function CoachRecommendationList({
 
   if (pending.length === 0) {
     return (
-      <p className="mb-4 border-y border-border py-4 text-body text-muted">
+      <p id="coach-next-steps" className="mb-4 border-y border-border py-4 text-body text-muted">
         No recommendations need review right now.
       </p>
     );
   }
 
   return (
-    <details open className="mb-4 border-y border-border py-4">
+    <details id="coach-next-steps" open className="mb-4 border-y border-border py-4">
       <summary className="cursor-pointer select-none text-caption font-semibold uppercase tracking-wide text-muted">
         Proposed next steps ({pending.length})
       </summary>

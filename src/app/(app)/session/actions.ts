@@ -270,6 +270,7 @@ export async function editSet(input: EditSetInput) {
   revalidatePath(`/session/${existing.session_id}`);
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
+  revalidatePath("/history/[exerciseId]", "page");
 }
 
 export async function deleteSet(setId: string) {
@@ -291,6 +292,7 @@ export async function deleteSet(setId: string) {
   revalidatePath(`/session/${existing.session_id}`);
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
+  revalidatePath("/history/[exerciseId]", "page");
 }
 
 export interface SessionSummary {
@@ -437,6 +439,7 @@ export async function finishSession(
   revalidatePath("/");
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
+  revalidatePath("/history/[exerciseId]", "page");
   revalidatePath(`/session/${sessionId}`);
   return {
     totalSets: sets.filter((s) => !s.is_warmup).length,

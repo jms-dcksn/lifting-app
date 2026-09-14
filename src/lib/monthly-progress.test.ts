@@ -104,3 +104,24 @@ describe("monthly report", () => {
     expect(r.lifts).toEqual([]);
   });
 });
+
+
+describe("monthly fixed-load rep comparisons", () => {
+  it("shows rep gains despite flat stored estimates, without counting them as e1RM gains", () => {
+    const a = session("a", "2026-08-02"), b = session("b", "2026-09-02");
+    const result = report([a, b], [set(a, 8, { e1rm: 140 }), set(b, 10, { e1rm: 140 })]);
+    expect(result.lifts[0].state).toBe("stable");
+    expect(result.lifts[0].repGains).toEqual([{ load: 100, priorReps: 8, currentReps: 10 }]);
+  });
+  it("does not compare reps across loads, equipment, or outside the comparison window", () => {
+    const a = session("a", "2026-08-02"), b = session("b", "2026-09-02"), late = session("late", "2026-08-30");
+    const result = report([a, b, late], [set(a, 8), set(b, 10, { weight: 110 }), set(b, 12, { id: "machine", equipment_instance_id: "different" }), set(late, 6, { weight: 110 })]);
+    expect(result.lifts.every(l => l.repGains.length === 0)).toBe(true);
+  });
+  it("uses the best reps in each period and recomputes after a historical edit", () => {
+    const a = session("a", "2026-08-02"), b = session("b", "2026-09-02");
+    const rows = [set(a, 8), set(a, 12, { id: "backoff" }), set(b, 10)];
+    expect(report([a, b], rows).lifts[0].repGains).toEqual([]);
+    expect(report([a, b], rows.filter(s => s.id !== "backoff")).lifts[0].repGains[0].currentReps).toBe(10);
+  });
+});

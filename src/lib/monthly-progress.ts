@@ -27,12 +27,13 @@ export interface MonthlyLift {
   state: "improving" | "stable" | "declining" | "new" | "not_trained" | "unavailable";
   currentExposures: number;
   priorExposures: number;
+  repGains: { load: number; priorReps: number; currentReps: number }[];
   currentPoints: MonthlyPoint[];
   priorPoints: MonthlyPoint[];
 }
 export interface MonthlyAchievements { sessionId: string; date: string; records: ExerciseRecords[] }
 export interface MonthlyReport {
-  version: "1.1";
+  version: "1.2";
   stalls: StallAssessment[];
   month: string;
   timeZone: string;
@@ -92,7 +93,7 @@ export function buildMonthlyReport(input: {
       exercisesWithRecords: counts.exercises, workoutsWithRecords: selected.filter(s => (recaps.get(s.id)?.length ?? 0) > 0).length };
   }
   const quality = { excludedWorkingSets: 0, missingStoredEstimates: 0 };
-  const groups = new Map<string, { row: RecordSet; current: Map<string, MonthlyPoint>; prior: Map<string, MonthlyPoint>; currentIds: Set<string>; priorIds: Set<string> }>();
+  const groups = new Map<string, { row: RecordSet; current: Map<string, MonthlyPoint>; prior: Map<string, MonthlyPoint>; currentIds: Set<string>; priorIds: Set<string>; currentReps: Map<number, number>; priorReps: Map<number, number> }>();
   for (const set of sets) {
     const day = dateKey(new Date(set.workout_session.performed_at), timeZone);
     const period = inWindow(day, current) ? "current" : inWindow(day, prior) ? "prior" : null;
@@ -100,8 +101,10 @@ export function buildMonthlyReport(input: {
     const values = eligibleRecordSet(set, input.catalog[set.exercise_id]);
     if (!values) { quality.excludedWorkingSets++; continue; }
     const key = recordScope(set);
-    const group = groups.get(key) ?? { row: set, current: new Map(), prior: new Map(), currentIds: new Set(), priorIds: new Set() };
+    const group = groups.get(key) ?? { row: set, current: new Map(), prior: new Map(), currentIds: new Set(), priorIds: new Set(), currentReps: new Map(), priorReps: new Map() };
     group[period === "current" ? "currentIds" : "priorIds"].add(set.session_id);
+    const reps = group[period === "current" ? "currentReps" : "priorReps"];
+    reps.set(values.load, Math.max(reps.get(values.load) ?? 0, values.reps));
     if (set.e1rm != null && Number.isFinite(set.e1rm) && set.e1rm > 0) {
       const value = rounded(set.e1rm);
       if (value > 0 && value > (group[period].get(set.session_id)?.e1rm ?? 0)) {
@@ -121,9 +124,12 @@ export function buildMonthlyReport(input: {
     return { key, exerciseId: g.row.exercise_id, equipmentInstanceId: g.row.equipment_instance_id,
       name: input.catalog[g.row.exercise_id].name, currentBest, priorBest, delta,
       percent: delta != null && priorBest != null && priorBest > 0 ? rounded(delta / priorBest * 100) : null,
-      state, currentExposures: g.currentIds.size, priorExposures: g.priorIds.size, currentPoints, priorPoints };
+      state, repGains: [...g.currentReps].flatMap(([load, currentReps]) => {
+        const priorReps = g.priorReps.get(load);
+        return priorReps != null && currentReps > priorReps ? [{ load, priorReps, currentReps }] : [];
+      }).sort((a, b) => b.currentReps - b.priorReps - (a.currentReps - a.priorReps) || a.load - b.load), currentExposures: g.currentIds.size, priorExposures: g.priorIds.size, currentPoints, priorPoints };
   }).sort((a, b) => (b.percent ?? -Infinity) - (a.percent ?? -Infinity) || a.name.localeCompare(b.name) || a.key.localeCompare(b.key));
-  return { version: "1.1", stalls: (input.stalls ?? []).filter(s => {
+  return { version: "1.2", stalls: (input.stalls ?? []).filter(s => {
     const latest = s.points.at(-1);
     return latest && inWindow(dateKey(new Date(latest.sessionAt), timeZone), current);
   }), month: input.month, timeZone, generatedAt: now.toISOString(), inProgress,

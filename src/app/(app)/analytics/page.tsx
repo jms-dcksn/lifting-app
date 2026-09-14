@@ -70,7 +70,9 @@ type AnalyticsQueryRow = {
     | null;
 };
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({ searchParams }: { searchParams: Promise<{ coachExercise?: string | string[] }> }) {
+  const query = await searchParams;
+  const coachExercise = typeof query.coachExercise === "string" ? query.coachExercise : undefined;
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub as string | undefined;
@@ -275,7 +277,7 @@ export default async function AnalyticsPage() {
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
       <header>
         <h1 className="text-display">Progress</h1>
-        <Link href="/analytics/month" className="mt-2 inline-block min-h-11 py-2 text-body underline">Review monthly strength &amp; records →</Link>
+        <Link href="/analytics/month" className="mt-2 inline-block min-h-11 py-2 text-body underline">Month review · strength, records &amp; weight →</Link>
         <p className="text-body text-muted">
           {volume.length} session{volume.length === 1 ? "" : "s"} · {summaries.length} lift
           {summaries.length === 1 ? "" : "s"} logged
@@ -291,8 +293,9 @@ export default async function AnalyticsPage() {
           future Coach API.
         </p>
         <CoachReportSummary report={coachReport} />
+        {coachExercise && <p className="mb-2 text-caption text-muted">Next steps filtered to {catalog[coachExercise]?.name ?? "selected exercise"}. <Link href="/analytics#coach-next-steps" className="underline">Show all</Link></p>}
         <CoachRecommendationList
-          recommendations={coachRecommendations}
+          recommendations={coachExercise ? coachRecommendations.filter(r => r.exerciseId === coachExercise) : coachRecommendations}
           decisions={recommendationDecisions}
           currentTime={coachReport.generatedAt}
         />

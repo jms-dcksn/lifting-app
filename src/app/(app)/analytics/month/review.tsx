@@ -1,3 +1,4 @@
+import { LiftRow } from "./lift-detail";
 import Link from "next/link";
 import { Card, CardLabel } from "@/components/ui/card";
 import { buttonClasses } from "@/components/ui/button-styles";
@@ -9,9 +10,17 @@ import type { MonthlyReport } from "@/lib/monthly-progress";
 
 const amount = (n: number | null) => n == null ? "—" : `${n.toFixed(1)} lb`;
 const label = (month: string) => new Date(`${month}-01T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
-const states = { improving: "Improving", stable: "Stable", declining: "Lower monthly best", new: "No prior comparison", not_trained: "Not trained", unavailable: "No stored estimate" };
+
 
 export function MonthlyReview({ report }: { report: MonthlyReport }) {
+  const improving = report.lifts.filter(l => l.state === "improving");
+  const repOnly = report.lifts.filter(l => l.state !== "improving" && l.repGains.length > 0);
+  const recordGroups = new Map<string, { name: string; equipment: string | null; records: { sessionId: string; date: string; record: MonthlyReport["achievements"][number]["records"][number] }[] }>();
+  for (const a of report.achievements) for (const record of a.records) {
+    const group = recordGroups.get(record.key) ?? { name: record.name, equipment: record.equipmentInstanceId, records: [] };
+    group.records.push({ sessionId: a.sessionId, date: a.date, record });
+    recordGroups.set(record.key, group);
+  }
   const stalls = report.stalls.filter(s => s.state === "plateau");
   const currentMonth = dateKey(new Date(report.generatedAt), report.timeZone).slice(0, 7);
   const metrics = [
@@ -40,40 +49,25 @@ export function MonthlyReview({ report }: { report: MonthlyReport }) {
       {report.windows.current.start} – {report.windows.current.end}<br />
       Compared with {report.windows.prior.start} – {report.windows.prior.end} · {report.timeZone}
     </p>
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {metrics.map(([name, value, previous]) => <Card key={name} className="min-w-0 p-3">
         <CardLabel>{name}</CardLabel><p className="mt-2 text-heading tabular-nums">{value}</p>
         <p className="mt-1 text-caption text-muted">{previous} prior</p>
       </Card>)}
+      <Card className="min-w-0 p-3"><CardLabel>Lifts improving</CardLabel><p className="mt-2 text-heading tabular-nums">{improving.length}</p><p className="mt-1 text-caption text-muted">Higher monthly best</p></Card>
     </div>
     <p className="text-caption text-muted">Rep PRs count improved reps at the same effective load. e1RM PRs count improved estimated strength. First marks and ties do not count; one workout can earn both.</p>
     {report.current.workouts === 0 && <Card>
       <CardLabel>No completed workouts in this window</CardLabel>
-      <p className="mt-2 text-body text-muted">Choose another month to review earlier training. Weight logging and trends are still available in Progress.</p>
-      <Link href="/analytics" className="mt-3 inline-block min-h-11 py-2 underline">View weight trends</Link>
+      <p className="mt-2 text-body text-muted">Choose another month to review earlier training. You can still log and review your weight below.</p>
+      <Link href="#monthly-weight" className="mt-3 inline-block min-h-11 py-2 underline">View weight trends</Link>
     </Card>}
-    <Card>
-      <CardLabel>Monthly best estimated 1RM</CardLabel>
-      <p className="mt-2 text-body">{report.lifts.filter(l => l.state === "improving").length} lifts improving</p>
-      <p className="mt-1 text-caption text-muted">Each exercise and equipment instance is compared separately. A lower or flat monthly best alone does not establish a stall.</p>
-      {report.lifts.length === 0 ? <p className="mt-3 text-body text-muted">No comparable working sets in these windows.</p> : <ul className="mt-4 divide-y divide-border">
-        {report.lifts.map(lift => <li key={lift.key} className="py-3">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <span className="font-medium">{lift.name}</span>
-            <span className={`text-caption ${lift.state === "improving" ? "text-overload-up" : "text-muted"}`}>{states[lift.state]}{lift.percent != null ? ` · ${lift.percent > 0 ? "+" : ""}${lift.percent}%` : ""}</span>
-          </div>
-          {lift.equipmentInstanceId && <p className="break-all text-caption text-muted">Equipment {lift.equipmentInstanceId}</p>}
-          <p className="mt-1 text-body tabular-nums">{amount(lift.priorBest)} → {amount(lift.currentBest)}</p>
-          <p className="text-caption text-muted">{lift.currentExposures} current / {lift.priorExposures} prior exposures</p>
-          <details className="mt-1">
-            <summary className="min-h-11 cursor-pointer py-2 text-caption text-muted">Supporting workouts</summary>
-            <ul className="space-y-1 text-caption">
-              {[...lift.priorPoints, ...lift.currentPoints].map(point => <li key={point.sessionId}><Link className="flex min-h-11 items-center justify-between gap-2 underline" href={`/session/${point.sessionId}`}>{point.date}<span>{amount(point.e1rm)} e1RM</span></Link></li>)}
-            </ul>
-          </details>
-        </li>)}
-      </ul>}
-    </Card>
+    {(improving.length > 0 || repOnly.length > 0) && <Card>
+      <CardLabel>Where you improved</CardLabel>
+      <p className="mt-2 text-caption text-muted">Ranked by monthly best e1RM change. Dashed trends: prior window; solid: selected month. Each machine is compared separately.</p>
+      <ul className="divide-y divide-border">{improving.slice(0, 5).map(lift => <LiftRow key={lift.key} lift={lift} report={report} />)}</ul>
+      {repOnly.length > 0 && <details><summary className="min-h-11 cursor-pointer py-2 text-body">Rep gains without a higher monthly best ({repOnly.length})</summary><ul className="divide-y divide-border">{repOnly.map(lift => <LiftRow key={lift.key} lift={lift} report={report} />)}</ul></details>}
+    </Card>}
     {stalls.length > 0 && <Card>
       <CardLabel>Worth reviewing</CardLabel>
       <p className="mt-2 text-caption text-muted">Repeated comparable workouts without an estimated-strength or fixed-load rep gain. These are review signals; your program is unchanged.</p>
@@ -88,24 +82,29 @@ export function MonthlyReview({ report }: { report: MonthlyReport }) {
             <span>{dateKey(new Date(point.sessionAt), report.timeZone)}</span><span>{amount(point.bestE1rm)} e1RM{point.repGain ? " · rep gain" : ""}</span>
           </Link></li>)}</ul>
         </details>
+        {report.inProgress && <Link href={`/analytics?coachExercise=${encodeURIComponent(stall.exerciseId)}#coach-next-steps`} className="inline-block min-h-11 py-2 text-caption underline">Review current Coach next steps for this lift</Link>}
       </li>)}</ul>
+
     </Card>}
     <Card>
       <CardLabel>Achievements</CardLabel>
-      <p className="mt-1 text-caption text-muted">{report.current.exercisesWithRecords} exercises · {report.current.workoutsWithRecords} workouts with records</p>
-      {report.achievements.length === 0 ? <p className="mt-3 text-body text-muted">No improvement records in this window. New lifts establish a baseline.</p> : <details className="mt-2">
-        <summary className="min-h-11 cursor-pointer py-2 text-body">View records by workout</summary>
-        <ul className="space-y-4">{report.achievements.map(a => <li key={a.sessionId}>
-          <Link href={`/session/${a.sessionId}`} className="inline-block min-h-11 py-2 font-medium underline">{a.date} · Workout recap</Link>
-          <ul className="space-y-2 text-caption">{a.records.map(r => <li key={r.key}>
-            <p className="font-medium">{r.name}</p>
-            {r.equipmentInstanceId && <p className="break-all text-muted">Equipment {r.equipmentInstanceId}</p>}
-            {r.repRecords.map(rep => <p key={rep.load}>{rep.weight} lb {r.isBodyweight ? "added/assist" : ""} × {rep.reps} reps{rep.improvement != null ? ` · +${rep.improvement} reps` : " · improved within workout"}</p>)}
-            {r.e1rmRecord && <p>{amount(r.e1rmRecord.value)} e1RM{r.e1rmRecord.improvement != null ? ` · +${r.e1rmRecord.improvement.toFixed(1)} lb` : " · improved within workout"}</p>}
-          </li>)}</ul>
+      <p className="mt-1 text-caption text-muted">{report.current.repPrs} rep PRs · {report.current.e1rmPrs} e1RM PRs · {report.current.workoutsWithRecords} workouts with records</p>
+      {recordGroups.size === 0 ? <p className="mt-3 text-body text-muted">No improvement records in this window. New lifts establish a baseline.</p> : <div className="mt-3 divide-y divide-border">{[...recordGroups].map(([key, group]) => <details key={key}>
+        <summary className="min-h-11 cursor-pointer break-words py-3 text-body">{group.name} · {group.records.length} record workouts{group.equipment ? ` · Equipment ${group.equipment}` : ""}</summary>
+        <ul className="space-y-3 pb-3">{group.records.map(({ sessionId, date, record: r }) => <li key={sessionId} className="text-caption">
+          <Link href={`/session/${sessionId}`} className="inline-block min-h-11 py-2 underline">{date} · Workout recap</Link>
+          {r.repRecords.map(rep => <p key={rep.load}>{rep.weight} lb {r.isBodyweight ? "added/assist" : ""} × {rep.reps} reps{rep.improvement != null ? ` · +${rep.improvement} reps` : " · improved within workout"}</p>)}
+          {r.e1rmRecord && <p>{amount(r.e1rmRecord.value)} e1RM{r.e1rmRecord.improvement != null ? ` · +${r.e1rmRecord.improvement.toFixed(1)} lb` : " · improved within workout"}</p>}
         </li>)}</ul>
-      </details>}
+      </details>)}</div>}
     </Card>
+    {report.lifts.length > 0 && <Card>
+      <details>
+        <summary className="min-h-11 cursor-pointer py-2 text-body font-medium">All lifts ({report.lifts.length})</summary>
+        <p className="mt-2 text-caption text-muted">Flat or lower monthly bests alone do not establish a stall. New and untrained lifts are kept separate from gains and declines. Trends: prior dashed, current solid.</p>
+        <ul className="mt-2 divide-y divide-border">{report.lifts.map(lift => <LiftRow key={lift.key} lift={lift} report={report} />)}</ul>
+      </details>
+    </Card>}
     {(report.quality.excludedWorkingSets > 0 || report.quality.missingStoredEstimates > 0) && <p className="text-caption text-muted">Data coverage: {report.quality.excludedWorkingSets} ineligible working sets excluded; {report.quality.missingStoredEstimates} eligible sets without stored estimates omitted from strength comparisons.</p>}
   </>;
 }

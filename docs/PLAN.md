@@ -80,7 +80,7 @@ beat last time. Done = I use it for a real block.
 Program building, classic phases, Fluid adaptations, scoped swaps, pre-workout planning,
 workout records, Coach reports/API/proposals, weight calendar/trends, and the first monthly
 review are implemented. See [Features](FEATURES.md) and [Monthly progress](MONTHLY-PROGRESS.md)
-for current behavior and the remaining shared stall contract/richer dashboard work.
+for current behavior, including the shared stall contract and monthly dashboard.
 Migrations and generated types are committed; remote migration/Auth state needs a live check.
 The numbered phase sections below retain the original build sequence and historical checks.
 
@@ -510,3 +510,15 @@ increment), working sets only, bodyweight included, just-me-first.
 - [x] Monthly supported-signal card with evidence links; edit/delete/finish invalidation.
 - [x] Regression tests, lint, typecheck and production build.
 - [ ] User's authenticated preview review; next implementation issue is #31.
+
+
+## Progress epic #27 — increment 4: monthly dashboard (#31)
+
+- [x] Ranked improvements, compact totals, exact-exercise grouped achievements and all-lifts disclosure.
+- [x] Canonical fixed-load monthly rep gains remain visible when e1RM is flat.
+- [x] Session sparklines with non-color period cues and accessible supporting values.
+- [x] Monthly/exact-equipment history route context and selected-month return navigation.
+- [x] Integrated selected-month weight chart, goal context and edit invalidation.
+- [x] Current stall links to existing Coach next steps filtered by exercise.
+- [x] Pure and server-rendered regression checks, lint, typecheck and production build.
+- [ ] User reviews #31 on Vercel before merge. #32 design and #33 implementation remain deferred.

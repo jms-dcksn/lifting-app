@@ -18,12 +18,12 @@ export function weightRangeStart(today: string, range: WeightRange, first?: stri
   return date.toISOString().slice(0, 10);
 }
 
-export function weightChartData(entries: BodyweightEntry[], today: string, range: WeightRange) {
+export function weightChartData(entries: BodyweightEntry[], today: string, range: WeightRange, startDate?: string) {
   const valid = entries.filter(entry => {
     try { return parseDateKey(entry.loggedOn) <= parseDateKey(today) && Number.isFinite(entry.weight) && entry.weight > 0; }
     catch { return false; }
   }).sort((a, b) => a.loggedOn.localeCompare(b.loggedOn));
-  const start = weightRangeStart(today, range, valid[0]?.loggedOn);
+  const start = startDate ?? weightRangeStart(today, range, valid[0]?.loggedOn);
   const byDate = new Map(valid.map(entry => [entry.loggedOn, entry]));
   // Emit every day with a rolling value plus its following gap marker. This keeps
   // all-history bounded by observations even for extremely old backdated entries.

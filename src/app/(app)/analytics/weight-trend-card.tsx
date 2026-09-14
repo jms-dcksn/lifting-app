@@ -17,13 +17,14 @@ const pounds = (value: number | null) => value == null ? "—" : `${value.toFixe
 const label = (date: string) => new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`));
 type Point = ReturnType<typeof weightChartData>[number];
 
-export function WeightTrendCard({ entries, today, goal }: { entries: BodyweightEntry[]; today: string; goal: number | null }) {
+export function WeightTrendCard({ entries, today, goal, window }: { entries: BodyweightEntry[]; today: string; goal: number | null; window?: { start: string; end: string } }) {
   const [range, setRange] = useState<WeightRange>("90");
   const [editDate, setEditDate] = useState<string | null>(null);
   const router = useRouter();
-  const data = useMemo(() => weightChartData(entries, today, range), [entries, today, range]);
-  const trend = useMemo(() => bodyweightTrend(entries, today), [entries, today]);
-  const weeks = useMemo(() => weeklyWeightData(entries, today), [entries, today]);
+  const anchor = window?.end ?? today;
+  const data = useMemo(() => weightChartData(entries, anchor, range, window?.start), [entries, anchor, range, window]);
+  const trend = useMemo(() => bodyweightTrend(entries, anchor), [entries, anchor]);
+  const weeks = useMemo(() => weeklyWeightData(entries, anchor), [entries, anchor]);
   const distance = weightGoalDistance(trend.current.average, goal);
   const observed = data.filter(point => point.reading != null);
   const hasTrend = data.some(point => point.average != null);
@@ -34,6 +35,7 @@ export function WeightTrendCard({ entries, today, goal }: { entries: BodyweightE
       <CardLabel>Bodyweight trend</CardLabel>
       <Button variant="secondary" size="sm" onClick={() => setEditDate(today)}>Log weight</Button>
     </div>
+    {window && <p className="mb-3 text-caption text-muted">{window.start}–{window.end} · summary as of {anchor}. Goal uses your current Settings value.</p>}
     <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
       <div><dt className="text-caption text-muted">Latest reading</dt><dd className="text-heading tabular-nums">{pounds(trend.latest?.weight ?? null)}</dd>
         <dd className="text-caption text-muted">{trend.latest ? label(trend.latest.loggedOn) : "No weigh-ins yet"}</dd></div>
@@ -43,15 +45,15 @@ export function WeightTrendCard({ entries, today, goal }: { entries: BodyweightE
         <dd className="text-body font-semibold tabular-nums">{trend.change > 0 ? "+" : ""}{pounds(trend.change)}</dd>
         <dd className="text-caption text-muted">{trend.previous.observationCount} readings · {trend.previous.start}–{trend.previous.end}</dd></div>}
       {goal != null ? <div><dt className="text-caption text-muted">Goal · {pounds(goal)}</dt>
-        <dd className="text-body font-semibold">{distance ? distance.position === "at" ? "Trend is at goal" : `${pounds(distance.pounds)} ${distance.position} goal` : "Log a recent reading to compare"}</dd>
+        <dd className="text-body font-semibold">{distance ? distance.position === "at" ? "Trend is at goal" : `${pounds(distance.pounds)} ${distance.position} goal` : "No average in this window to compare"}</dd>
         <dd><Link href="/settings" className="inline-block py-1 text-caption underline">Edit goal</Link></dd></div>
         : <div><dt className="text-caption text-muted">Weight goal</dt><dd><Link href="/settings" className="inline-block py-2 text-body underline">Set goal</Link></dd></div>}
     </dl>
-    {trend.latest && trend.current.average == null && <p className="mt-3 text-caption text-muted">No readings in the past 7 days. Your latest weight is historical, not a current trend.</p>}
-    <div className="my-4 grid grid-cols-4 gap-1" role="group" aria-label="Weight history range">
+    {trend.latest && trend.current.average == null && <p className="mt-3 text-caption text-muted">No readings in the 7 days ending {anchor}. Your latest weight is outside this trend window.</p>}
+    {!window && <div className="my-4 grid grid-cols-4 gap-1" role="group" aria-label="Weight history range">
       {ranges.map(([value, text]) => <Button key={value} variant={range === value ? "primary" : "secondary"} size="sm"
         className="min-h-11 px-1" aria-pressed={range === value} onClick={() => setRange(value)}>{text}</Button>)}
-    </div>
+    </div>}
     {hasTrend ? <>
       <p className="mb-2 text-caption text-muted">Dots: weigh-ins · Line: 7-day average · Hollow marks: fewer than 3 readings{goal != null ? " · Dashed: goal" : ""}. Tap a weigh-in to edit.</p>
       <div className="h-64 min-w-0 w-full" role="group" aria-label="Bodyweight in pounds over time. Detailed values and edit controls follow in the data table.">
@@ -93,7 +95,7 @@ export function WeightTrendCard({ entries, today, goal }: { entries: BodyweightE
         </div>
       </details>
     </> : <p className="py-4 text-body text-muted">{entries.length ? "No readings in this range. Choose a longer range or log a weight." : "Log your first weight to start your trend. A few readings each week help reveal the direction."}</p>}
-    {weeks.some(week => week.average != null) && <details className="mt-2 border-t border-border pt-2">
+    {!window && weeks.some(week => week.average != null) && <details className="mt-2 border-t border-border pt-2">
       <summary className="cursor-pointer py-3 text-body">Weekly averages · last 12 weeks</summary>
       <p className="mb-3 text-caption text-muted">Monday–Sunday calendar weeks. The current week is partial. Missing weeks have no bar.</p>
       <ul className="flex flex-col gap-3">{weeks.map(week => <li key={week.start}>

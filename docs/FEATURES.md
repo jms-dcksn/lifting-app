@@ -265,7 +265,8 @@ Pure analytics in `src/lib/analytics.ts` plus the versioned canonical report in
 
 Progress opens with the shared weight calendar entry point and interactive bodyweight trends
 ([contract](WEIGHT-TRENDS.md)). The monthly review link opens `/analytics/month` for date-window
-comparisons, canonical PR totals, exact-equipment strength evidence, and supported stall reviews
+comparisons, canonical PR totals, ranked improvements and rep gains, grouped achievements,
+exact-equipment history drill-downs, selected-month weight charts, and supported stall reviews
 ([contract](MONTHLY-PROGRESS.md)).
 
 Other pure analytics available: `e1rmPrFeed` (chronological PR events), `weightPrs` (all-time

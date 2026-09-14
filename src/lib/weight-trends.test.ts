@@ -58,3 +58,14 @@ describe("weight trends", () => {
     expect(weightGoalDistance(150, null)).toBeNull();
   });
 });
+
+
+it("clips an explicit monthly chart while retaining the preceding rolling lookback", () => {
+  const entries = [{ id: "a", loggedOn: "2026-08-30", weight: 150 }, { id: "b", loggedOn: "2026-09-02", weight: 152 }, { id: "future", loggedOn: "2026-10-01", weight: 999 }];
+  const data = weightChartData(entries, "2026-09-30", "90", "2026-09-01");
+  expect(data[0].date).toBe("2026-09-01");
+  expect(data[0].average).toBe(150);
+  expect(data.find(p => p.date === "2026-09-02")?.average).toBe(151);
+  expect(data.at(-1)?.date).toBe("2026-09-30");
+  expect(data.every(p => p.reading !== 999)).toBe(true);
+});

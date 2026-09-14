@@ -60,3 +60,9 @@ summary cards, and weekly means after corrections/deletions.
 4. Expand the data table and use its edit button with a keyboard.
 5. Expand weekly averages; check dates, counts, partial-week label, and gaps.
 6. Change/remove the goal in Settings and revisit Progress; check distance/Set goal.
+
+
+The monthly review reuses this card with an explicit calendar window. Chart points are
+clipped to that window while rolling averages retain the prior six days. Summary averages
+are anchored to the selected end date and labeled accordingly; the displayed goal remains
+the current Settings goal. Range controls and 12-week bars stay on the main Progress card.

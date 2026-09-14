@@ -1,3 +1,6 @@
+import { monthlyWindows } from "@/lib/monthly-progress";
+import { loadMonthlyReport } from "@/lib/monthly-progress-data";
+import { MonthlyHistory } from "./monthly-history";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
@@ -12,9 +15,10 @@ interface SessionGroup {
 }
 
 export default async function HistoryPage({
-  params,
+  params, searchParams,
 }: {
   params: Promise<{ exerciseId: string }>;
+  searchParams: Promise<{ month?: string | string[]; equipment?: string | string[] }>;
 }) {
   const { exerciseId } = await params;
   const supabase = await createClient();
@@ -23,6 +27,14 @@ export default async function HistoryPage({
   if (!userId) redirect("/login");
 
   const catalog = await getCatalogMap(supabase, userId);
+  const query = await searchParams;
+  if (query.month !== undefined) {
+    const now = new Date();
+    if (typeof query.month !== "string" || (query.equipment !== undefined && typeof query.equipment !== "string")) redirect("/analytics/month");
+    try { monthlyWindows(query.month, now); } catch { redirect("/analytics/month"); }
+    const report = await loadMonthlyReport(supabase, userId, query.month, catalog, now);
+    return <MonthlyHistory report={report} exerciseId={exerciseId} equipment={query.equipment === "none" || !query.equipment ? null : query.equipment} />;
+  }
   const def = catalog[exerciseId];
   const name = def?.name ?? exerciseId;
   const isBodyweight = def?.equipment === "bodyweight";

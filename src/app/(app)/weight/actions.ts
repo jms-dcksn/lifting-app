@@ -76,6 +76,7 @@ function refreshWeightViews() {
   revalidatePath("/");
   revalidatePath("/settings");
   revalidatePath("/analytics");
+  revalidatePath("/analytics/month");
   revalidatePath("/workout/next");
   revalidatePath("/session/[id]", "page");
 }

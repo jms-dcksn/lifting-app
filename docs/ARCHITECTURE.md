@@ -62,7 +62,8 @@ Clones are inactive drafts. Template creation activates only for an account with
 `program-templates.ts` owns shared templates; adding one needs no seed or migration.
 Use its descriptions for transcription approximations (percentage work, reverse pyramids,
 rest-pause), and its tests for catalog/pattern and week-range validation. Existing program
-copies are independent of template edits. [Strong Foundations](STRONG-FOUNDATIONS.md) owns
+copies are independent of template edits unless an explicit, scoped data migration is
+applied (as for the September 14 Strong Foundations variety revision). [Strong Foundations](STRONG-FOUNDATIONS.md) owns
 that template's time budget and coaching rationale.
 
 Classic programs resolve effective sets and RIR through `periodization.ts`; fractional set

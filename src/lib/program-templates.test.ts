@@ -75,6 +75,16 @@ describe("program templates", () => {
     expect(resolvePrescription(base, 12, phases)).toMatchObject({ targetSets: 2, targetRirMin: 3, targetRirMax: 4 });
   });
 
+  it("gives each day distinct leg work while retaining repeatable glute and hamstring anchors", () => {
+    const days = TEMPLATE_BY_ID["strong-foundations-women-3x"].days;
+    const ids = days.map((day) => day.slots.map((slot) => slot.exerciseId));
+    expect(ids[0].filter((id) => ids[2].includes(id))).toEqual(["glute-drive", "seated-leg-curl"]);
+    expect(ids.flat().filter((id) => id === "leg-press")).toHaveLength(1);
+    expect(ids[1]).toContain("hack-squat");
+    expect(ids[2]).toContain("db-split-squat");
+    expect(days.flatMap((day) => day.slots).reduce((sum, slot) => sum + slot.targetSets, 0)).toBe(36);
+  });
+
   it("keeps the women's three-day block within its time budget in every week", () => {
     const template = TEMPLATE_BY_ID["strong-foundations-women-3x"];
     const phases = template.phases!.map((phase, index) => ({ ...phase, id: `women-${index}` }));
@@ -88,10 +98,13 @@ describe("program templates", () => {
         expect(prescriptions.reduce((sets, p) => sets + p.targetSets, 0))
           .toBe([6, 12].includes(week) ? 6 : 12);
         // Conservative planning allowance: 8 min warm-up, 1 min setup per station,
-        // 45 sec per working set, and full prescribed rest even after the final set.
+        // 45 sec per working set (105 sec for both split-squat legs and switching),
+        // and full prescribed rest even after the final set.
         // Queueing is excluded; the description supplies swaps and a time cutoff.
         const seconds = 8 * 60 + day.slots.length * 60 + prescriptions.reduce(
-          (total, p, index) => total + p.targetSets * (45 + day.slots[index].restSeconds!), 0,
+          (total, p, index) => total + p.targetSets * (
+            (day.slots[index].exerciseId === "db-split-squat" ? 105 : 45) + day.slots[index].restSeconds!
+          ), 0,
         );
         expect(seconds, `${day.name}, week ${week}`).toBeLessThan(45 * 60);
         prescriptions.forEach((p, index) => {

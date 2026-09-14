@@ -61,7 +61,11 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
       "and light ramp-up sets; each day has six exercises and 12 working sets. Use the listed " +
       "rest timers, work one station at a time, and swap unavailable equipment rather than wait. " +
       "Choose your machine brand/type before logging. Glute drive can swap to barbell hip thrust; " +
-      "leg press to hack squat; chest press to dumbbell bench. Keep abduction as abduction. " +
+      "hack squat to leg press; chest press to dumbbell bench. Keep abduction as abduction. " +
+      "Day C adds single-leg work: Bulgarian split squats are 8-10 reps per leg; complete both " +
+      "legs before resting 120 seconds and log one set using the weaker leg's reps/RIR. " +
+      "Log the weight of one dumbbell. Start light, use support for balance, and swap to leg " +
+      "press if the movement is not yet comfortable. Keep the same exercises week to week. " +
       "Start with controlled loads and follow the weekly RIR (reps in reserve) targets. " +
       "Add reps within the range; the app suggests more weight and resets to the rep floor " +
       "when the first working set reaches the ceiling. Only take the increase if technique " +
@@ -97,7 +101,7 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
         name: "B · Posterior Chain & Quads + Shoulders/Back",
         slots: [
           s("bb-rdl", "hinge", 2, 8, 10, 2, 150),
-          s("leg-press", "squat", 2, 8, 12, 2, 120),
+          s("hack-squat", "squat", 2, 8, 12, 2, 120),
           s("leg-extension", "knee_extension", 2, 10, 15, 2, 90),
           s("lat-pulldown", "vertical_pull", 2, 8, 12, 2, 90),
           s("db-shoulder-press", "vertical_press", 2, 8, 12, 2, 90),
@@ -105,13 +109,13 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
         ],
       },
       {
-        name: "C · Glute Strength & Legs + Push/Pull/Core",
+        name: "C · Glute Strength & Single-Leg + Push/Pull/Core",
         slots: [
           s("glute-drive", "hip_thrust", 2, 6, 10, 2, 120),
-          s("leg-press", "squat", 2, 10, 15, 2, 120),
+          s("db-split-squat", "lunge", 2, 8, 10, 2, 120),
           s("seated-leg-curl", "knee_flexion", 2, 10, 15, 2, 90),
-          s("machine-chest-press", "horizontal_press", 2, 8, 12, 2, 90),
-          s("seated-cable-row", "horizontal_pull", 2, 8, 12, 2, 90),
+          s("db-incline-bench", "horizontal_press", 2, 8, 12, 2, 90),
+          s("machine-row", "horizontal_pull", 2, 8, 12, 2, 90),
           s("cable-crunch", "core", 2, 10, 15, 2, 60),
         ],
       },

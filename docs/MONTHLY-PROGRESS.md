@@ -127,8 +127,9 @@ The shared weight card follows the selected month, including rolling lookback be
 first day. Its summary is as of the selected end date; the goal is explicitly the current
 Settings value, since historical goals are not stored. Log weight remains available with
 zero workouts. Weight edits refresh the monthly route; workout edits/completion also
-invalidate the history drill-down. No cycle reads or UI are enabled; the space after the
-monthly sections remains available for #33's optional context lane.
+invalidate the history drill-down. Period tracking design (#32) specifies optional context
+bands on weight and e1RM charts; see [PERIOD-TRACKING.md](PERIOD-TRACKING.md) for the complete
+contract. Implementation in #33 adds the view toggle and chart overlays.
 
 No new tables, secrets, dependencies or migrations. Existing paginated reads retain the
 complete historical record baseline through the selected cutoff; this slice does not add

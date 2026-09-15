@@ -558,3 +558,34 @@ do not add achievement counts. Set IDs identify the winning slot for card placem
 - `record-actions.test.ts`: real save/edit/delete/finish actions through the loader and
   engine with an in-memory database adapter, failed writes/retries, feedback, reopened
   summaries, and preservation of historical bodyweight during edits.
+
+## Period tracking (#32–33)
+
+**Female-only opt-in menstrual period tracking** for monthly progress context. Records observed
+bleeding days only; no cycle prediction, no hormonal phases, no external sharing, no training
+automation. Design: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
+
+**Daily observations** — one date-only row per observed period day, aligned with America/Chicago
+and weight calendar semantics. No interval records, no open-ended spans; user marks each day
+during menstruation and stops when it ends. Backfilling and sparse data are normal. Blank days
+are not confirmed absences.
+
+**Consent and eligibility** — requires `profile.sex = 'female'` (new optional field, defaults
+unspecified) and explicit `period_tracking_enabled = true`. No inference from demographics,
+weight, or training. Consent version and timestamp stored to support future opt-in changes.
+
+**Context bands, not analysis** — monthly review shows optional shaded bands on weight and e1RM
+charts when tracking is enabled. View toggle per session (not saved). Period data never alters
+stall classification, PR totals, weight calculations, or Coach recommendations. No Coach API or
+export inclusion in V1 (separate consent required for future sharing).
+
+**Disable and deletion** — toggling off offers Keep history (private, re-enable shows it again)
+or Delete history (hard delete, irreversible). Changing sex from Female auto-disables without
+silent deletion; user controls removal. Delete account cascades period observations. Observations
+remain in the table when disabled but are gated from all queries by `period_tracking_enabled`
+check at read time.
+
+**Privacy design** — no cycle prediction, no phase labels, no symptom tracking, no fertility
+claims, no automated correlation with performance. Separate table (`period_observation`),
+owner-scoped RLS, explicit consent version. Future additions (e.g., Coach sharing, symptom
+logs) require consent re-prompt and separate opt-in.

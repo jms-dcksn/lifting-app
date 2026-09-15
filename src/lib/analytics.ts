@@ -26,6 +26,12 @@ export interface SessionTonnagePoint {
   excludedSetCount: number;
 }
 
+export interface WeeklyVolumePoint {
+  weekStart: string; // YYYY-MM-DD, Monday of the week (UTC)
+  weekEnd: string; // YYYY-MM-DD, Sunday of the week (UTC)
+  tonnage: number;
+}
+
 export interface E1rmPr {
   id: string;
   date: string;
@@ -105,6 +111,26 @@ export function sessionTonnage(
   }
 
   return [...sessions.values()].sort(compareSessions);
+}
+
+export function weeklyVolume(
+  sessions: SessionTonnagePoint[],
+): WeeklyVolumePoint[] {
+  const byWeek = new Map<string, number>();
+
+  for (const session of sessions) {
+    const weekStart = weekStartUtc(session.performedAt);
+    const current = byWeek.get(weekStart) ?? 0;
+    byWeek.set(weekStart, current + session.tonnage);
+  }
+
+  return [...byWeek.entries()]
+    .map(([weekStart, tonnage]) => ({
+      weekStart,
+      weekEnd: weekEndUtc(weekStart),
+      tonnage,
+    }))
+    .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
 }
 
 export function e1rmPrFeed(rows: AnalyticsSetRow[]): E1rmPr[] {
@@ -342,6 +368,15 @@ function weekStartUtc(iso: string): string {
     Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - offset),
   );
   return monday.toISOString().slice(0, 10);
+}
+
+// Sunday (UTC) of the week starting on `weekStart` (YYYY-MM-DD), as a YYYY-MM-DD key.
+function weekEndUtc(weekStart: string): string {
+  const monday = new Date(`${weekStart}T00:00:00Z`);
+  const sunday = new Date(
+    Date.UTC(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate() + 6),
+  );
+  return sunday.toISOString().slice(0, 10);
 }
 
 function chronologicalRows(rows: AnalyticsSetRow[]) {

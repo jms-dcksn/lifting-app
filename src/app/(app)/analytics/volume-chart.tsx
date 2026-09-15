@@ -13,6 +13,7 @@ import {
 
 export interface VolumeChartPoint {
   date: string;
+  tooltip?: string;
   tonnage: number;
 }
 
@@ -43,6 +44,10 @@ export function VolumeChart({ data }: { data: VolumeChartPoint[] }) {
           <Tooltip
             cursor={{ fill: "var(--surface)" }}
             formatter={(value) => [`${formatWhole(Number(value))} lb`, "tonnage"]}
+            labelFormatter={(label, payload) => {
+              const point = payload?.[0]?.payload as VolumeChartPoint | undefined;
+              return point?.tooltip ?? label;
+            }}
             contentStyle={{
               borderRadius: 8,
               fontSize: 12,

@@ -14,11 +14,11 @@ export default async function SettingsPage() {
   const userId = claims?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
 
-  const [{ data: profile, error }, { data: weightRows, error: weightError }, periodCountResult] =
+  const [{ data: profile, error }, { data: weightRows, error: weightError }] =
     await Promise.all([
       supabase
         .from("profile")
-        .select("bodyweight, goal_weight, default_rest_seconds, sex, period_tracking_enabled")
+        .select("bodyweight, goal_weight, default_rest_seconds, sex, period_tracking_enabled, period_consent_granted_at")
         .eq("id", userId)
         .maybeSingle(),
       supabase
@@ -27,18 +27,23 @@ export default async function SettingsPage() {
         .eq("user_id", userId)
         .order("logged_on", { ascending: false })
         .limit(30),
-      supabase
-        .from("period_observation")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId),
     ]);
-  
-  const hasObservations = periodCountResult.count != null && periodCountResult.count > 0;
 
   if (error) {
-    throw new Error(`Unable to load profile: ${error.message}`);
+    throw new Error("Unable to load profile.");
   }
-  if (weightError) throw new Error(`Unable to load bodyweight history: ${weightError.message}`);
+  if (weightError) throw new Error("Unable to load bodyweight history.");
+
+  const mayHavePeriodHistory =
+    profile?.sex === "female" || profile?.period_consent_granted_at != null;
+  let hasObservations = false;
+  if (mayHavePeriodHistory) {
+    const { count } = await supabase
+      .from("period_observation")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
+    hasObservations = (count ?? 0) > 0;
+  }
 
   const today = dateKey(new Date());
   const entries: BodyweightEntry[] = (weightRows ?? []).map((row) => ({

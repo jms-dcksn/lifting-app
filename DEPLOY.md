@@ -40,8 +40,10 @@ npx supabase db push
 For an existing project, inspect migration history before pushing. Migrations are tracked
 applications, not scripts to replay indiscriminately. All files in `supabase/migrations/`
 are relevant, including phases, feedback, bodyweight history, Coach decisions, exercise swaps,
-and atomic calendar writes. Deploy dependent application code only after its schema is
-available. Vercel's build does not run database migrations.
+and atomic calendar writes. Period tracking (#33) adds `profile.sex`, consent columns, and
+`period_observation`; apply that migration before deploying the Settings/Progress UI that
+reads those fields. Vercel's build does not run database migrations. Breaking consent-copy
+changes should bump `period_consent_version` and require re-consent.
 
 Enable email magic-link Auth. Set Site URL and allowed redirect URLs for the production
 and intended preview origins. The app exchanges the callback code at `/auth/callback`;

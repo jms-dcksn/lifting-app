@@ -29,7 +29,34 @@ export function PeriodTrackingSettings({
   const [pending, setPending] = useState(false);
   const router = useRouter();
 
-  if (sex !== "female") return null;
+  if (sex !== "female") {
+    if (!hasObservations) return null;
+    return (
+      <Card className="flex flex-col gap-4">
+        <div>
+          <CardLabel className="mb-1">Manage hidden period data</CardLabel>
+          <p className="text-body text-muted">
+            Period tracking is unavailable for this profile. Recorded period days stay
+            hidden until you select Female and re-enable tracking, or delete them.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setShowDeleteConfirm(true)}
+        >
+          Delete history permanently
+        </Button>
+        {showDeleteConfirm && (
+          <DeleteHistoryModal
+            onConfirm={handleDeleteHistory}
+            onCancel={() => setShowDeleteConfirm(false)}
+            pending={pending}
+          />
+        )}
+      </Card>
+    );
+  }
 
   async function handleEnable() {
     setPending(true);

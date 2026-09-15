@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardLabel } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { WeightCalendar } from "@/components/weight-calendar";
 import { loadWeightMonth, removeWeightEntry, writeWeightEntry } from "@/app/(app)/weight/actions";
 import { bodyweightTrend, type BodyweightEntry } from "@/lib/bodyweight";
 import { weightChartData, weightGoalDistance, weeklyWeightData, type WeightRange } from "@/lib/weight-trends";
+import type { PeriodObservation } from "@/lib/period-calendar";
 
 const actions = { load: loadWeightMonth, save: writeWeightEntry, remove: removeWeightEntry };
 const ranges: [WeightRange, string][] = [["30", "30 days"], ["90", "90 days"], ["6m", "6 months"], ["all", "All history"]];
@@ -17,24 +18,63 @@ const pounds = (value: number | null) => value == null ? "—" : `${value.toFixe
 const label = (date: string) => new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`));
 type Point = ReturnType<typeof weightChartData>[number];
 
-export function WeightTrendCard({ entries, today, goal, window }: { entries: BodyweightEntry[]; today: string; goal: number | null; window?: { start: string; end: string } }) {
+export function WeightTrendCard({
+  entries,
+  today,
+  goal,
+  window,
+  eligible,
+  periodObservations,
+}: {
+  entries: BodyweightEntry[];
+  today: string;
+  goal: number | null;
+  window?: { start: string; end: string };
+  eligible?: boolean;
+  periodObservations?: PeriodObservation[];
+}) {
   const [range, setRange] = useState<WeightRange>("90");
   const [editDate, setEditDate] = useState<string | null>(null);
+  const [showPeriodContext, setShowPeriodContext] = useState(true);
   const router = useRouter();
   const anchor = window?.end ?? today;
   const data = useMemo(() => weightChartData(entries, anchor, range, window?.start), [entries, anchor, range, window]);
   const trend = useMemo(() => bodyweightTrend(entries, anchor), [entries, anchor]);
   const weeks = useMemo(() => weeklyWeightData(entries, anchor), [entries, anchor]);
   const distance = weightGoalDistance(trend.current.average, goal);
-  const observed = data.filter(point => point.reading != null);
-  const hasTrend = data.some(point => point.average != null);
-  const maxWeek = Math.max(1, ...weeks.map(week => week.average ?? 0));
+  const observed = data.filter((point) => point.reading != null);
+  const hasTrend = data.some((point) => point.average != null);
+  const maxWeek = Math.max(1, ...weeks.map((week) => week.average ?? 0));
+  
+  const periodBands = useMemo(() => {
+    if (!eligible || !periodObservations || !showPeriodContext) return [];
+    const windowStart = window?.start ?? data[0]?.date;
+    const windowEnd = anchor;
+    if (!windowStart) return [];
+    return periodObservations
+      .filter((obs) => obs.observedOn >= windowStart && obs.observedOn <= windowEnd)
+      .map((obs) => obs.observedOn);
+  }, [eligible, periodObservations, showPeriodContext, window, anchor, data]);
 
-  return <Card className="min-w-0">
-    <div className="mb-4 flex items-center justify-between gap-2">
-      <CardLabel>Bodyweight trend</CardLabel>
-      <Button variant="secondary" size="sm" onClick={() => setEditDate(today)}>Log weight</Button>
-    </div>
+  return (
+    <Card className="min-w-0">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <CardLabel>Bodyweight trend</CardLabel>
+        <Button variant="secondary" size="sm" onClick={() => setEditDate(today)}>
+          Log weight
+        </Button>
+      </div>
+      {eligible && periodObservations && periodObservations.length > 0 && (
+        <label className="mb-3 flex items-center gap-2 text-body">
+          <input
+            type="checkbox"
+            checked={showPeriodContext}
+            onChange={(e) => setShowPeriodContext(e.target.checked)}
+            className="size-4 cursor-pointer rounded border-border"
+          />
+          <span>Show period context</span>
+        </label>
+      )}
     {window && <p className="mb-3 text-caption text-muted">{window.start}–{window.end} · summary as of {anchor}. Goal uses your current Settings value.</p>}
     <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
       <div><dt className="text-caption text-muted">Latest reading</dt><dd className="text-heading tabular-nums">{pounds(trend.latest?.weight ?? null)}</dd>
@@ -54,32 +94,124 @@ export function WeightTrendCard({ entries, today, goal, window }: { entries: Bod
       {ranges.map(([value, text]) => <Button key={value} variant={range === value ? "primary" : "secondary"} size="sm"
         className="min-h-11 px-1" aria-pressed={range === value} onClick={() => setRange(value)}>{text}</Button>)}
     </div>}
-    {hasTrend ? <>
-      <p className="mb-2 text-caption text-muted">Dots: weigh-ins · Line: 7-day average · Hollow marks: fewer than 3 readings{goal != null ? " · Dashed: goal" : ""}. Tap a weigh-in to edit.</p>
-      <div className="h-64 min-w-0 w-full" role="group" aria-label="Bodyweight in pounds over time. Detailed values and edit controls follow in the data table.">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 0, height: 256 }}>
-          <ComposedChart data={data} margin={{ top: 24, right: 12, bottom: 0, left: -12 }} accessibilityLayer>
-            <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="timestamp" type="number" domain={[data[0].timestamp, data[data.length - 1].timestamp]} scale="time" tickCount={3}
-              tickFormatter={value => new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(value))}
-              tick={{ fontSize: 11, fill: "var(--muted)" }} tickLine={false} />
-            <YAxis domain={["auto", "auto"]} width={54} tick={{ fontSize: 11, fill: "var(--muted)" }} tickLine={false} tickFormatter={value => Number(value).toFixed(1)} />
-            <Tooltip content={<WeightTooltip />} />
-            {goal != null && <ReferenceLine y={goal} ifOverflow="extendDomain" stroke="var(--muted)" strokeDasharray="6 4"
-              label={{ value: `Goal ${pounds(goal)}`, position: "insideTopRight", fill: "var(--muted)", fontSize: 11 }} />}
-            <Line dataKey="average" type="linear" stroke="var(--foreground)" strokeWidth={2} connectNulls={false} isAnimationActive={false}
-              dot={({ cx, cy, payload }: { cx?: number; cy?: number; payload?: Point }) => payload?.average != null && payload.count < 3
-                ? <circle key={payload.date} cx={cx} cy={cy} r={3} fill="var(--background)" stroke="var(--foreground)" />
-                : <g key={payload?.date} />} activeDot={{ r: 4 }} />
-            <Line dataKey="reading" stroke="none" isAnimationActive={false} activeDot={false}
-              dot={({ cx, cy, payload }: { cx?: number; cy?: number; payload?: Point }) => payload?.reading != null
-                ? <g key={payload.date} onClick={() => setEditDate(payload.date)} className="cursor-pointer">
-                  <circle cx={cx} cy={cy} r={12} fill="transparent" />
-                  <circle cx={cx} cy={cy} r={4} fill="var(--muted)" stroke="var(--background)" />
-                </g> : <g key={payload?.date} />} />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
+    {hasTrend ? (
+      <>
+        <p className="mb-2 text-caption text-muted">
+          Dots: weigh-ins · Line: 7-day average · Hollow marks: fewer than 3 readings
+          {goal != null ? " · Dashed: goal" : ""}
+          {periodBands.length > 0 ? " · Purple bands: period days" : ""}. Tap a weigh-in to edit.
+        </p>
+        <div
+          className="h-64 min-w-0 w-full"
+          role="group"
+          aria-label="Bodyweight in pounds over time. Detailed values and edit controls follow in the data table."
+        >
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            minWidth={0}
+            initialDimension={{ width: 0, height: 256 }}
+          >
+            <ComposedChart
+              data={data}
+              margin={{ top: 24, right: 12, bottom: 0, left: -12 }}
+              accessibilityLayer
+            >
+              <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+              <XAxis
+                dataKey="timestamp"
+                type="number"
+                domain={[data[0].timestamp, data[data.length - 1].timestamp]}
+                scale="time"
+                tickCount={3}
+                tickFormatter={(value) =>
+                  new Intl.DateTimeFormat("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    timeZone: "UTC",
+                  }).format(new Date(value))
+                }
+                tick={{ fontSize: 11, fill: "var(--muted)" }}
+                tickLine={false}
+              />
+              <YAxis
+                domain={["auto", "auto"]}
+                width={54}
+                tick={{ fontSize: 11, fill: "var(--muted)" }}
+                tickLine={false}
+                tickFormatter={(value) => Number(value).toFixed(1)}
+              />
+              <Tooltip content={<WeightTooltip periodBands={periodBands} />} />
+              {periodBands.map((date) => {
+                const point = data.find((p) => p.date === date);
+                if (!point) return null;
+                return (
+                  <ReferenceArea
+                    key={date}
+                    x1={point.timestamp}
+                    x2={point.timestamp + 86400000}
+                    fill="hsl(280 65% 60% / 0.15)"
+                    fillOpacity={1}
+                    ifOverflow="extendDomain"
+                  />
+                );
+              })}
+              {goal != null && (
+                <ReferenceLine
+                  y={goal}
+                  ifOverflow="extendDomain"
+                  stroke="var(--muted)"
+                  strokeDasharray="6 4"
+                  label={{
+                    value: `Goal ${pounds(goal)}`,
+                    position: "insideTopRight",
+                    fill: "var(--muted)",
+                    fontSize: 11,
+                  }}
+                />
+              )}
+              <Line
+                dataKey="average"
+                type="linear"
+                stroke="var(--foreground)"
+                strokeWidth={2}
+                connectNulls={false}
+                isAnimationActive={false}
+                dot={({ cx, cy, payload }: { cx?: number; cy?: number; payload?: Point }) =>
+                  payload?.average != null && payload.count < 3 ? (
+                    <circle
+                      key={payload.date}
+                      cx={cx}
+                      cy={cy}
+                      r={3}
+                      fill="var(--background)"
+                      stroke="var(--foreground)"
+                    />
+                  ) : (
+                    <g key={payload?.date} />
+                  )
+                }
+                activeDot={{ r: 4 }}
+              />
+              <Line
+                dataKey="reading"
+                stroke="none"
+                isAnimationActive={false}
+                activeDot={false}
+                dot={({ cx, cy, payload }: { cx?: number; cy?: number; payload?: Point }) =>
+                  payload?.reading != null ? (
+                    <g key={payload.date} onClick={() => setEditDate(payload.date)} className="cursor-pointer">
+                      <circle cx={cx} cy={cy} r={12} fill="transparent" />
+                      <circle cx={cx} cy={cy} r={4} fill="var(--muted)" stroke="var(--background)" />
+                    </g>
+                  ) : (
+                    <g key={payload?.date} />
+                  )
+                }
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
       <details className="mt-2">
         <summary className="cursor-pointer py-3 text-body">Chart data and edit readings ({observed.length} weigh-ins)</summary>
         <div className="max-h-80 overflow-auto">
@@ -94,7 +226,14 @@ export function WeightTrendCard({ entries, today, goal, window }: { entries: Bod
           </table>
         </div>
       </details>
-    </> : <p className="py-4 text-body text-muted">{entries.length ? "No readings in this range. Choose a longer range or log a weight." : "Log your first weight to start your trend. A few readings each week help reveal the direction."}</p>}
+    </>
+    ) : (
+      <p className="py-4 text-body text-muted">
+        {entries.length
+          ? "No readings in this range. Choose a longer range or log a weight."
+          : "Log your first weight to start your trend. A few readings each week help reveal the direction."}
+      </p>
+    )}
     {!window && weeks.some(week => week.average != null) && <details className="mt-2 border-t border-border pt-2">
       <summary className="cursor-pointer py-3 text-body">Weekly averages · last 12 weeks</summary>
       <p className="mb-3 text-caption text-muted">Monday–Sunday calendar weeks. The current week is partial. Missing weeks have no bar.</p>
@@ -105,17 +244,40 @@ export function WeightTrendCard({ entries, today, goal, window }: { entries: Bod
           <div className="h-2 bg-muted" style={{ width: `${week.average / maxWeek * 100}%` }} /></div>}
       </li>)}</ul>
     </details>}
-    {editDate && <WeightCalendar today={today} initialDate={editDate} actions={actions} onClose={() => setEditDate(null)} onChange={() => router.refresh()} />}
-  </Card>;
+      {editDate && (
+        <WeightCalendar
+          today={today}
+          initialDate={editDate}
+          actions={actions}
+          onClose={() => setEditDate(null)}
+          onChange={() => router.refresh()}
+        />
+      )}
+    </Card>
+  );
 }
 
-function WeightTooltip({ active, payload }: { active?: boolean; payload?: readonly { payload?: Point }[] }) {
+function WeightTooltip({
+  active,
+  payload,
+  periodBands,
+}: {
+  active?: boolean;
+  payload?: readonly { payload?: Point }[];
+  periodBands?: string[];
+}) {
   const point = payload?.[0]?.payload;
   if (!active || !point) return null;
-  return <div className="max-w-60 rounded-control border border-border bg-background p-3 text-caption shadow-sm">
-    <p className="font-semibold">{label(point.date)}</p>
-    <p>Reading: {pounds(point.reading)}</p>
-    <p>7-day average: {pounds(point.average)}</p>
-    <p className="text-muted">{point.start}–{point.date} · {point.count} readings</p>
-  </div>;
+  const isPeriodDay = periodBands?.includes(point.date);
+  return (
+    <div className="max-w-60 rounded-control border border-border bg-background p-3 text-caption shadow-sm">
+      <p className="font-semibold">{label(point.date)}</p>
+      <p>Reading: {pounds(point.reading)}</p>
+      <p>7-day average: {pounds(point.average)}</p>
+      <p className="text-muted">
+        {point.start}–{point.date} · {point.count} readings
+      </p>
+      {isPeriodDay && <p className="mt-1 font-semibold" style={{ color: "hsl(280 65% 60%)" }}>Period</p>}
+    </div>
+  );
 }

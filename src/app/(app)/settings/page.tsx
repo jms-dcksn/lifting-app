@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { bodyweightTrend, dateKey, type BodyweightEntry } from "@/lib/bodyweight";
 import { saveProfile } from "./actions";
 import { LogWeightButton } from "@/components/weight-calendar";
+import { PeriodTrackingSettings } from "@/components/period-tracking-settings";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -17,7 +18,7 @@ export default async function SettingsPage() {
     await Promise.all([
       supabase
         .from("profile")
-        .select("bodyweight, goal_weight, default_rest_seconds")
+        .select("bodyweight, goal_weight, default_rest_seconds, sex, period_tracking_enabled, period_consent_granted_at")
         .eq("id", userId)
         .maybeSingle(),
       supabase
@@ -29,9 +30,20 @@ export default async function SettingsPage() {
     ]);
 
   if (error) {
-    throw new Error(`Unable to load profile: ${error.message}`);
+    throw new Error("Unable to load profile.");
   }
-  if (weightError) throw new Error(`Unable to load bodyweight history: ${weightError.message}`);
+  if (weightError) throw new Error("Unable to load bodyweight history.");
+
+  const mayHavePeriodHistory =
+    profile?.sex === "female" || profile?.period_consent_granted_at != null;
+  let hasObservations = false;
+  if (mayHavePeriodHistory) {
+    const { count } = await supabase
+      .from("period_observation")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
+    hasObservations = (count ?? 0) > 0;
+  }
 
   const today = dateKey(new Date());
   const entries: BodyweightEntry[] = (weightRows ?? []).map((row) => ({
@@ -91,6 +103,24 @@ export default async function SettingsPage() {
       </Card>
 
       <form action={saveProfile} className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3">
+          <label className="text-body text-muted" htmlFor="sex">
+            Sex (optional)
+          </label>
+          <select
+            id="sex"
+            name="sex"
+            defaultValue={profile?.sex ?? "unspecified"}
+            className="min-h-11 rounded-control border border-border bg-surface px-3 py-2 text-body focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-foreground"
+          >
+            <option value="unspecified">Unspecified</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+          <p className="text-caption text-muted">
+            Allows optional period tracking for menstrual cycle context in monthly progress review. Not required for training.
+          </p>
+        </div>
 
         <div className="flex flex-col gap-3">
           <label className="text-body text-muted" htmlFor="goal_weight">
@@ -128,6 +158,13 @@ export default async function SettingsPage() {
           Save
         </Button>
       </form>
+
+      <PeriodTrackingSettings
+        today={today}
+        sex={profile?.sex ?? "unspecified"}
+        trackingEnabled={profile?.period_tracking_enabled ?? false}
+        hasObservations={hasObservations}
+      />
     </div>
   );
 }

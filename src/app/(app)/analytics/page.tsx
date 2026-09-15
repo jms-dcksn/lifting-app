@@ -6,10 +6,9 @@ import { redirect } from "next/navigation";
 import {
   e1rmPrFeed,
   exerciseSummaries,
-  latestWeekBalance,
-  patternStrengthTrend,
   sessionTonnage,
   weightPrs,
+  weeklyVolume,
   type AnalyticsSetRow,
 } from "@/lib/analytics";
 import { createClient } from "@/lib/supabase/server";
@@ -23,7 +22,7 @@ import {
   type CoachSlotInput,
 } from "@/lib/coach-check-in";
 import { getActiveProgram } from "@/lib/program";
-import { PATTERN_LABEL, type ExerciseDef } from "@/lib/strength/coefficients";
+import { type ExerciseDef } from "@/lib/strength/coefficients";
 import { Card, CardLabel } from "@/components/ui/card";
 import { cx } from "@/components/ui/cx";
 import { ExerciseList, type ExerciseListItem } from "./exercise-list";
@@ -137,6 +136,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const weightTrend = bodyweightTrend(bodyweightEntries, today);
   const bodyweight = weightTrend.latest?.weight ?? profile?.bodyweight ?? null;
   const volume = sessionTonnage(analyticsRows, catalog, bodyweight);
+  const weeklyVol = weeklyVolume(volume);
   const summaries = exerciseSummaries(analyticsRows);
   const e1rmRecords = e1rmPrFeed(analyticsRows);
   const weightRecords = weightPrs(analyticsRows);
@@ -146,22 +146,16 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     ? volume.filter((point) => point.programId === latestProgramId)
     : volume;
   const totalVolume = blockVolume.reduce((sum, point) => sum + point.tonnage, 0);
-  const latestVolume = blockVolume.at(-1);
-  const previousVolume = blockVolume.at(-2);
+  const latestWeekVol = weeklyVol.at(-1);
+  const previousWeekVol = weeklyVol.at(-2);
   const volumeDelta =
-    latestVolume && previousVolume ? latestVolume.tonnage - previousVolume.tonnage : null;
+    latestWeekVol && previousWeekVol ? latestWeekVol.tonnage - previousWeekVol.tonnage : null;
   const excludedSets = volume.reduce((sum, point) => sum + point.excludedSetCount, 0);
 
-  const chartData: VolumeChartPoint[] = volume.map((point) => ({
-    date: shortDate(point.performedAt),
+  const chartData: VolumeChartPoint[] = weeklyVol.map((point) => ({
+    date: formatWeekLabel(point.weekStart),
     tonnage: Math.round(point.tonnage),
   }));
-
-  const balance = latestWeekBalance(analyticsRows, catalog, bodyweight);
-  const maxBalanceSets = balance
-    ? Math.max(...balance.patterns.map((pattern) => pattern.sets))
-    : 0;
-  const strengthTrend = patternStrengthTrend(analyticsRows, catalog);
 
   const gainers = summaries
     .filter((summary) => summary.delta != null && summary.delta > 0)
@@ -318,10 +312,10 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
                 <p className="text-heading tabular-nums">{formatWhole(totalVolume)} lb</p>
                 {volumeDelta != null ? (
                   <p className="text-caption text-muted">
-                    <Delta value={volumeDelta} /> vs last session
+                    <Delta value={volumeDelta} /> vs last week
                   </p>
                 ) : (
-                  <p className="text-caption text-muted">Log another session for a delta.</p>
+                  <p className="text-caption text-muted">Log another week for a delta.</p>
                 )}
               </div>
               {excludedSets > 0 && (
@@ -334,42 +328,10 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
               <VolumeChart data={chartData} />
             ) : (
               <p className="text-body text-muted">
-                One session so far — the chart appears after the next workout.
+                Two weeks logged — the chart shows progression after a second week.
               </p>
             )}
           </Card>
-
-          {balance && (
-            <Card>
-              <div className="mb-3 flex items-baseline justify-between gap-3">
-                <CardLabel>Training balance</CardLabel>
-                <span className="text-caption text-muted">week of {shortDate(balance.weekStart)}</span>
-              </div>
-              <ul className="flex flex-col gap-3">
-                {balance.patterns.map((pattern) => (
-                  <li key={pattern.pattern}>
-                    <div className="mb-1 flex items-baseline justify-between gap-3">
-                      <span className="text-body">{PATTERN_LABEL[pattern.pattern]}</span>
-                      <span className="text-caption tabular-nums text-muted">
-                        {pattern.sets} set{pattern.sets === 1 ? "" : "s"} · {pattern.hardSets} hard
-                      </span>
-                    </div>
-                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-border">
-                      <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-faint"
-                        style={{ width: `${(pattern.sets / maxBalanceSets) * 100}%` }}
-                      />
-                      <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-foreground"
-                        style={{ width: `${(pattern.hardSets / maxBalanceSets) * 100}%` }}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-3 text-caption text-muted">Hard = RIR ≤ 2 (near failure).</p>
-            </Card>
-          )}
 
           <Card>
             <CardLabel className="mb-3">e1RM progression highlights</CardLabel>
@@ -400,37 +362,6 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
               </p>
             )}
           </Card>
-
-          {strengthTrend.length > 0 && (
-            <Card>
-              <CardLabel className="mb-1">Pattern strength</CardLabel>
-              <p className="mb-3 text-caption text-muted">
-                Pooled across every variant you train in each pattern.
-              </p>
-              <ul className="flex flex-col gap-2">
-                {strengthTrend.map((point) => (
-                  <li
-                    key={point.pattern}
-                    className="flex min-h-11 items-center justify-between gap-3"
-                  >
-                    <span className="min-w-0">
-                      <span className="block truncate text-body">
-                        {PATTERN_LABEL[point.pattern]}
-                      </span>
-                      <span className="block text-caption tabular-nums text-muted">
-                        {Math.round(point.current)} lb reference e1RM
-                      </span>
-                    </span>
-                    {point.sessions >= 2 ? (
-                      <TrendPill delta={point.delta} />
-                    ) : (
-                      <span className="text-caption text-muted">new</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          )}
 
           <Card>
             <CardLabel className="mb-3">Records feed</CardLabel>
@@ -507,8 +438,11 @@ function formatWhole(value: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
 }
 
-function shortDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+function formatWeekLabel(weekStart: string) {
+  const monday = new Date(weekStart);
+  const sunday = new Date(monday);
+  sunday.setUTCDate(monday.getUTCDate() + 6);
+  return `${monday.getUTCMonth() + 1}/${monday.getUTCDate()}\u2013${sunday.getUTCMonth() + 1}/${sunday.getUTCDate()}`;
 }
 
 function longDate(iso: string) {

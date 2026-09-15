@@ -26,6 +26,12 @@ export interface SessionTonnagePoint {
   excludedSetCount: number;
 }
 
+export interface WeeklyVolumePoint {
+  weekStart: string; // YYYY-MM-DD, Monday of the week (UTC)
+  tonnage: number;
+  sessionCount: number;
+}
+
 export interface E1rmPr {
   id: string;
   date: string;
@@ -105,6 +111,26 @@ export function sessionTonnage(
   }
 
   return [...sessions.values()].sort(compareSessions);
+}
+
+// Aggregate session tonnage by week (Monday UTC as boundary)
+export function weeklyVolume(
+  sessions: SessionTonnagePoint[],
+): WeeklyVolumePoint[] {
+  const byWeek = new Map<string, WeeklyVolumePoint>();
+
+  for (const session of sessions) {
+    const weekStart = weekStartUtc(session.performedAt);
+    let week = byWeek.get(weekStart);
+    if (!week) {
+      week = { weekStart, tonnage: 0, sessionCount: 0 };
+      byWeek.set(weekStart, week);
+    }
+    week.tonnage += session.tonnage;
+    week.sessionCount += 1;
+  }
+
+  return [...byWeek.values()].sort((a, b) => a.weekStart.localeCompare(b.weekStart));
 }
 
 export function e1rmPrFeed(rows: AnalyticsSetRow[]): E1rmPr[] {

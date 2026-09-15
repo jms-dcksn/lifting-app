@@ -7,12 +7,21 @@ import { Input } from "@/components/ui/input";
 import { shiftMonth } from "@/lib/weight-calendar";
 import { dateKey } from "@/lib/bodyweight";
 import type { MonthlyReport } from "@/lib/monthly-progress";
+import type { PeriodObservation } from "@/lib/period-calendar";
 
 const amount = (n: number | null) => n == null ? "—" : `${n.toFixed(1)} lb`;
 const label = (month: string) => new Date(`${month}-01T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 
 
-export function MonthlyReview({ report }: { report: MonthlyReport }) {
+export function MonthlyReview({
+  report,
+  eligible,
+  periodObservations,
+}: {
+  report: MonthlyReport;
+  eligible?: boolean;
+  periodObservations?: PeriodObservation[];
+}) {
   const improving = report.lifts.filter(l => l.state === "improving");
   const repOnly = report.lifts.filter(l => l.state !== "improving" && l.repGains.length > 0);
   const recordGroups = new Map<string, { name: string; equipment: string | null; records: { sessionId: string; date: string; record: MonthlyReport["achievements"][number]["records"][number] }[] }>();
@@ -65,8 +74,8 @@ export function MonthlyReview({ report }: { report: MonthlyReport }) {
     {(improving.length > 0 || repOnly.length > 0) && <Card>
       <CardLabel>Where you improved</CardLabel>
       <p className="mt-2 text-caption text-muted">Ranked by monthly best e1RM change. Dashed trends: prior window; solid: selected month. Each machine is compared separately.</p>
-      <ul className="divide-y divide-border">{improving.slice(0, 5).map(lift => <LiftRow key={lift.key} lift={lift} report={report} />)}</ul>
-      {repOnly.length > 0 && <details><summary className="min-h-11 cursor-pointer py-2 text-body">Rep gains without a higher monthly best ({repOnly.length})</summary><ul className="divide-y divide-border">{repOnly.map(lift => <LiftRow key={lift.key} lift={lift} report={report} />)}</ul></details>}
+      <ul className="divide-y divide-border">{improving.slice(0, 5).map(lift => <LiftRow key={lift.key} lift={lift} report={report} eligible={eligible} periodObservations={periodObservations} />)}</ul>
+      {repOnly.length > 0 && <details><summary className="min-h-11 cursor-pointer py-2 text-body">Rep gains without a higher monthly best ({repOnly.length})</summary><ul className="divide-y divide-border">{repOnly.map(lift => <LiftRow key={lift.key} lift={lift} report={report} eligible={eligible} periodObservations={periodObservations} />)}</ul></details>}
     </Card>}
     {stalls.length > 0 && <Card>
       <CardLabel>Worth reviewing</CardLabel>

@@ -6,6 +6,7 @@ import { dateKey } from "@/lib/bodyweight";
 import { monthlyWindows } from "@/lib/monthly-progress";
 import { loadMonthlyReport } from "@/lib/monthly-progress-data";
 import { loadWeightHistory } from "@/lib/weight-history";
+import { isEligibleForPeriodTracking, loadPeriodObservations } from "@/lib/period-calendar";
 import { WeightTrendCard } from "../weight-trend-card";
 import { MonthlyReview } from "./review";
 
@@ -19,17 +20,27 @@ export default async function MonthPage({ searchParams }: { searchParams: Promis
   const month = typeof query.month === "string" ? query.month : dateKey(now).slice(0, 7);
   try { monthlyWindows(month, now); } catch { redirect("/analytics/month"); }
   const catalog = await getCatalogMap(db, userId);
-  const [report, entries, profile] = await Promise.all([
+  const eligible = await isEligibleForPeriodTracking(db, userId);
+  const [report, entries, profile, periodObservations] = await Promise.all([
     loadMonthlyReport(db, userId, month, catalog, now),
     loadWeightHistory(db, userId, monthlyWindows(month, now).current.end),
     db.from("profile").select("goal_weight").eq("id", userId).maybeSingle(),
+    eligible ? loadPeriodObservations(db, userId, month) : Promise.resolve([]),
   ]);
   if (profile.error) throw new Error("Unable to load your weight goal. Please try again.");
   return <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
     <Link href="/analytics" className="min-h-11 py-2 text-body text-muted">← Progress</Link>
-    <MonthlyReview report={report} />
+    <MonthlyReview report={report} eligible={eligible} periodObservations={periodObservations} />
     <section id="monthly-weight" aria-label="Monthly bodyweight" className="min-w-0">
-      <WeightTrendCard key={month} entries={entries} today={dateKey(now)} goal={profile.data?.goal_weight ?? null} window={report.windows.current} />
+      <WeightTrendCard
+        key={month}
+        entries={entries}
+        today={dateKey(now)}
+        goal={profile.data?.goal_weight ?? null}
+        window={report.windows.current}
+        eligible={eligible}
+        periodObservations={periodObservations}
+      />
     </section>
   </div>;
 }

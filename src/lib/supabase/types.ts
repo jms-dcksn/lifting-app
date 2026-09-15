@@ -140,6 +140,30 @@ export type Database = {
         }
         Relationships: []
       }
+      period_observation: {
+        Row: {
+          created_at: string
+          id: string
+          observed_on: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          observed_on: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          observed_on?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profile: {
         Row: {
           bodyweight: number | null
@@ -148,6 +172,10 @@ export type Database = {
           display_name: string | null
           goal_weight: number | null
           id: string
+          period_consent_granted_at: string | null
+          period_consent_version: string | null
+          period_tracking_enabled: boolean
+          sex: string
         }
         Insert: {
           bodyweight?: number | null
@@ -156,6 +184,10 @@ export type Database = {
           display_name?: string | null
           goal_weight?: number | null
           id: string
+          period_consent_granted_at?: string | null
+          period_consent_version?: string | null
+          period_tracking_enabled?: boolean
+          sex?: string
         }
         Update: {
           bodyweight?: number | null
@@ -164,6 +196,10 @@ export type Database = {
           display_name?: string | null
           goal_weight?: number | null
           id?: string
+          period_consent_granted_at?: string | null
+          period_consent_version?: string | null
+          period_tracking_enabled?: boolean
+          sex?: string
         }
         Relationships: []
       }

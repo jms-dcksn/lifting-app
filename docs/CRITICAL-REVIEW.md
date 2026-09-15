@@ -2,27 +2,27 @@
 
 **Reviewer:** Cloud Agent (claude-sonnet-4.5)  
 **Date:** 2026-09-15  
-**Commit:** 4b412f1  
+**Commit:** d3b7853 (main)  
 **Stack:** Next.js 16, React 19, TypeScript, Supabase, Vercel
 
 ---
 
 ## Executive Summary
 
-**TL;DR:** Solid core strength engine and data model. Ship-blocking issues: **zero retry infrastructure for network failures** (P0), **no transaction boundaries** risking partial writes (P0), **period tracking claimed as shipped but not implemented** (P0 docs bug). High-value fixes: add retry helper to hot paths (set log, finish workout, weight save), wrap multi-step mutations in transactions, implement error boundaries. UX is focused but Home/Progress could be more motivating with trend indicators and compact PR highlights.
+**TL;DR:** Solid core strength engine and data model. Ship-blocking issues: **zero retry infrastructure for network failures** (P0), **no transaction boundaries** risking partial writes (P0). High-value fixes: add retry helper to hot paths (set log, finish workout, weight/period saves), wrap multi-step mutations in transactions, implement error boundaries. Period tracking IS implemented with good privacy design. Progress was simplified (#48) but could push PRs harder on Home.
 
 **Top 10 bets by leverage (P0–P2, ranked):**
 
 1. **Add retry infrastructure** — Implement shared retry helper with exponential backoff for transient network failures; wire to set logging, workout finish, weight/period saves. 5xx/timeout blips currently lose user data silently.
 2. **Wrap multi-step ops in transactions** — `saveProgram` and similar actions perform multiple upserts/deletes without atomicity; partial failure leaves corrupt state.
-3. **Implement period tracking or remove from docs** — DECISIONS.md claims #32-33 shipped period tracking; only design spec exists. Either build it or remove stale references.
-4. **Add route-level error boundaries** — Individual component error handling is fragile; uncaught errors crash the app with no recovery path.
-5. **Deduplicate rapid Server Action calls** — No request deduplication or rate limiting; double-tapping stepper controls can create duplicate logs.
-6. **Cache catalog reads** — `getCatalogMap()` runs on every Server Action; 100+ catalog entries + user exercises refetch each time.
-7. **Optimize historical queries** — Some history loaders fetch unbounded rows; add pagination/limits to prevent runaway queries.
-8. **Add transaction tests** — Test suite has strong unit coverage but zero tests for concurrent writes, partial failure, or race conditions.
-9. **Surface PR context on Home** — Last session card is weak motivation; show mini trend pill (+5 lb e1RM this week) to keep PRs front-and-center.
-10. **Simplify Progress hub** — Too many cards/sections; collapse rarely-used feeds, prioritize weekly balance + top gains + searchable lift list.
+3. **Add route-level error boundaries** — Individual component error handling is fragile; uncaught errors crash the app with no recovery path.
+4. **Deduplicate rapid Server Action calls** — No request deduplication or rate limiting; double-tapping stepper controls can create duplicate logs.
+5. **Cache catalog reads** — `getCatalogMap()` runs on every Server Action; 100+ catalog entries + user exercises refetch each time.
+6. **Optimize historical queries** — Some history loaders fetch unbounded rows; add pagination/limits to prevent runaway queries.
+7. **Add transaction tests** — Test suite has strong unit coverage but zero tests for concurrent writes, partial failure, or race conditions.
+8. **Surface PR context on Home** — Last session card is weak motivation; show mini trend pill (+5 lb e1RM this week) to keep PRs front-and-center.
+9. **Refocus Progress around recent gains** — Volume chart dominates; push e1RM gainers higher, add "This week's PRs" highlight before records feed.
+10. **Add bulk weight entry** — Backfilling 30 days of weigh-ins requires 30 individual taps; consider multi-row entry sheet.
 
 **Strengths:**
 - Pure TypeScript strength engine with clean separation (coefficients, e1RM, recommend, progression, records)
@@ -48,17 +48,19 @@
 
 ### A1. Architecture & Data Model (P0–P1)
 
-**Finding: Period tracking NOT implemented despite docs claiming shipped**  
-**Severity:** P0 (documentation integrity bug)  
+**Finding: Period tracking privacy design is sound; implementation correctly gates all access**  
+**Severity:** N/A (praise / validation)  
 **Evidence:**
-- `docs/DECISIONS.md:574-591` and `docs/FEATURES.md:286` claim period tracking is shipped (#32-33)
-- `docs/PERIOD-TRACKING.md:4` says "Status: Proposed design for review. Implementation follows in #33"
-- Zero `period_observation` table in schema; no period code in `src/`; Grep finds no period tracking actions/components
-- Git history shows period tracking design spec merged (4b412f1) but no implementation PR
+- `supabase/migrations/20260915203212_period_tracking.sql` creates `period_observation` table with RLS
+- `src/lib/period-calendar.ts:10-21` `isEligibleForPeriodTracking()` checks `sex = 'female' && period_tracking_enabled = true` before every read/write
+- `src/app/(app)/period/actions.ts` wraps all mutations with eligibility check
+- `src/lib/coach-check-in.ts` has NO period data in CoachCheckInReport; confirmed Coach API excludes it per V1 design
+- Settings UI correctly offers keep/delete choice on disable; auto-disables when changing sex from Female
+- Tests: `src/lib/period-calendar.test.ts`, `supabase/tests/period_tracking.sql`
 
-**Why it hurts:** Misleads future developers and stakeholders; creates expectation of privacy-critical feature that doesn't exist; wastes review time validating non-existent code.
+**Why it's excellent:** Privacy-first implementation matches design spec. Application-level eligibility gate ensures data never leaks even if RLS fails. No inference, no Coach export, no training automation in V1. Disable offers explicit keep-vs-delete choice; changing sex auto-disables without silent deletion. This is a model for sensitive health data.
 
-**Fix:** Either (a) implement period tracking per spec, or (b) move PERIOD-TRACKING.md to `docs/proposals/` and remove shipped claims from DECISIONS.md/FEATURES.md.
+**Minor gap (P3):** No test for concurrent sex change + period save race condition (does period save after sex→male get rejected?). Add integration test.
 
 ---
 
@@ -340,9 +342,14 @@
 - No delta, no "+5 lb from last time," no mini trend indicator
 - PRs are buried in Progress; not surfaced on Home
 
-**Why it's unmotivating:** User finishes workout, returns next day, sees flat stat. No dopamine hit. Doesn't know if they progressed unless they manually dig into Progress > lift history.
+**Why it's unmotivating:** User finishes workout, returns next day, sees flat stat. No dopamine hit. Doesn't know if they progressed unless they manually dig into Progress > lift history. PRs are the whole point of progressive overload but they're hidden.
 
-**Fix:** Add compact trend pill: "Top: Squat 315 lb e1RM (+10 from last Lower A)" or "🟢 +3% this week." Steal design from GitHub commit graph: small sparkline or +/- indicator.
+**Fix:** Add compact PR context:
+- Option A: "Top: Squat 315 lb e1RM (+10 lb, rep PR this session)" with mini pill/badge
+- Option B: Weekly PR summary above last session: "This week: 3 PRs · Squat, Bench, Deadlift"
+- Option C: GitHub-style contribution graph: small calendar showing PR days (green dot = PR day)
+
+Simplest: "Last session: 3 PRs" as badge next to set count. Link to session achievements.
 
 ---
 
@@ -400,16 +407,31 @@
 
 ### B3. Progress Hub & Analytics (P1–P2)
 
-**Finding: Progress page is cluttered; too many cards**  
-**Severity:** P1 (cognitive overload)  
+**Finding: Progress page was simplified (#48) but could push PRs/progression harder**  
+**Severity:** P2 (UX polish opportunity)  
 **Evidence:**
-- `src/app/(app)/analytics/page.tsx` shows: weight card, Coach check-in, volume chart, training balance, e1RM gainers, pattern strength, records feed, all exercises list
-- 8 distinct sections; user has to scroll 3+ screens to see all lifts
-- Coach check-in is prominent but only useful if user has coach
+- `src/app/(app)/analytics/page.tsx:268-397` current structure (commit 986f5bf):
+  1. Weight trend card
+  2. Coach check-in (large, for coaching users only)
+  3. Total volume (week-over-week chart)
+  4. e1RM progression highlights (top 4 gainers)
+  5. Records feed (8 most recent)
+  6. All exercises list (searchable)
+- Training balance and Pattern strength were REMOVED in PR #48 (good simplification!)
+- Volume chart is now week-over-week (clearer than session-by-session)
 
-**Why it hurts focus:** User wants "did I PR this week?" and has to hunt. Records feed (legacy) and pattern strength (advanced) are niche; shouldn't dominate.
+**Why it's better but not perfect:** Simplification reduced scroll depth. But PRs are still buried: e1RM gainers are 4th card, records feed is 5th. Volume chart dominates fold; user who just finished workout wants "did I PR?" answer immediately.
 
-**Fix:** Simplify to 4 sections: (1) Weekly summary card (adherence + top gainer), (2) Training balance (hard sets by pattern), (3) Monthly review link, (4) Search/browse lifts. Collapse Coach, records feed, pattern strength into "More insights" accordion.
+**Fix (do NOT bring balance back):** Reorder to prioritize progression:
+1. **This week's PRs** — mini highlight: "3 rep PRs, 2 e1RM PRs this week" with quick links to exercises (if any)
+2. e1RM progression highlights (move up from 4th)
+3. Weight trend
+4. Volume chart (still useful but less urgent)
+5. Coach check-in (for coaching users; consider collapsible or bottom placement)
+6. Recent records feed (chronological log, less actionable)
+7. All exercises
+
+OR add PR count to home page instead (see B1 below).
 
 ---
 
@@ -635,9 +657,9 @@ Retry now safe: duplicate insert fails unique constraint, returns existing row.
 ### Ship later (larger effort):
 9. Implement period tracking (per existing spec)
 10. Add integration tests for concurrent writes
-11. Optimize catalog/bodyweight caching
-12. Simplify Progress hub (UX refactor)
-13. Add performance monitoring + budgets
+10. Optimize catalog/bodyweight caching
+11. Reorder Progress to prioritize recent PRs over volume chart
+12. Add performance monitoring + budgets
 
 ---
 

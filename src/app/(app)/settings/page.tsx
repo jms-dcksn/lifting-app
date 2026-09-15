@@ -14,7 +14,7 @@ export default async function SettingsPage() {
   const userId = claims?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
 
-  const [{ data: profile, error }, { data: weightRows, error: weightError }, { data: periodCount }] =
+  const [{ data: profile, error }, { data: weightRows, error: weightError }, periodCountResult] =
     await Promise.all([
       supabase
         .from("profile")
@@ -29,9 +29,11 @@ export default async function SettingsPage() {
         .limit(30),
       supabase
         .from("period_observation")
-        .select("id", { count: "exact", head: true })
+        .select("*", { count: "exact", head: true })
         .eq("user_id", userId),
     ]);
+  
+  const hasObservations = periodCountResult.count != null && periodCountResult.count > 0;
 
   if (error) {
     throw new Error(`Unable to load profile: ${error.message}`);
@@ -156,7 +158,7 @@ export default async function SettingsPage() {
         today={today}
         sex={profile?.sex ?? "unspecified"}
         trackingEnabled={profile?.period_tracking_enabled ?? false}
-        hasObservations={periodCount != null && periodCount.length > 0}
+        hasObservations={hasObservations}
       />
     </div>
   );

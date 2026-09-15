@@ -282,6 +282,9 @@ heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `lates
   the pre-existing `profile.bodyweight` remains the baseline when no history exists.
 - **Goal weight (lb)**.
 - **Default rest between sets (seconds)** — default 120; per-slot overrides take precedence.
+- **Period tracking (optional)** — female-only opt-in menstrual period tracking. Mark observed
+  bleeding days; appear as context bands on monthly charts. Design spec: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
+  Implementation: #33.
 
 ## 10. App shell & navigation
 

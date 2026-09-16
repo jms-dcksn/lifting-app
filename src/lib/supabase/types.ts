@@ -437,6 +437,7 @@ export type Database = {
           equipment_instance_id: string | null
           exercise_id: string
           id: string
+          idempotency_key: string | null
           is_calibration: boolean
           is_warmup: boolean
           program_slot_id: string | null
@@ -453,6 +454,7 @@ export type Database = {
           equipment_instance_id?: string | null
           exercise_id: string
           id?: string
+          idempotency_key?: string | null
           is_calibration?: boolean
           is_warmup?: boolean
           program_slot_id?: string | null
@@ -469,6 +471,7 @@ export type Database = {
           equipment_instance_id?: string | null
           exercise_id?: string
           id?: string
+          idempotency_key?: string | null
           is_calibration?: boolean
           is_warmup?: boolean
           program_slot_id?: string | null

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { loadPeriodMonth, savePeriodObservation, deletePeriodObservation } from "@/app/(app)/period/actions";
 import type { PeriodObservation } from "@/lib/period-calendar";
 import { weightDateLabel } from "@/lib/weight-calendar";
+import { retryServerAction } from "@/lib/retry";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Sheet, useSheetDismiss } from "./ui/sheet";
@@ -200,7 +201,10 @@ function PeriodDayForm({
     setPending(true);
     onBusy(true);
     try {
-      const result = await actions.save(date);
+      const result = await retryServerAction(
+        () => actions.save(date),
+        { onRetry: () => setError("Retrying…") }
+      );
       if (!result.ok) {
         setError(result.error ?? "Unable to mark this day");
         return;
@@ -222,7 +226,10 @@ function PeriodDayForm({
     onBusy(true);
     setError("");
     try {
-      const result = await actions.remove(observation.id);
+      const result = await retryServerAction(
+        () => actions.remove(observation.id),
+        { onRetry: () => setError("Retrying…") }
+      );
       if (!result.ok) {
         setError(result.error ?? "Unable to remove this period day.");
         return;

@@ -6,6 +6,7 @@ import { loadWeightMonth, removeWeightEntry, writeWeightEntry } from "@/app/(app
 import type { BodyweightEntry } from "@/lib/bodyweight";
 import type { WeightCalendarActions } from "@/lib/weight-calendar-contract";
 import { validWeightDate, weightDateLabel } from "@/lib/weight-calendar";
+import { retryServerAction } from "@/lib/retry";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Input } from "./ui/input";
@@ -114,7 +115,10 @@ function WeightEntryForm({ today, date, entry, actions, onBusy, onChanged }: {
     if (!validWeightDate(targetDate, today)) { setError("Choose today or an earlier valid date."); return; }
     setPending(true); onBusy(true);
     try {
-      const result = await actions.save({ entryId: entry?.id ?? null, loggedOn: targetDate, weight: Number(weight), replaceEntryId });
+      const result = await retryServerAction(
+        () => actions.save({ entryId: entry?.id ?? null, loggedOn: targetDate, weight: Number(weight), replaceEntryId }),
+        { onRetry: () => setError("Retrying…") }
+      );
       if (!result.ok) { setError(result.error); setConflict(result.conflict ?? null); return; }
       await onChanged(targetDate, `Saved ${Number(weight)} lb for ${weightDateLabel(targetDate)}.`);
     } catch {
@@ -126,7 +130,10 @@ function WeightEntryForm({ today, date, entry, actions, onBusy, onChanged }: {
     if (!entry) return;
     setPending(true); onBusy(true); setError("");
     try {
-      const result = await actions.remove(entry.id);
+      const result = await retryServerAction(
+        () => actions.remove(entry.id),
+        { onRetry: () => setError("Retrying…") }
+      );
       if (!result.ok) { setError(result.error ?? "Unable to remove this reading."); return; }
       await onChanged(date, `Removed the reading for ${weightDateLabel(date)}.`);
     } catch { setError("Unable to confirm removal. Check your connection and try again."); }

@@ -60,10 +60,9 @@ export interface SaveProgramInput {
 // uuids for new rows) so set_log.program_slot_id linkage survives edits, and re-derives
 // positions from array order. Saving always makes this the single active program.
 export async function saveProgram(input: SaveProgramInput) {
-  const { supabase, userId } = await requireUser();
+  const { supabase } = await requireUser();
 
-  // The delete-missing step below removes every day not in the input; an empty input
-  // would silently wipe the whole program structure.
+  // Input validation remains in Server Action before calling RPC.
   if (input.days.length === 0) throw new Error("A program needs at least one day");
 
   const name = input.name.trim() || "My Program";
@@ -77,92 +76,45 @@ export async function saveProgram(input: SaveProgramInput) {
   );
   if (phaseErrors.length) throw new Error(phaseErrors[0]);
 
-  // Single active program per user (enforced by a partial unique index): clear others first.
-  await supabase
-    .from("program")
-    .update({ is_active: false })
-    .eq("user_id", userId)
-    .neq("id", input.id);
-
-  const { error: progErr } = await supabase
-    .from("program")
-    .upsert({ id: input.id, user_id: userId, name, description, tags, weeks, style: input.style, is_active: true });
-  if (progErr) throw new Error(progErr.message);
-
-  const phaseRows = phaseInputs.map((phase, position) => ({
-    id: phase.id,
-    user_id: userId,
-    program_id: input.id,
-    position,
-    name: phase.name.trim() || `Phase ${position + 1}`,
-    description: phase.description?.trim() || null,
-    week_start: Math.round(phase.weekStart),
-    week_end: Math.round(phase.weekEnd),
-    target_rir_min: phase.targetRirMin,
-    target_rir_max: phase.targetRirMax,
-    set_multiplier: phase.setMultiplier,
-  }));
-  if (phaseRows.length) {
-    const { error } = await supabase.from("program_phase").upsert(phaseRows);
-    if (error) throw new Error(error.message);
-  }
-  {
-    let q = supabase.from("program_phase").delete().eq("program_id", input.id);
-    if (phaseRows.length) q = q.not("id", "in", `(${phaseRows.map((phase) => phase.id).join(",")})`);
-    const { error } = await q;
-    if (error) throw new Error(error.message);
-  }
-
-  // Days: upsert incoming, then delete any removed (cascade drops their slots).
-  const dayRows = input.days.map((d, i) => ({
-    id: d.id,
-    user_id: userId,
-    program_id: input.id,
-    position: i,
-    name: d.name.trim() || `Day ${i + 1}`,
-  }));
-  if (dayRows.length) {
-    const { error } = await supabase.from("program_day").upsert(dayRows);
-    if (error) throw new Error(error.message);
-  }
-  // Delete removed days (cascade drops their slots).
-  {
-    let q = supabase.from("program_day").delete().eq("program_id", input.id);
-    const keep = input.days.map((d) => d.id);
-    if (keep.length) q = q.not("id", "in", `(${keep.join(",")})`);
-    const { error } = await q;
-    if (error) throw new Error(error.message);
-  }
-
-  // Slots: upsert incoming, then delete any removed within the surviving days.
-  const slotRows = input.days.flatMap((d) =>
-    d.slots.map((s, i) => ({
-      id: s.id,
-      user_id: userId,
-      program_day_id: d.id,
-      position: i,
-      exercise_id: s.exerciseId,
-      pattern: s.pattern,
-      target_sets: s.targetSets,
-      rep_min: s.repMin,
-      rep_max: s.repMax,
-      target_rir: s.targetRir,
-      rest_seconds: s.restSeconds,
-      plateau_patience: s.plateauPatience,
+  // Assemble JSONB tree for RPC.
+  const tree = {
+    id: input.id,
+    name,
+    description,
+    tags,
+    weeks,
+    style: input.style,
+    isActive: true,
+    phases: phaseInputs.map((phase) => ({
+      id: phase.id,
+      name: phase.name.trim() || "",
+      description: phase.description?.trim() || null,
+      weekStart: Math.round(phase.weekStart),
+      weekEnd: Math.round(phase.weekEnd),
+      targetRirMin: phase.targetRirMin,
+      targetRirMax: phase.targetRirMax,
+      setMultiplier: phase.setMultiplier,
     })),
-  );
-  if (slotRows.length) {
-    const { error } = await supabase.from("program_slot").upsert(slotRows);
-    if (error) throw new Error(error.message);
-  }
-  // Delete removed slots within each surviving day.
-  const keepSlotIds = slotRows.map((s) => s.id);
-  for (const d of input.days) {
-    let q = supabase.from("program_slot").delete().eq("program_day_id", d.id);
-    if (keepSlotIds.length) q = q.not("id", "in", `(${keepSlotIds.join(",")})`);
-    const { error } = await q;
-    if (error) throw new Error(error.message);
-  }
+    days: input.days.map((d) => ({
+      id: d.id,
+      name: d.name.trim() || "",
+      slots: d.slots.map((s) => ({
+        id: s.id,
+        exerciseId: s.exerciseId,
+        pattern: s.pattern,
+        targetSets: s.targetSets,
+        repMin: s.repMin,
+        repMax: s.repMax,
+        targetRir: s.targetRir,
+        restSeconds: s.restSeconds,
+        plateauPatience: s.plateauPatience,
+      })),
+    })),
+  };
+
+  // Atomic save via RPC.
+  const { error } = await supabase.rpc("save_program", { p_tree: tree });
+  if (error) throw new Error(error.message);
 
   revalidatePath("/");
   revalidatePath("/program");
@@ -175,69 +127,56 @@ export async function saveProgram(input: SaveProgramInput) {
 export async function createFromTemplate(templateId: string) {
   const template = TEMPLATE_BY_ID[templateId];
   if (!template) throw new Error("Unknown template");
-  const { supabase, userId } = await requireUser();
+  const { supabase } = await requireUser();
 
+  // Check if this is the user's first program (activates by default).
   const { count } = await supabase
     .from("program")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId);
+    .select("id", { count: "exact", head: true });
   const activate = (count ?? 0) === 0;
 
-  const { data: prog, error } = await supabase
-    .from("program")
-    .insert({
-      user_id: userId,
-      name: template.name,
-      description: template.description,
-      tags: template.tags,
-      weeks: template.weeks,
-      style: "classic",
-      is_active: activate,
-    })
-    .select("id")
-    .single();
-  if (error || !prog) throw new Error(error?.message ?? "Could not create program");
+  // Generate UUIDs for the template tree.
+  const programId = crypto.randomUUID();
 
-  if (template.phases?.length) {
-    const { error: phaseError } = await supabase.from("program_phase").insert(
-      template.phases.map((phase) => ({
-        user_id: userId,
-        program_id: prog.id,
-        position: phase.position,
-        name: phase.name,
-        description: phase.description,
-        week_start: phase.weekStart,
-        week_end: phase.weekEnd,
-        target_rir_min: phase.targetRirMin,
-        target_rir_max: phase.targetRirMax,
-        set_multiplier: phase.setMultiplier,
-      })),
-    );
-    if (phaseError) throw new Error(phaseError.message);
-  }
-
-  for (const [di, day] of template.days.entries()) {
-    const { data: newDay } = await supabase
-      .from("program_day")
-      .insert({ user_id: userId, program_id: prog.id, name: day.name, position: di })
-      .select("id")
-      .single();
-    if (!newDay) continue;
-    await supabase.from("program_slot").insert(
-      day.slots.map((s, si) => ({
-        user_id: userId,
-        program_day_id: newDay.id,
-        position: si,
-        exercise_id: s.exerciseId,
+  // Assemble JSONB tree for RPC.
+  const tree = {
+    id: programId,
+    name: template.name,
+    description: template.description,
+    tags: template.tags,
+    weeks: template.weeks,
+    style: "classic",
+    isActive: activate,
+    phases: (template.phases ?? []).map((phase) => ({
+      id: crypto.randomUUID(),
+      name: phase.name,
+      description: phase.description,
+      weekStart: phase.weekStart,
+      weekEnd: phase.weekEnd,
+      targetRirMin: phase.targetRirMin,
+      targetRirMax: phase.targetRirMax,
+      setMultiplier: phase.setMultiplier,
+    })),
+    days: template.days.map((day) => ({
+      id: crypto.randomUUID(),
+      name: day.name,
+      slots: day.slots.map((s) => ({
+        id: crypto.randomUUID(),
+        exerciseId: s.exerciseId,
         pattern: s.pattern,
-        target_sets: s.targetSets,
-        rep_min: s.repMin,
-        rep_max: s.repMax,
-        target_rir: s.targetRir,
-        rest_seconds: s.restSeconds,
+        targetSets: s.targetSets,
+        repMin: s.repMin,
+        repMax: s.repMax,
+        targetRir: s.targetRir,
+        restSeconds: s.restSeconds,
+        plateauPatience: null,
       })),
-    );
-  }
+    })),
+  };
+
+  // Atomic save via RPC.
+  const { error } = await supabase.rpc("save_program", { p_tree: tree });
+  if (error) throw new Error(error.message);
 
   revalidatePath("/");
   revalidatePath("/program");
@@ -245,17 +184,12 @@ export async function createFromTemplate(templateId: string) {
 }
 
 export async function setActiveProgram(id: string) {
-  const { supabase, userId } = await requireUser();
-  await supabase
-    .from("program")
-    .update({ is_active: false })
-    .eq("user_id", userId)
-    .neq("id", id);
-  await supabase
-    .from("program")
-    .update({ is_active: true })
-    .eq("user_id", userId)
-    .eq("id", id);
+  const { supabase } = await requireUser();
+  
+  // Atomic activation via RPC.
+  const { error } = await supabase.rpc("set_active_program", { p_program_id: id });
+  if (error) throw new Error(error.message);
+  
   revalidatePath("/");
   revalidatePath("/program");
   revalidatePath(programDetailHref(id));
@@ -265,6 +199,7 @@ export async function setActiveProgram(id: string) {
 export async function cloneProgram(id: string): Promise<string> {
   const { supabase, userId } = await requireUser();
 
+  // Load source program structure.
   const { data: src } = await supabase
     .from("program")
     .select("name, description, tags, weeks, style")
@@ -273,77 +208,75 @@ export async function cloneProgram(id: string): Promise<string> {
     .single();
   if (!src) throw new Error("Program not found");
 
-  const { data: newProg, error: progErr } = await supabase
-    .from("program")
-    .insert({
-      user_id: userId,
-      name: `${src.name} (copy)`,
-      description: src.description,
-      tags: src.tags,
-      weeks: src.weeks,
-      style: src.style,
-      is_active: false,
-    })
-    .select("id")
-    .single();
-  if (progErr || !newProg) throw new Error(progErr?.message ?? "Could not clone program");
-
-  const { data: phases, error: phaseLoadError } = await supabase
+  const { data: phases } = await supabase
     .from("program_phase")
-    .select("position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
+    .select("name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
     .eq("program_id", id)
     .order("position", { ascending: true });
-  if (phaseLoadError) throw new Error(phaseLoadError.message);
-  if (phases?.length) {
-    const { error: phaseError } = await supabase.from("program_phase").insert(
-      phases.map((phase) => ({
-        user_id: userId,
-        program_id: newProg.id,
-        ...phase,
-      })),
-    );
-    if (phaseError) throw new Error(phaseError.message);
-  }
 
   const { data: days } = await supabase
     .from("program_day")
-    .select("id, name, position")
+    .select("id, name")
     .eq("program_id", id)
     .order("position", { ascending: true });
 
-  for (const day of days ?? []) {
-    const { data: newDay } = await supabase
-      .from("program_day")
-      .insert({ user_id: userId, program_id: newProg.id, name: day.name, position: day.position })
-      .select("id")
-      .single();
-    if (!newDay) continue;
+  // Load slots for all days.
+  const dayIds = days?.map((d) => d.id) ?? [];
+  const { data: slots } = dayIds.length
+    ? await supabase
+        .from("program_slot")
+        .select("program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, position")
+        .in("program_day_id", dayIds)
+        .order("program_day_id", { ascending: true })
+        .order("position", { ascending: true })
+    : { data: [] };
 
-    const { data: slots } = await supabase
-      .from("program_slot")
-      .select("exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, position")
-      .eq("program_day_id", day.id)
-      .order("position", { ascending: true });
+  // Generate new UUIDs for the clone.
+  const newProgramId = crypto.randomUUID();
+  const dayIdMap = new Map(days?.map((d) => [d.id, crypto.randomUUID()]) ?? []);
 
-    if (slots?.length) {
-      await supabase.from("program_slot").insert(
-        slots.map((s) => ({
-          user_id: userId,
-          program_day_id: newDay.id,
-          exercise_id: s.exercise_id,
+  // Assemble JSONB tree for RPC.
+  const tree = {
+    id: newProgramId,
+    name: `${src.name} (copy)`,
+    description: src.description,
+    tags: src.tags,
+    weeks: src.weeks,
+    style: src.style,
+    isActive: false,
+    phases: (phases ?? []).map((phase) => ({
+      id: crypto.randomUUID(),
+      name: phase.name,
+      description: phase.description,
+      weekStart: phase.week_start,
+      weekEnd: phase.week_end,
+      targetRirMin: phase.target_rir_min,
+      targetRirMax: phase.target_rir_max,
+      setMultiplier: phase.set_multiplier,
+    })),
+    days: (days ?? []).map((day) => ({
+      id: dayIdMap.get(day.id)!,
+      name: day.name,
+      slots: (slots ?? [])
+        .filter((s) => s.program_day_id === day.id)
+        .map((s) => ({
+          id: crypto.randomUUID(),
+          exerciseId: s.exercise_id,
           pattern: s.pattern,
-          target_sets: s.target_sets,
-          rep_min: s.rep_min,
-          rep_max: s.rep_max,
-          target_rir: s.target_rir,
-          rest_seconds: s.rest_seconds,
-          plateau_patience: s.plateau_patience,
-          position: s.position,
+          targetSets: s.target_sets,
+          repMin: s.rep_min,
+          repMax: s.rep_max,
+          targetRir: s.target_rir,
+          restSeconds: s.rest_seconds,
+          plateauPatience: s.plateau_patience,
         })),
-      );
-    }
-  }
+    })),
+  };
+
+  // Atomic save via RPC.
+  const { error } = await supabase.rpc("save_program", { p_tree: tree });
+  if (error) throw new Error(error.message);
 
   revalidatePath("/program");
-  return newProg.id;
+  return newProgramId;
 }

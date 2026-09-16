@@ -48,7 +48,7 @@ export default async function Home() {
   ]);
 
   const { completed, week, day: nextDay, catalog, open } = next;
-  const lastSummary = lastFinished ? await summarize(supabase, lastFinished, catalog) : null;
+  const lastSummary = lastFinished ? await summarize(supabase, lastFinished, catalog, userId) : null;
   const nextWorkout = next.slots.map((slot) => ({
     ...slot,
     exerciseName: catalog[slot.exerciseId]?.name ?? slot.exerciseId,
@@ -139,6 +139,16 @@ export default async function Home() {
                 {lastSummary.topLift.name}
               </Link>{" "}
               · {Math.round(lastSummary.topLift.e1rm)} lb e1RM
+              {lastSummary.topLift.isPr && (
+                <span className="ml-1.5 rounded-full border border-overload-up px-1.5 py-0.5 text-caption font-semibold text-overload-up">
+                  PR
+                </span>
+              )}
+            </p>
+          )}
+          {lastSummary.recordsThisWeek > 0 && (
+            <p className="mt-2 text-caption font-medium text-foreground">
+              {lastSummary.recordsThisWeek} record{lastSummary.recordsThisWeek === 1 ? "" : "s"} this week
             </p>
           )}
         </Card>
@@ -166,28 +176,64 @@ async function summarize(
   supabase: Awaited<ReturnType<typeof createClient>>,
   session: { id: string; program_day_id: string | null },
   catalog: Record<string, ExerciseDef>,
+  userId: string,
 ) {
-  const [{ data: day }, { data: sets }] = await Promise.all([
+  const [{ data: day }, { data: sets }, { data: allSets }] = await Promise.all([
     session.program_day_id
       ? supabase.from("program_day").select("name").eq("id", session.program_day_id).maybeSingle()
       : Promise.resolve({ data: null }),
     supabase
       .from("set_log")
-      .select("exercise_id, e1rm")
+      .select("exercise_id, e1rm, created_at")
       .eq("session_id", session.id)
       .eq("is_warmup", false),
+    supabase
+      .from("set_log")
+      .select("exercise_id, e1rm, created_at")
+      .eq("user_id", userId)
+      .eq("is_warmup", false)
+      .order("created_at", { ascending: true }),
   ]);
 
-  let topLift: { exerciseId: string; name: string; e1rm: number } | null = null;
+  let topLift: { exerciseId: string; name: string; e1rm: number; isPr: boolean } | null = null;
+  const bestByExercise = new Map<string, number>();
+  
+  for (const s of allSets ?? []) {
+    if (s.e1rm != null) {
+      const prior = bestByExercise.get(s.exercise_id);
+      if (prior == null || s.e1rm > prior) {
+        bestByExercise.set(s.exercise_id, s.e1rm);
+      }
+    }
+  }
+
   for (const s of sets ?? []) {
     if (s.e1rm != null && (!topLift || s.e1rm > topLift.e1rm)) {
+      const prior = bestByExercise.get(s.exercise_id);
+      const isPr = prior != null && s.e1rm >= prior;
       topLift = {
         exerciseId: s.exercise_id,
         name: catalog[s.exercise_id]?.name ?? s.exercise_id,
         e1rm: s.e1rm,
+        isPr,
       };
     }
   }
 
-  return { dayName: day?.name ?? "Workout", totalSets: sets?.length ?? 0, topLift };
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekAgoIso = weekAgo.toISOString();
+  const recordsThisWeek = (sets ?? []).filter((s) => {
+    if (!s.e1rm || !s.created_at) return false;
+    if (s.created_at < weekAgoIso) return false;
+    const best = bestByExercise.get(s.exercise_id);
+    return best != null && s.e1rm >= best;
+  }).length;
+
+  return { 
+    dayName: day?.name ?? "Workout", 
+    totalSets: sets?.length ?? 0, 
+    topLift,
+    recordsThisWeek,
+  };
 }

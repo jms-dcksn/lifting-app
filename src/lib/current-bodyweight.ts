@@ -1,8 +1,9 @@
+import { cache } from "react";
 import type { createClient } from "@/lib/supabase/server";
 
 // Source-of-truth rule: the newest dated observation wins. profile.bodyweight
 // remains the preserved baseline and is used only when no history exists.
-export async function getCurrentBodyweight(
+export const getCurrentBodyweight = cache(async function getCurrentBodyweight(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
 ): Promise<number | null> {
@@ -21,4 +22,4 @@ export async function getCurrentBodyweight(
   if (historyError) throw new Error(`Unable to load bodyweight history: ${historyError.message}`);
   if (profileError) throw new Error(`Unable to load bodyweight baseline: ${profileError.message}`);
   return latest?.weight ?? profile?.bodyweight ?? null;
-}
+});

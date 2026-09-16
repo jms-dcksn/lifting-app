@@ -32,6 +32,8 @@ Commands are defined in `package.json`: `npm run dev`, `npm test`, `npm run lint
 `npm run build`; typecheck with `npx tsc --noEmit`. Vitest discovers `src/lib/**/*.test.ts`
 in Node, including pure logic and mocked action/data-boundary tests. Co-locate tests there;
 SQL ownership/atomicity checks live in `supabase/tests/` with execution notes in feature docs.
+`npm run test:db` runs the pgTAP ownership suite (`supabase/tests/*_rls.sql`) against a local
+stack and needs Docker; CI runs the same command. Other scripts there are manual `psql -f` checks.
 For application changes run tests, lint, typecheck, and build; verify changed UI flows in a
 browser when authenticated state is available. For docs-only edits, check references and
 claims against source. Record what was actually verified and any remaining limits.

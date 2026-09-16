@@ -59,15 +59,29 @@ npx tsc --noEmit
 npm run build
 ```
 
-Vitest includes pure-module tests and mocked action/data-boundary tests. SQL regression
-scripts under `supabase/tests/` cover real ownership and atomic writes; consult each feature
-doc for execution requirements. A passing build does not replace authenticated route testing.
+Vitest includes pure-module tests and mocked action/data-boundary tests. A passing build does
+not replace authenticated route testing.
+
+SQL regression scripts under `supabase/tests/` cover real ownership and atomic writes. The
+pgTAP ownership suite (`*_rls.sql`) runs against a local stack and needs Docker:
+
+```bash
+npx supabase start
+npm run test:db
+npx supabase stop
+```
+
+`npm run test:db` targets `supabase/tests/*_rls.sql`. The remaining scripts in that directory
+are psql-style checks that emit no TAP output; run them individually with `psql -f` and
+consult each feature doc for execution requirements.
 
 Within an approved release, push the branch for a preview, inspect deployment checks, and
 smoke-test login/callback, program creation, planning/Start, logging/swapping/finishing,
 Progress/monthly review, and weight calendar edits relevant to the change. Preview writes
 reach whichever Supabase project its environment selects. Merge/push to `main` releases
-through Vercel's integration; no GitHub Actions workflow is present in this checkout.
+through Vercel's integration. `.github/workflows/ci.yml` runs lint, typecheck, Vitest, and the
+build on every pull request, plus the pgTAP ownership suite against a local Supabase stack, so
+an RLS regression on a covered table fails the build.
 
 ## Operations
 

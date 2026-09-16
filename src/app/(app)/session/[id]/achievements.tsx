@@ -26,7 +26,6 @@ export function AchievementPills({ groups, exerciseId }: { groups: ExerciseRecor
               <li className="max-w-full rounded-control border border-overload-up/30 bg-overload-up/10 px-2 py-1">
                 <span aria-hidden="true">★ </span>e1RM PR · {group.e1rmRecord.value} lb
                 {group.e1rmRecord.improvement == null ? " · improved this workout" : ` · +${group.e1rmRecord.improvement} lb`}
-                <span className="font-normal"> (estimated)</span>
               </li>
             )}
           </ul>

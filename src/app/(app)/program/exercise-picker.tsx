@@ -287,7 +287,7 @@ function CustomForm({
   };
 
   return (
-    <FormShell title="Custom exercise" subtitle="Maps to a movement pattern" onBack={onBack}>
+    <FormShell title="Custom exercise" onBack={onBack}>
       <Field label="Name">
         <Input
           autoFocus
@@ -397,7 +397,7 @@ function FormShell({
   children,
 }: {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   onBack: () => void;
   children: React.ReactNode;
 }) {
@@ -409,7 +409,7 @@ function FormShell({
         </button>
         <div className="min-w-0">
           <p className="truncate text-body font-medium">{title}</p>
-          <p className="truncate text-caption text-muted">{subtitle}</p>
+          {subtitle ? <p className="truncate text-caption text-muted">{subtitle}</p> : null}
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">{children}</div>

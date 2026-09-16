@@ -40,8 +40,6 @@ export function WorkoutPlanner({ planKey, programName, dayName, week, slots, cat
       <header>
         <p className="text-caption text-muted">{programName} · Week {week}</p>
         <h1 className="text-display">{dayName}</h1>
-        <p className="mt-2 text-body text-muted">Plan your workout</p>
-        <p className="mt-1 text-caption text-muted">Choose machines and swap exercises for this workout. Changes are saved in this browser. Your timer begins when you press Start workout.</p>
       </header>
       {phase && <Card><CardLabel>{phase.name}</CardLabel>{phase.description && <p className="mt-1 text-body text-muted">{phase.description}</p>}</Card>}
       <p className="text-caption text-muted">{slots.length} exercises · {slots.reduce((sum, s) => sum + s.prescription.targetSets, 0)} working sets</p>

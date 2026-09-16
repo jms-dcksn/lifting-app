@@ -2,6 +2,7 @@
 // rows (brand/type variants and fully-custom exercises). The pure strength engine consumes
 // the resulting Record<id, ExerciseDef>; seeded ids win any collision.
 
+import { cache } from "react";
 import type { createClient } from "@/lib/supabase/server";
 import {
   EXERCISES,
@@ -55,14 +56,14 @@ export function mergeCatalog(rows: DbExerciseRow[]): Record<string, ExerciseDef>
   return map;
 }
 
-export async function getCatalogMap(
+export const getCatalogMap = cache(async function getCatalogMap(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
 ): Promise<Record<string, ExerciseDef>> {
   const { data, error } = await supabase.from("exercise").select(SELECT).eq("user_id", userId);
   if (error) throw new Error("Unable to load exercise catalog. Please try again.");
   return mergeCatalog((data ?? []) as DbExerciseRow[]);
-}
+});
 
 export async function getCatalogList(
   supabase: Awaited<ReturnType<typeof createClient>>,

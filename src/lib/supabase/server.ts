@@ -1,8 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import type { Database } from "./types";
 
-export async function createClient() {
+// Request-scoped: one client per request. Layout, page, and action all call this, and
+// React cache() keys on argument identity, so a shared instance is what lets the
+// catalog/bodyweight loaders dedupe across those boundaries.
+export const createClient = cache(async function createClient() {
   const cookieStore = await cookies();
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,4 +27,4 @@ export async function createClient() {
       },
     },
   );
-}
+});

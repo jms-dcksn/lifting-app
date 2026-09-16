@@ -72,6 +72,7 @@ export function ActiveSession({
   phase,
   bodyweight,
   defaultRestSeconds,
+  restToneEnabled,
   alreadyFinished,
   initialFeedback,
   stats,
@@ -88,6 +89,7 @@ export function ActiveSession({
   phase: ProgramPhase | null;
   bodyweight: number | null;
   defaultRestSeconds: number;
+  restToneEnabled: boolean;
   alreadyFinished: boolean;
   initialFeedback: SessionFeedback;
   stats: ExerciseStat[];
@@ -98,7 +100,7 @@ export function ActiveSession({
   achievements: ExerciseRecords[];
 }) {
   useScreenWakeLock();
-  const rest = useRestTimer();
+  const rest = useRestTimer(restToneEnabled);
   // Holds the merged catalog in state so a variant resolved in-session can be added and
   // immediately drive that slot's name/target without a round-trip.
   const [catalog, setCatalog] = useState(initialCatalog);

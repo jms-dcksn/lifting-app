@@ -175,6 +175,7 @@ export type Database = {
           period_consent_granted_at: string | null
           period_consent_version: string | null
           period_tracking_enabled: boolean
+          rest_tone_enabled: boolean
           sex: string
         }
         Insert: {
@@ -187,6 +188,7 @@ export type Database = {
           period_consent_granted_at?: string | null
           period_consent_version?: string | null
           period_tracking_enabled?: boolean
+          rest_tone_enabled?: boolean
           sex?: string
         }
         Update: {
@@ -199,6 +201,7 @@ export type Database = {
           period_consent_granted_at?: string | null
           period_consent_version?: string | null
           period_tracking_enabled?: boolean
+          rest_tone_enabled?: boolean
           sex?: string
         }
         Relationships: []

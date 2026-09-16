@@ -7,6 +7,7 @@ describe("retryServerAction", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -26,9 +27,8 @@ describe("retryServerAction", () => {
 
     const promise = retryServerAction(fn, { onRetry });
     
-    // First attempt fails, then delay ~250ms
-    await vi.advanceTimersByTimeAsync(300);
-    
+    await vi.runAllTimersAsync();
+
     const result = await promise;
     expect(result).toBe("success");
     expect(fn).toHaveBeenCalledTimes(2);
@@ -41,14 +41,12 @@ describe("retryServerAction", () => {
     const fn = vi.fn().mockRejectedValue(error);
     const onRetry = vi.fn();
 
-    const promise = retryServerAction(fn, { onRetry });
-    
-    // First retry after ~250ms
-    await vi.advanceTimersByTimeAsync(300);
-    // Second retry after ~1000ms
-    await vi.advanceTimersByTimeAsync(1100);
-    
-    await expect(promise).rejects.toThrow(error);
+    // Attach the rejection handler before draining timers, otherwise the retries
+    // exhaust and reject while nothing is listening.
+    const rejects = expect(retryServerAction(fn, { onRetry })).rejects.toThrow(error);
+    await vi.runAllTimersAsync();
+    await rejects;
+
     expect(fn).toHaveBeenCalledTimes(3);
     expect(onRetry).toHaveBeenCalledTimes(2);
   });
@@ -76,8 +74,8 @@ describe("retryServerAction", () => {
     const fn = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("ok");
 
     const promise = retryServerAction(fn);
-    await vi.advanceTimersByTimeAsync(300);
-    
+    await vi.runAllTimersAsync();
+
     await expect(promise).resolves.toBe("ok");
     expect(fn).toHaveBeenCalledTimes(2);
   });
@@ -87,8 +85,8 @@ describe("retryServerAction", () => {
     const fn = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("ok");
 
     const promise = retryServerAction(fn);
-    await vi.advanceTimersByTimeAsync(300);
-    
+    await vi.runAllTimersAsync();
+
     await expect(promise).resolves.toBe("ok");
     expect(fn).toHaveBeenCalledTimes(2);
   });
@@ -98,8 +96,8 @@ describe("retryServerAction", () => {
     const fn = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("ok");
 
     const promise = retryServerAction(fn);
-    await vi.advanceTimersByTimeAsync(300);
-    
+    await vi.runAllTimersAsync();
+
     await expect(promise).resolves.toBe("ok");
     expect(fn).toHaveBeenCalledTimes(2);
   });
@@ -109,8 +107,8 @@ describe("retryServerAction", () => {
     const fn = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("ok");
 
     const promise = retryServerAction(fn);
-    await vi.advanceTimersByTimeAsync(300);
-    
+    await vi.runAllTimersAsync();
+
     await expect(promise).resolves.toBe("ok");
     expect(fn).toHaveBeenCalledTimes(2);
   });
@@ -127,11 +125,10 @@ describe("retryServerAction", () => {
     const error = new TypeError("persistent network error");
     const fn = vi.fn().mockRejectedValue(error);
 
-    const promise = retryServerAction(fn);
-    await vi.advanceTimersByTimeAsync(300);
-    await vi.advanceTimersByTimeAsync(1100);
-    
-    await expect(promise).rejects.toThrow(error);
+    const rejects = expect(retryServerAction(fn)).rejects.toThrow(error);
+    await vi.runAllTimersAsync();
+    await rejects;
+
     expect(fn).toHaveBeenCalledTimes(3);
   });
 
@@ -144,9 +141,8 @@ describe("retryServerAction", () => {
     const onRetry = vi.fn();
 
     const promise = retryServerAction(fn, { onRetry });
-    await vi.advanceTimersByTimeAsync(300);
-    await vi.advanceTimersByTimeAsync(1100);
-    
+    await vi.runAllTimersAsync();
+
     await promise;
     expect(onRetry).toHaveBeenCalledTimes(2);
     expect(onRetry).toHaveBeenNthCalledWith(1, 1, expect.any(Number));

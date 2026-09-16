@@ -1,0 +1,13 @@
+# Minimal local-development config so `supabase start` and `supabase test db` work.
+# Unset keys fall back to CLI defaults:
+# https://supabase.com/docs/guides/local-development/cli/config
+project_id = "lifting-app"
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]

@@ -1,6 +1,10 @@
 -- One-time revision of recognizable original copies, active or inactive.
 -- Preserve program/day/slot IDs, phases, progress, custom prescriptions and set_log.
 -- Machine variants of a replaced exercise are eligible; never transfer their load.
+-- The CLI applies each migration outside a transaction, so open one explicitly:
+-- set local, lock table, and the all-or-nothing abort below all require it.
+begin;
+
 set local lock_timeout = '5s';
 lock table public.workout_session, public.program, public.program_day, public.program_slot
   in share row exclusive mode;
@@ -62,3 +66,5 @@ begin
     end if;
   end loop;
 end $$;
+
+commit;

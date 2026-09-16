@@ -193,8 +193,8 @@ revoke all on function public.save_program(jsonb) from public, anon;
 grant execute on function public.save_program(jsonb) to authenticated;
 
 comment on function public.save_program(jsonb) is
-  'Atomically save a complete program tree (insert/upsert/clone/template). ' ||
-  'Preserves program_slot_id continuity across edits. Input JSONB must include id, days array ' ||
+  'Atomically save a complete program tree (insert/upsert/clone/template). '
+  'Preserves program_slot_id continuity across edits. Input JSONB must include id, days array '
   'with nested slots, and optional phases array. Returns program UUID.';
 
 -- Atomically set the active program for the current user. Single statement ensures no
@@ -231,5 +231,5 @@ revoke all on function public.set_active_program(uuid) from public, anon;
 grant execute on function public.set_active_program(uuid) to authenticated;
 
 comment on function public.set_active_program(uuid) is
-  'Atomically activate one program and deactivate all others for the current user. ' ||
+  'Atomically activate one program and deactivate all others for the current user. '
   'Ensures single-active-program invariant with no intermediate state.';

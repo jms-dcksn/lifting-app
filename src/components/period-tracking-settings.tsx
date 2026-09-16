@@ -35,10 +35,7 @@ export function PeriodTrackingSettings({
       <Card className="flex flex-col gap-4">
         <div>
           <CardLabel className="mb-1">Manage hidden period data</CardLabel>
-          <p className="text-body text-muted">
-            Period tracking is unavailable for this profile. Recorded period days stay
-            hidden until you select Female and re-enable tracking, or delete them.
-          </p>
+          <p className="text-body text-muted">Period data is hidden.</p>
         </div>
         <Button
           type="button"
@@ -101,14 +98,7 @@ export function PeriodTrackingSettings({
     return (
       <>
         <Card className="flex flex-col gap-4">
-          <div>
-            <CardLabel className="mb-1">Period tracking (optional)</CardLabel>
-            <p className="text-body text-muted">
-              Mark observed menstrual period days on a calendar. These appear as context
-              bands on monthly weight and strength charts. No predictions, no training
-              adjustments, no external sharing. Your period data stays private.
-            </p>
-          </div>
+          <CardLabel>Period tracking (optional)</CardLabel>
           <Button type="button" variant="secondary" onClick={() => setShowConsent(true)}>
             Enable period tracking
           </Button>
@@ -127,13 +117,7 @@ export function PeriodTrackingSettings({
   if (!trackingEnabled && hasObservations) {
     return (
       <Card className="flex flex-col gap-4">
-        <div>
-          <CardLabel className="mb-1">Period tracking (disabled)</CardLabel>
-          <p className="text-body text-muted">
-            Your period data is kept privately and hidden. You can re-enable tracking to
-            see it again, or delete it permanently.
-          </p>
-        </div>
+        <CardLabel>Period tracking (disabled)</CardLabel>
         <div className="flex flex-col gap-2">
           <Button type="button" variant="secondary" onClick={() => setShowConsent(true)}>
             Re-enable tracking
@@ -167,12 +151,7 @@ export function PeriodTrackingSettings({
   return (
     <>
       <Card className="flex flex-col gap-4">
-        <div>
-          <CardLabel className="mb-1">Period tracking</CardLabel>
-          <p className="text-body text-muted">
-            Mark period days and view them as context on monthly charts.
-          </p>
-        </div>
+        <CardLabel>Period tracking</CardLabel>
         <LogPeriodButton today={today} className="w-full" />
         <Button type="button" variant="secondary" onClick={() => setShowDisable(true)}>
           Disable tracking

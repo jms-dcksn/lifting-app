@@ -6,11 +6,12 @@ import { Button } from "./button";
 import { Input } from "./input";
 import { cx } from "./cx";
 
-export function Calendar({ month, selected, today, markers, disabled, onMonth, onSelect }: {
+export function Calendar({ month, selected, today, markers, unmarkedDayLabel = "no reading", disabled, onMonth, onSelect }: {
   month: string;
   selected: string;
   today: string;
   markers: Record<string, string>;
+  unmarkedDayLabel?: string;
   disabled?: boolean;
   onMonth: (month: string) => void;
   onSelect: (date: string) => void;
@@ -56,7 +57,7 @@ export function Calendar({ month, selected, today, markers, disabled, onMonth, o
         <Button type="button" variant="ghost" aria-label="Next month" disabled={disabled || month >= today.slice(0, 7)}
           onClick={() => onMonth(shiftMonth(month, 1))}>→</Button>
       </div>
-      <div ref={grid} role="grid" aria-label={label} aria-describedby="weight-calendar-help" className="flex flex-col gap-1">
+      <div ref={grid} role="grid" aria-label={label} aria-describedby="calendar-grid-help" className="flex flex-col gap-1">
         <div role="row" className="grid grid-cols-7">
           {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => (
             <span role="columnheader" key={day} className="py-1 text-center text-caption text-muted">{day}</span>
@@ -69,7 +70,7 @@ export function Calendar({ month, selected, today, markers, disabled, onMonth, o
                 {day && <button type="button" data-date={day} disabled={disabled || day > today}
                   tabIndex={day === tabDate ? 0 : -1} aria-pressed={day === selected}
                   aria-current={day === today ? "date" : undefined}
-                  aria-label={`${weightDateLabel(day)}${day === today ? ", today" : ""}${markers[day] ? `, ${markers[day]}` : ", no reading"}`}
+                  aria-label={`${weightDateLabel(day)}${day === today ? ", today" : ""}${markers[day] ? `, ${markers[day]}` : `, ${unmarkedDayLabel}`}`}
                   onFocus={() => setFocused(day)} onKeyDown={event => keyboard(event, day)} onClick={() => onSelect(day)}
                   className={cx("relative flex min-h-11 w-full flex-col items-center justify-center rounded-control border text-body tabular-nums focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-foreground disabled:opacity-30",
                     day === selected ? "border-foreground bg-foreground text-background" : "border-transparent hover:bg-surface",
@@ -82,7 +83,9 @@ export function Calendar({ month, selected, today, markers, disabled, onMonth, o
           </div>
         ))}
       </div>
-      <p id="weight-calendar-help" className="text-caption text-muted">Dot = logged weight · Outline = today. Use arrow keys to browse days.</p>
+      <p id="calendar-grid-help" className="absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0">
+        Use arrow keys to browse days.
+      </p>
       <div className="flex min-w-0 items-end gap-3">
         <label className="flex min-w-0 flex-1 flex-col gap-1 text-caption text-muted">Jump to month
           <Input type="month" aria-label="Jump to month" value={month} min="0001-01" max={today.slice(0, 7)} disabled={disabled}

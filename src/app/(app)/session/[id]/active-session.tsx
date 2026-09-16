@@ -35,6 +35,7 @@ import {
 } from "../actions";
 import { AchievementPills, AchievementRecap } from "./achievements";
 import { recordsForSlot, type ExerciseRecords } from "@/lib/strength/records";
+import { variantShortLabel } from "@/lib/exercise-id";
 import { ReadinessPrompt, SessionFeedbackCard, SessionFeedbackSheet } from "./session-feedback";
 import { retryServerAction } from "@/lib/retry";
 
@@ -60,6 +61,7 @@ export interface SlotView {
   restSeconds: number | null;
   sets: LoggedSet[];
   pendingSuggestion: import("@/lib/fluid").PendingSuggestion | null;
+  lastUsedAlternate: string | null;
 }
 
 export function ActiveSession({
@@ -342,6 +344,14 @@ function SlotCard({
   // A bare machine template isn't loggable — it must be instantiated to a brand/type variant.
   const isTemplate = !!def?.machineTemplate;
 
+  // Quick swap to the alternate last used for this slot. The button names the alternate by its
+  // brand/type (never a sliced display name) so two variants of one movement stay distinct; the
+  // scope sheet then shows the full name before anything saves.
+  const lastUsedDef = slot.lastUsedAlternate ? catalog[slot.lastUsedAlternate] : null;
+  const lastUsedLabel = lastUsedDef
+    ? variantShortLabel(lastUsedDef.brand, lastUsedDef.machineType) ?? lastUsedDef.name
+    : null;
+
   const p = slot.prescription;
   const isBodyweight = equipment === "bodyweight";
   const isMachine = equipment.startsWith("machine") || equipment === "cable";
@@ -490,17 +500,36 @@ function SlotCard({
             {name}
           </Link>
         </h2>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={() => setSwapping(true)}
-          disabled={alreadyFinished || savingSwap}
-          aria-label={`Swap ${name} for another exercise`}
-          className="shrink-0"
-        >
-          {isTemplate ? "Choose machine" : "Swap"}
-        </Button>
+        <div className="flex shrink-0 gap-2">
+          {lastUsedDef && !isTemplate && (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setSwapError(null);
+                setPickedSwap(lastUsedDef);
+              }}
+              disabled={alreadyFinished || savingSwap}
+              aria-label={`Quick swap to ${lastUsedDef.name}`}
+              title={lastUsedDef.name}
+              className="shrink-0"
+            >
+              Last: {lastUsedLabel}
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => setSwapping(true)}
+            disabled={alreadyFinished || savingSwap}
+            aria-label={`Swap ${name} for another exercise`}
+            className="shrink-0"
+          >
+            {isTemplate ? "Choose machine" : "Swap"}
+          </Button>
+        </div>
       </div>
 
       <Button type="button" variant="secondary" size="sm" className="mt-3" onClick={() => setShowHistory(true)} aria-label={`View history for ${name}`}>

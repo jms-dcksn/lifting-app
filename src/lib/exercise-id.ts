@@ -18,6 +18,17 @@ export function variantName(
   return brand ? `${baseName} — ${brand} (${tag})` : `${baseName} (${tag})`;
 }
 
+// Terse brand/type identity for a resolved variant — the axis that actually differs when
+// swapping machines for the same movement. Null when the exercise carries no machine identity.
+export function variantShortLabel(
+  brand: string | null | undefined,
+  machineType: MachineType | null | undefined,
+): string | null {
+  const tag = machineType ? TYPE_TAG[machineType] : null;
+  if (brand && tag) return `${brand} (${tag})`;
+  return brand ?? tag;
+}
+
 export function slugifyCustom(name: string): string {
   return `custom-${slug(name)}-${Math.random().toString(36).slice(2, 7)}`;
 }

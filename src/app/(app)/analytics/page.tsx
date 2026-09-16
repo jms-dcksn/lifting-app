@@ -275,24 +275,6 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         </p>
       </header>
 
-      <WeightTrendCard entries={bodyweightEntries} today={today} goal={profile?.goal_weight ?? null} />
-
-      <Card>
-        <CardLabel className="mb-1">Coach check-in</CardLabel>
-        <p className="mb-3 text-body text-muted">
-          One factual weekly report powers this snapshot, the clipboard export, and the
-          future Coach API.
-        </p>
-        <CoachReportSummary report={coachReport} />
-        {coachExercise && <p className="mb-2 text-caption text-muted">Next steps filtered to {catalog[coachExercise]?.name ?? "selected exercise"}. <Link href="/analytics#coach-next-steps" className="underline">Show all</Link></p>}
-        <CoachRecommendationList
-          recommendations={coachExercise ? coachRecommendations.filter(r => r.exerciseId === coachExercise) : coachRecommendations}
-          decisions={recommendationDecisions}
-          currentTime={coachReport.generatedAt}
-        />
-        <CoachCheckIn text={coachCheckIn} />
-      </Card>
-
       {analyticsRows.length === 0 ? (
         <Card>
           <CardLabel className="mb-2">No training data yet</CardLabel>
@@ -302,34 +284,6 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         </Card>
       ) : (
         <>
-          <Card>
-            <div className="mb-3 flex items-start justify-between gap-3">
-              <div>
-                <CardLabel className="mb-1">Total volume</CardLabel>
-                <p className="text-heading tabular-nums">{formatWhole(totalVolume)} lb</p>
-                {volumeDelta != null ? (
-                  <p className="text-caption text-muted">
-                    <Delta value={volumeDelta} /> vs last week
-                  </p>
-                ) : (
-                  <p className="text-caption text-muted">Log another week for a delta.</p>
-                )}
-              </div>
-              {excludedSets > 0 && (
-                <span className="max-w-32 text-right text-caption text-muted">
-                  {excludedSets} bodyweight set{excludedSets === 1 ? "" : "s"} excluded
-                </span>
-              )}
-            </div>
-            {chartData.length >= 2 ? (
-              <VolumeChart data={chartData} />
-            ) : (
-              <p className="text-body text-muted">
-                One week so far — the chart appears after the next week.
-              </p>
-            )}
-          </Card>
-
           <Card>
             <CardLabel className="mb-3">e1RM progression highlights</CardLabel>
             {gainers.length > 0 ? (
@@ -386,6 +340,52 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             ) : (
               <p className="text-body text-muted">Records appear after your first e1RM set.</p>
             )}
+          </Card>
+
+          <WeightTrendCard entries={bodyweightEntries} today={today} goal={profile?.goal_weight ?? null} />
+
+          <Card>
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <CardLabel className="mb-1">Total volume</CardLabel>
+                <p className="text-heading tabular-nums">{formatWhole(totalVolume)} lb</p>
+                {volumeDelta != null ? (
+                  <p className="text-caption text-muted">
+                    <Delta value={volumeDelta} /> vs last week
+                  </p>
+                ) : (
+                  <p className="text-caption text-muted">Log another week for a delta.</p>
+                )}
+              </div>
+              {excludedSets > 0 && (
+                <span className="max-w-32 text-right text-caption text-muted">
+                  {excludedSets} bodyweight set{excludedSets === 1 ? "" : "s"} excluded
+                </span>
+              )}
+            </div>
+            {chartData.length >= 2 ? (
+              <VolumeChart data={chartData} />
+            ) : (
+              <p className="text-body text-muted">
+                One week so far — the chart appears after the next week.
+              </p>
+            )}
+          </Card>
+
+          <Card>
+            <CardLabel className="mb-1">Coach check-in</CardLabel>
+            <p className="mb-3 text-body text-muted">
+              One factual weekly report powers this snapshot, the clipboard export, and the
+              future Coach API.
+            </p>
+            <CoachReportSummary report={coachReport} />
+            {coachExercise && <p className="mb-2 text-caption text-muted">Next steps filtered to {catalog[coachExercise]?.name ?? "selected exercise"}. <Link href="/analytics#coach-next-steps" className="underline">Show all</Link></p>}
+            <CoachRecommendationList
+              recommendations={coachExercise ? coachRecommendations.filter(r => r.exerciseId === coachExercise) : coachRecommendations}
+              decisions={recommendationDecisions}
+              currentTime={coachReport.generatedAt}
+            />
+            <CoachCheckIn text={coachCheckIn} />
           </Card>
 
           <Card>

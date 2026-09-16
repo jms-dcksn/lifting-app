@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { variantId, variantName, variantShortLabel, slugifyCustom } from "./exercise-id";
+import { variantId, variantName, variantShortLabel, ownedVariantId, slugifyCustom } from "./exercise-id";
 
 describe("variantId", () => {
   it("builds a stable slug from base + brand + type", () => {
@@ -9,6 +9,14 @@ describe("variantId", () => {
   });
   it("handles a missing brand", () => {
     expect(variantId("leg-press", null, "selectorized")).toBe("leg-press____selectorized");
+  });
+});
+
+describe("ownedVariantId", () => {
+  it("namespaces the canonical slug by user when the global id is taken", () => {
+    expect(ownedVariantId("leg-extension", "Hoist", "selectorized", "user-b")).toBe(
+      "leg-extension__hoist__selectorized__user-b",
+    );
   });
 });
 

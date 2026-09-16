@@ -9,6 +9,17 @@ export function variantId(baseId: string, brand: string | null, machineType: Mac
   return `${baseId}__${slug(brand ?? "")}__${machineType}`;
 }
 
+// Canonical slugs are not namespaced, but exercise.id is a global PK. When another
+// user already holds that slug, own the id so find-or-create can still insert.
+export function ownedVariantId(
+  baseId: string,
+  brand: string | null,
+  machineType: MachineType,
+  userId: string,
+): string {
+  return `${variantId(baseId, brand, machineType)}__${userId}`;
+}
+
 export function variantName(
   baseName: string,
   brand: string | null,

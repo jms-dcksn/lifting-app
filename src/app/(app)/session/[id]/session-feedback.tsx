@@ -23,8 +23,7 @@ export function ReadinessPrompt({ sessionId }: { sessionId: string }) {
 
   return (
     <Card tone="active">
-      <CardLabel className="mb-1">Pre-workout readiness</CardLabel>
-      <p className="text-body text-muted">How ready do you feel to train right now?</p>
+      <CardLabel className="mb-1">Readiness</CardLabel>
       <div className="mt-3 grid grid-cols-5 gap-2" role="group" aria-label="Readiness from 1 to 5">
         {[1, 2, 3, 4, 5].map((value) => (
           <Button
@@ -55,8 +54,8 @@ export function ReadinessPrompt({ sessionId }: { sessionId: string }) {
         ))}
       </div>
       <div className="mt-2 flex items-center justify-between text-caption text-muted">
-        <span>1 = depleted</span>
-        <span>5 = ready</span>
+        <span>1 depleted</span>
+        <span>5 ready</span>
       </div>
       <Button type="button" variant="ghost" size="sm" className="mt-2" onClick={() => setDismissed(true)}>
         Skip
@@ -138,7 +137,6 @@ export function SessionFeedbackSheet({
     <Sheet onClose={onClose}>
       <div className="overflow-y-auto px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <h2 className="text-heading">{mode === "finish" ? "How did that session feel?" : "Edit session feedback"}</h2>
-        <p className="mt-1 text-body text-muted">Optional. Two quick signals help explain your performance.</p>
 
         <fieldset className="mt-5">
           <legend className="text-caption font-semibold uppercase tracking-wide text-muted">Joint pain</legend>

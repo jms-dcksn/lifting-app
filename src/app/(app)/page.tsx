@@ -9,6 +9,7 @@ import { rirLabel } from "@/lib/periodization";
 import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button-styles";
 import { Card, CardLabel } from "@/components/ui/card";
+import { InfoButton } from "@/components/ui/info-button";
 import { startNextSession } from "./session/actions";
 
 export default async function Home() {
@@ -71,8 +72,9 @@ export default async function Home() {
           </p>
         </div>
         {program.style === "fluid" ? (
-          <p className="text-caption text-muted">
-            Session {completed + 1} · adaptive — movements adjust as you plateau
+          <p className="flex items-center gap-1 text-caption text-muted">
+            Session {completed + 1} · Adaptive
+            <InfoButton title="Adaptive program">Movements adjust as you plateau.</InfoButton>
           </p>
         ) : (
           <BlockProgress completed={completed} total={totalSessions} />
@@ -117,7 +119,7 @@ export default async function Home() {
               </li>
             ))}
           </ul>
-          <p className="mt-4 text-caption font-medium">{open ? "Open workout" : "View details & plan workout"} →</p>
+          <p className="mt-4 text-caption font-medium">{open ? "Open workout" : "Plan workout"} →</p>
         </Card>
       </Link>
 

@@ -17,6 +17,7 @@ import type { SessionFeedback } from "@/lib/session-feedback";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
 import { Card, CardLabel } from "@/components/ui/card";
+import { InfoButton } from "@/components/ui/info-button";
 import { Stepper } from "@/components/ui/stepper";
 import { ExercisePicker } from "../../program/exercise-picker";
 import { RestBar, useRestTimer } from "./rest-timer";
@@ -180,9 +181,9 @@ export function ActiveSession({
       {phase && phasePrescription ? (
         <Card tone="active">
           <CardLabel>Week {week} · {phase.name}</CardLabel>
-          <p className="mt-1 text-body">
-            {phase.description ?? `Follow the week ${week} prescription shown on each exercise.`}
-          </p>
+          {phase.description ? (
+            <p className="mt-1 text-body">{phase.description}</p>
+          ) : null}
           <p className="mt-2 text-caption text-muted">
             Effective RIR: {rirLabel(phasePrescription)}
             {phase.setMultiplier != null ? ` · ${Math.round(phase.setMultiplier * 100)}% working sets` : ""}
@@ -561,10 +562,12 @@ function SlotCard({
 
       {showSuggestion && suggestion && (
         <div className="mt-3 rounded-card border border-border-strong p-3">
-          <p className="text-caption uppercase tracking-wide text-muted">Plateau detected</p>
-          <p className="mt-1 text-body">
-            {name} · no new e1RM high in {suggestion.stalledExposures} sessions.
-          </p>
+          <div className="flex items-center gap-1">
+            <p className="text-caption uppercase tracking-wide text-muted">Plateau</p>
+            <InfoButton title="Plateau">
+              {name} had no new e1RM high in {suggestion.stalledExposures} sessions.
+            </InfoButton>
+          </div>
           {suggestion.action === "rep_change" && suggestion.repBand && (
             <>
               <p className="mt-1 text-body">
@@ -614,7 +617,6 @@ function SlotCard({
           )}
           {suggestion.action === "swap" && (
             <>
-              <p className="mt-1 text-body">Stuck here — try a different movement:</p>
               <ul className="mt-2 flex flex-col gap-1">
                 {suggestion.candidates?.map((c) => (
                   <li key={c.exerciseId}>
@@ -685,15 +687,13 @@ function SlotCard({
         <Sheet ariaLabel="Apply exercise swap" dismissible={!savingSwap} onClose={() => setPickedSwap(null)}>
           <div className="flex flex-col gap-3 px-4 pb-6 pt-2">
             <h2 className="text-heading">Use {pickedSwap.name} for…</h2>
-            <p className="text-body text-muted">Replace {name}. Sets already logged stay unchanged.</p>
+            <p className="text-caption text-muted">Logged sets stay.</p>
             <Button type="button" pending={savingSwap} onClick={() => confirmSwap("workout")}>
               This workout only
             </Button>
-            <p className="text-caption text-muted">Your usual exercise returns next time.</p>
             <Button type="button" variant="secondary" pending={savingSwap} onClick={() => confirmSwap("program")}>
               Remainder of program
             </Button>
-            <p className="text-caption text-muted">This workout and future workouts for this exercise slot on this program day.</p>
             {swapError && <p role="alert" className="text-caption text-danger">{swapError}</p>}
             <Button type="button" variant="ghost" disabled={savingSwap} onClick={() => setPickedSwap(null)}>Cancel</Button>
           </div>
@@ -772,7 +772,7 @@ function SlotCard({
       {isTemplate ? (
         <div className="mt-3">
           <Button type="button" className="w-full" disabled={alreadyFinished || savingSwap} onClick={() => setSwapping(true)}>
-            Choose machine (brand &amp; type)
+            Choose machine
           </Button>
         </div>
       ) : editingId === null ? (
@@ -826,7 +826,7 @@ function TargetLine({
 }) {
   if (!target) {
     return (
-      <p className="mt-2 text-body text-muted">No history yet — log a set to set your baseline.</p>
+      <p className="mt-2 text-body text-muted">Log a set to start.</p>
     );
   }
   const unit = isBodyweight ? "added" : "lb";
@@ -854,12 +854,12 @@ function TargetLine({
         <ProgressionContext reference={reference} isBodyweight={isBodyweight} />
       )}
       {isRecommendation && target.confidence === "calibrate" && (
-        <p className="mt-1 text-caption text-calibrate">
-          New machine — feel out the first set, then it calibrates to you.
+        <p className="mt-1 flex items-center gap-1 text-caption text-calibrate">
+          Feel out this set.
+          <InfoButton title="New machine">
+            First session on this machine is a conservative start. After you log it, the target is yours.
+          </InfoButton>
         </p>
-      )}
-      {isRecommendation && target.confidence === "low" && (
-        <p className="mt-1 text-caption text-muted">Starting estimate from your similar lifts.</p>
       )}
     </div>
   );

@@ -41,7 +41,6 @@ function HistoryContent({ exerciseId, sessionId, name, isBodyweight }: {
       <header className="flex shrink-0 items-start justify-between gap-3 pb-4">
         <div>
           <h2 className="text-heading">{name} history</h2>
-          <p className="mt-1 text-caption text-muted">Last 10 logged sets · All machines · Previous workouts</p>
         </div>
         <Button variant="secondary" size="sm" onClick={dismiss}>Close</Button>
       </header>
@@ -52,7 +51,7 @@ function HistoryContent({ exerciseId, sessionId, name, isBodyweight }: {
             <Button className="mt-3" variant="secondary" onClick={() => { setError(false); setAttempt((n) => n + 1); }}>Try again</Button>
           </div>
         ) : rows === null ? <p role="status" className="py-4 text-muted">Loading history…</p>
-          : rows.length === 0 ? <p className="py-4 text-muted">No previous sets for this exercise yet.</p>
+          : rows.length === 0 ? <p className="py-4 text-muted">No previous sets.</p>
           : <ol className="flex flex-col gap-3">
             {rows.map((row) => (
               <li key={row.id} className="rounded-card border border-border p-3">

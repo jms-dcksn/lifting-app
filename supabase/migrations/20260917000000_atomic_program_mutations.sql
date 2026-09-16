@@ -55,7 +55,7 @@ begin
     v_user,
     coalesce(trim(p_tree->>'name'), 'My Program'),
     nullif(trim(p_tree->>'description'), ''),
-    coalesce((p_tree->'tags')::text[], '{}'),
+    coalesce(array(select jsonb_array_elements_text(coalesce(p_tree->'tags', '[]'::jsonb))), '{}'::text[]),
     least(12, greatest(4, (p_tree->>'weeks')::int)),
     coalesce(p_tree->>'style', 'classic'),
     v_is_active

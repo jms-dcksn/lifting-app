@@ -166,7 +166,7 @@ export default async function SettingsPage() {
           <span className="flex flex-col gap-1">
             Rest complete tone
             <span className="text-caption text-muted">
-              Two short in-app beeps when rest ends. Uses this tab's audio — no
+              Two short in-app beeps when rest ends. Uses this tab&apos;s audio — no
               notification permission. Phone vibration is unchanged.
             </span>
           </span>

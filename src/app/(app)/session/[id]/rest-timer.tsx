@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatRestRemaining, notifyRestDone } from "@/lib/rest";
 
@@ -17,8 +17,6 @@ export interface RestTimer {
 export function useRestTimer(toneEnabled = true): RestTimer {
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
-  const toneEnabledRef = useRef(toneEnabled);
-  toneEnabledRef.current = toneEnabled;
 
   // Drive the countdown from the interval only — never set state synchronously in the
   // effect body (the event handlers seed the initial value), so re-renders stay minimal.
@@ -29,13 +27,13 @@ export function useRestTimer(toneEnabled = true): RestTimer {
       if (left <= 0) {
         setRemaining(null);
         setEndsAt(null);
-        notifyRestDone(toneEnabledRef.current);
+        notifyRestDone(toneEnabled);
       } else {
         setRemaining(left);
       }
     }, 250);
     return () => clearInterval(iv);
-  }, [endsAt]);
+  }, [endsAt, toneEnabled]);
 
   const start = useCallback((seconds: number) => {
     if (seconds <= 0) return;

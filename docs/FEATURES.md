@@ -214,8 +214,9 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 - **Generic machine templates** — machine movements seed as brand-agnostic templates
   (`machineTemplate: true`, no brand) carrying no absolute load identity until instantiated.
 - **Machine variants** — a template × brand × machine type (`selectorized | plate_loaded`)
-  becomes a concrete `exercise` row, ids `base__brand__machinetype`. Find-or-created by
-  `resolveVariant`, deduped by a partial unique index.
+  becomes a concrete `exercise` row, ids `base__brand__machinetype` (or that slug plus the
+  owner when another user already holds the global id). Find-or-created by `resolveVariant`,
+  deduped by a partial unique index.
 - **In-session machine instantiation** — picking a bare machine template opens a brand/type
   sub-step; a slot still on a template shows "Choose machine (brand & type)" instead of
   set-entry until resolved.

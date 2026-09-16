@@ -414,7 +414,9 @@ explicit non-goal, anticipating that a locked-pocket countdown could drift or ne
 keeps the screen on for the duration of a session. As a result the documented limitation is
 narrower than the spec feared: the timer is unreliable only if the user *manually* locks the
 phone or backgrounds the tab (JS timers throttle then) — not merely from leaving the screen
-untouched. No push/service-worker notification was added; that remains out of scope.
+untouched. No push/service-worker or browser Notification API was added; that remains out
+of scope. Completion audio is an in-app Web Audio pair of beeps (`profile.rest_tone_enabled`,
+default on in Settings); vibration is not gated by that toggle.
 
 **Per-slot rest override is nullable, not a required field.** `program_slot.rest_seconds`
 defaults to `null` (use the profile default) rather than copying the profile's value at

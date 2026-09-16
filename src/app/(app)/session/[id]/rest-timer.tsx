@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { formatRestRemaining } from "@/lib/rest";
+import { formatRestRemaining, notifyRestDone } from "@/lib/rest";
 
 export interface RestTimer {
   remaining: number | null; // seconds left, or null when idle
@@ -13,10 +13,12 @@ export interface RestTimer {
 
 // One rest countdown for the whole session — only one rest runs at a time. Tracks an
 // absolute end timestamp (not a decrementing counter), so it stays accurate across the
-// 250ms tick and any tab throttling. Fires a vibrate + short beep once on completion.
-export function useRestTimer(): RestTimer {
+// 250ms tick and any tab throttling. Fires vibrate + optional tone once on completion.
+export function useRestTimer(toneEnabled = true): RestTimer {
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
+  const toneEnabledRef = useRef(toneEnabled);
+  toneEnabledRef.current = toneEnabled;
 
   // Drive the countdown from the interval only — never set state synchronously in the
   // effect body (the event handlers seed the initial value), so re-renders stay minimal.
@@ -27,7 +29,7 @@ export function useRestTimer(): RestTimer {
       if (left <= 0) {
         setRemaining(null);
         setEndsAt(null);
-        notifyRestDone();
+        notifyRestDone(toneEnabledRef.current);
       } else {
         setRemaining(left);
       }
@@ -50,34 +52,6 @@ export function useRestTimer(): RestTimer {
   }, []);
 
   return { remaining, start, add, skip };
-}
-
-// Vibration + a brief beep. Both are best-effort: unsupported browsers (and audio that the
-// browser blocks without a recent gesture) simply no-op.
-function notifyRestDone() {
-  try {
-    navigator.vibrate?.([200, 100, 200]);
-  } catch {
-    // no-op
-  }
-  try {
-    const Ctx =
-      window.AudioContext ??
-      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctx) return;
-    const ctx = new Ctx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.18);
-    osc.onended = () => ctx.close().catch(() => {});
-  } catch {
-    // no-op
-  }
 }
 
 export function RestBar({ timer }: { timer: RestTimer }) {

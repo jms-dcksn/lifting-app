@@ -72,7 +72,7 @@ export default async function SessionPage({
     await Promise.all([
       supabase
         .from("profile")
-        .select("default_rest_seconds")
+        .select("default_rest_seconds, rest_tone_enabled")
         .eq("id", userId)
         .maybeSingle(),
       getCurrentBodyweight(supabase, userId),
@@ -310,6 +310,7 @@ export default async function SessionPage({
       phase={activePhase}
       bodyweight={bodyweight}
       defaultRestSeconds={profile?.default_rest_seconds ?? 120}
+      restToneEnabled={profile?.rest_tone_enabled ?? true}
       alreadyFinished={!!session.finished_at}
       initialFeedback={{
         readiness: session.readiness,

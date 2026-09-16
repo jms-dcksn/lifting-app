@@ -133,7 +133,10 @@ Adaptive plateau engine under §5.
   duration `slot.restSeconds ?? profile.default_rest_seconds`.
 - **Accurate across throttling** — tracks an absolute end timestamp (not a decrementing
   counter), tick every 250ms.
-- **Completion cues** — `navigator.vibrate` + a short WebAudio beep (both best-effort).
+- **Completion cues** — `navigator.vibrate` plus two short in-app Web Audio beeps
+  (both best-effort; AudioContext may no-op without a recent gesture). Settings
+  **Rest complete tone** (`profile.rest_tone_enabled`, default on) gates audio only;
+  vibration still fires. No browser Notification API or permission prompt.
 - **Controls** — `+30s` and `Skip`; rendered in the sticky footer above Finish, absent when
   idle.
 - **Screen wake lock** — keeps the screen on for the session so the timer fires reliably.
@@ -283,6 +286,8 @@ heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `lates
   the pre-existing `profile.bodyweight` remains the baseline when no history exists.
 - **Goal weight (lb)**.
 - **Default rest between sets (seconds)** — default 120; per-slot overrides take precedence.
+- **Rest complete tone** — on by default; uncheck to silence the in-app beep when rest
+  ends. Vibration is independent. No notification permission.
 - **Period tracking (optional)** — female-only opt-in menstrual period tracking. Mark observed
   bleeding days; appear as context bands on monthly charts. Design spec: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
   Implementation: #33.

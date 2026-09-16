@@ -42,7 +42,8 @@ applications, not scripts to replay indiscriminately. All files in `supabase/mig
 are relevant, including phases, feedback, bodyweight history, Coach decisions, exercise swaps,
 and atomic calendar writes. Period tracking (#33) adds `profile.sex`, consent columns, and
 `period_observation`; apply that migration before deploying the Settings/Progress UI that
-reads those fields. Vercel's build does not run database migrations. Breaking consent-copy
+reads those fields. Rest-complete tone (`profile.rest_tone_enabled`, default true) is a
+later profile column; apply its migration before relying on the Settings checkbox. Vercel's build does not run database migrations. Breaking consent-copy
 changes should bump `period_consent_version` and require re-consent.
 
 Enable email magic-link Auth. Set Site URL and allowed redirect URLs for the production

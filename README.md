@@ -80,7 +80,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/proxy.ts` — Next.js 16 session proxy (replaces `middleware.ts`); refreshes Supabase session on matched requests
 - `src/app/(app)/program/` — summary tile grid + dedicated read-only detail route + builder (Classic/Adaptive style, catalog-driven picker, custom exercises, server actions)
 - `src/app/(app)/exercise/actions.ts` — `resolveVariant` (find-or-create a machine brand/type variant) and `createCustomExercise` server actions
-- `src/app/(app)/settings/` — bodyweight history/trend, goal weight, and default rest-between-sets editor
+- `src/app/(app)/settings/` — bodyweight history/trend, goal weight, default rest-between-sets, and rest-complete tone editor
 - `src/app/(app)/analytics/` — Progress hub: canonical coach snapshot/export, reviewable coaching
   proposals, session volume, e1RM gainers, record feed, searchable exercise list
 - `src/app/api/coach/v1/weekly/` — private, no-store endpoint for the scheduled Coach check-in

@@ -29,5 +29,6 @@ client components; data loading and auth remain server-side.
 
 The active workout owns one rest timer. It uses an absolute end timestamp to tolerate tab
 throttling, starts optimistically when logging, and uses per-slot rest or the profile default.
-Vibration, audio, and wake lock are best-effort; lock/background execution is not guaranteed.
+Vibration, in-app Web Audio (Settings-gated, default on), and wake lock are best-effort;
+lock/background execution is not guaranteed. No Notification API.
 See [rest timer rationale](DECISIONS.md#phase-b-decisions-rest-timer).

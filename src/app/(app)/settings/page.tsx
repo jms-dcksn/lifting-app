@@ -18,7 +18,7 @@ export default async function SettingsPage() {
     await Promise.all([
       supabase
         .from("profile")
-        .select("bodyweight, goal_weight, default_rest_seconds, sex, period_tracking_enabled, period_consent_granted_at")
+        .select("bodyweight, goal_weight, default_rest_seconds, rest_tone_enabled, sex, period_tracking_enabled, period_consent_granted_at")
         .eq("id", userId)
         .maybeSingle(),
       supabase
@@ -153,6 +153,24 @@ export default async function SettingsPage() {
             placeholder="e.g. 120"
           />
         </div>
+
+        <label className="flex items-start gap-3 text-body" htmlFor="rest_tone_enabled">
+          <input
+            id="rest_tone_enabled"
+            name="rest_tone_enabled"
+            type="checkbox"
+            value="on"
+            defaultChecked={profile?.rest_tone_enabled ?? true}
+            className="mt-1 size-4 shrink-0 cursor-pointer rounded border-border"
+          />
+          <span className="flex flex-col gap-1">
+            Rest complete tone
+            <span className="text-caption text-muted">
+              Two short in-app beeps when rest ends. Uses this tab's audio — no
+              notification permission. Phone vibration is unchanged.
+            </span>
+          </span>
+        </label>
 
         <Button type="submit" size="lg">
           Save

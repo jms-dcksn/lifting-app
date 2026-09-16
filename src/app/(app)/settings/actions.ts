@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { parseRestToneEnabled } from "@/lib/rest";
 import { deleteAllPeriodObservations } from "@/lib/period-calendar";
 
 async function requireUser() {
@@ -23,6 +24,8 @@ export async function saveProfile(formData: FormData) {
   const defaultRestSeconds =
     Number.isFinite(rawRest) && rawRest > 0 ? Math.min(600, Math.round(rawRest)) : 120;
 
+  const restToneEnabled = parseRestToneEnabled(formData.get("rest_tone_enabled"));
+
   const sex = formData.get("sex")?.toString() ?? "unspecified";
   if (!["unspecified", "male", "female"].includes(sex)) {
     throw new Error("Invalid sex value");
@@ -37,6 +40,7 @@ export async function saveProfile(formData: FormData) {
   const baseUpdates = {
     goal_weight: goalWeight,
     default_rest_seconds: defaultRestSeconds,
+    rest_tone_enabled: restToneEnabled,
     sex,
   };
 
@@ -63,6 +67,7 @@ export async function saveProfile(formData: FormData) {
   revalidatePath("/settings");
   revalidatePath("/");
   revalidatePath("/analytics");
+  revalidatePath("/session/[id]", "page");
 }
 
 export async function enablePeriodTracking() {

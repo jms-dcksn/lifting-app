@@ -79,8 +79,10 @@ export default async function SettingsPage() {
         <LogWeightButton today={today} className="w-full" />
 
         {entries.length > 0 && (
-          <div className="border-t border-border pt-3">
-            <CardLabel className="mb-2">Recent readings</CardLabel>
+          <details className="border-t border-border pt-3">
+            <summary className="min-h-11 cursor-pointer py-2 text-caption font-semibold uppercase tracking-wide text-muted">
+              Recent readings ({Math.min(entries.length, 10)})
+            </summary>
             <ul className="flex flex-col gap-2">
               {entries.slice(0, 10).map((entry) => (
                 <li key={entry.id} className="rounded-control border border-border px-3 py-2">
@@ -92,7 +94,7 @@ export default async function SettingsPage() {
                 </li>
               ))}
             </ul>
-          </div>
+          </details>
         )}
       </Card>
 

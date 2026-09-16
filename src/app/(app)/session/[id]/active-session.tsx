@@ -30,6 +30,7 @@ import {
   updateSessionFeedback,
   acceptAdaptation,
   dismissAdaptation,
+  retryRecomputeStat,
   type SessionSummary,
 } from "../actions";
 import { AchievementPills, AchievementRecap } from "./achievements";
@@ -299,6 +300,8 @@ function SlotCard({
   // Rows fading out before their delete commits, and the last failed-write message.
   const [exitingIds, setExitingIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [recomputeWarning, setRecomputeWarning] = useState<string | null>(null);
+  const [retryingRecompute, startRetryRecompute] = useTransition();
   // Swap (machine taken, etc.): sets log against the swapped exercise_id but keep the
   // original program_slot_id, so each exercise's progression chain stays intact.
   const [exerciseId, setExerciseId] = useState(slot.exerciseId);
@@ -383,8 +386,10 @@ function SlotCard({
   const tone = complete && achievements.length === 0 ? "done" : isCurrent ? "active" : "default";
 
   function handleLog(weight: number, reps: number, rir: number) {
+    if (isPending) return;
     const idempotencyKey = generateIdempotencyKey();
     setError(null);
+    setRecomputeWarning(null);
     // Rest starts the moment the set is logged (optimistically) — a failed write doesn't
     // stop the clock, which matches what the lifter is already doing: resting.
     startRest();
@@ -394,7 +399,7 @@ function SlotCard({
         set: { id: `temp-${Date.now()}`, exerciseId, weight, reps, rir, setIndex: optimisticSets.length },
       });
       try {
-        await retryServerAction(
+        const result = await retryServerAction(
           () => logSet({
             sessionId,
             programSlotId: slot.programSlotId,
@@ -407,6 +412,9 @@ function SlotCard({
           { onRetry: () => setError("Retrying…") }
         );
         setError(null);
+        if (result.recomputeWarning) {
+          setRecomputeWarning(result.recomputeWarning);
+        }
       } catch {
         // optimistic row reverts when the transition settles — surface why so it
         // doesn't just vanish.
@@ -418,17 +426,22 @@ function SlotCard({
   // Play the row's exit animation, then commit the delete.
   function handleDelete(id: string) {
     if (id.startsWith("temp-")) return;
+    if (isPending) return;
     setError(null);
+    setRecomputeWarning(null);
     setExitingIds((ids) => [...ids, id]);
     setTimeout(() => {
       startTransition(async () => {
         applyOptimistic({ type: "delete", id });
         try {
-          await retryServerAction(
+          const result = await retryServerAction(
             () => deleteSet(id),
             { onRetry: () => setError("Retrying…") }
           );
           setError(null);
+          if (result?.recomputeWarning) {
+            setRecomputeWarning(result.recomputeWarning);
+          }
         } catch {
           setError("Couldn’t delete that set. Try again.");
         }
@@ -438,17 +451,33 @@ function SlotCard({
   }
 
   function handleEdit(id: string, weight: number, reps: number, rir: number) {
+    if (isPending) return;
     setError(null);
+    setRecomputeWarning(null);
     startTransition(async () => {
       try {
-        await retryServerAction(
+        const result = await retryServerAction(
           () => editSet({ setId: id, weight, reps, rir }),
           { onRetry: () => setError("Retrying…") }
         );
         setError(null);
         setEditingId(null);
+        if (result.recomputeWarning) {
+          setRecomputeWarning(result.recomputeWarning);
+        }
       } catch {
         setError("Couldn’t save those changes. Please try again.");
+      }
+    });
+  }
+
+  function handleRetryRecompute() {
+    startRetryRecompute(async () => {
+      const result = await retryRecomputeStat({ exerciseId, sessionId });
+      if (result.success) {
+        setRecomputeWarning(null);
+      } else if (result.warning) {
+        setRecomputeWarning(result.warning);
       }
     });
   }
@@ -693,6 +722,21 @@ function SlotCard({
       )}
 
       {error && <p className="mt-2 text-caption text-danger">{error}</p>}
+
+      {recomputeWarning && (
+        <div className="mt-2 flex flex-col gap-2 rounded-card border border-border-warning bg-surface-warning p-2">
+          <p className="text-caption text-warning">{recomputeWarning}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            pending={retryingRecompute}
+            onClick={handleRetryRecompute}
+          >
+            Retry stats update
+          </Button>
+        </div>
+      )}
 
       {isTemplate ? (
         <div className="mt-3">

@@ -234,14 +234,19 @@ export async function logSet(input: LogSetInput) {
       .maybeSingle();
     if (readError || !existing) throw new Error("Could not retrieve existing set");
     revalidatePath(`/session/${input.sessionId}`);
-    return existing;
+    return { ...existing, recomputeWarning: null };
   }
 
   if (error || !data) throw new Error(error?.message ?? "Could not log set");
 
-  await recomputeAndUpsertStat(supabase, userId, input.exerciseId, bodyweight, catalog);
+  let recomputeWarning: string | null = null;
+  try {
+    await recomputeAndUpsertStat(supabase, userId, input.exerciseId, bodyweight, catalog);
+  } catch {
+    recomputeWarning = "Set saved, but couldn't update exercise stats. Your progress tracking may be temporarily out of sync.";
+  }
   revalidatePath(`/session/${input.sessionId}`);
-  return data;
+  return { ...data, recomputeWarning };
 }
 
 export interface EditSetInput {
@@ -281,11 +286,17 @@ export async function editSet(input: EditSetInput) {
     .eq("user_id", userId);
   if (error) throw new Error(error.message);
 
-  await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight, catalog);
+  let recomputeWarning: string | null = null;
+  try {
+    await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight, catalog);
+  } catch {
+    recomputeWarning = "Set saved, but couldn't update exercise stats. Your progress tracking may be temporarily out of sync.";
+  }
   revalidatePath(`/session/${existing.session_id}`);
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
   revalidatePath("/history/[exerciseId]", "page");
+  return { recomputeWarning };
 }
 
 export async function deleteSet(setId: string) {
@@ -303,11 +314,31 @@ export async function deleteSet(setId: string) {
 
   const catalog = await getCatalogMap(supabase, userId);
   const bodyweight = await getCurrentBodyweight(supabase, userId);
-  await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight, catalog);
+  let recomputeWarning: string | null = null;
+  try {
+    await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight, catalog);
+  } catch {
+    recomputeWarning = "Set deleted, but couldn't update exercise stats. Your progress tracking may be temporarily out of sync.";
+  }
   revalidatePath(`/session/${existing.session_id}`);
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
   revalidatePath("/history/[exerciseId]", "page");
+  return { recomputeWarning };
+}
+
+export async function retryRecomputeStat(input: { exerciseId: string; sessionId: string }): Promise<{ success: boolean; warning: string | null }> {
+  const { supabase, userId } = await requireUser();
+  const catalog = await getCatalogMap(supabase, userId);
+  const bodyweight = await getCurrentBodyweight(supabase, userId);
+  
+  try {
+    await recomputeAndUpsertStat(supabase, userId, input.exerciseId, bodyweight, catalog);
+    revalidatePath(`/session/${input.sessionId}`);
+    return { success: true, warning: null };
+  } catch {
+    return { success: false, warning: "Still couldn't update stats. Try again or continue — this won't affect your saved sets." };
+  }
 }
 
 export interface SessionSummary {

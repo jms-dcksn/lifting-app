@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { variantId, variantName, slugifyCustom } from "./exercise-id";
+import { variantId, variantName, variantShortLabel, slugifyCustom } from "./exercise-id";
 
 describe("variantId", () => {
   it("builds a stable slug from base + brand + type", () => {
@@ -21,6 +21,27 @@ describe("variantName", () => {
   });
   it("omits brand when absent", () => {
     expect(variantName("Leg Press", null, "plate_loaded")).toBe("Leg Press (plate)");
+  });
+});
+
+describe("variantShortLabel", () => {
+  it("keeps brand and type together", () => {
+    expect(variantShortLabel("Hammer Strength", "plate_loaded")).toBe("Hammer Strength (plate)");
+  });
+  it("distinguishes two variants of one movement by brand and by type", () => {
+    expect(variantShortLabel("Cybex", "plate_loaded")).not.toBe(
+      variantShortLabel("Hoist", "plate_loaded"),
+    );
+    expect(variantShortLabel("Hoist", "plate_loaded")).not.toBe(
+      variantShortLabel("Hoist", "selectorized"),
+    );
+  });
+  it("falls back to whichever identity exists", () => {
+    expect(variantShortLabel(null, "selectorized")).toBe("stack");
+    expect(variantShortLabel("Hoist", null)).toBe("Hoist");
+  });
+  it("returns null for an exercise with no machine identity", () => {
+    expect(variantShortLabel(undefined, undefined)).toBeNull();
   });
 });
 

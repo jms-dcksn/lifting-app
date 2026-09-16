@@ -35,6 +35,7 @@ import {
 } from "../actions";
 import { AchievementPills, AchievementRecap } from "./achievements";
 import { recordsForSlot, type ExerciseRecords } from "@/lib/strength/records";
+import { variantShortLabel } from "@/lib/exercise-id";
 import { ReadinessPrompt, SessionFeedbackCard, SessionFeedbackSheet } from "./session-feedback";
 import { retryServerAction } from "@/lib/retry";
 
@@ -342,8 +343,14 @@ function SlotCard({
   const increment = def?.increment ?? 5;
   // A bare machine template isn't loggable — it must be instantiated to a brand/type variant.
   const isTemplate = !!def?.machineTemplate;
-  
+
+  // Quick swap to the alternate last used for this slot. The button names the alternate by its
+  // brand/type (never a sliced display name) so two variants of one movement stay distinct; the
+  // scope sheet then shows the full name before anything saves.
   const lastUsedDef = slot.lastUsedAlternate ? catalog[slot.lastUsedAlternate] : null;
+  const lastUsedLabel = lastUsedDef
+    ? variantShortLabel(lastUsedDef.brand, lastUsedDef.machineType) ?? lastUsedDef.name
+    : null;
 
   const p = slot.prescription;
   const isBodyweight = equipment === "bodyweight";
@@ -505,9 +512,10 @@ function SlotCard({
               }}
               disabled={alreadyFinished || savingSwap}
               aria-label={`Quick swap to ${lastUsedDef.name}`}
+              title={lastUsedDef.name}
               className="shrink-0"
             >
-              → {lastUsedDef.name.split(" ").slice(-2).join(" ")}
+              Last: {lastUsedLabel}
             </Button>
           )}
           <Button

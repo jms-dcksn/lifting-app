@@ -1,12 +1,10 @@
 import { defineConfig } from "vitest/config";
 
-// Scoped to the pure, framework-free modules (strength engine + analytics).
-// These have no Next.js/React deps, so they run in a plain node environment.
-// `@/` path alias resolves via the native tsconfig-paths support.
+// Default node for pure modules. InfoButton tests opt into jsdom via a file pragma.
 export default defineConfig({
   resolve: { tsconfigPaths: true },
   test: {
     environment: "node",
-    include: ["src/lib/**/*.test.ts"],
+    include: ["src/lib/**/*.test.ts", "src/lib/**/*.test.tsx"],
   },
 });

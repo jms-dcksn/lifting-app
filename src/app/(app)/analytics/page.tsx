@@ -24,6 +24,7 @@ import {
 import { getActiveProgram } from "@/lib/program";
 import { type ExerciseDef } from "@/lib/strength/coefficients";
 import { Card, CardLabel } from "@/components/ui/card";
+import { InfoButton } from "@/components/ui/info-button";
 import { cx } from "@/components/ui/cx";
 import { ExerciseList, type ExerciseListItem } from "./exercise-list";
 import { VolumeChart, type VolumeChartPoint } from "./volume-chart";
@@ -268,7 +269,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
       <header>
         <h1 className="text-display">Progress</h1>
-        <Link href="/analytics/month" className="mt-2 inline-block min-h-11 py-2 text-body underline">Month review · strength, records &amp; weight →</Link>
+        <Link href="/analytics/month" className="mt-2 inline-block min-h-11 py-2 text-body underline">Month review</Link>
         <p className="text-body text-muted">
           {sessionVolume.length} session{sessionVolume.length === 1 ? "" : "s"} · {summaries.length} lift
           {summaries.length === 1 ? "" : "s"} logged
@@ -308,9 +309,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
                 ))}
               </ul>
             ) : (
-              <p className="text-body text-muted">
-                No lift has two e1RM sessions with a gain yet.
-              </p>
+              <p className="text-body text-muted">No gains yet.</p>
             )}
           </Card>
 
@@ -345,22 +344,20 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           <WeightTrendCard entries={bodyweightEntries} today={today} goal={profile?.goal_weight ?? null} />
 
           <Card>
-            <div className="mb-3 flex items-start justify-between gap-3">
-              <div>
-                <CardLabel className="mb-1">Total volume</CardLabel>
-                <p className="text-heading tabular-nums">{formatWhole(totalVolume)} lb</p>
-                {volumeDelta != null ? (
-                  <p className="text-caption text-muted">
-                    <Delta value={volumeDelta} /> vs last week
-                  </p>
-                ) : (
-                  <p className="text-caption text-muted">Log another week for a delta.</p>
+            <div className="mb-3">
+              <div className="mb-1 flex items-center gap-1">
+                <CardLabel>Total volume</CardLabel>
+                {excludedSets > 0 && (
+                  <InfoButton title="Excluded sets" label="About excluded bodyweight sets">
+                    Sets without a bodyweight reading are left out of tonnage.
+                  </InfoButton>
                 )}
               </div>
-              {excludedSets > 0 && (
-                <span className="max-w-32 text-right text-caption text-muted">
-                  {excludedSets} bodyweight set{excludedSets === 1 ? "" : "s"} excluded
-                </span>
+              <p className="text-heading tabular-nums">{formatWhole(totalVolume)} lb</p>
+              {volumeDelta != null && (
+                <p className="text-caption text-muted">
+                  <Delta value={volumeDelta} /> vs last week
+                </p>
               )}
             </div>
             {chartData.length >= 2 ? (
@@ -373,11 +370,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           </Card>
 
           <Card>
-            <CardLabel className="mb-1">Coach check-in</CardLabel>
-            <p className="mb-3 text-body text-muted">
-              One factual weekly report powers this snapshot, the clipboard export, and the
-              future Coach API.
-            </p>
+            <CardLabel className="mb-3">Coach check-in</CardLabel>
             <CoachReportSummary report={coachReport} />
             {coachExercise && <p className="mb-2 text-caption text-muted">Next steps filtered to {catalog[coachExercise]?.name ?? "selected exercise"}. <Link href="/analytics#coach-next-steps" className="underline">Show all</Link></p>}
             <CoachRecommendationList

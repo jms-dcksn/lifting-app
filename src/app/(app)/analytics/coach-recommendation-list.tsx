@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { InfoButton } from "@/components/ui/info-button";
 import type { CoachRecommendation } from "@/lib/coach-recommendations";
 import {
   acceptAllCoachRecommendations,
@@ -49,9 +50,9 @@ export function CoachRecommendationList({
       </summary>
       <div className="mt-3 flex flex-col gap-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <p className="text-caption text-muted">
-            Accepting records your plan; your program stays unchanged.
-          </p>
+          <InfoButton title="Proposed next steps" label="What accepting means">
+            Accept records the plan. It does not change your program.
+          </InfoButton>
           <form action={acceptAllCoachRecommendations} className="shrink-0">
             {pending.map((item) => (
               <input key={item.key} type="hidden" name="recommendation_key" value={item.key} />

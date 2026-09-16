@@ -14,7 +14,7 @@ export function CoachCheckIn({ text }: { text: string }) {
 
   return (
     <Button type="button" variant="secondary" className="w-full" onClick={copy}>
-      {copied ? "Copied — paste it into our chat" : "Copy weekly coach check-in"}
+      {copied ? "Copied" : "Copy report"}
     </Button>
   );
 }

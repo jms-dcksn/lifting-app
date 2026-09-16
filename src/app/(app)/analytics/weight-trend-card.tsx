@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardLabel } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { InfoButton } from "@/components/ui/info-button";
 import { WeightCalendar } from "@/components/weight-calendar";
 import { loadWeightMonth, removeWeightEntry, writeWeightEntry } from "@/app/(app)/weight/actions";
 import { bodyweightTrend, type BodyweightEntry } from "@/lib/bodyweight";
@@ -75,7 +76,16 @@ export function WeightTrendCard({
           <span>Show period context</span>
         </label>
       )}
-    {window && <p className="mb-3 text-caption text-muted">{window.start}–{window.end} · summary as of {anchor}. Goal uses your current Settings value.</p>}
+    {window && (
+      <div className="mb-3 flex items-center gap-1 text-caption text-muted">
+        <span>{window.start}–{window.end}</span>
+        {goal != null && (
+          <InfoButton title="Weight goal" label="About weight goal in this view">
+            Goal uses your current Settings value.
+          </InfoButton>
+        )}
+      </div>
+    )}
     <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
       <div><dt className="text-caption text-muted">Latest reading</dt><dd className="text-heading tabular-nums">{pounds(trend.latest?.weight ?? null)}</dd>
         <dd className="text-caption text-muted">{trend.latest ? label(trend.latest.loggedOn) : "No weigh-ins yet"}</dd></div>
@@ -89,18 +99,20 @@ export function WeightTrendCard({
         <dd><Link href="/settings" className="inline-block py-1 text-caption underline">Edit goal</Link></dd></div>
         : <div><dt className="text-caption text-muted">Weight goal</dt><dd><Link href="/settings" className="inline-block py-2 text-body underline">Set goal</Link></dd></div>}
     </dl>
-    {trend.latest && trend.current.average == null && <p className="mt-3 text-caption text-muted">No readings in the 7 days ending {anchor}. Your latest weight is outside this trend window.</p>}
+    {trend.latest && trend.current.average == null && <p className="mt-3 text-caption text-muted">Latest weigh-in is outside this window.</p>}
     {!window && <div className="my-4 grid grid-cols-4 gap-1" role="group" aria-label="Weight history range">
       {ranges.map(([value, text]) => <Button key={value} variant={range === value ? "primary" : "secondary"} size="sm"
         className="min-h-11 px-1" aria-pressed={range === value} onClick={() => setRange(value)}>{text}</Button>)}
     </div>}
     {hasTrend ? (
       <>
-        <p className="mb-2 text-caption text-muted">
-          Dots: weigh-ins · Line: 7-day average · Hollow marks: fewer than 3 readings
-          {goal != null ? " · Dashed: goal" : ""}
-          {periodBands.length > 0 ? " · Purple bands: period days" : ""}. Tap a weigh-in to edit.
-        </p>
+        <div className="mb-2 flex items-center gap-1">
+          <InfoButton title="Chart legend" label="Chart legend">
+            Dots: weigh-ins · Line: 7-day average · Hollow marks: fewer than 3 readings
+            {goal != null ? " · Dashed: goal" : ""}
+            {periodBands.length > 0 ? " · Purple bands: period days" : ""}. Tap a weigh-in to edit.
+          </InfoButton>
+        </div>
         <div
           className="h-64 min-w-0 w-full"
           role="group"
@@ -231,12 +243,11 @@ export function WeightTrendCard({
       <p className="py-4 text-body text-muted">
         {entries.length
           ? "No readings in this range. Choose a longer range or log a weight."
-          : "Log your first weight to start your trend. A few readings each week help reveal the direction."}
+          : "Log a weight to start."}
       </p>
     )}
     {!window && weeks.some(week => week.average != null) && <details className="mt-2 border-t border-border pt-2">
       <summary className="cursor-pointer py-3 text-body">Weekly averages · last 12 weeks</summary>
-      <p className="mb-3 text-caption text-muted">Monday–Sunday calendar weeks. The current week is partial. Missing weeks have no bar.</p>
       <ul className="flex flex-col gap-3">{weeks.map(week => <li key={week.start}>
         <div className="flex flex-wrap justify-between gap-x-2 text-caption"><span>{week.start}–{week.end}{week.partial ? " · partial" : ""}</span>
           <span className="tabular-nums">{pounds(week.average)} · {week.observationCount} readings</span></div>

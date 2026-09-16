@@ -10,6 +10,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Environment, migration and deployment operations | [DEPLOY](../DEPLOY.md) |
 | Current module boundaries and engine/data invariants | [Architecture](ARCHITECTURE.md) |
 | Shared components and UI gotchas | [UI conventions](UI.md) |
+| Copy density (proposed) | [2026-09-16 spec](superpowers/specs/2026-09-16-visual-copy-density-design.md) |
 | Shipped behavior | [Features](FEATURES.md) |
 | Rationale and record eligibility | [Decisions](DECISIONS.md) |
 | Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |

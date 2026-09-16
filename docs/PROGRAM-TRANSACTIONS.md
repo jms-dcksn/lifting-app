@@ -176,3 +176,31 @@ Implementation sequence (smallest correct atomicity, no over-engineering):
 - **No migration or backfill.** New RPCs are additive. Existing program data is already valid (partial unique index enforces single active, foreign keys enforce referential integrity). No historical correction needed.
 
 - **No version or ETag concurrency control.** Builder cancel returns to detail; concurrent edits are prevented by single-device usage pattern. If concurrency becomes a problem in practice, add `updated_at` + version check before save. Not needed for V1.
+
+## Implementation notes (issue #57)
+
+**Completed:** Migration `20260917000000_atomic_program_mutations.sql` implements the design as specified:
+
+1. **`save_program(p_tree jsonb)` RPC** — unified atomic entry point for insert, upsert, clone, and template operations. Takes complete program tree as JSONB (program metadata, phases array, days array with nested slots). Atomically activates/deactivates programs with single UPDATE statement (`is_active = (id = v_program_id)`), upserts phases/days/slots, deletes missing rows. Preserves `program_slot_id` continuity across edits via `ON CONFLICT DO UPDATE`. Returns program UUID. `SECURITY INVOKER` with explicit `user_id = auth.uid()` predicates on all writes.
+
+2. **`set_active_program(p_program_id uuid)` RPC** — single-statement atomic activation. Updates all user programs with `is_active = (id = p_program_id)` in one query. No intermediate state where zero or two programs are active.
+
+3. **Server Action refactoring:**
+   - `saveProgram` — validation remains (empty days, phase bounds, catalog checks), assembles JSONB tree, calls `save_program` RPC
+   - `cloneProgram` — loads source structure, generates new UUIDs, assembles tree, calls `save_program` RPC with `isActive: false`
+   - `createFromTemplate` — checks first-run, generates UUIDs, assembles template tree, calls `save_program` RPC with conditional `isActive`
+   - `setActiveProgram` — calls `set_active_program` RPC
+
+4. **Testing:**
+   - SQL regression suite `supabase/tests/program_mutations.sql` covers atomicity (injected failure triggers rollback), single-active-program invariant, slot continuity across updates, cross-user rejection, empty-days validation
+   - Existing Vitest suite passes (one pre-existing flaky retry test unrelated to changes)
+   - TypeScript types updated in `src/lib/supabase/types.ts` to include new RPC signatures
+   - Lint, typecheck, and build all pass
+
+5. **Verification:**
+   - Atomicity: Mid-save failure cannot leave two active programs or half-saved day trees (rollback trigger test proves transaction isolation)
+   - Slot ID continuity: `ON CONFLICT (id) DO UPDATE` preserves `program_slot_id` across edits (critical for set_log FK integrity)
+   - Single-active invariant: Conditional UPDATE statement prevents race conditions (SQL test verifies)
+   - Cross-user security: Explicit `user_id` predicates in RPC + RLS defense in depth (SQL test verifies rejection)
+
+**Deviations from design:** None. Implementation follows handoff checklist exactly. `acceptAdaptation` left unchanged per design (low priority, already-logged adaptation with failed swap is recoverable). `swap_session_exercise` unchanged (already atomic reference implementation).

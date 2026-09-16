@@ -724,8 +724,8 @@ function SlotCard({
       {error && <p className="mt-2 text-caption text-danger">{error}</p>}
 
       {recomputeWarning && (
-        <div className="mt-2 flex flex-col gap-2 rounded-card border border-border-warning bg-surface-warning p-2">
-          <p className="text-caption text-warning">{recomputeWarning}</p>
+        <div className="mt-2 flex flex-col gap-2 rounded-card border border-border bg-surface p-2">
+          <p className="text-caption text-muted">{recomputeWarning}</p>
           <Button
             type="button"
             variant="secondary"

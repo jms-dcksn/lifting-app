@@ -44,3 +44,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${PUBLISHABLE_KEY}
 EOF
 
 log "ready (Supabase API at ${API_URL}, Mailpit at http://127.0.0.1:54324)"
+
+# 4. Run the Next.js dev server in the foreground so it stays attached as the
+#    environment's start process. Reach the app at http://localhost:3000.
+exec npm run dev

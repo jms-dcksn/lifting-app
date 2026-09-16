@@ -25,6 +25,22 @@ scale, card/control radii, `max-w-page` column, and Geist font variables.
 - `Calendar` supplies the shared date grid; [weight calendar](WEIGHT-CALENDAR.md) owns its
   keyboard, mutation, replacement-confirmation, and error contracts.
 
+## Copy density
+
+Follow [visual copy-density design](superpowers/specs/2026-09-16-visual-copy-density-design.md)
+when adding helper text.
+
+1. **Labels first** — fix unclear labels before adding captions.
+2. **Delete developer notes** — implementation caveats (Web Audio, Notification API, Coach
+   internals) belong in docs, not on screen.
+3. **Helper prose behind InfoButton** — how-it-works, chart legends, and "why this exists"
+   use the one ⓘ pattern (`InfoButton` → read-only `Sheet`), not captions under controls.
+4. **Privacy copy stays in confirmation Sheets** — period consent, disable, and delete;
+   not on the Settings card surface.
+
+Visible helper text that is not a label, value, error, or confirmation should be ≤ ~6 words
+or gone.
+
 The app layout remains a Server Component. `NavLinks` handles active route state for Lift,
 Progress, Program, and Settings. Charts, clipboard, search, and interactive controls are
 client components; data loading and auth remain server-side.

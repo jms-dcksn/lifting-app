@@ -133,10 +133,9 @@ Adaptive plateau engine under §5.
   duration `slot.restSeconds ?? profile.default_rest_seconds`.
 - **Accurate across throttling** — tracks an absolute end timestamp (not a decrementing
   counter), tick every 250ms.
-- **Completion cues** — `navigator.vibrate` plus two short in-app Web Audio beeps
-  (both best-effort; AudioContext may no-op without a recent gesture). Settings
-  **Rest complete tone** (`profile.rest_tone_enabled`, default on) gates audio only;
-  vibration still fires. No browser Notification API or permission prompt.
+- **Completion cues** — `navigator.vibrate` (always attempts) plus two short in-app Web
+  Audio beeps when rest ends (best-effort; AudioContext may no-op without a recent gesture).
+  Settings **Rest complete tone** (`profile.rest_tone_enabled`, default on) gates audio only.
 - **Controls** — `+30s` and `Skip`; rendered in the sticky footer above Finish, absent when
   idle.
 - **Screen wake lock** — keeps the screen on for the session so the timer fires reliably.
@@ -286,8 +285,9 @@ heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `lates
   the pre-existing `profile.bodyweight` remains the baseline when no history exists.
 - **Goal weight (lb)**.
 - **Default rest between sets (seconds)** — default 120; per-slot overrides take precedence.
-- **Rest complete tone** — on by default; uncheck to silence the in-app beep when rest
-  ends. Vibration is independent. No notification permission.
+- **Rest complete tone** — checkbox (`profile.rest_tone_enabled`, default on); uncheck to
+  silence in-tab beeps at rest end. Vibration is independent. Optional ⓘ holds short
+  how-it-works copy (not a caption under the control).
 - **Period tracking (optional)** — female-only opt-in menstrual period tracking. Mark observed
   bleeding days; appear as context bands on monthly charts. Design spec: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
   Implementation: #33.
@@ -309,6 +309,8 @@ heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `lates
   pulse; a global `prefers-reduced-motion` kill-switch.
 - **`Sheet`** — the one overlay primitive: native `<dialog>` bottom sheet with focus trap,
   scrim/Escape/swipe-down dismiss, animated exit.
+- **`InfoButton`** — 44px circle-i control opening a read-only `Sheet` for helper copy
+  ([copy-density rules](UI.md#copy-density)).
 - **`Button`** — primary/secondary/destructive/ghost × sm/md/lg with built-in pending state
   (spinner + `aria-busy`); a Server-Component-safe class builder for styling `<Link>`s.
 - **`Stepper`** — the most-touched mid-workout control: 44px hit areas, press-and-hold

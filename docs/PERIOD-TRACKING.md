@@ -439,16 +439,15 @@ monthly review stays silent (bands are optional context, not a required input).
 
 ### 7.1 Settings section copy (when sex = Female)
 
-**Heading:** Period tracking (optional)
+**Card (off, never enabled):** heading `Period tracking (optional)` + button
+`Enable period tracking`. No body copy on the card.
 
-**Explanation:**
-> Mark observed menstrual period days on a calendar. These appear as context bands on monthly weight
-> and strength charts. No predictions, no training adjustments, no external sharing. Your period
-> data stays private.
+**Card (enabled):** heading `Period tracking` + `Log period days` + `Disable tracking`.
 
-**Toggle label:** Enable period tracking
+**Card (disabled, history kept):** heading `Period tracking (disabled)` + `Re-enable tracking`
+/ `Delete history permanently`.
 
-**Consent modal (on enable):**
+**Consent Sheet (on enable):**
 
 **Title:** Enable period tracking?
 

@@ -35,6 +35,12 @@ import {
 import { AchievementPills, AchievementRecap } from "./achievements";
 import { recordsForSlot, type ExerciseRecords } from "@/lib/strength/records";
 import { ReadinessPrompt, SessionFeedbackCard, SessionFeedbackSheet } from "./session-feedback";
+import { retryServerAction } from "@/lib/retry";
+
+
+function generateIdempotencyKey(): string {
+  return crypto.randomUUID();
+}
 
 export interface LoggedSet {
   id: string;
@@ -109,10 +115,14 @@ export function ActiveSession({
     return new Promise<void>((resolve, reject) => {
       startFinish(async () => {
         try {
-          const nextSummary = await finishSession(sessionId, nextFeedback);
+          const nextSummary = await retryServerAction(
+            () => finishSession(sessionId, nextFeedback),
+            { onRetry: () => setSummaryError("Retrying…") }
+          );
           setFeedback(nextSummary.feedback);
           setSummary(nextSummary);
           setFeedbackSheet(null);
+          setSummaryError(null);
           resolve();
         } catch (error) {
           reject(error);
@@ -122,7 +132,10 @@ export function ActiveSession({
   }
 
   async function handleFeedbackEdit(nextFeedback: Pick<SessionFeedback, "jointPain" | "note">) {
-    const saved = await updateSessionFeedback({ sessionId, ...nextFeedback });
+    const saved = await retryServerAction(
+      () => updateSessionFeedback({ sessionId, ...nextFeedback }),
+      { onRetry: () => {} }
+    );
     const updated = { ...feedback, ...saved };
     setFeedback(updated);
     setSummary((current) => (current ? { ...current, feedback: updated } : current));
@@ -212,7 +225,11 @@ export function ActiveSession({
             if (alreadyFinished) {
               startFinish(async () => {
                 try {
-                  setSummary(await finishSession(sessionId));
+                  setSummary(await retryServerAction(
+                    () => finishSession(sessionId),
+                    { onRetry: () => setSummaryError("Retrying…") }
+                  ));
+                  setSummaryError(null);
                 } catch {
                   setSummaryError("Couldn’t load your summary. Please try again.");
                 }
@@ -366,6 +383,7 @@ function SlotCard({
   const tone = complete && achievements.length === 0 ? "done" : isCurrent ? "active" : "default";
 
   function handleLog(weight: number, reps: number, rir: number) {
+    const idempotencyKey = generateIdempotencyKey();
     setError(null);
     // Rest starts the moment the set is logged (optimistically) — a failed write doesn't
     // stop the clock, which matches what the lifter is already doing: resting.
@@ -376,14 +394,19 @@ function SlotCard({
         set: { id: `temp-${Date.now()}`, exerciseId, weight, reps, rir, setIndex: optimisticSets.length },
       });
       try {
-        await logSet({
-          sessionId,
-          programSlotId: slot.programSlotId,
-          exerciseId,
-          weight,
-          reps,
-          rir,
-        });
+        await retryServerAction(
+          () => logSet({
+            sessionId,
+            programSlotId: slot.programSlotId,
+            exerciseId,
+            weight,
+            reps,
+            rir,
+            idempotencyKey,
+          }),
+          { onRetry: () => setError("Retrying…") }
+        );
+        setError(null);
       } catch {
         // optimistic row reverts when the transition settles — surface why so it
         // doesn't just vanish.
@@ -401,7 +424,11 @@ function SlotCard({
       startTransition(async () => {
         applyOptimistic({ type: "delete", id });
         try {
-          await deleteSet(id);
+          await retryServerAction(
+            () => deleteSet(id),
+            { onRetry: () => setError("Retrying…") }
+          );
+          setError(null);
         } catch {
           setError("Couldn’t delete that set. Try again.");
         }
@@ -414,7 +441,11 @@ function SlotCard({
     setError(null);
     startTransition(async () => {
       try {
-        await editSet({ setId: id, weight, reps, rir });
+        await retryServerAction(
+          () => editSet({ setId: id, weight, reps, rir }),
+          { onRetry: () => setError("Retrying…") }
+        );
+        setError(null);
         setEditingId(null);
       } catch {
         setError("Couldn’t save those changes. Please try again.");

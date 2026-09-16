@@ -158,6 +158,7 @@ export interface LogSetInput {
   weight: number;
   reps: number;
   rir: number;
+  idempotencyKey?: string;
 }
 
 // Compute e1RM, insert the set, refresh the derived stat. Returns the persisted row.
@@ -218,9 +219,23 @@ export async function logSet(input: LogSetInput) {
       rir: input.rir,
       e1rm,
       is_calibration: !!def.needsCalibration && (priorEver ?? 0) === 0,
+      idempotency_key: input.idempotencyKey ?? null,
     })
     .select("id, exercise_id, weight, reps, rir, set_index, e1rm")
     .single();
+
+  // Idempotent insert: on unique constraint violation, return existing row.
+  if (error?.code === "23505" && input.idempotencyKey) {
+    const { data: existing, error: readError } = await supabase
+      .from("set_log")
+      .select("id, exercise_id, weight, reps, rir, set_index, e1rm")
+      .eq("session_id", input.sessionId)
+      .eq("idempotency_key", input.idempotencyKey)
+      .maybeSingle();
+    if (readError || !existing) throw new Error("Could not retrieve existing set");
+    revalidatePath(`/session/${input.sessionId}`);
+    return existing;
+  }
 
   if (error || !data) throw new Error(error?.message ?? "Could not log set");
 

@@ -86,6 +86,10 @@ profile/catalog read errors must surface instead of rendering invented empty sta
 
 `src/lib/supabase/client.ts` and `server.ts` use the public publishable key and cookie-based
 SSR. Email magic-link login exchanges its code in `src/app/auth/callback/route.ts`.
+`createClient()`, `getCatalogMap()`, and `getCurrentBodyweight()` are wrapped in React
+`cache()`, so a request loads each once. `cache()` keys on argument identity, so the shared
+client instance is what lets layout, page, and action calls hit the same entry; keep it
+memoized. The Coach API's elevated client is separate and unaffected.
 `src/proxy.ts` calls `updateSession()` from `src/lib/supabase/middleware.ts` on matched
 requests and propagates refreshed cookies. It does not redirect unauthenticated users:
 the app layout and authenticated actions enforce access via `getClaims()`.

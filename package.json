@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:db": "supabase test db supabase/tests/*_rls.sql"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  app:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npx tsc --noEmit
+
+      - run: npm test
+
+      # Placeholder values: the build only needs these to be defined, and no
+      # request is made at build time. Real values live in deployment settings.
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-publishable-key
+
+  database:
+    name: Database RLS tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Installs the Supabase CLI version pinned in package.json, so CI and
+      # `npm run test:db` run the same binary against the same test files.
+      - run: npm ci
+
+      - name: Start local Supabase stack
+        run: npx supabase start
+
+      - name: Run pgTAP ownership tests
+        run: npm run test:db
+
+      - name: Stop local Supabase stack
+        if: always()
+        run: npx supabase stop

@@ -60,6 +60,7 @@ export interface SlotView {
   restSeconds: number | null;
   sets: LoggedSet[];
   pendingSuggestion: import("@/lib/fluid").PendingSuggestion | null;
+  lastUsedAlternate: string | null;
 }
 
 export function ActiveSession({
@@ -341,6 +342,8 @@ function SlotCard({
   const increment = def?.increment ?? 5;
   // A bare machine template isn't loggable — it must be instantiated to a brand/type variant.
   const isTemplate = !!def?.machineTemplate;
+  
+  const lastUsedDef = slot.lastUsedAlternate ? catalog[slot.lastUsedAlternate] : null;
 
   const p = slot.prescription;
   const isBodyweight = equipment === "bodyweight";
@@ -490,17 +493,35 @@ function SlotCard({
             {name}
           </Link>
         </h2>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={() => setSwapping(true)}
-          disabled={alreadyFinished || savingSwap}
-          aria-label={`Swap ${name} for another exercise`}
-          className="shrink-0"
-        >
-          {isTemplate ? "Choose machine" : "Swap"}
-        </Button>
+        <div className="flex shrink-0 gap-2">
+          {lastUsedDef && !isTemplate && (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setSwapError(null);
+                setPickedSwap(lastUsedDef);
+              }}
+              disabled={alreadyFinished || savingSwap}
+              aria-label={`Quick swap to ${lastUsedDef.name}`}
+              className="shrink-0"
+            >
+              → {lastUsedDef.name.split(" ").slice(-2).join(" ")}
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => setSwapping(true)}
+            disabled={alreadyFinished || savingSwap}
+            aria-label={`Swap ${name} for another exercise`}
+            className="shrink-0"
+          >
+            {isTemplate ? "Choose machine" : "Swap"}
+          </Button>
+        </div>
       </div>
 
       <Button type="button" variant="secondary" size="sm" className="mt-3" onClick={() => setShowHistory(true)} aria-label={`View history for ${name}`}>

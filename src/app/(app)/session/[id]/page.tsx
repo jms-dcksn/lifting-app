@@ -203,6 +203,35 @@ export default async function SessionPage({
     }
   }
 
+  // Quick swap: fetch last used alternates for crowded-gym brand swaps.
+  // Query manual_swap events for each slot, find the most recent swap TO a different exercise.
+  const lastUsedBySlot = new Map<string, string>();
+  if (slotIds.length) {
+    const { data: swapRows } = await supabase
+      .from("movement_adaptation")
+      .select("program_slot_id, new_exercise_id, created_at")
+      .eq("user_id", userId)
+      .eq("action", "manual_swap")
+      .not("new_exercise_id", "is", null)
+      .in("program_slot_id", slotIds)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    for (const slot of daySlots ?? []) {
+      const currentExercise = typeof sessionSwaps[slot.id] === "string"
+        ? sessionSwaps[slot.id] as string
+        : sessionExercise.get(slot.id) ?? foldedBySlot.get(slot.id)?.exerciseId ?? slot.exercise_id;
+      const lastSwap = (swapRows ?? [])
+        .filter((r) => r.program_slot_id === slot.id && r.new_exercise_id !== currentExercise)
+        .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+      if (lastSwap?.new_exercise_id) {
+        const altDef = catalog[lastSwap.new_exercise_id];
+        if (altDef && altDef.pattern === slot.pattern && !altDef.machineTemplate) {
+          lastUsedBySlot.set(slot.id, lastSwap.new_exercise_id);
+        }
+      }
+    }
+  }
+
   const phases: ProgramPhase[] = (program?.style === "classic" ? phaseRows ?? [] : []).map((phase) => ({
     id: phase.id,
     position: phase.position,
@@ -247,6 +276,7 @@ export default async function SessionPage({
       restSeconds: slot.rest_seconds,
       sets: setsBySlot.get(slot.id) ?? [],
       pendingSuggestion: null,
+      lastUsedAlternate: lastUsedBySlot.get(slot.id) ?? null,
     };
   });
 

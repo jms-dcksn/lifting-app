@@ -9,6 +9,7 @@ import { validWeightDate, weightDateLabel } from "@/lib/weight-calendar";
 import { retryServerAction } from "@/lib/retry";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
+import { InfoButton } from "./ui/info-button";
 import { Input } from "./ui/input";
 import { Sheet, useSheetDismiss } from "./ui/sheet";
 
@@ -79,7 +80,12 @@ export function WeightCalendar({ today: initialToday, initialDate, actions, onCl
   return <Sheet onClose={onClose} ariaLabel="Weight calendar" dismissible={!busy}>
     <div className="flex flex-col gap-4 overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-2 sm:px-6">
       <div className="flex items-start justify-between gap-2">
-        <div><h2 className="text-heading">Weight calendar</h2><p className="text-caption text-muted">Choose a day to log or correct your weight.</p></div>
+        <div className="flex items-center gap-1">
+          <h2 className="text-heading">Weight calendar</h2>
+          <InfoButton title="Weight calendar">
+            Dot marks a logged day. Outline is today.
+          </InfoButton>
+        </div>
         <CloseButton disabled={busy} />
       </div>
       <Calendar month={month} selected={selected} today={today} markers={markers} disabled={busy}
@@ -142,8 +148,9 @@ function WeightEntryForm({ today, date, entry, actions, onBusy, onChanged }: {
 
   return <form className="flex flex-col gap-3 border-t border-border pt-4"
     onSubmit={event => { event.preventDefault(); void save(); }}>
-    <div><h3 className="text-body font-semibold">{weightDateLabel(date)}</h3>
-      <p className="text-caption text-muted">{entry ? `${entry.weight} lb recorded · Update or remove this reading.` : "No reading yet. Add the weight you recorded that day."}</p>
+    <div>
+      <h3 className="text-body font-semibold">{weightDateLabel(date)}</h3>
+      {entry && <p className="text-caption text-muted tabular-nums">{entry.weight} lb</p>}
     </div>
     <label className="flex min-w-0 flex-col gap-1 text-caption text-muted">Weight (lb)
       <Input name="weight" type="number" inputMode="decimal" step="0.01" min="0.01" max="1500" required value={weight}
@@ -159,8 +166,7 @@ function WeightEntryForm({ today, date, entry, actions, onBusy, onChanged }: {
     </details>}
     {error && <p id="weight-entry-error" role="alert" className="text-body text-danger">{error}</p>}
     {conflict ? <div className="flex flex-col gap-2 rounded-control border border-border-strong p-3">
-      <p className="text-body">Replace {conflict.weight} lb on {weightDateLabel(conflict.loggedOn)} with {weight} lb?
-        {entry && targetDate !== date ? " The original date will be cleared only if the replacement succeeds." : ""}</p>
+      <p className="text-body">Replace {conflict.weight} lb on {weightDateLabel(conflict.loggedOn)} with {weight} lb?</p>
       <Button type="button" variant="destructive" pending={pending} onClick={() => void save(conflict.id)}>Replace existing reading</Button>
       <Button type="button" variant="ghost" disabled={pending} onClick={() => { setConflict(null); setError(""); }}>Keep existing reading</Button>
     </div> : <Button type="submit" pending={pending} size="lg">{entry ? targetDate !== date ? "Move reading" : "Update reading" : "Save reading"}</Button>}

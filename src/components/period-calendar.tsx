@@ -116,12 +116,7 @@ function PeriodCalendar({
     <Sheet onClose={onClose} ariaLabel="Period calendar" dismissible={!busy}>
       <div className="flex flex-col gap-4 overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-2 sm:px-6">
         <div className="flex items-start justify-between gap-2">
-          <div>
-            <h2 className="text-heading">Period calendar</h2>
-            <p className="text-caption text-muted">
-              Mark the days you observed menstrual bleeding.
-            </p>
-          </div>
+          <h2 className="text-heading">Period calendar</h2>
           <CloseButton disabled={busy} />
         </div>
         <Calendar
@@ -129,6 +124,7 @@ function PeriodCalendar({
           selected={selected}
           today={today}
           markers={markers}
+          unmarkedDayLabel="not marked"
           disabled={busy}
           onMonth={changeMonth}
           onSelect={(day) => {
@@ -245,14 +241,7 @@ function PeriodDayForm({
 
   return (
     <div className="flex flex-col gap-3 border-t border-border pt-4">
-      <div>
-        <h3 className="text-body font-semibold">{weightDateLabel(date)}</h3>
-        <p className="text-caption text-muted">
-          {observation
-            ? "Period day recorded. Remove this mark if needed."
-            : "Not marked yet. Mark this day if you observed menstrual bleeding."}
-        </p>
-      </div>
+      <h3 className="text-body font-semibold">{weightDateLabel(date)}</h3>
       {error && (
         <p role="alert" className="text-body text-danger">
           {error}

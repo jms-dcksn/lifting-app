@@ -78,13 +78,6 @@ export default async function SettingsPage() {
 
         <LogWeightButton today={today} className="w-full" />
 
-        <p className="text-caption text-muted">
-          {trend.current.observationCount >= 3
-            ? "Three morning weigh-ins logged this week — enough to smooth daily noise."
-            : `${trend.current.observationCount}/3 morning weigh-ins this week. Aim for roughly three; consistency matters more than daily logging.`}
-          {" "}Open the calendar to log an earlier day or correct a reading.
-        </p>
-
         {entries.length > 0 && (
           <div className="border-t border-border pt-3">
             <CardLabel className="mb-2">Recent readings</CardLabel>
@@ -118,9 +111,6 @@ export default async function SettingsPage() {
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
-          <p className="text-caption text-muted">
-            Allows optional period tracking for menstrual cycle context in monthly progress review. Not required for training.
-          </p>
         </div>
 
         <div className="flex flex-col gap-3">

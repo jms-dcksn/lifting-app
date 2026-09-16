@@ -67,9 +67,6 @@ export function ProgramDetail({
       {program.phases.length > 0 && (
         <Card>
           <h2 className="text-heading">Weekly phases</h2>
-          <p className="mt-1 text-caption text-muted">
-            These rules replace the default set and RIR prescription during their week range.
-          </p>
           <ol className="mt-3 flex flex-col gap-2">
             {program.phases.map((phase) => (
               <li key={phase.id} className="rounded-control bg-surface p-3">

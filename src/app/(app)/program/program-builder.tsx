@@ -7,6 +7,7 @@ import type { Program } from "@/lib/program";
 import { validateProgramPhases, type ProgramPhase } from "@/lib/periodization";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { InfoButton } from "@/components/ui/info-button";
 import { Input } from "@/components/ui/input";
 import { Stepper } from "@/components/ui/stepper";
 import { withViewTransition } from "@/components/ui/view-transition";
@@ -231,6 +232,10 @@ export function ProgramBuilder({
   }
 
   const saveLabel = initial?.isActive ? "Save changes" : "Save & make active";
+  const firstFluidSlotId =
+    draft.style === "fluid"
+      ? draft.days.flatMap((day) => day.slots).at(0)?.id ?? null
+      : null;
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 py-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
@@ -254,7 +259,7 @@ export function ProgramBuilder({
 
         <div className="flex flex-col gap-2">
           <span className="text-body text-muted">Progression style</span>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               type="button"
               variant={draft.style === "classic" ? "primary" : "secondary"}
@@ -271,12 +276,12 @@ export function ProgramBuilder({
             >
               Adaptive
             </Button>
+            <InfoButton title={draft.style === "fluid" ? "Adaptive" : "Classic"}>
+              {draft.style === "fluid"
+                ? "No end week. When a lift stalls, the app suggests a new rep range or exercise."
+                : "A set number of weeks. Add weight when you hit the top of the rep range."}
+            </InfoButton>
           </div>
-          <p className="text-caption text-muted">
-            {draft.style === "fluid"
-              ? "Runs indefinitely. Each movement is tracked for plateaus and swapped or re-ranged when it stalls."
-              : "Fixed block of weeks with double-progression."}
-          </p>
         </div>
 
         {draft.style === "classic" && (
@@ -299,11 +304,11 @@ export function ProgramBuilder({
         {draft.style === "classic" && (
           <section className="mt-2 flex flex-col gap-3 rounded-card border border-border p-3">
             <div className="flex items-start justify-between gap-3">
-              <div>
+              <div className="flex items-center gap-1">
                 <h2 className="text-heading">Weekly phases</h2>
-                <p className="mt-1 text-caption text-muted">
-                  Optional week ranges override every exercise&apos;s working sets and RIR target.
-                </p>
+                <InfoButton title="Weekly phases">
+                  A phase can change RIR and working-set volume for a week range.
+                </InfoButton>
               </div>
               {draft.phases.length < MAX_PHASES && (
                 <Button type="button" variant="secondary" size="sm" onClick={addPhase}>
@@ -364,7 +369,7 @@ export function ProgramBuilder({
 
             {draft.phases.length === 0 && (
               <p className="rounded-control bg-surface p-3 text-body text-muted">
-                No weekly overrides. Every week uses the exercise prescriptions below.
+                Using the prescriptions below.
               </p>
             )}
           </section>
@@ -433,7 +438,14 @@ export function ProgramBuilder({
                   />
                   {draft.style === "fluid" && (
                     <label className="mt-2 flex items-center justify-between gap-2 text-caption text-muted">
-                      <span className="uppercase tracking-wide">Patience</span>
+                      <span className="flex items-center gap-1 uppercase tracking-wide">
+                        Patience
+                        {slot.id === firstFluidSlotId && (
+                          <InfoButton title="Patience">
+                            How many stalled sessions before a suggestion. Auto follows the movement.
+                          </InfoButton>
+                        )}
+                      </span>
                       <select
                         value={slot.plateauPatience ?? ""}
                         onChange={(e) =>

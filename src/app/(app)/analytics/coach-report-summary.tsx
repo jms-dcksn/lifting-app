@@ -65,7 +65,7 @@ export function CoachReportSummary({ report }: { report: CoachCheckInReport }) {
         <Metric
           label="Data quality"
           value={warnings === 0 ? "Clear" : `${warnings} flag${warnings === 1 ? "" : "s"}`}
-          detail={warnings === 0 ? "no known gaps" : "review export details"}
+          detail={warnings === 0 ? "no known gaps" : "see report"}
         />
       </div>
 

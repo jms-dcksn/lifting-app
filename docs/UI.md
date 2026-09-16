@@ -9,6 +9,8 @@ scale, card/control radii, `max-w-page` column, and Geist font variables.
 - `Sheet` is the native-dialog overlay with focus trapping, Escape/scrim/handle dismissal,
   and animated exit. `useSheetDismiss()` gives inner controls the same close behavior.
   Keep its JS exit delay aligned with CSS; unmount through `onClose` after exit completes.
+- `InfoButton` is a 44px circle-i control that opens a read-only `Sheet` (`title` as h2,
+  short body, Done). Helper copy lives behind it, not as a caption under the control.
 - `Button` supplies pending state (`pending` or form status). `buttonClasses` lives in the
   plain `button-styles.ts` module so Server Components can style links. Calling helpers
   exported by a `"use client"` module from a Server Component can fail at runtime; a passing

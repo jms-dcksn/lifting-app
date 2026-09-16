@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardLabel } from "@/components/ui/card";
+import { InfoButton } from "@/components/ui/info-button";
 import { Input } from "@/components/ui/input";
 import { bodyweightTrend, dateKey, type BodyweightEntry } from "@/lib/bodyweight";
 import { saveProfile } from "./actions";
@@ -154,23 +155,22 @@ export default async function SettingsPage() {
           />
         </div>
 
-        <label className="flex items-start gap-3 text-body" htmlFor="rest_tone_enabled">
-          <input
-            id="rest_tone_enabled"
-            name="rest_tone_enabled"
-            type="checkbox"
-            value="on"
-            defaultChecked={profile?.rest_tone_enabled ?? true}
-            className="mt-1 size-4 shrink-0 cursor-pointer rounded border-border"
-          />
-          <span className="flex flex-col gap-1">
+        <div className="flex items-center gap-1">
+          <label className="flex items-center gap-3 text-body" htmlFor="rest_tone_enabled">
+            <input
+              id="rest_tone_enabled"
+              name="rest_tone_enabled"
+              type="checkbox"
+              value="on"
+              defaultChecked={profile?.rest_tone_enabled ?? true}
+              className="size-4 shrink-0 cursor-pointer rounded border-border"
+            />
             Rest complete tone
-            <span className="text-caption text-muted">
-              Two short in-app beeps when rest ends. Uses this tab&apos;s audio — no
-              notification permission. Phone vibration is unchanged.
-            </span>
-          </span>
-        </label>
+          </label>
+          <InfoButton title="Rest complete tone">
+            Two short beeps play in this tab when rest ends. Phone vibration is separate.
+          </InfoButton>
+        </div>
 
         <Button type="submit" size="lg">
           Save

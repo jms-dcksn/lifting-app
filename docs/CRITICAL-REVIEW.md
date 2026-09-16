@@ -5,6 +5,8 @@
 **Commit:** d3b7853 (main)  
 **Stack:** Next.js 16, React 19, TypeScript, Supabase, Vercel
 
+> **Note:** This review informed [epic #50](https://github.com/jms-dcksn/lifting-app/issues/50) and its children (#51–#63), which contain the corrected implementation plan. Several recommendations below were refined or de-scoped based on layering concerns and build priorities. Refer to those issues for the canonical work breakdown.
+
 ---
 
 ## Executive Summary
@@ -37,7 +39,6 @@
 - No database transactions for multi-step mutations
 - No request deduplication or concurrency control
 - Optimistic updates can diverge from server truth
-- Period tracking documentation is stale (design only, not implemented)
 - Error handling is scattered, no global error boundary
 - No performance budgets or monitoring
 - Some N+1 query patterns (catalog, bodyweight lookups)
@@ -317,17 +318,6 @@
 **Why it's low-priority but real:** Attacker with Coach API token can spam requests, run up Supabase costs. No user DoS risk (one user, no multi-tenancy), but operational cost risk.
 
 **Fix:** Add Vercel Edge Config or Upstash rate limiter to Coach API (10 req/min per token). Add similar limit to auth endpoints.
-
----
-
-**Finding: Period tracking privacy design is excellent (but not implemented)**  
-**Severity:** N/A (future feature, already well-designed)  
-**Evidence:**
-- `docs/PERIOD-TRACKING.md` mandates explicit consent, no inference, application-level `period_tracking_enabled` gate
-- Delete-vs-keep choice on disable, no silent deletion
-- No Coach API inclusion in V1
-
-**Why it's praise:** Privacy-first design with clear consent boundaries. Once implemented, this will be a model for sensitive health data.
 
 ---
 
@@ -646,7 +636,6 @@ Retry now safe: duplicate insert fails unique constraint, returns existing row.
 1. Implement shared `retryAction()` helper (50 lines)
 2. Wire to `editSet`, `deleteSet`, `finishSession`, `updateSessionFeedback` (safe, no schema change)
 3. Add route-level error boundaries to session/program/analytics
-4. Fix period tracking docs (move to proposals/ or note unimplemented)
 
 ### Ship next (requires schema migration):
 5. Add `set_log.idempotency_key` + wire retry to `logSet`
@@ -655,8 +644,7 @@ Retry now safe: duplicate insert fails unique constraint, returns existing row.
 8. Add request deduplication for stepper controls
 
 ### Ship later (larger effort):
-9. Implement period tracking (per existing spec)
-10. Add integration tests for concurrent writes
+9. Add integration tests for concurrent writes
 10. Optimize catalog/bodyweight caching
 11. Reorder Progress to prioritize recent PRs over volume chart
 12. Add performance monitoring + budgets

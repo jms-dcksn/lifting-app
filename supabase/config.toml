@@ -1,5 +1,5 @@
-# Minimal local-development config so `supabase start` and `supabase test db` work.
-# Unset keys fall back to CLI defaults:
+# Local-development config for `supabase start`, CI `supabase test db`, and
+# Cloud Agent nested Docker. Unset keys fall back to CLI defaults:
 # https://supabase.com/docs/guides/local-development/cli/config
 project_id = "lifting-app"
 
@@ -11,3 +11,26 @@ major_version = 17
 [db.seed]
 enabled = true
 sql_paths = ["./seed.sql"]
+
+# Unused services stay off so nested-Docker Cloud Agent boots stay reliable.
+# CI RLS tests only need db + auth + rest; this also keeps the GitHub job lean.
+[realtime]
+enabled = false
+
+[studio]
+enabled = false
+
+[storage]
+enabled = false
+
+[edge_runtime]
+enabled = false
+
+[analytics]
+enabled = false
+
+# localhost site URL + glob redirects so magic-link PKCE /auth/callback works
+# when browsing localhost (verifier cookies are per-host).
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/**", "http://127.0.0.1:3000/**"]

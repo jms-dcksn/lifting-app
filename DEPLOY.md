@@ -41,7 +41,7 @@ For an existing project, inspect migration history before pushing. Migrations ar
 applications, not scripts to replay indiscriminately. All files in `supabase/migrations/`
 are relevant, including phases, feedback, bodyweight history, Coach decisions, exercise swaps,
 and atomic calendar writes. Period tracking (#33) adds `profile.sex`, consent columns, and
-`period_observation`; apply that migration before deploying the Settings/Progress UI that
+`period_observation`; apply that migration before deploying the You (`/settings`) UI that
 reads those fields. Rest-complete tone (`profile.rest_tone_enabled`, default true) is a
 later profile column; apply its migration before relying on the Settings checkbox. Vercel's build does not run database migrations. Breaking consent-copy
 changes should bump `period_consent_version` and require re-consent.
@@ -78,7 +78,7 @@ consult each feature doc for execution requirements.
 
 Within an approved release, push the branch for a preview, inspect deployment checks, and
 smoke-test login/callback, program creation, planning/Start, logging/swapping/finishing,
-Progress/monthly review, and weight calendar edits relevant to the change. Preview writes
+Board/monthly review, and weight calendar edits relevant to the change. Preview writes
 reach whichever Supabase project its environment selects. Merge/push to `main` releases
 through Vercel's integration. `.github/workflows/ci.yml` runs lint, typecheck, Vitest, and the
 build on every pull request, plus the pgTAP ownership suite against a local Supabase stack, so

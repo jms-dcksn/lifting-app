@@ -25,11 +25,10 @@ where later decisions and feature contracts say so. [UX-AUDIT](UX-AUDIT.md) reco
 baseline, not a current bug list. Files under `superpowers/plans/` and `superpowers/specs/`
 are dated design/implementation records; their commands and file maps are not current runbooks.
 
-As of the code review on 2026-09-13, monthly records and strength comparisons are implemented.
-The shared phase-aware stall contract now supports all three consumers; the richer monthly
-dashboard remains #31. See
-[Monthly progress](MONTHLY-PROGRESS.md). Issue numbers here identify planned slices, not a
-live GitHub status check. Historical verification counts describe their original runs.
+As of 2026-09-18: the Train/Board/Program/You tab shell (epic #93), cinematic recap, Board
+compounds/pins, and the monthly dashboard (#31) are implemented. See [Features](FEATURES.md)
+for current behavior. Issue numbers here identify planned slices, not a live GitHub status
+check. Historical verification counts describe their original runs.
 
 Update the owning document when behavior changes. Keep root instructions short, link new
 contracts by task trigger, and avoid copying inventories or counts available in source.

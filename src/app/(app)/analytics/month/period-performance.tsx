@@ -5,9 +5,14 @@ import type { PeriodPerformanceGroup, PeriodPerformanceOverlay, PeriodPerformanc
 const pounds = (value: number | null) => (value == null ? "—" : `${value > 0 ? "+" : ""}${value.toFixed(1)} lb`);
 const prs = (count: number) => `${count} ${count === 1 ? "PR" : "PRs"}`;
 const weekLabel = (week: PeriodPerformanceWeek) => {
-  const fmt = (date: string) =>
-    new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`));
-  return `${fmt(week.start)}-${fmt(week.end)}`;
+  const start = new Date(`${week.start}T00:00:00Z`);
+  const end = new Date(`${week.end}T00:00:00Z`);
+  const monthDay = (date: Date) =>
+    new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(date);
+  if (start.getUTCMonth() === end.getUTCMonth() && start.getUTCFullYear() === end.getUTCFullYear()) {
+    return `${monthDay(start)}-${end.getUTCDate()}`;
+  }
+  return `${monthDay(start)}-${monthDay(end)}`;
 };
 
 function GroupRow({ label, group }: { label: string; group: PeriodPerformanceGroup }) {
@@ -26,8 +31,8 @@ export function PeriodPerformanceCard({ overlay }: { overlay: PeriodPerformanceO
         <CardLabel>Period × performance</CardLabel>
         <InfoButton title="Period × performance" label="About period and performance">
           Monday-Sunday weeks in this month. Purple marks observed period days. Weight compares
-          this week's average with last week. PRs are records from finished workouts. Observed
-          days only. Not sent to Coach.
+          the week average with last week. PRs are records from finished workouts. Observed days
+          only. Not sent to Coach.
         </InfoButton>
       </div>
       {overlay.period.weeks > 0 ? (

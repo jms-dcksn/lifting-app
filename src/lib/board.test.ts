@@ -89,6 +89,6 @@ describe("board copy", () => {
         label: "Bench 225 × 8 +1",
       },
     ]);
-    expect(sessionRecordSummary([group])).toBe("1 rep PR · 1 e1RM record");
+    expect(sessionRecordSummary([group])).toBe("2 PRs");
   });
 });

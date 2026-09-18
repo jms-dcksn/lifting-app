@@ -1,7 +1,7 @@
 # Monthly progress — canonical metrics (#30)
 
 `/analytics/month?month=YYYY-MM` is an authenticated, read-only consumer of the pure
-version 1.2 `buildMonthlyReport`. Progress links to it. No migration or new secrets.
+version 1.2 `buildMonthlyReport`. Board links to it. No migration or new secrets.
 
 ## Contract
 
@@ -98,7 +98,7 @@ keyset pagination, including short server pages. Monthly replay shares its histo
 stall loading. Coach currently loads an additional complete strength history for reliable
 stall evidence; broader weekly-report query pagination remains a separate existing limit.
 Failed reads surface an error rather than a partial, apparently authoritative report.
-No persisted monthly cache; finish/edit/delete revalidate the monthly and Progress routes.
+No persisted monthly cache; finish/edit/delete revalidate the monthly and Board routes.
 Weekly response schema/version and record semantics remain unchanged.
 
 ## Monthly dashboard (#31)

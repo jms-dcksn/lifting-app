@@ -48,7 +48,11 @@ or gone.
 
 The app layout remains a Server Component. `AppShell` renders a bottom tab bar (Train,
 Board, Program, You) with `aria-current` on the active destination. Hide it on `/session/[id]`
-(including recap), `/workout/next`, `/program/new`, and program edit. Sign out lives on You.
+(including recap), `/workout/next`, `/program/new`, and program edit. Pathname-only hide
+covers session/planner/builder-new before `searchParams` resolve so those routes never flash
+the tab bar. Sign out lives on You. Pins are a display preference: `IconButton` pin/unpin on
+Board tiles, session slots, and history headers, plus an edit-pins `Sheet`. Unpinning a
+default compound hides it; pinning an extra adds a tile. Cap 8 is refused in the action.
 Charts, clipboard, search, and interactive controls are client components; data loading and
 auth remain server-side.
 

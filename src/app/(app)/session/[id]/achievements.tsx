@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { iconButtonClasses } from "@/components/ui/icon-button-styles";
+import { IconHistory } from "@/components/ui/icons";
 import {
   recapHeadline,
   recapLines,
@@ -75,7 +77,7 @@ export function AchievementRecap({
           {groups.map((group) => (
             <li
               key={group.key}
-              className="flex animate-rise items-baseline justify-between gap-4 border-t border-border py-3.5"
+              className="flex animate-rise items-center justify-between gap-3 border-t border-border py-3.5"
               style={delay()}
             >
               <Link
@@ -84,10 +86,19 @@ export function AchievementRecap({
               >
                 {group.name}
               </Link>
-              <div className="shrink-0 text-right text-body tabular-nums text-record">
-                {recapLines(group).map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
+              <div className="flex shrink-0 items-center gap-1">
+                <div className="text-right text-body tabular-nums text-record">
+                  {recapLines(group).map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
+                </div>
+                <Link
+                  href={`/history/${group.exerciseId}`}
+                  aria-label={`View history for ${group.name}`}
+                  className={iconButtonClasses("ghost")}
+                >
+                  <IconHistory />
+                </Link>
               </div>
             </li>
           ))}

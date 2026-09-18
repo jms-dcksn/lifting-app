@@ -7,6 +7,7 @@ describe("hideAppChrome", () => {
     expect(hideAppChrome("/workout/next")).toBe(true);
     expect(hideAppChrome("/program/new")).toBe(true);
     expect(hideAppChrome("/program/abc", "mode=edit")).toBe(true);
+    expect(hideAppChrome("/session/abc", "")).toBe(true);
   });
 
   it("keeps tabs on Train, Board, Program, You, and history", () => {

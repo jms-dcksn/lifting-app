@@ -42,7 +42,8 @@ Adaptive plateau engine under §5.
   open session). The full slot list is not always-on.
 - **This week's records** — gold chips from canonical `workoutRecords` over the last seven
   local days; tap opens that session recap.
-- **Board preview** — optional recent-PR compound tiles only. Full Board stays on `/analytics`.
+- **Board preview** — optional recent-PR compound tiles only; pin controls stay off home.
+  Full Board stays on `/analytics`.
 - **Last session** — `{n} PRs` when that workout earned records, else day name + set count;
   links to `/session/{id}`. No top-e1RM paragraph. Weight and Coach are not home jobs.
 - **Next workout planner** — `/workout/next` previews effective prescriptions and saves
@@ -106,8 +107,9 @@ Adaptive plateau engine under §5.
 - **Progress dots** — filled-vs-target set count next to the prescription.
 - **Slot hierarchy without color** — a completed slot recedes (`tone="done"`, dimmed); the
   current slot reads as current (`tone="active"`, stronger border); others are default.
-- **Target line** — weight × reps with a "Start"/"Target" caption plus “Last here” and, when
-  different, “Best recent” first-set context. The recommendation remains an editable default.
+- **Target line** — weight × reps with a "Start"/"Target" caption plus a compact Last line
+  (`Last 225 × 8`). Best-recent stays behind ⓘ when it differs. The recommendation remains
+  an editable default.
 - **Confidence states** — `calibrate` and `low` confidence render as their own instruction
   lines below the target.
 - **Swap / history / last-used** — 44px `IconButton`s open the existing picker, history
@@ -124,8 +126,8 @@ Adaptive plateau engine under §5.
   applies the change for this and future sessions; the card self-clears once accepted.
 - **Workout records** — saved sets show exact-exercise rep/e1RM PRs; the finish recap
   replays the same records as a cinematic hero (`N PRs`, or the two-part count when mixing
-  kinds) plus compact per-exercise lines, and updates after edits/deletions.
-  [Eligibility](DECISIONS.md#workout-records).
+  kinds) plus compact per-exercise lines and a 44px history `IconButton`, and updates after
+  edits/deletions. [Eligibility](DECISIONS.md#workout-records).
 - **Quick history** — a Sheet loads ten latest sets from previous workouts across explicitly
   linked exercise variants without resetting set entry or the rest timer.
 - **Finish session** — `finishSession` stamps `finished_at` and returns working-set count,

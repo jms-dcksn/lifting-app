@@ -3,7 +3,7 @@
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { AchievementPills } from "@/app/(app)/session/[id]/achievements";
+import { AchievementPills, AchievementRecap } from "@/app/(app)/session/[id]/achievements";
 import type { ExerciseRecords } from "@/lib/strength/records";
 
 const group: ExerciseRecords = {
@@ -46,5 +46,16 @@ describe("AchievementPills", () => {
     expect(host.textContent).not.toContain("Rep PR");
     expect(host.querySelector(".text-record")).toBeTruthy();
     expect(host.querySelector(".text-overload-up")).toBeNull();
+  });
+
+  it("uses a 44px history IconButton control on recap rows", () => {
+    render(
+      <AchievementRecap groups={[group]} dayName="Push" totalSets={4} empty="hero" />,
+    );
+    const history = host.querySelector('a[aria-label="View history for Barbell Bench Press"]');
+    expect(history).toBeTruthy();
+    expect(history?.className).toContain("size-11");
+    expect(history?.querySelector("svg")).toBeTruthy();
+    expect(host.textContent).toContain("1 rep PR · 1 e1RM record");
   });
 });

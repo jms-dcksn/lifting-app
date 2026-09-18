@@ -15,15 +15,15 @@ const tabs = [
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   return (
-    <Suspense fallback={<ShellFrame hide={false}>{children}</ShellFrame>}>
-      <AppShellInner>{children}</AppShellInner>
+    <Suspense fallback={<ShellFrame hide={hideAppChrome(pathname)} pathname={pathname}>{children}</ShellFrame>}>
+      <AppShellInner pathname={pathname}>{children}</AppShellInner>
     </Suspense>
   );
 }
 
-function AppShellInner({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+function AppShellInner({ pathname, children }: { pathname: string; children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const hide = hideAppChrome(pathname, searchParams.toString());
   return <ShellFrame hide={hide} pathname={pathname}>{children}</ShellFrame>;

@@ -1,10 +1,10 @@
 # Weight calendar (#28)
 
-Home, Progress, and Settings open the shared Weight calendar Sheet. Today is selected
-initially; recent Settings readings open their own date. Browse with month arrows or
-Jump to month. The calendar starts on Monday; dots identify recorded readings and an
-outline identifies today. Arrow keys move focus, Home/End move within a week, and
-PageUp/PageDown move between months. Enter/Space selects a day.
+You (`/settings`) and the Board More weight card open the shared Weight calendar Sheet.
+Today is selected initially; recent Settings readings open their own date. Browse with
+month arrows or Jump to month. The calendar starts on Monday; dots identify recorded
+readings and an outline identifies today. Arrow keys move focus, Home/End move within a
+week, and PageUp/PageDown move between months. Enter/Space selects a day.
 
 Selecting an empty day offers Save; existing readings prefill the value and offer Update
 or Remove. Correct the date moves an existing reading. If its destination is occupied,
@@ -23,8 +23,8 @@ The migration adds only this function and its grants; it does not rewrite observ
 
 `getCurrentBodyweight` remains newest-date-first with the profile baseline as fallback.
 Calendar writes never update profile bodyweight, historical sets, e1RMs, or strength caches.
-They revalidate Home, Settings, Progress, next-workout preview, and session pages. Goal
-setting changes now also revalidate Progress.
+They revalidate Home, You, Board, next-workout preview, and session pages. Goal
+setting changes now also revalidate Board.
 
 ## Verification
 

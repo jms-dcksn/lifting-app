@@ -898,19 +898,17 @@ function ProgressionContext({
     || best.performedAt !== last.performedAt
     || best.programSlotId !== last.programSlotId
   );
-  const unit = isBodyweight ? " added" : "";
-  const compact = (item: ProgressionPerformance) => `${item.weight}${unit} × ${item.reps}`;
+  const compact = (item: ProgressionPerformance) => `${item.weight} × ${item.reps}`;
+  const caption = last ? `Last ${compact(last)}` : best ? `Best ${compact(best)}` : null;
 
   return (
     <p className="mt-1 flex items-center gap-1 text-caption tabular-nums text-muted">
-      <span>
-        {last ? `Last ${compact(last)}` : null}
-        {last && bestDiffers ? " · " : null}
-        {best && bestDiffers ? `Best ${compact(best)}` : null}
-      </span>
+      <span>{caption}</span>
       <InfoButton title="Last here">
-        Last is this slot&apos;s previous first set. Best is the strongest first set of this
-        exercise since then.
+        Last is this slot&apos;s previous first set{last ? ` (${compact(last)})` : ""}.
+        Best is the strongest first set of this exercise since then
+        {best && bestDiffers ? ` (${compact(best)})` : ""}.
+        {isBodyweight ? " Numbers are added load." : ""}
       </InfoButton>
     </p>
   );

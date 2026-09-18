@@ -262,7 +262,8 @@ cap 8 in the server action): unpinning a default hides it; pinning an extra adds
 
 Secondary, not equal cards:
 - All-lifts search (`ExerciseList`) behind a control
-- Month review
+- Month review, including a period × performance week overlay when tracking is enabled
+  (observed period days, weekly weight change, and PR counts on one card)
 - Volume chart and weight trends in a Board "More" sheet
 
 Coach check-in and proposals live on You (`/settings`). The weekly API
@@ -291,8 +292,9 @@ Coach contract.
   degrades to vibrate and optional tone; ⓘ explains how to re-enable and iPhone Home
   Screen limits.
 - **Period tracking (optional)** — female-only opt-in menstrual period tracking. Mark observed
-  bleeding days; appear as context bands on monthly charts. Design spec: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
-  Implementation: #33.
+  bleeding days; they appear as context bands on monthly charts and as the period × performance
+  week overlay on month review. Design spec: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
+  Implementation: #33 and #105. Period data stays in-app and is not sent to Coach.
 - **Coach** — check-in snapshot, next-step proposals, and clipboard export. Weekly API unchanged.
 - **Sign out**.
 

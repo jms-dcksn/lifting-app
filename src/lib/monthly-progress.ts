@@ -32,6 +32,7 @@ export interface MonthlyLift {
   priorPoints: MonthlyPoint[];
 }
 export interface MonthlyAchievements { sessionId: string; date: string; records: ExerciseRecords[] }
+export interface MonthlyWorkout { sessionId: string; date: string }
 export interface MonthlyReport {
   version: "1.2";
   stalls: StallAssessment[];
@@ -43,6 +44,7 @@ export interface MonthlyReport {
   current: MonthlyTotals;
   prior: MonthlyTotals;
   achievements: MonthlyAchievements[];
+  currentWorkouts: MonthlyWorkout[];
   lifts: MonthlyLift[];
   quality: { excludedWorkingSets: number; missingStoredEstimates: number };
 }
@@ -134,5 +136,6 @@ export function buildMonthlyReport(input: {
     return latest && inWindow(dateKey(new Date(latest.sessionAt), timeZone), current);
   }), month: input.month, timeZone, generatedAt: now.toISOString(), inProgress,
     windows: { current, prior }, current: totals(current), prior: totals(prior), lifts, quality,
+    currentWorkouts: windowSessions(current).map(s => ({ sessionId: s.id, date: dateKey(new Date(s.performed_at), timeZone) })),
     achievements: windowSessions(current).map(s => ({ sessionId: s.id, date: dateKey(new Date(s.performed_at), timeZone), records: recaps.get(s.id) ?? [] })).filter(a => a.records.length > 0) };
 }

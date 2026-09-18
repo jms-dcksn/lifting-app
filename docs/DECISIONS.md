@@ -608,9 +608,12 @@ unspecified) and explicit `period_tracking_enabled = true`. No inference from de
 weight, or training. Consent version and timestamp stored to support future opt-in changes.
 
 **Context bands, not analysis** — monthly review shows optional shaded bands on weight and e1RM
-charts when tracking is enabled. View toggle per session (not saved). Period data never alters
-stall classification, PR totals, weight calculations, or Coach recommendations. No Coach API or
-export inclusion in V1 (separate consent required for future sharing).
+charts when tracking is enabled. View toggle per session (not saved). #105 adds a descriptive
+Monday-Sunday overlay of observed period days, weekly weight change, and PR counts on the same
+month page. It groups weeks; it does not infer a cycle, compute a correlation, or change
+training. Period data never alters stall classification, PR totals, weight calculations, or
+Coach recommendations. No Coach API or export inclusion in V1 (separate consent required for
+future sharing).
 
 **Disable and deletion** — toggling off offers Keep history (private, re-enable shows it again)
 or Delete history (hard delete, irreversible). Changing sex from Female auto-disables without

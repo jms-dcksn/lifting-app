@@ -16,7 +16,7 @@ saves the replacement immediately. Program scope changes only that slot on that 
 workout scope leaves the next occurrence unchanged. Already logged sets retain their exercise,
 weight, reps, and RIR. See [exercise swap behavior](docs/EXERCISE-SWAPS.md).
 
-Tap **Next workout** on Home to open a full-page planner with sets, reps, RIR, rest,
+Tap **Today's work** on Train (home) to open a full-page planner with sets, reps, RIR, rest,
 and phase details. Choose specific machines or swap exercises before starting; selections
 apply to that workout and persist in the same browser. Start from either Home or the planner
 with those choices intact. See [workout planning](docs/WORKOUT-PLANNING.md).
@@ -65,7 +65,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/lib/workout-records.ts` — user-scoped, paginated record history for live cards and completion recaps
 - `src/lib/catalog.ts` — merges seeded templates with the user's DB `exercise` rows (brand/type variants + custom exercises) into the `Record<id, ExerciseDef>` the engine consumes
 - `src/lib/exercise-id.ts` — pure variant-id / variant-name / custom-slug helpers
-- `src/lib/analytics.ts` — framework-free aggregation helpers for the Progress hub
+- `src/lib/analytics.ts` — framework-free aggregation helpers for the Board
 - `src/lib/coach-check-in.ts` — versioned canonical coach report plus its clipboard formatter
 - `src/lib/coach-recommendations.ts` — deterministic, evidence-backed weekly proposals with
   deload/pain/RIR/plateau guardrails
@@ -81,9 +81,8 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/proxy.ts` — Next.js 16 session proxy (replaces `middleware.ts`); refreshes Supabase session on matched requests
 - `src/app/(app)/program/` — summary tile grid + dedicated read-only detail route + builder (Classic/Adaptive style, catalog-driven picker, custom exercises, server actions)
 - `src/app/(app)/exercise/actions.ts` — `resolveVariant` (find-or-create a machine brand/type variant) and `createCustomExercise` server actions
-- `src/app/(app)/settings/` — bodyweight history/trend, goal weight, default rest-between-sets, and rest-complete tone editor
-- `src/app/(app)/analytics/` — Progress hub: canonical coach snapshot/export, reviewable coaching
-  proposals, session volume, e1RM gainers, record feed, searchable exercise list
+- `src/app/(app)/settings/` — bodyweight history/trend, goal weight, default rest-between-sets, rest-complete tone editor, Coach check-in and proposals, and sign out (You tab)
+- `src/app/(app)/analytics/` — Board: 2-column compound scoreboard (catalog reference lifts with history; hidden otherwise), volume chart and weight trends in a "More" sheet, all-lifts search, and month review
 - `src/app/api/coach/v1/weekly/` — private, no-store endpoint for the scheduled Coach check-in
 - `docs/COACH-REPORT.md` — exact v1 windows, metrics, trend rules, privacy contract, and limitations
 - `src/app/(app)/history/[exerciseId]/` — per-exercise history: e1RM line chart (Recharts) + overload signal vs the previous session
@@ -96,15 +95,15 @@ During a workout, tap **History** on an exercise to open a scrollable sheet with
 brands and machine types, with each machine named alongside the date, weight, reps,
 and RIR. Close the sheet to resume your workout without losing your set inputs.
 
-Weight history can be browsed and edited through a shared calendar on Home, Progress,
-and Settings, including backdated entries and atomic date corrections. See
+Weight history can be browsed and edited through a shared calendar on Home, Board,
+and You, including backdated entries and atomic date corrections. See
 [Weight calendar](docs/WEIGHT-CALENDAR.md) for the data contract and preview checklist.
 
-Progress includes bodyweight dots, seven-day trend averages, a goal reference,
+Board → More includes bodyweight dots, seven-day trend averages, a goal reference,
 30/90-day, six-month and all-history views, plus optional weekly averages. Tap a
 reading to edit it in the weight calendar. See [weight trend contracts](docs/WEIGHT-TRENDS.md).
 
-Monthly review: open **Progress → Month review** for exact-date
+Monthly review: open **Board → Month review** for exact-date
 month comparisons, canonical workout PR totals, and equipment-specific strength evidence.
 Supported stalls appear under **Worth reviewing**, with comparable workout evidence shared
 with Coach and Fluid. The dashboard includes ranked improvements, rep gains, grouped achievements, exact-equipment drill-downs, and selected-month weight trends. See [Monthly progress](docs/MONTHLY-PROGRESS.md).

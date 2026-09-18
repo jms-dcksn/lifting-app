@@ -26,27 +26,29 @@ Adaptive plateau engine under §5.
   redirect unauthenticated users to `/login`.
 - **Auto-provisioned profile** — a DB trigger creates a `profile` row on signup (hardened
   against failures).
-- **Sign out** — server action from the app shell.
+- **Sign out** — server action from You (`/settings`).
 - **Per-user data isolation** — every table has Row-Level Security keyed on `auth.uid()`;
   every row carries `user_id`.
 
 ## 2. Home / dashboard (`/`)
 
 - **No-program empty state** — when there's no active program, prompts "Build your program".
-- **Active program header** — shows program name and current block position: "Week X of N ·
-  next: {day name}".
-- **Block progress bar** — thin bar + "{completed} of {total} sessions this block" count.
-  Block position (week/day) is *derived* from the count of finished sessions, not stored.
-- **Fluid-program header variant** — adaptive programs have no fixed block, so the header drops
-  the week count ("Next: {day}") and replaces the progress bar with "Session N · adaptive".
+- **Program chip** — program name and week (classic) as a chip, not the display title.
 - **Start next workout** — server action (`startNextSession`) that creates the next session
   for the right program day. Auto-pending so a double-tap can't start two sessions.
 - **Resume workout** — if an unfinished session exists, the CTA becomes "Resume workout"
   linking back into it.
+- **Today's work** — day name, lift count, and set count; tap opens `/workout/next` (or the
+  open session). The full slot list is not always-on.
+- **This week's records** — gold chips from canonical `workoutRecords` over the last seven
+  local days; tap opens that session recap.
+- **Board preview** — optional recent-PR compound tiles only. Full Board stays on `/analytics`.
+- **Last session** — `{n} PRs` when that workout earned records, else day name + set count;
+  links to `/session/{id}`. No top-e1RM paragraph. Weight and Coach are not home jobs.
 - **Next workout planner** — `/workout/next` previews effective prescriptions and saves
   workout-only exercise choices in this browser before Start; [contract](WORKOUT-PLANNING.md).
-- **Last session summary card** — day name, working-set count, and the top lift (highest
-  e1RM) with its rounded e1RM, linking to that exercise's history.
+- **Block progress** — classic programs still show "{completed} of {total} sessions this block".
+  Fluid programs show "Session N · Adaptive".
 
 ## 3. Programs (`/program`)
 
@@ -108,11 +110,13 @@ Adaptive plateau engine under §5.
   different, “Best recent” first-set context. The recommendation remains an editable default.
 - **Confidence states** — `calibrate` and `low` confidence render as their own instruction
   lines below the target.
-- **Swap exercise** — a secondary button opens the picker filtered to the slot's pattern;
-  subsequent sets log against the swapped `exercise_id` but the original `program_slot_id`,
-  so the swap resumes its own progression chain. Explicit choices persist before logging and
-  survive reload. Confirmation chooses This workout only or Remainder of program; explicit
-  session choice precedes legacy logged exercise and the adaptive/program default.
+- **Swap / history / last-used** — 44px `IconButton`s open the existing picker, history
+  Sheet, and last-used swap. Pin writes `user_exercise_pin` (display only).
+- **Swap exercise** — picker filtered to the slot's pattern; subsequent sets log against
+  the swapped `exercise_id` but the original `program_slot_id`, so the swap resumes its own
+  progression chain. Explicit choices persist before logging and survive reload. Confirmation
+  chooses This workout only or Remainder of program; explicit session choice precedes legacy
+  logged exercise and the adaptive/program default.
   See [exercise swaps](EXERCISE-SWAPS.md).
 - **Plateau recommendation card** (fluid programs) — when a movement has stalled, the slot
   shows a "Plateau detected" card before set entry: a rep-range change (with starting weight)
@@ -239,51 +243,35 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
   computes best-e1RM-per-session.
 - **Overload badge** — latest session vs the session before it.
 - **Line chart** — Recharts e1RM-over-time chart (`e1rm-chart.tsx`).
+- **Pin** — header `IconButton` writes `user_exercise_pin` (display preference only).
 
-## 8. Progress analytics (`/analytics`, nav label "Progress")
+## 8. Board (`/analytics`, nav label "Board")
 
-Pure analytics in `src/lib/analytics.ts` plus the versioned canonical report in
-`src/lib/coach-check-in.ts`. The hub includes:
+`/analytics` is the Board: a 2-column scoreboard of key compounds (squat, hinge, horizontal
+press, vertical press, horizontal pull, vertical pull). Each tile shows the catalog reference
+lift when it has history (otherwise it stays hidden), current e1RM, signed delta or "held",
+a sparkline, and a `--record` flash when that lift earned a canonical record this week.
+Tap opens `/history/{id}`. Pins are owner-scoped display preferences (`user_exercise_pin`,
+cap 8 in the server action): unpinning a default hides it; pinning an extra adds a tile.
 
-1. **Coach check-in** — one `CoachCheckInReport` powers both an on-screen snapshot and the
-   paste-ready text. It includes explicit current/prior seven-day windows, completed vs planned
-   sessions, average duration vs 45 minutes, completed vs effective prescribed sets, actual vs
-   prescribed RIR, per-session prescriptions and working sets, stable four-exposure lift trends,
-   fixed-load rep progress, specialization working/hard sets, bodyweight and optional session
-   feedback. Open, unmatched, implausible, and missing-RIR data are flagged. See
-   `docs/COACH-REPORT.md` for the exact contract. A deterministic proposal layer adds reviewable
-   load/rep, recalibration, keep-movement, plateau, deload, pain, and insufficient-data actions.
-   Every action shows its rationale, evidence, and confidence. Accept/dismiss/defer persists the
-   review state only; it never rewrites the program.
-   The same report and proposals are available to the configured Coach integration at
-   `GET /api/coach/v1/weekly`. The endpoint is read-only, capability-authenticated, explicitly
-   user-scoped, and never cached or indexed; see `docs/COACH-REPORT.md` for setup and rotation.
-2. **Total volume** — session tonnage chart (`sessionTonnage`, sums `effectiveLoad × reps`;
-   bodyweight sets with unknown bodyweight are excluded and counted, never zeroed).
-3. **Training balance** — latest training week's per-pattern horizontal bars: total working
-   sets with the hard-set portion (RIR ≤ 2) overlaid; "{n} sets · {m} hard".
-4. **e1RM progression highlights** — top gainers with signed-delta trend pills.
-5. **Pattern strength** — trained patterns with current reference-lift e1RM and a signed
-   trend; patterns with <2 sessions show "new" (`patternStrengthTrend`, replays sessions
-   chronologically).
-6. **Records feed** — legacy e1RM events and heaviest raw loads from `analytics.ts`;
-   distinct from the canonical workout-record replay used by live pills, recaps, and monthly totals.
-7. **All exercises** — searchable list funneling into `history/[exerciseId]`.
+Secondary, not equal cards:
+- All-lifts search (`ExerciseList`) behind a control
+- Month review
+- Volume chart and weight trends in a Board "More" sheet
 
-Progress opens with the shared weight calendar entry point and interactive bodyweight trends
-([contract](WEIGHT-TRENDS.md)). The monthly review link opens `/analytics/month` for date-window
-comparisons, canonical PR totals, ranked improvements and rep gains, grouped achievements,
-exact-equipment history drill-downs, selected-month weight charts, and supported stall reviews
-([contract](MONTHLY-PROGRESS.md)).
+Coach check-in and proposals live on You (`/settings`). The weekly API
+(`GET /api/coach/v1/weekly`) is unchanged. Canonical eligibility stays `workoutRecords`
+and monthly contracts; the old Progress records feed is gone.
 
-Other pure analytics available: `e1rmPrFeed` (chronological PR events), `weightPrs` (all-time
-heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `latestWeekBalance`.
+Pure helpers in `src/lib/analytics.ts` still compute volume, summaries, and (unused on the
+Board landing) training balance / pattern strength. See `docs/COACH-REPORT.md` for the
+Coach contract.
 
-## 9. Settings (`/settings`)
+## 9. You (`/settings`)
 
 - **Bodyweight history** — quick date/weight logging, edit/remove, recent readings, latest value,
-  sparse seven-day average, and change from the preceding seven days. Home, Progress, and
-  Settings share the calendar; moves onto occupied dates require explicit replacement
+  sparse seven-day average, and change from the preceding seven days. You, Board More, and
+  the shared calendar all log weight; moves onto occupied dates require explicit replacement
   confirmation and use an atomic RPC. See [weight calendar](WEIGHT-CALENDAR.md).
 - **Current bodyweight rule** — the newest dated observation drives pull-up/assisted calculations;
   the pre-existing `profile.bodyweight` remains the baseline when no history exists.
@@ -295,11 +283,14 @@ heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `lates
 - **Period tracking (optional)** — female-only opt-in menstrual period tracking. Mark observed
   bleeding days; appear as context bands on monthly charts. Design spec: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
   Implementation: #33.
+- **Coach** — check-in snapshot, next-step proposals, and clipboard export. Weekly API unchanged.
+- **Sign out**.
 
 ## 10. App shell & navigation
 
-- **Top-level nav** — Lift (home), Progress (`/analytics`), Program, Settings; active route
-  marked via `usePathname()` + `aria-current` (`nav-links.tsx`).
+- **Bottom tabs** — Train (`/`), Board (`/analytics`), Program (`/program`), You (`/settings`);
+  icons plus labels, `aria-current` on the active tab (`app-shell.tsx`). Hidden on the active
+  session/recap, next-workout planner, and program builder.
 - **Auth gate** — layout is a Server Component gating on `getClaims()`.
 - **Route-level loading skeletons** — `loading.tsx` fallbacks for home, session, history, and
   analytics so server navigations never flash a blank screen.
@@ -318,6 +309,8 @@ heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `lates
   ([copy-density rules](UI.md#copy-density)).
 - **`Button`** — primary/secondary/destructive/ghost × sm/md/lg with built-in pending state
   (spinner + `aria-busy`); a Server-Component-safe class builder for styling `<Link>`s.
+- **`IconButton`** — 44px named glyph control (default/ghost) with the same pending/disabled
+  language; `iconButtonClasses` for links.
 - **`Stepper`** — the most-touched mid-workout control: 44px hit areas, press-and-hold
   auto-repeat, tick animation, select-all on focus; column and row layouts.
 - **`Card`** — `tone` prop (`default | active | done`) carrying hierarchy without color.

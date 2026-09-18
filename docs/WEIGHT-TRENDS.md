@@ -1,8 +1,8 @@
 # Bodyweight trends — epic #27, slice #29
 
-Progress opens with measured weights (dots), trailing seven-calendar-day means
-(line), and the saved goal (dashed reference). Default is 90 days; 30 days, six
-calendar months (month-end clamped), and all history are available. The chart
+The Board More sheet opens with measured weights (dots), trailing seven-calendar-day
+means (line), and the saved goal (dashed reference). Default is 90 days; 30 days,
+six calendar months (month-end clamped), and all history are available. The chart
 uses numeric date positions, preserving real gaps and elapsed time. All values
 are pounds; weigh-in dates remain date-only, with today in America/Chicago.
 
@@ -16,8 +16,8 @@ represented by null boundary points, avoiding huge allocations for ancient dates
 Summary metrics always use today and the prior non-overlapping seven days,
 independent of the chart filter. Stale history is labeled and never substituted
 for today's average. Settings and Coach continue using the same canonical helper.
-Optional weekly bars cover 12 Monday–Sunday calendar weeks, matching Progress's
-ISO-week boundary; the current week is clipped to today and labeled partial.
+Optional weekly bars cover 12 Monday–Sunday calendar weeks matching the ISO-week
+boundary; the current week is clipped to today and labeled partial.
 
 ## Goal contract
 
@@ -54,15 +54,15 @@ summary cards, and weekly means after corrections/deletions.
 
 ## Vercel preview checklist
 
-1. Open Progress on a phone; check chart, goal line, and range buttons fit.
+1. Open Board → More on a phone; check chart, goal line, and range buttons fit.
 2. Switch ranges: historical coverage changes, today's summary stays constant.
 3. Tap a raw dot, correct its weight, and confirm recalculated trend/weekly bars.
 4. Expand the data table and use its edit button with a keyboard.
 5. Expand weekly averages; check dates, counts, partial-week label, and gaps.
-6. Change/remove the goal in Settings and revisit Progress; check distance/Set goal.
+6. Change/remove the goal in You and revisit Board → More; check distance/Set goal.
 
 
 The monthly review reuses this card with an explicit calendar window. Chart points are
 clipped to that window while rolling averages retain the prior six days. Summary averages
 are anchored to the selected end date and labeled accordingly; the displayed goal remains
-the current Settings goal. Range controls and 12-week bars stay on the main Progress card.
+the current Settings goal. Range controls and 12-week bars stay on the Board More weight card.

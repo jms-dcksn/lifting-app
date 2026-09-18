@@ -8,8 +8,16 @@ import { bodyweightTrend, dateKey, type BodyweightEntry } from "@/lib/bodyweight
 import { saveProfile } from "./actions";
 import { LogWeightButton } from "@/components/weight-calendar";
 import { PeriodTrackingSettings } from "@/components/period-tracking-settings";
+import { signOut } from "../actions";
+import { CoachSection } from "./coach-section";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ coachExercise?: string | string[] }>;
+}) {
+  const query = await searchParams;
+  const coachExercise = typeof query.coachExercise === "string" ? query.coachExercise : undefined;
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub as string | undefined;
@@ -57,7 +65,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-6 px-6 py-10">
-      <h1 className="text-display">Settings</h1>
+      <h1 className="text-display">You</h1>
 
       <Card className="flex flex-col gap-4">
         <div>
@@ -175,6 +183,14 @@ export default async function SettingsPage() {
         trackingEnabled={profile?.period_tracking_enabled ?? false}
         hasObservations={hasObservations}
       />
+
+      <CoachSection userId={userId} coachExercise={coachExercise} />
+
+      <form action={signOut}>
+        <Button type="submit" variant="ghost" className="w-full">
+          Sign out
+        </Button>
+      </form>
     </div>
   );
 }

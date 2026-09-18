@@ -109,7 +109,7 @@ export function MonthlyReview({
             <span>{dateKey(new Date(point.sessionAt), report.timeZone)}</span><span>{amount(point.bestE1rm)} e1RM{point.repGain ? " · rep gain" : ""}</span>
           </Link></li>)}</ul>
         </details>
-        {report.inProgress && <Link href={`/analytics?coachExercise=${encodeURIComponent(stall.exerciseId)}#coach-next-steps`} className="inline-block min-h-11 py-2 text-caption underline">Review current Coach next steps for this lift</Link>}
+        {report.inProgress && <Link href={`/settings?coachExercise=${encodeURIComponent(stall.exerciseId)}#coach-next-steps`} className="inline-block min-h-11 py-2 text-caption underline">Review current Coach next steps for this lift</Link>}
       </li>)}</ul>
 
     </Card>}

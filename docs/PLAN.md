@@ -75,14 +75,14 @@ beat last time. Done = I use it for a real block.
 - [x] Hide accepted and insufficient-data next steps; collapse the pending section and per-item explanations.
 - [x] Preview the next workout's exercises and effective weekly prescriptions on Home.
 
-## Current code baseline (2026-09-13)
+## Current code baseline (2026-09-18)
 
 Program building, classic phases, Fluid adaptations, scoped swaps, pre-workout planning,
-workout records, Coach reports/API/proposals, weight calendar/trends, and the first monthly
-review are implemented. See [Features](FEATURES.md) and [Monthly progress](MONTHLY-PROGRESS.md)
-for current behavior, including the shared stall contract and monthly dashboard.
-Migrations and generated types are committed; remote migration/Auth state needs a live check.
-The numbered phase sections below retain the original build sequence and historical checks.
+workout records, Coach reports/API/proposals, weight calendar/trends, monthly review, the
+Train/Board/Program/You tab shell, cinematic recap, and Board compounds/pins are implemented.
+See [Features](FEATURES.md). Migrations and generated types are committed; remote
+migration/Auth state needs a live check. The numbered phase sections below retain the
+original build sequence and historical checks.
 
 ## Original estimate
 

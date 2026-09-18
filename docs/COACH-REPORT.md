@@ -1,7 +1,7 @@
 # Coach check-in report v1
 
 `src/lib/coach-check-in.ts` defines the versioned `CoachCheckInReport`. It is the single
-derived contract for both the Progress snapshot and its clipboard text. The weekly API
+derived contract for both the You snapshot and its clipboard text. The weekly API
 serializes this report rather than reimplementing the aggregation.
 
 The builder is pure: callers supply sessions, working sets, program days/slots/phases, the
@@ -67,9 +67,9 @@ or deleted slots are surfaced as data-quality warnings rather than guessed.
 ## Weekly Coach API
 
 `GET /api/coach/v1/weekly` returns `{ apiVersion, report, recommendations }`. `report` is the
-same canonical `CoachCheckInReport` used by Progress; the route does not reproduce analytics or
-write training data. All database reads are explicitly scoped to `COACH_API_USER_ID`, including
-when the server-only Supabase secret bypasses RLS.
+same canonical `CoachCheckInReport` used by the You snapshot; the route does not reproduce
+analytics or write training data. All database reads are explicitly scoped to
+`COACH_API_USER_ID`, including when the server-only Supabase secret bypasses RLS.
 
 Use `Authorization: Bearer <COACH_API_TOKEN>` for callers that can set headers. For callers unable
 to set headers, the supported fallback is a scoped
@@ -93,7 +93,7 @@ deployment settings if database access is suspected to be exposed.
 
 `src/lib/coach-recommendations.ts` is a separate deterministic proposal layer over this factual
 report and its source rows. Keeping it separate preserves the v1 report contract while allowing
-the Progress workflow and clipboard export to add coaching actions.
+the You workflow and clipboard export to add coaching actions.
 
 - Normal load and rep proposals call `sessionTarget()` with the same bounded best-recent reference
   as the active workout. The slot's latest exact-exercise exposure anchors the window; a stronger

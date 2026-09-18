@@ -245,7 +245,7 @@ wider viewports.
 
 ## Phase 8 decisions
 
-**Analytics is a derived read model, not new schema.** The Progress hub reads working
+**Analytics is a derived read model, not new schema.** Board reads working
 `set_log` rows joined to `workout_session(performed_at, finished_at, program_id)` plus
 `profile.bodyweight`, then aggregates in `src/lib/analytics.ts`. No analytics tables,
 views, RPCs, or cached counters were added; single-user full-history scans are still
@@ -257,7 +257,7 @@ assisted exercises use the same convention as e1RM recompute. Sets whose effecti
 cannot be computed (notably bodyweight lifts without a stored bodyweight) are counted as
 excluded, not coerced to zero, and the UI names that exclusion beside the volume chart.
 
-**Progress links funnel into the existing per-exercise history route.** The Progress hub
+**Board tiles funnel into the existing per-exercise history route.** The Board
 surfaces total volume, recent e1RM gainers, record events, and a searchable all-exercise
 list, but every lift row links to `history/[exerciseId]` rather than introducing another
 exercise chart surface. The only new client code is the Recharts volume chart and the
@@ -486,8 +486,8 @@ authenticated `loadWorkoutRecords` read path. No schema migration is required.
 
 ### What the lifter sees
 
-- Successfully saved working sets earn persistent **Rep PR** and **e1RM PR** pills
-  on their exercise card. Pills have text and a star as well as semantic color.
+- Successfully saved working sets earn persistent compact **record** pills
+  on their exercise card (`225 × 8 +1`, `275 e1RM +5`) in `--record` gold.
 - Both types can appear together. Records from an exercise swapped out mid-workout
   retain their original exercise name. Completed cards with records remain readable.
 - Finish recap is the payoff: a `--text-recap`-size hero for records earned this workout

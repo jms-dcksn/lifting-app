@@ -55,6 +55,7 @@ export interface ExerciseSummary {
   sessionCount: number;
   delta: number | null;
   trend: "up" | "down" | "flat" | "none";
+  e1rmSeries: number[];
 }
 
 export interface PatternWeekStat {
@@ -225,6 +226,7 @@ export function exerciseSummaries(rows: AnalyticsSetRow[]): ExerciseSummary[] {
         sessionCount: sessions.length,
         delta,
         trend: trendFromDelta(delta),
+        e1rmSeries: withE1rm.map((session) => session.bestE1rm),
       };
     })
     .sort((a, b) => b.lastPerformedAt.localeCompare(a.lastPerformedAt));

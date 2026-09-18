@@ -6,6 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
 import { Card, CardLabel } from "@/components/ui/card";
 import { E1rmChart, type ChartPoint } from "./e1rm-chart";
+import { PinButton } from "../../pins/pin-button";
+import { defaultCompoundIds, isExercisePinned } from "@/lib/board";
+import { loadUserPinRows } from "@/lib/pins-data";
 
 interface SessionGroup {
   sessionId: string;
@@ -35,6 +38,7 @@ export default async function HistoryPage({
     const report = await loadMonthlyReport(supabase, userId, query.month, catalog, now);
     return <MonthlyHistory report={report} exerciseId={exerciseId} equipment={query.equipment === "none" || !query.equipment ? null : query.equipment} />;
   }
+  const pinRows = await loadUserPinRows(supabase, userId);
   const def = catalog[exerciseId];
   const name = def?.name ?? exerciseId;
   const isBodyweight = def?.equipment === "bodyweight";
@@ -82,12 +86,21 @@ export default async function HistoryPage({
 
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
-      <header>
-        <h1 className="text-display">{name}</h1>
-        <p className="text-body text-muted">
-          {sessions.length} session{sessions.length === 1 ? "" : "s"} logged
-          {latest?.bestE1rm != null && ` · current e1RM ${Math.round(latest.bestE1rm)} lb`}
-        </p>
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-display">{name}</h1>
+          <p className="text-body text-muted">
+            {sessions.length} session{sessions.length === 1 ? "" : "s"} logged
+            {latest?.bestE1rm != null && ` · current e1RM ${Math.round(latest.bestE1rm)} lb`}
+          </p>
+        </div>
+        {def && !def.machineTemplate && (
+          <PinButton
+            exerciseId={exerciseId}
+            pinned={isExercisePinned(pinRows, defaultCompoundIds(catalog), exerciseId)}
+            name={name}
+          />
+        )}
       </header>
 
       {sessions.length === 0 ? (

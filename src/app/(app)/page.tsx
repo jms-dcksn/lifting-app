@@ -143,7 +143,7 @@ export default async function Home() {
       {preview.length > 0 && (
         <section>
           <h2 className="mb-2 text-caption font-semibold uppercase tracking-wide text-muted">Board</h2>
-          <BoardGrid lifts={preview} pinnedIds={preview.map((lift) => lift.exerciseId)} />
+          <BoardGrid lifts={preview} pinnedIds={preview.map((lift) => lift.exerciseId)} showPin={false} />
         </section>
       )}
 

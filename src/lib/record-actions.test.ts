@@ -101,6 +101,7 @@ describe("persisted workout achievement flow", () => {
     const live = (await records()).achievements;
     expect(live[0].repRecords[0].improvement).toBe(2);
     expect(mocks.revalidate).toHaveBeenCalledWith("/session/active");
+    expect(mocks.revalidate).toHaveBeenCalledWith("/session/active/recap");
     const summary = await finishSession("active", { jointPain: "none", note: "Felt strong" });
     expect(summary.achievements).toEqual(live);
     expect(summary.totalSets).toBe(1);

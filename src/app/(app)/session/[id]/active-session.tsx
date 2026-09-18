@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
 import {
   selectProgressionReference,
@@ -35,14 +36,13 @@ import {
   acceptAdaptation,
   dismissAdaptation,
   retryRecomputeStat,
-  type SessionSummary,
 } from "../actions";
-import { AchievementPills, AchievementRecap } from "./achievements";
+import { AchievementPills } from "./achievements";
 import { recordsForSlot, type ExerciseRecords } from "@/lib/strength/records";
 import { variantShortLabel } from "@/lib/exercise-id";
 import { ReadinessPrompt, SessionFeedbackDetails, SessionFeedbackSheet } from "./session-feedback";
 import { retryServerAction } from "@/lib/retry";
-
+import { sessionRecapPath } from "@/lib/session-paths";
 
 function generateIdempotencyKey(): string {
   return crypto.randomUUID();
@@ -105,7 +105,8 @@ export function ActiveSession({
   achievements: ExerciseRecords[];
   pinnedIds: string[];
 }) {
-  useScreenWakeLock();
+  useScreenWakeLock(!alreadyFinished);
+  const router = useRouter();
   const rest = useRestTimer(restToneEnabled);
   // Holds the merged catalog in state so a variant resolved in-session can be added and
   // immediately drive that slot's name/target without a round-trip.
@@ -114,7 +115,6 @@ export function ActiveSession({
     (def: ExerciseDef) => setCatalog((c) => (c[def.id] ? c : { ...c, [def.id]: def })),
     [],
   );
-  const [summary, setSummary] = useState<SessionSummary | null>(null);
   const [feedback, setFeedback] = useState(initialFeedback);
   const [feedbackSheet, setFeedbackSheet] = useState<"finish" | "edit" | null>(null);
   const [finishing, startFinish] = useTransition();
@@ -126,14 +126,13 @@ export function ActiveSession({
     return new Promise<void>((resolve, reject) => {
       startFinish(async () => {
         try {
-          const nextSummary = await retryServerAction(
+          await retryServerAction(
             () => finishSession(sessionId, nextFeedback),
             { onRetry: () => setSummaryError("Retrying…") }
           );
-          setFeedback(nextSummary.feedback);
-          setSummary(nextSummary);
           setFeedbackSheet(null);
           setSummaryError(null);
+          router.replace(sessionRecapPath(sessionId));
           resolve();
         } catch (error) {
           reject(error);
@@ -149,24 +148,7 @@ export function ActiveSession({
     );
     const updated = { ...feedback, ...saved };
     setFeedback(updated);
-    setSummary((current) => (current ? { ...current, feedback: updated } : current));
     setFeedbackSheet(null);
-  }
-
-  if (summary) {
-    return (
-      <>
-        <Summary dayName={dayName} summary={summary} onEditFeedback={() => setFeedbackSheet("edit")} />
-        {feedbackSheet === "edit" && (
-          <SessionFeedbackSheet
-            initial={feedback}
-            mode="edit"
-            onClose={() => setFeedbackSheet(null)}
-            onSubmit={handleFeedbackEdit}
-          />
-        )}
-      </>
-    );
   }
 
   // Current slot = first one not yet at its target set count (server truth; re-derives
@@ -178,18 +160,10 @@ export function ActiveSession({
       <header>
         <h1 className="text-display">{dayName}</h1>
         <p className="text-body text-muted">
-          Week {week} of {weeks}
+          {alreadyFinished ? `Finished · Week ${week} of ${weeks}` : `Week ${week} of ${weeks}`}
           {bodyweight ? ` · BW ${bodyweight} lb` : ""}
         </p>
       </header>
-
-      {alreadyFinished && (
-        <AchievementRecap
-          groups={achievements}
-          dayName={dayName}
-          totalSets={slots.reduce((n, slot) => n + slot.sets.length, 0)}
-        />
-      )}
 
       {phase && phasePrescription ? (
         <Card tone="active">
@@ -232,34 +206,33 @@ export function ActiveSession({
       ))}
 
       <div className="sticky bottom-0 -mx-4 mt-2 flex flex-col gap-2 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
-        <RestBar timer={rest} />
-        {summaryError && <p role="alert" className="text-caption text-danger">{summaryError}</p>}
-        <Button
-          type="button"
-          size="lg"
-          className="w-full"
-          onClick={() => {
-            setSummaryError(null);
-            if (alreadyFinished) {
-              startFinish(async () => {
-                try {
-                  setSummary(await retryServerAction(
-                    () => finishSession(sessionId),
-                    { onRetry: () => setSummaryError("Retrying…") }
-                  ));
-                  setSummaryError(null);
-                } catch {
-                  setSummaryError("Couldn’t load your summary. Please try again.");
-                }
-              });
-            } else {
-              setFeedbackSheet("finish");
-            }
-          }}
-          pending={finishing}
-        >
-          {alreadyFinished ? "View summary" : "Finish workout"}
-        </Button>
+        {alreadyFinished ? (
+          <>
+            <Link href="/" className={buttonClasses("primary", "lg", "w-full")}>
+              Home
+            </Link>
+            <Link href={sessionRecapPath(sessionId)} className={buttonClasses("secondary", "lg", "w-full")}>
+              View recap
+            </Link>
+          </>
+        ) : (
+          <>
+            <RestBar timer={rest} />
+            {summaryError && <p role="alert" className="text-caption text-danger">{summaryError}</p>}
+            <Button
+              type="button"
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                setSummaryError(null);
+                setFeedbackSheet("finish");
+              }}
+              pending={finishing}
+            >
+              Finish workout
+            </Button>
+          </>
+        )}
       </div>
 
       {feedbackSheet && (
@@ -1003,37 +976,10 @@ function SetEntry({
   );
 }
 
-function Summary({
-  dayName,
-  summary,
-  onEditFeedback,
-}: {
-  dayName: string;
-  summary: SessionSummary;
-  onEditFeedback: () => void;
-}) {
-  return (
-    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-6 px-4 py-8">
-      <AchievementRecap
-        groups={summary.achievements}
-        dayName={dayName}
-        totalSets={summary.totalSets}
-        titleAs="h1"
-        empty="hero"
-      />
-
-      <SessionFeedbackDetails feedback={summary.feedback} onEdit={onEditFeedback} />
-
-      <Link href="/" className={buttonClasses("primary", "lg", "mt-auto w-full animate-rise")}>
-        Done
-      </Link>
-    </div>
-  );
-}
-
 // Keep the screen awake during a workout; re-acquire when the tab returns to foreground.
-function useScreenWakeLock() {
+function useScreenWakeLock(enabled: boolean) {
   useEffect(() => {
+    if (!enabled) return;
     let lock: WakeLockSentinel | null = null;
     let released = false;
     const wakeLock = (navigator as Navigator & { wakeLock?: WakeLock }).wakeLock;
@@ -1058,5 +1004,5 @@ function useScreenWakeLock() {
       document.removeEventListener("visibilitychange", onVisible);
       lock?.release().catch(() => {});
     };
-  }, []);
+  }, [enabled]);
 }

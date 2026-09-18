@@ -481,8 +481,8 @@ increment), working sets only, bodyweight included, just-me-first.
       count, without gold or invented records.
 - [x] Drop the top-e1RM table from the recap hero; keep history links on record rows.
 - [x] Put joint pain / session notes behind a details control, not in the hero.
-- [x] Reopened sessions still show the recap above editable cards; **View summary**
-      still reloads this screen. No schema or record-rule changes.
+- [x] Reopened sessions show editable cards with Home and View recap; the recap is a
+      dedicated `/session/{id}/recap` route. No schema or record-rule changes.
 - [x] Existing workout-records / recap action tests stay green; recap copy helpers
       and a focused recap render case cover mixed vs single-kind headlines.
 

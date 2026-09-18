@@ -41,11 +41,12 @@ Adaptive plateau engine under §5.
 - **Today's work** — day name, lift count, and set count; tap opens `/workout/next` (or the
   open session). The full slot list is not always-on.
 - **This week's records** — gold chips from canonical `workoutRecords` over the last seven
-  local days; tap opens that session recap.
+  local days; tap opens `/session/{id}/recap`.
 - **Board preview** — optional recent-PR compound tiles only; pin controls stay off home.
   Full Board stays on `/analytics`.
-- **Last session** — `{n} PRs` when that workout earned records, else day name + set count;
-  links to `/session/{id}`. No top-e1RM paragraph. Weight and Coach are not home jobs.
+- **Last session** — `{n} PRs` when that workout earned records, else day name + set count.
+  The card opens that workout's recap; **View workout** opens the editable sets. No top-e1RM
+  paragraph. Weight and Coach are not home jobs.
 - **Next workout planner** — `/workout/next` previews effective prescriptions and saves
   workout-only exercise choices in this browser before Start; [contract](WORKOUT-PLANNING.md).
 - **Block progress** — classic programs still show "{completed} of {total} sessions this block".
@@ -130,13 +131,17 @@ Adaptive plateau engine under §5.
   edits/deletions. [Eligibility](DECISIONS.md#workout-records).
 - **Quick history** — a Sheet loads ten latest sets from previous workouts across explicitly
   linked exercise variants without resetting set entry or the rest timer.
-- **Finish session** — `finishSession` stamps `finished_at` and returns working-set count,
-  canonical records, and saved feedback. The recap hero is the records (or `{day} done`
-  when there are none). Joint pain / notes sit behind a details control. Done goes home.
+- **Finish session** — `finishSession` stamps `finished_at` and navigates to
+  `/session/{id}/recap`. The recap hero is the records (or `{day} done` when there are
+  none). Joint pain / notes sit behind a details control. Home goes to Train; View workout
+  opens the editable sets.
 - **Minimal session feedback** — a skippable 1–5 readiness tap appears before the first set;
-  finish opens an optional joint-pain + short-note sheet. Finished sessions keep the saved
-  values behind the recap details control and allow pain/note edits without changing the
+  finish opens an optional joint-pain + short-note sheet. Recap and finished workouts keep
+  the saved values behind a details control and allow pain/note edits without changing the
   original finish time.
+- **Reopened workout** — `/session/{id}` for a finished session is the set list, not a
+  second recap. Home and View recap sit in the sticky footer. Tab bar stays hidden on
+  session routes, so those two actions are the way out.
 
 ### Rest timer
 - **Auto-start on log** — logging a set starts a single session-wide rest countdown with
@@ -291,11 +296,11 @@ Coach contract.
 ## 10. App shell & navigation
 
 - **Bottom tabs** — Train (`/`), Board (`/analytics`), Program (`/program`), You (`/settings`);
-  icons plus labels, `aria-current` on the active tab (`app-shell.tsx`). Hidden on the active
-  session/recap, next-workout planner, and program builder.
+  icons plus labels, `aria-current` on the active tab (`app-shell.tsx`). Hidden on session
+  routes (active workout, recap, finished sets), next-workout planner, and program builder.
 - **Auth gate** — layout is a Server Component gating on `getClaims()`.
-- **Route-level loading skeletons** — `loading.tsx` fallbacks for home, session, history, and
-  analytics so server navigations never flash a blank screen.
+- **Route-level loading skeletons** — `loading.tsx` fallbacks for home, session, recap,
+  history, and analytics so server navigations never flash a blank screen.
 
 ## 11. Design system & UI primitives (`src/components/ui/`)
 

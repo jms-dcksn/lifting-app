@@ -9,6 +9,7 @@ import { shiftMonth } from "@/lib/weight-calendar";
 import { dateKey } from "@/lib/bodyweight";
 import type { MonthlyReport } from "@/lib/monthly-progress";
 import type { PeriodObservation } from "@/lib/period-calendar";
+import { sessionRecapPath } from "@/lib/session-paths";
 
 const amount = (n: number | null) => n == null ? "—" : `${n.toFixed(1)} lb`;
 const label = (month: string) => new Date(`${month}-01T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -119,7 +120,7 @@ export function MonthlyReview({
       {recordGroups.size === 0 ? <p className="mt-3 text-body text-muted">No records this month.</p> : <div className="mt-3 divide-y divide-border">{[...recordGroups].map(([key, group]) => <details key={key}>
         <summary className="min-h-11 cursor-pointer break-words py-3 text-body">{group.name} · {group.records.length} record workouts{group.equipment ? ` · Equipment ${group.equipment}` : ""}</summary>
         <ul className="space-y-3 pb-3">{group.records.map(({ sessionId, date, record: r }) => <li key={sessionId} className="text-caption">
-          <Link href={`/session/${sessionId}`} className="inline-block min-h-11 py-2 underline">{date} · Workout recap</Link>
+          <Link href={sessionRecapPath(sessionId)} className="inline-block min-h-11 py-2 underline">{date} · Workout recap</Link>
           {r.repRecords.map(rep => <p key={rep.load}>{rep.weight} lb {r.isBodyweight ? "added/assist" : ""} × {rep.reps} reps{rep.improvement != null ? ` · +${rep.improvement} reps` : " · improved within workout"}</p>)}
           {r.e1rmRecord && <p>{amount(r.e1rmRecord.value)} e1RM{r.e1rmRecord.improvement != null ? ` · +${r.e1rmRecord.improvement.toFixed(1)} lb` : " · improved within workout"}</p>}
         </li>)}</ul>

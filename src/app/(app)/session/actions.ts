@@ -33,6 +33,11 @@ async function requireUser() {
   return { supabase, userId };
 }
 
+function revalidateSession(sessionId: string) {
+  revalidatePath(`/session/${sessionId}`);
+  revalidatePath(`/session/${sessionId}/recap`);
+}
+
 export async function getExerciseHistory(exerciseId: string, sessionId: string) {
   const { supabase, userId } = await requireUser();
   const catalog = await getCatalogMap(supabase, userId);
@@ -233,7 +238,7 @@ export async function logSet(input: LogSetInput) {
       .eq("idempotency_key", input.idempotencyKey)
       .maybeSingle();
     if (readError || !existing) throw new Error("Could not retrieve existing set");
-    revalidatePath(`/session/${input.sessionId}`);
+    revalidateSession(input.sessionId);
     return { ...existing, recomputeWarning: null };
   }
 
@@ -245,7 +250,7 @@ export async function logSet(input: LogSetInput) {
   } catch {
     recomputeWarning = "Set saved, but couldn't update exercise stats. Your progress tracking may be temporarily out of sync.";
   }
-  revalidatePath(`/session/${input.sessionId}`);
+  revalidateSession(input.sessionId);
   return { ...data, recomputeWarning };
 }
 
@@ -292,7 +297,7 @@ export async function editSet(input: EditSetInput) {
   } catch {
     recomputeWarning = "Set saved, but couldn't update exercise stats. Your progress tracking may be temporarily out of sync.";
   }
-  revalidatePath(`/session/${existing.session_id}`);
+  revalidateSession(existing.session_id);
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
   revalidatePath("/history/[exerciseId]", "page");
@@ -320,7 +325,7 @@ export async function deleteSet(setId: string) {
   } catch {
     recomputeWarning = "Set deleted, but couldn't update exercise stats. Your progress tracking may be temporarily out of sync.";
   }
-  revalidatePath(`/session/${existing.session_id}`);
+  revalidateSession(existing.session_id);
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
   revalidatePath("/history/[exerciseId]", "page");
@@ -334,7 +339,7 @@ export async function retryRecomputeStat(input: { exerciseId: string; sessionId:
   
   try {
     await recomputeAndUpsertStat(supabase, userId, input.exerciseId, bodyweight, catalog);
-    revalidatePath(`/session/${input.sessionId}`);
+    revalidateSession(input.sessionId);
     return { success: true, warning: null };
   } catch {
     return { success: false, warning: "Still couldn't update stats. Try again or continue — this won't affect your saved sets." };
@@ -380,7 +385,7 @@ export async function saveSessionReadiness(input: {
     .eq("user_id", userId);
   if (error) throw new Error(error.message);
 
-  revalidatePath(`/session/${input.sessionId}`);
+  revalidateSession(input.sessionId);
   return readiness;
 }
 
@@ -403,7 +408,7 @@ export async function updateSessionFeedback(input: {
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Session not found");
 
-  revalidatePath(`/session/${input.sessionId}`);
+  revalidateSession(input.sessionId);
   revalidatePath("/analytics");
   return { jointPain, note };
 }
@@ -486,7 +491,7 @@ export async function finishSession(
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
   revalidatePath("/history/[exerciseId]", "page");
-  revalidatePath(`/session/${sessionId}`);
+  revalidateSession(sessionId);
   return {
     totalSets: sets.filter((s) => !s.is_warmup).length,
     achievements,
@@ -533,7 +538,7 @@ export async function acceptAdaptation(input: {
     await swapSessionExercise({ sessionId: input.sessionId, programSlotId: input.programSlotId,
       exerciseId: input.newExerciseId, scope: "workout" });
   }
-  revalidatePath(`/session/${input.sessionId}`);
+  revalidateSession(input.sessionId);
 }
 
 // "Keep going": snooze the suggestion for SNOOZE_EXPOSURES more exposures.
@@ -572,7 +577,7 @@ export async function swapSessionExercise(input: {
     p_scope: input.scope,
   });
   if (error) throw new Error(error.message);
-  revalidatePath(`/session/${input.sessionId}`);
+  revalidateSession(input.sessionId);
   if (input.scope === "program") {
     revalidatePath("/");
     revalidatePath("/program", "layout");

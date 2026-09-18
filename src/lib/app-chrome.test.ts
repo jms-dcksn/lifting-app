@@ -4,6 +4,7 @@ import { addDateKey, hideAppChrome, inLocalDays } from "./app-chrome";
 describe("hideAppChrome", () => {
   it("hides session, recap, planner, and builder surfaces", () => {
     expect(hideAppChrome("/session/abc")).toBe(true);
+    expect(hideAppChrome("/session/abc/recap")).toBe(true);
     expect(hideAppChrome("/workout/next")).toBe(true);
     expect(hideAppChrome("/program/new")).toBe(true);
     expect(hideAppChrome("/program/abc", "mode=edit")).toBe(true);

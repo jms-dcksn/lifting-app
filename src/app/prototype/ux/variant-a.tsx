@@ -116,7 +116,10 @@ export function VariantA({
               </button>
             </div>
             <div className="a-board">
-              {board.filter((lift) => pinned.includes(lift.id) || lift.compound).slice(0, 4).map((lift) => (
+              {board
+                .filter((lift) => pinned.includes(lift.id) || !!lift.recentPr)
+                .slice(0, 4)
+                .map((lift) => (
                 <Tile key={lift.id} lift={lift} pinned={pinned.includes(lift.id) || (!!lift.compound && !hidden.includes(lift.id))} onPin={() => togglePin(lift.id, !!lift.compound)} onOpen={() => { setFocus(lift); setOverlay("pr"); }} />
               ))}
             </div>

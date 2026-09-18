@@ -69,6 +69,7 @@ export function UxPrototype({ variant }: { variant: VariantKey }) {
             <li>Cap what is pinned (about 6–8). A board of twenty is Progress again.</li>
           </ul>
         </section>
+        <pre className="proto-state">{JSON.stringify(state, null, 2)}</pre>
       </aside>
 
       <div className="proto-stage">
@@ -79,7 +80,6 @@ export function UxPrototype({ variant }: { variant: VariantKey }) {
             {variant === "C" && <VariantC onState={onState} />}
           </div>
         </div>
-        <pre className="proto-state">{JSON.stringify(state, null, 2)}</pre>
       </div>
 
       <PrototypeSwitcher current={variant} />

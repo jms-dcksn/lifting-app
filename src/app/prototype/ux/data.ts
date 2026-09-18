@@ -10,6 +10,7 @@ export type LiftId =
   | "weighted-pullup"
   | "bb-hip-thrust"
   | "db-split-squat"
+  | "db-bench"
   | "lat-pulldown"
   | "db-lateral-raise";
 
@@ -135,6 +136,17 @@ export const EXTRAS: SampleLift[] = [
     delta: 5,
     lastPr: "9d",
     spark: [75, 80, 80, 85, 90],
+  },
+  {
+    id: "db-bench",
+    pattern: "horizontal_press",
+    name: "Dumbbell Bench Press",
+    short: "DB Bench",
+    e1rm: 95,
+    unit: "lb",
+    delta: 5,
+    lastPr: "6d",
+    spark: [80, 85, 85, 90, 95],
   },
   {
     id: "lat-pulldown",

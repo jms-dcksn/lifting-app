@@ -103,7 +103,7 @@
 }
 
 .proto-state {
-  width: min(390px, 100%);
+  width: 100%;
   margin: 0;
   padding: 0.7rem 0.85rem;
   border-radius: 0.75rem;
@@ -112,7 +112,7 @@
   font-size: 0.7rem;
   line-height: 1.4;
   overflow: auto;
-  max-height: 7rem;
+  max-height: 9rem;
 }
 
 .proto-switcher {
@@ -618,12 +618,14 @@
 }
 
 .b-band .name {
+  display: block;
   font-size: 1.05rem;
   font-weight: 650;
   letter-spacing: -0.03em;
 }
 
 .b-band .sub {
+  display: block;
   font-size: 0.75rem;
   color: rgb(0 0 0 / 0.55);
 }
@@ -728,7 +730,7 @@
 
 .b-session footer {
   display: grid;
-  grid-template-columns: 1fr 1.4fr 1fr;
+  grid-template-columns: auto 1fr auto;
   gap: 0.45rem;
   padding: 0.7rem 1rem 1.2rem;
 }
@@ -739,6 +741,8 @@
   border-radius: 1rem;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
+  padding: 0 1rem;
 }
 
 .b-session footer .ghost {

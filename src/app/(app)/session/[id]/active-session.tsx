@@ -37,7 +37,7 @@ import {
 import { AchievementPills, AchievementRecap } from "./achievements";
 import { recordsForSlot, type ExerciseRecords } from "@/lib/strength/records";
 import { variantShortLabel } from "@/lib/exercise-id";
-import { ReadinessPrompt, SessionFeedbackCard, SessionFeedbackSheet } from "./session-feedback";
+import { ReadinessPrompt, SessionFeedbackDetails, SessionFeedbackSheet } from "./session-feedback";
 import { retryServerAction } from "@/lib/retry";
 
 
@@ -178,6 +178,14 @@ export function ActiveSession({
         </p>
       </header>
 
+      {alreadyFinished && (
+        <AchievementRecap
+          groups={achievements}
+          dayName={dayName}
+          totalSets={slots.reduce((n, slot) => n + slot.sets.length, 0)}
+        />
+      )}
+
       {phase && phasePrescription ? (
         <Card tone="active">
           <CardLabel>Week {week} · {phase.name}</CardLabel>
@@ -196,10 +204,8 @@ export function ActiveSession({
       ) : null}
 
       {alreadyFinished ? (
-        <SessionFeedbackCard feedback={feedback} onEdit={() => setFeedbackSheet("edit")} />
+        <SessionFeedbackDetails feedback={feedback} onEdit={() => setFeedbackSheet("edit")} />
       ) : null}
-
-      {alreadyFinished && <AchievementRecap groups={achievements} />}
 
       {slots.map((slot, i) => (
         <SlotCard
@@ -991,62 +997,22 @@ function Summary({
   summary: SessionSummary;
   onEditFeedback: () => void;
 }) {
-  // Staggered rise so the payoff screen lands as a moment, not a flash.
-  let step = 0;
-  const delay = () => ({ animationDelay: `${step++ * 70}ms` });
   return (
-    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-8">
-      <header className="animate-rise" style={delay()}>
-        <h1 className="text-display">{dayName} done</h1>
-        <p className="text-body text-muted">{summary.totalSets} working sets logged</p>
-      </header>
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-6 px-4 py-8">
+      <AchievementRecap
+        groups={summary.achievements}
+        dayName={dayName}
+        totalSets={summary.totalSets}
+        titleAs="h1"
+        empty="hero"
+      />
 
-      <AchievementRecap groups={summary.achievements} />
+      <SessionFeedbackDetails feedback={summary.feedback} onEdit={onEditFeedback} />
 
-      {summary.topE1rm.length > 0 && (
-        <Card className="animate-rise" style={delay()}>
-          <CardLabel className="mb-2">Top e1RM</CardLabel>
-          <ul className="flex flex-col gap-2">
-            {summary.topE1rm.map((t) => (
-              <li
-                key={t.exerciseId}
-                className="flex animate-rise items-baseline justify-between text-body"
-                style={delay()}
-              >
-                <Link href={`/history/${t.exerciseId}`} className="underline-offset-2 hover:underline">
-                  {t.name}
-                </Link>
-                <span className="tabular-nums">
-                  <span className="font-semibold">{Math.round(t.e1rm)} lb</span>
-                  <OverloadDelta e1rm={t.e1rm} prevE1rm={t.prevE1rm} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
-
-      <div className="animate-rise" style={delay()}>
-        <SessionFeedbackCard feedback={summary.feedback} onEdit={onEditFeedback} />
-      </div>
-
-      <Link href="/" className={buttonClasses("primary", "lg", "w-full animate-rise")} style={delay()}>
+      <Link href="/" className={buttonClasses("primary", "lg", "mt-auto w-full animate-rise")}>
         Done
       </Link>
     </div>
-  );
-}
-
-// vs the previous session of this exercise: green = beat it, red = under it.
-function OverloadDelta({ e1rm, prevE1rm }: { e1rm: number; prevE1rm: number | null }) {
-  if (prevE1rm == null) return <span className="ml-2 text-caption text-muted">first</span>;
-  const delta = Math.round(e1rm - prevE1rm);
-  if (delta === 0) return <span className="ml-2 text-caption text-muted">±0</span>;
-  const cls = delta > 0 ? "text-overload-up" : "text-overload-down";
-  return (
-    <span className={`ml-2 text-caption font-medium ${cls}`}>
-      {delta > 0 ? `+${delta}` : delta}
-    </span>
   );
 }
 

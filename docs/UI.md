@@ -3,8 +3,9 @@
 Read before changing components, overlays, motion, or server/client boundaries.
 
 Use `src/components/ui/` and semantic tokens in `src/app/globals.css`. The palette is
-near-monochrome; color conveys overload, calibration, or danger. Preserve the shared type
-scale, card/control radii, `max-w-page` column, and Geist font variables.
+near-monochrome; color conveys overload, calibration, danger, or records (`--record` gold).
+Preserve the shared type scale, card/control radii, `max-w-page` column, and Geist font
+variables. `--text-recap` is the finish-recap hero only, not a fifth general scale step.
 
 - `Sheet` is the native-dialog overlay with focus trapping, Escape/scrim/handle dismissal,
   and animated exit. `useSheetDismiss()` gives inner controls the same close behavior.
@@ -24,6 +25,8 @@ scale, card/control radii, `max-w-page` column, and Geist font variables.
   with a plain-update fallback. All motion respects reduced-motion preferences.
 - `Calendar` supplies the shared date grid; [weight calendar](WEIGHT-CALENDAR.md) owns its
   keyboard, mutation, replacement-confirmation, and error contracts.
+- Finish recap reuses `animate-rise` (staggered 70ms delays) for the hero and record
+  rows. Record gold is only for actual `workoutRecords` lines, never for a no-record finish.
 
 ## Copy density
 

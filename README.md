@@ -22,9 +22,10 @@ apply to that workout and persist in the same browser. Start from either Home or
 with those choices intact. See [workout planning](docs/WORKOUT-PLANNING.md).
 
 Saved sets highlight **rep PRs at a fixed load** and **estimated 1RM records** on the
-exercise card. Finish shows a concise achievement recap that remains available when
-reopening the workout and updates after set edits/deletions. Records compare the same
-exercise and equipment across programs. See [workout records](docs/DECISIONS.md#workout-records).
+exercise card. Finish opens a cinematic recap of those records (or `{day} done` when
+there are none). It remains above the cards when reopening the workout and updates
+after set edits/deletions. Records compare the same exercise and equipment across
+programs. See [workout records](docs/DECISIONS.md#workout-records).
 
 See the [documentation map](docs/README.md) for architecture, feature contracts, and plans.
 Agent instructions live in [AGENTS.md](AGENTS.md); deployment configuration in [DEPLOY.md](DEPLOY.md).

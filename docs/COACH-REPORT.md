@@ -1,7 +1,7 @@
 # Coach check-in report v1
 
 `src/lib/coach-check-in.ts` defines the versioned `CoachCheckInReport`. It is the single
-derived contract for both the Progress snapshot and its clipboard text. The weekly API
+derived contract for both the You snapshot and its clipboard text. The weekly API
 serializes this report rather than reimplementing the aggregation.
 
 The builder is pure: callers supply sessions, working sets, program days/slots/phases, the
@@ -93,7 +93,7 @@ deployment settings if database access is suspected to be exposed.
 
 `src/lib/coach-recommendations.ts` is a separate deterministic proposal layer over this factual
 report and its source rows. Keeping it separate preserves the v1 report contract while allowing
-the Progress workflow and clipboard export to add coaching actions.
+the You workflow and clipboard export to add coaching actions.
 
 - Normal load and rep proposals call `sessionTarget()` with the same bounded best-recent reference
   as the active workout. The slot's latest exact-exercise exposure anchors the window; a stronger

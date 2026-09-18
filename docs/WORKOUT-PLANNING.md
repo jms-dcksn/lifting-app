@@ -1,6 +1,6 @@
 # Plan the next workout
 
-Home's Next workout card links to `/workout/next`. The full-page planner shows every
+Home's Today's work card links to `/workout/next`. The full-page planner shows every
 exercise with the effective week-specific sets, reps, RIR, rest, and phase description.
 It shares the machine-resolving ExercisePicker with the active workout. Reset removes
 only that slot's planned choice. An open workout redirects to its active session.

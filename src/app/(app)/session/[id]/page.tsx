@@ -11,6 +11,8 @@ import { phaseForWeek, resolvePrescription, type ProgramPhase } from "@/lib/peri
 import type { JointPain } from "@/lib/session-feedback";
 import { loadWorkoutRecords } from "@/lib/workout-records";
 import { getCurrentBodyweight } from "@/lib/current-bodyweight";
+import { defaultCompoundIds, pinnedExerciseIds } from "@/lib/board";
+import { loadUserPinRows } from "@/lib/pins-data";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
 
 type PriorSetRow = {
@@ -89,6 +91,8 @@ export default async function SessionPage({
     ]);
 
   const catalog = await getCatalogMap(supabase, userId);
+  const pinRows = await loadUserPinRows(supabase, userId);
+  const pinnedIds = pinnedExerciseIds(pinRows, defaultCompoundIds(catalog));
 
   const { achievements } = await loadWorkoutRecords(supabase, userId, id, session.performed_at, catalog);
 
@@ -323,6 +327,7 @@ export default async function SessionPage({
       progressionByExercise={progressionByExercise}
       catalog={catalog}
       achievements={achievements}
+      pinnedIds={pinnedIds}
     />
   );
 }

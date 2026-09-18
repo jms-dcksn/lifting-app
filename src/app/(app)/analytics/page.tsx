@@ -1,44 +1,34 @@
-import { loadStallAssessments } from "@/lib/stall-data";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { WeightTrendCard } from "./weight-trend-card";
 import { loadWeightHistory } from "@/lib/weight-history";
-import { redirect } from "next/navigation";
 import {
-  e1rmPrFeed,
   exerciseSummaries,
   sessionTonnage,
   weeklyVolume,
-  weightPrs,
   type AnalyticsSetRow,
 } from "@/lib/analytics";
 import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
-import {
-  buildCoachCheckInReport,
-  formatCoachCheckIn,
-  type CoachPhaseInput,
-  type CoachSessionInput,
-  type CoachSetInput,
-  type CoachSlotInput,
-} from "@/lib/coach-check-in";
-import { getActiveProgram } from "@/lib/program";
-import { type ExerciseDef } from "@/lib/strength/coefficients";
 import { Card, CardLabel } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
-import { cx } from "@/components/ui/cx";
+import { iconButtonClasses } from "@/components/ui/icon-button-styles";
+import { IconCalendar } from "@/components/ui/icons";
 import { ExerciseList, type ExerciseListItem } from "./exercise-list";
 import { VolumeChart, type VolumeChartPoint } from "./volume-chart";
-import { CoachCheckIn } from "./coach-check-in";
-import { CoachReportSummary } from "./coach-report-summary";
-import { bodyweightTrend, dateKey } from "@/lib/bodyweight";
+import { dateKey } from "@/lib/bodyweight";
 import {
-  buildCoachRecommendations,
-  formatCoachRecommendations,
-} from "@/lib/coach-recommendations";
-import {
-  CoachRecommendationList,
-  type RecommendationDecision,
-} from "./coach-recommendation-list";
+  buildBoardLifts,
+  defaultCompoundIds,
+  extraPins,
+  isExercisePinned,
+  pinnedExerciseIds,
+} from "@/lib/board";
+import { loadUserPinRows } from "@/lib/pins-data";
+import { loadWeekRecordChips } from "@/lib/week-records-data";
+import { PinEditorButton, type PinEditorItem } from "../pins/pin-editor";
+import { BoardGrid } from "./board-grid";
+import { BoardSheet } from "./board-sheet";
 
 type AnalyticsQueryRow = {
   id: string;
@@ -57,22 +47,16 @@ type AnalyticsQueryRow = {
         performed_at: string;
         finished_at: string | null;
         program_id: string | null;
-        program_day_id: string | null;
-        week_index: number | null;
       }
     | {
         performed_at: string;
         finished_at: string | null;
         program_id: string | null;
-        program_day_id: string | null;
-        week_index: number | null;
       }[]
     | null;
 };
 
-export default async function AnalyticsPage({ searchParams }: { searchParams: Promise<{ coachExercise?: string | string[] }> }) {
-  const query = await searchParams;
-  const coachExercise = typeof query.coachExercise === "string" ? query.coachExercise : undefined;
+export default async function AnalyticsPage() {
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub as string | undefined;
@@ -82,94 +66,46 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const [
     { data: rows, error },
     { data: profile, error: profileError },
-    { data: sessionRows, error: sessionError },
     bodyweightEntries,
-    { data: dayRows, error: dayError },
-    { data: slotRows, error: slotError },
-    { data: phaseRows, error: phaseError },
-    { data: decisionRows, error: decisionError },
   ] = await Promise.all([
     supabase
       .from("set_log")
       .select(
-        "id, session_id, program_slot_id, exercise_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at, finished_at, program_id, program_day_id, week_index)",
+        "id, session_id, program_slot_id, exercise_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at, finished_at, program_id)",
       )
       .eq("user_id", userId)
       .eq("is_warmup", false)
       .order("created_at", { ascending: true }),
     supabase.from("profile").select("bodyweight, goal_weight").eq("id", userId).maybeSingle(),
-    supabase
-      .from("workout_session")
-      .select("id, performed_at, finished_at, program_id, program_day_id, week_index, readiness, joint_pain, notes")
-      .eq("user_id", userId),
     loadWeightHistory(supabase, userId, today),
-    supabase
-      .from("program_day")
-      .select("id, program_id, name")
-      .eq("user_id", userId),
-    supabase
-      .from("program_slot")
-      .select("id, program_day_id, exercise_id, target_sets, rep_min, rep_max, target_rir")
-      .eq("user_id", userId),
-    supabase
-      .from("program_phase")
-      .select("id, program_id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
-      .eq("user_id", userId),
-    supabase
-      .from("coach_recommendation_decision")
-      .select("recommendation_key, status, deferred_until")
-      .eq("user_id", userId),
   ]);
-
   if (error) throw new Error(error.message);
   if (profileError) throw new Error(profileError.message);
-  if (sessionError) throw new Error(sessionError.message);
-  if (dayError) throw new Error(dayError.message);
-  if (slotError) throw new Error(slotError.message);
-  if (phaseError) throw new Error(phaseError.message);
-  if (decisionError) throw new Error(decisionError.message);
 
-  const [catalog, program] = await Promise.all([
-    getCatalogMap(supabase, userId),
-    getActiveProgram(supabase, userId),
+  const catalog = await getCatalogMap(supabase, userId);
+  const [pinRows, week] = await Promise.all([
+    loadUserPinRows(supabase, userId),
+    loadWeekRecordChips(supabase, userId, catalog),
   ]);
   const analyticsRows = normalizeRows((rows ?? []) as AnalyticsQueryRow[]);
-  const weightTrend = bodyweightTrend(bodyweightEntries, today);
-  const bodyweight = weightTrend.latest?.weight ?? profile?.bodyweight ?? null;
+  const bodyweight = bodyweightEntries[0]?.weight ?? profile?.bodyweight ?? null;
+  const summaries = exerciseSummaries(analyticsRows);
   const sessionVolume = sessionTonnage(analyticsRows, catalog, bodyweight);
   const volume = weeklyVolume(sessionVolume);
-  const summaries = exerciseSummaries(analyticsRows);
-  const e1rmRecords = e1rmPrFeed(analyticsRows);
-  const weightRecords = weightPrs(analyticsRows);
-
   const totalVolume = volume.reduce((sum, point) => sum + point.tonnage, 0);
   const latestVolume = volume.at(-1);
   const previousVolume = volume.at(-2);
   const volumeDelta =
     latestVolume && previousVolume ? latestVolume.tonnage - previousVolume.tonnage : null;
   const excludedSets = sessionVolume.reduce((sum, point) => sum + point.excludedSetCount, 0);
-
   const chartData: VolumeChartPoint[] = volume.map((point) => ({
     date: formatWeekLabel(point.weekStart),
     tooltip: `${shortDate(point.weekStart)} - ${shortDate(point.weekEnd)}`,
     tonnage: Math.round(point.tonnage),
   }));
-
-  const gainers = summaries
-    .filter((summary) => summary.delta != null && summary.delta > 0)
-    .sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0))
-    .slice(0, 4);
-
-  const recordFeed = [
-    ...e1rmRecords.map((record) => ({ type: "e1rm" as const, ...record })),
-    ...weightRecords.map((record) => ({ type: "weight" as const, ...record })),
-  ]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 8);
-
   const listItems: ExerciseListItem[] = summaries.map((summary) => ({
     exerciseId: summary.exerciseId,
-    name: exerciseName(catalog, summary.exerciseId),
+    name: catalog[summary.exerciseId]?.name ?? summary.exerciseId,
     pattern: catalog[summary.exerciseId]?.pattern ?? "unknown",
     currentE1rm: summary.currentE1rm,
     bestE1rm: summary.bestE1rm,
@@ -177,215 +113,81 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     sessionCount: summary.sessionCount,
     delta: summary.delta,
   }));
-  const dayById = new Map((dayRows ?? []).map((day) => [day.id, day]));
-  const coachSessions: CoachSessionInput[] = (sessionRows ?? []).map((session) => ({
-    id: session.id,
-    performedAt: session.performed_at,
-    finishedAt: session.finished_at,
-    programId: session.program_id,
-    programDayId: session.program_day_id,
-    programDayName: session.program_day_id
-      ? dayById.get(session.program_day_id)?.name ?? null
-      : null,
-    weekIndex: session.week_index,
-    readiness: session.readiness,
-    jointPain: session.joint_pain as CoachSessionInput["jointPain"],
-    note: session.notes,
-  }));
-  const coachSets: CoachSetInput[] = ((rows ?? []) as AnalyticsQueryRow[]).map((row) => ({
-    sessionId: row.session_id,
-    programSlotId: row.program_slot_id,
-    exerciseId: row.exercise_id,
-    setIndex: row.set_index,
-    weight: row.weight,
-    reps: row.reps,
-    rir: row.rir,
-    e1rm: row.e1rm,
-    isWarmup: row.is_warmup,
-    createdAt: row.created_at,
-  }));
-  const coachSlots: CoachSlotInput[] = (slotRows ?? []).flatMap((slot) => {
-    const day = dayById.get(slot.program_day_id);
-    if (!day) return [];
-    return [{
-      id: slot.id,
-      programId: day.program_id,
-      programDayId: slot.program_day_id,
-      exerciseId: slot.exercise_id,
-      targetSets: slot.target_sets,
-      repMin: slot.rep_min,
-      repMax: slot.rep_max,
-      targetRir: slot.target_rir,
-    }];
+  const lifts = buildBoardLifts({
+    catalog,
+    pins: pinRows,
+    summaries,
+    weekExerciseIds: week.chips.map((chip) => chip.exerciseId),
   });
-  const coachPhases: CoachPhaseInput[] = (phaseRows ?? []).map((phase) => ({
-    id: phase.id,
-    programId: phase.program_id,
-    position: phase.position,
-    name: phase.name,
-    description: phase.description,
-    weekStart: phase.week_start,
-    weekEnd: phase.week_end,
-    targetRirMin: phase.target_rir_min,
-    targetRirMax: phase.target_rir_max,
-    setMultiplier: phase.set_multiplier,
-  }));
-  const coachReport = buildCoachCheckInReport({
-    programName: program?.name,
-    plannedSessions: program?.days.length,
-    sessions: coachSessions,
-    sets: coachSets,
-    slots: coachSlots,
-    phases: coachPhases,
-    definitions: catalog,
-    currentBodyweight: bodyweight,
-    bodyweightTrend: weightTrend,
-  });
-  const stalls = await loadStallAssessments(supabase, userId, catalog, new Date(coachReport.generatedAt));
-  const coachRecommendations = buildCoachRecommendations({
-    stalls,
-    report: coachReport,
-    activeProgramId: program?.id ?? null,
-    sessions: coachSessions,
-    sets: coachSets,
-    slots: coachSlots,
-    phases: coachPhases,
-    definitions: catalog,
-    currentBodyweight: bodyweight,
-  });
-  const coachCheckIn = `${formatCoachCheckIn(coachReport)}\n\n${formatCoachRecommendations(coachRecommendations)}`;
-  const recommendationDecisions: RecommendationDecision[] = (decisionRows ?? []).flatMap((row) => {
-    if (row.status !== "accepted" && row.status !== "dismissed" && row.status !== "deferred") {
-      return [];
-    }
-    return [{
-      recommendationKey: row.recommendation_key,
-      status: row.status,
-      deferredUntil: row.deferred_until,
-    }];
-  });
+  const defaults = defaultCompoundIds(catalog);
+  const pinnedIds = pinnedExerciseIds(pinRows, defaults);
+  const historyIds = new Set(summaries.map((summary) => summary.exerciseId));
+  const pinItems: PinEditorItem[] = [
+    ...defaults.map((exerciseId) => ({
+      exerciseId,
+      name: catalog[exerciseId]?.name ?? exerciseId,
+      group: "compound" as const,
+      pinned: isExercisePinned(pinRows, defaults, exerciseId),
+    })),
+    ...[
+      ...extraPins(pinRows, defaults).map((pin) => pin.exerciseId),
+      ...[...historyIds].filter((id) => !defaults.includes(id) && !catalog[id]?.machineTemplate),
+    ]
+      .filter((id, index, all) => all.indexOf(id) === index)
+      .map((exerciseId) => ({
+        exerciseId,
+        name: catalog[exerciseId]?.name ?? exerciseId,
+        group: "extra" as const,
+        pinned: isExercisePinned(pinRows, defaults, exerciseId),
+      })),
+  ];
 
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
-      <header>
-        <h1 className="text-display">Progress</h1>
-        <Link href="/analytics/month" className="mt-2 inline-block min-h-11 py-2 text-body underline">Month review</Link>
-        <p className="text-body text-muted">
-          {sessionVolume.length} session{sessionVolume.length === 1 ? "" : "s"} · {summaries.length} lift
-          {summaries.length === 1 ? "" : "s"} logged
-        </p>
-      </header>
-
-      {analyticsRows.length === 0 ? (
-        <Card>
-          <CardLabel className="mb-2">No training data yet</CardLabel>
-          <p className="text-body text-muted">
-            Finish a workout and this hub will show volume, records, and exercise trends.
-          </p>
-        </Card>
-      ) : (
-        <>
-          <Card>
-            <CardLabel className="mb-3">e1RM progression highlights</CardLabel>
-            {gainers.length > 0 ? (
-              <ul className="flex flex-col gap-2">
-                {gainers.map((summary) => (
-                  <li key={summary.exerciseId}>
-                    <Link
-                      href={`/history/${summary.exerciseId}`}
-                      className="flex min-h-11 items-center justify-between gap-3"
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-body font-medium">
-                          {exerciseName(catalog, summary.exerciseId)}
-                        </span>
-                        <span className="block text-caption text-muted">
-                          current {formatMaybe(summary.currentE1rm)} e1RM
-                        </span>
-                      </span>
-                      <TrendPill delta={summary.delta} />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-body text-muted">No gains yet.</p>
-            )}
-          </Card>
-
-          <Card>
-            <CardLabel className="mb-3">Records feed</CardLabel>
-            {recordFeed.length > 0 ? (
-              <ul className="flex flex-col gap-3">
-                {recordFeed.map((record) => (
-                  <li key={`${record.type}-${record.id}`} className="text-body">
-                    <Link href={`/history/${record.exerciseId}`} className="block">
-                      <span className="block font-medium">{exerciseName(catalog, record.exerciseId)}</span>
-                      <span className="text-muted">
-                        {record.type === "e1rm" ? (
-                          <>
-                            new e1RM {Math.round(record.e1rm)} lb{" "}
-                            {record.delta == null ? "· first mark" : <Delta value={record.delta} />}
-                          </>
-                        ) : (
-                          <>new max {formatWeightRecord(catalog, record.exerciseId, record.weight)}</>
-                        )}{" "}
-                        · {longDate(record.date)}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-body text-muted">Records appear after your first e1RM set.</p>
-            )}
-          </Card>
-
-          <WeightTrendCard entries={bodyweightEntries} today={today} goal={profile?.goal_weight ?? null} />
-
-          <Card>
-            <div className="mb-3">
-              <div className="mb-1 flex items-center gap-1">
-                <CardLabel>Total volume</CardLabel>
-                {excludedSets > 0 && (
-                  <InfoButton title="Excluded sets" label="About excluded bodyweight sets">
-                    Sets without a bodyweight reading are left out of tonnage.
-                  </InfoButton>
+      <header className="flex items-start justify-between gap-3">
+        <h1 className="text-display">Board</h1>
+        <div className="flex">
+          <Link href="/analytics/month" className={iconButtonClasses("ghost")} aria-label="Month review">
+            <IconCalendar />
+          </Link>
+          <BoardSheet label="All lifts" icon="search" title="All lifts">
+            <ExerciseList items={listItems} />
+          </BoardSheet>
+          <PinEditorButton items={pinItems} />
+          <BoardSheet label="More" icon="more" title="More">
+            <WeightTrendCard entries={bodyweightEntries} today={today} goal={profile?.goal_weight ?? null} />
+            <Card>
+              <div className="mb-3">
+                <div className="mb-1 flex items-center gap-1">
+                  <CardLabel>Total volume</CardLabel>
+                  {excludedSets > 0 && (
+                    <InfoButton title="Excluded sets" label="About excluded bodyweight sets">
+                      Sets without a bodyweight reading are left out of tonnage.
+                    </InfoButton>
+                  )}
+                </div>
+                <p className="text-heading tabular-nums">{formatWhole(totalVolume)} lb</p>
+                {volumeDelta != null && (
+                  <p className="text-caption text-muted">{signedVolume(volumeDelta)} vs last week</p>
                 )}
               </div>
-              <p className="text-heading tabular-nums">{formatWhole(totalVolume)} lb</p>
-              {volumeDelta != null && (
-                <p className="text-caption text-muted">
-                  <Delta value={volumeDelta} /> vs last week
-                </p>
+              {chartData.length >= 2 ? (
+                <VolumeChart data={chartData} />
+              ) : (
+                <p className="text-body text-muted">One week so far — the chart appears after the next week.</p>
               )}
-            </div>
-            {chartData.length >= 2 ? (
-              <VolumeChart data={chartData} />
-            ) : (
-              <p className="text-body text-muted">
-                One week so far — the chart appears after the next week.
-              </p>
-            )}
-          </Card>
+            </Card>
+          </BoardSheet>
+        </div>
+      </header>
 
-          <Card>
-            <CardLabel className="mb-3">Coach check-in</CardLabel>
-            <CoachReportSummary report={coachReport} />
-            {coachExercise && <p className="mb-2 text-caption text-muted">Next steps filtered to {catalog[coachExercise]?.name ?? "selected exercise"}. <Link href="/analytics#coach-next-steps" className="underline">Show all</Link></p>}
-            <CoachRecommendationList
-              recommendations={coachExercise ? coachRecommendations.filter(r => r.exerciseId === coachExercise) : coachRecommendations}
-              decisions={recommendationDecisions}
-              currentTime={coachReport.generatedAt}
-            />
-            <CoachCheckIn text={coachCheckIn} />
-          </Card>
-
-          <Card>
-            <CardLabel className="mb-3">All exercises</CardLabel>
-            <ExerciseList items={listItems} />
-          </Card>
-        </>
+      {analyticsRows.length === 0 && lifts.length === 0 ? (
+        <Card>
+          <CardLabel className="mb-2">No training data yet</CardLabel>
+          <p className="text-body text-muted">Finish a workout and key compounds land here.</p>
+        </Card>
+      ) : (
+        <BoardGrid lifts={lifts} pinnedIds={pinnedIds} />
       )}
     </div>
   );
@@ -416,14 +218,6 @@ function normalizeRows(rows: AnalyticsQueryRow[]): AnalyticsSetRow[] {
   });
 }
 
-function exerciseName(catalog: Record<string, ExerciseDef>, exerciseId: string) {
-  return catalog[exerciseId]?.name ?? exerciseId;
-}
-
-function formatMaybe(value: number | null) {
-  return value == null ? "no" : `${Math.round(value)} lb`;
-}
-
 function formatWhole(value: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
 }
@@ -437,57 +231,7 @@ function formatWeekLabel(weekStart: string) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-function longDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function formatWeightRecord(
-  catalog: Record<string, ExerciseDef>,
-  exerciseId: string,
-  weight: number,
-) {
-  const def = catalog[exerciseId];
-  if (def?.equipment === "bodyweight") {
-    if (weight < 0) return `${Math.abs(weight)} lb assist`;
-    return `${weight} lb added`;
-  }
-  return `${weight} lb`;
-}
-
-function Delta({ value }: { value: number }) {
+function signedVolume(value: number) {
   const rounded = Math.round(value);
-  const signed = rounded > 0 ? `+${formatWhole(rounded)}` : formatWhole(rounded);
-  return (
-    <span
-      className={cx(
-        "font-semibold tabular-nums",
-        rounded > 0 && "text-overload-up",
-        rounded < 0 && "text-overload-down",
-        rounded === 0 && "text-muted",
-      )}
-    >
-      {signed} lb
-    </span>
-  );
-}
-
-function TrendPill({ delta }: { delta: number | null }) {
-  if (delta == null) return null;
-  const rounded = Math.round(delta);
-  const signed = rounded > 0 ? `+${rounded}` : `${rounded}`;
-  return (
-    <span
-      className={cx(
-        "rounded-full border px-2 py-0.5 text-caption tabular-nums",
-        rounded > 0 && "border-overload-up text-overload-up",
-        rounded < 0 && "border-overload-down text-overload-down",
-        rounded === 0 && "border-border text-muted",
-      )}
-    >
-      {signed} lb
-    </span>
-  );
+  return `${rounded > 0 ? "+" : ""}${formatWhole(rounded)} lb`;
 }

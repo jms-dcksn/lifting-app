@@ -15,10 +15,13 @@ import type { ExerciseStat } from "@/lib/strength/recommend";
 import { rirLabel, type EffectivePrescription, type ProgramPhase } from "@/lib/periodization";
 import type { SessionFeedback } from "@/lib/session-feedback";
 import { Button, buttonClasses } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { IconHistory, IconLastUsed, IconSwap } from "@/components/ui/icons";
 import { Sheet } from "@/components/ui/sheet";
 import { Card, CardLabel } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
 import { Stepper } from "@/components/ui/stepper";
+import { PinButton } from "../../pins/pin-button";
 import { ExercisePicker } from "../../program/exercise-picker";
 import { RestBar, useRestTimer } from "./rest-timer";
 import { ExerciseHistory } from "./exercise-history";
@@ -82,6 +85,7 @@ export function ActiveSession({
   progressionByExercise,
   catalog: initialCatalog,
   achievements,
+  pinnedIds,
 }: {
   sessionId: string;
   dayName: string;
@@ -99,6 +103,7 @@ export function ActiveSession({
   progressionByExercise: Record<string, ProgressionPerformance[]>;
   catalog: Record<string, ExerciseDef>;
   achievements: ExerciseRecords[];
+  pinnedIds: string[];
 }) {
   useScreenWakeLock();
   const rest = useRestTimer(restToneEnabled);
@@ -222,6 +227,7 @@ export function ActiveSession({
           catalog={catalog}
           onResolve={addToCatalog}
           startRest={() => rest.start(slot.restSeconds ?? defaultRestSeconds)}
+          pinnedIds={pinnedIds}
         />
       ))}
 
@@ -285,6 +291,7 @@ function SlotCard({
   onResolve,
   startRest,
   achievements,
+  pinnedIds,
 }: {
   alreadyFinished: boolean;
   sessionId: string;
@@ -298,6 +305,7 @@ function SlotCard({
   onResolve: (def: ExerciseDef) => void;
   startRest: () => void;
   achievements: ExerciseRecords[];
+  pinnedIds: string[];
 }) {
   const [optimisticSets, applyOptimistic] = useOptimistic(
     slot.sets,
@@ -509,41 +517,45 @@ function SlotCard({
             {name}
           </Link>
         </h2>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex shrink-0">
           {lastUsedDef && !isTemplate && (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
+            <IconButton
+              variant="ghost"
               onClick={() => {
                 setSwapError(null);
                 setPickedSwap(lastUsedDef);
               }}
               disabled={alreadyFinished || savingSwap}
               aria-label={`Quick swap to ${lastUsedDef.name}`}
-              title={lastUsedDef.name}
-              className="shrink-0"
+              title={lastUsedLabel ?? lastUsedDef.name}
             >
-              Last: {lastUsedLabel}
-            </Button>
+              <IconLastUsed />
+            </IconButton>
           )}
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
+          <IconButton
+            variant="ghost"
             onClick={() => setSwapping(true)}
             disabled={alreadyFinished || savingSwap}
-            aria-label={`Swap ${name} for another exercise`}
-            className="shrink-0"
+            aria-label={isTemplate ? `Choose machine for ${name}` : `Swap ${name} for another exercise`}
           >
-            {isTemplate ? "Choose machine" : "Swap"}
-          </Button>
+            <IconSwap />
+          </IconButton>
+          <IconButton
+            variant="ghost"
+            onClick={() => setShowHistory(true)}
+            aria-label={`View history for ${name}`}
+          >
+            <IconHistory />
+          </IconButton>
+          {!isTemplate && (
+            <PinButton
+              exerciseId={exerciseId}
+              pinned={pinnedIds.includes(exerciseId)}
+              name={name}
+            />
+          )}
         </div>
       </div>
-
-      <Button type="button" variant="secondary" size="sm" className="mt-3" onClick={() => setShowHistory(true)} aria-label={`View history for ${name}`}>
-        History
-      </Button>
       {showHistory && (
         <ExerciseHistory key={exerciseId} exerciseId={exerciseId} sessionId={sessionId}
           name={catalog[def?.baseExerciseId ?? exerciseId]?.name ?? name}
@@ -886,15 +898,20 @@ function ProgressionContext({
     || best.performedAt !== last.performedAt
     || best.programSlotId !== last.programSlotId
   );
-  const unit = isBodyweight ? " added" : " lb";
-  const label = (item: ProgressionPerformance) =>
-    `${item.weight}${unit} × ${item.reps}${item.rir == null ? "" : ` @ ${item.rir} RIR`}`;
+  const unit = isBodyweight ? " added" : "";
+  const compact = (item: ProgressionPerformance) => `${item.weight}${unit} × ${item.reps}`;
 
   return (
-    <p className="mt-1 text-caption tabular-nums text-muted">
-      {last ? `Last here: ${label(last)}` : null}
-      {last && bestDiffers ? " · " : null}
-      {best && bestDiffers ? `Best recent: ${label(best)}` : null}
+    <p className="mt-1 flex items-center gap-1 text-caption tabular-nums text-muted">
+      <span>
+        {last ? `Last ${compact(last)}` : null}
+        {last && bestDiffers ? " · " : null}
+        {best && bestDiffers ? `Best ${compact(best)}` : null}
+      </span>
+      <InfoButton title="Last here">
+        Last is this slot&apos;s previous first set. Best is the strongest first set of this
+        exercise since then.
+      </InfoButton>
     </p>
   );
 }

@@ -55,4 +55,40 @@ describe("notifyRestDone", () => {
     expect(vibrate).toHaveBeenCalledWith([200, 100, 200]);
     expect(AudioContext).toHaveBeenCalledOnce();
   });
+
+  it("shows a Rest over notification when permission is granted, even if tone is off", () => {
+    const vibrate = vi.fn();
+    vi.stubGlobal("navigator", { vibrate });
+    const instances: { title: string; options?: NotificationOptions }[] = [];
+    class MockNotification {
+      static permission = "granted";
+      constructor(title: string, options?: NotificationOptions) {
+        instances.push({ title, options });
+      }
+    }
+    vi.stubGlobal("Notification", MockNotification);
+    notifyRestDone(false);
+    expect(instances).toEqual([
+      {
+        title: "Rest over",
+        options: { body: "Time for the next set", tag: "rest-complete", renotify: true },
+      },
+    ]);
+  });
+
+  it("skips the notification constructor when permission is denied", () => {
+    const vibrate = vi.fn();
+    vi.stubGlobal("navigator", { vibrate });
+    const instances: { title: string }[] = [];
+    class MockNotification {
+      static permission = "denied";
+      constructor(title: string) {
+        instances.push({ title });
+      }
+    }
+    vi.stubGlobal("Notification", MockNotification);
+    notifyRestDone(true);
+    expect(instances).toEqual([]);
+    expect(vibrate).toHaveBeenCalledWith([200, 100, 200]);
+  });
 });

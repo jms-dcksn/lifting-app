@@ -1,3 +1,5 @@
+import { showRestCompleteNotification } from "./rest-notification";
+
 // Format a rest countdown as m:ss (e.g. 120 -> "2:00", 47 -> "0:47"). Negatives clamp to 0.
 export function formatRestRemaining(seconds: number): string {
   const total = Math.max(0, Math.round(seconds));
@@ -11,14 +13,13 @@ export function parseRestToneEnabled(value: FormDataEntryValue | null): boolean 
   return value === "on";
 }
 
-// Vibration always; tone only when enabled. Both best-effort. In-app Web Audio only —
-// no Notification API, no permission prompt.
 export function notifyRestDone(toneEnabled = true) {
   try {
     navigator.vibrate?.([200, 100, 200]);
   } catch {
     // no-op
   }
+  showRestCompleteNotification();
   if (!toneEnabled) return;
   playRestCompleteTone();
 }

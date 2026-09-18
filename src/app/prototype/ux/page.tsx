@@ -1,5 +1,6 @@
 import "./prototype.css";
-import { UxPrototype, normalizeVariant } from "./studio";
+import { UxPrototype } from "./studio";
+import { normalizeVariant } from "./variant";
 
 export const metadata = {
   title: "Throwaway UX prototype",

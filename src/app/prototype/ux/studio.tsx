@@ -5,20 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { VariantA } from "./variant-a";
 import { VariantB } from "./variant-b";
 import { VariantC } from "./variant-c";
-
-const VARIANTS = [
-  { key: "A", name: "Board" },
-  { key: "B", name: "Atlas" },
-  { key: "C", name: "Pulse" },
-] as const;
-
-export type VariantKey = (typeof VARIANTS)[number]["key"];
-
-export function normalizeVariant(value?: string | null): VariantKey {
-  const key = value?.toUpperCase();
-  if (key === "A" || key === "B" || key === "C") return key;
-  return "A";
-}
+import { VARIANTS, type VariantKey } from "./variant";
 
 // Three variants of a PR-first visual language, switchable via ?variant=,
 // on throwaway /prototype/ux. A Board (tabs + compound grid), B Atlas

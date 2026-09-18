@@ -11,6 +11,8 @@ export const config = {
     // Run on everything except Next internals (incl. _next/webpack-hmr), static
     // assets and image files, so auth cookies refresh on real navigations without
     // the proxy intercepting the HMR channel. Route protection lives in (app)/layout.tsx.
-    "/((?!_next/|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // Skip throwaway /prototype/* visual studies so they can be reviewed
+    // without a Supabase session refresh.
+    "/((?!_next/|favicon.ico|manifest.webmanifest|prototype/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

@@ -8,6 +8,7 @@ import { bodyweightTrend, dateKey, type BodyweightEntry } from "@/lib/bodyweight
 import { saveProfile } from "./actions";
 import { LogWeightButton } from "@/components/weight-calendar";
 import { PeriodTrackingSettings } from "@/components/period-tracking-settings";
+import { RestNotificationSettings } from "./rest-notification-settings";
 import { signOut } from "../actions";
 import { CoachSection } from "./coach-section";
 
@@ -171,6 +172,8 @@ export default async function SettingsPage({
             Two short beeps play in this tab when rest ends. Phone vibration is separate.
           </InfoButton>
         </div>
+
+        <RestNotificationSettings />
 
         <Button type="submit" size="lg">
           Save

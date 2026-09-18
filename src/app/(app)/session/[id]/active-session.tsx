@@ -15,7 +15,7 @@ import {
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { rirLabel, type EffectivePrescription, type ProgramPhase } from "@/lib/periodization";
 import type { SessionFeedback } from "@/lib/session-feedback";
-import { Button, buttonClasses } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { IconHistory, IconLastUsed, IconSwap } from "@/components/ui/icons";
 import { Sheet } from "@/components/ui/sheet";
@@ -43,6 +43,7 @@ import { variantShortLabel } from "@/lib/exercise-id";
 import { ReadinessPrompt, SessionFeedbackDetails, SessionFeedbackSheet } from "./session-feedback";
 import { retryServerAction } from "@/lib/retry";
 import { sessionRecapPath } from "@/lib/session-paths";
+import { FinishedWorkoutNav } from "./session-nav";
 
 function generateIdempotencyKey(): string {
   return crypto.randomUUID();
@@ -205,35 +206,26 @@ export function ActiveSession({
         />
       ))}
 
-      <div className="sticky bottom-0 -mx-4 mt-2 flex flex-col gap-2 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
-        {alreadyFinished ? (
-          <>
-            <Link href="/" className={buttonClasses("primary", "lg", "w-full")}>
-              Home
-            </Link>
-            <Link href={sessionRecapPath(sessionId)} className={buttonClasses("secondary", "lg", "w-full")}>
-              View recap
-            </Link>
-          </>
-        ) : (
-          <>
-            <RestBar timer={rest} />
-            {summaryError && <p role="alert" className="text-caption text-danger">{summaryError}</p>}
-            <Button
-              type="button"
-              size="lg"
-              className="w-full"
-              onClick={() => {
-                setSummaryError(null);
-                setFeedbackSheet("finish");
-              }}
-              pending={finishing}
-            >
-              Finish workout
-            </Button>
-          </>
-        )}
-      </div>
+      {alreadyFinished ? (
+        <FinishedWorkoutNav sessionId={sessionId} />
+      ) : (
+        <div className="sticky bottom-0 -mx-4 mt-2 flex flex-col gap-2 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
+          <RestBar timer={rest} />
+          {summaryError && <p role="alert" className="text-caption text-danger">{summaryError}</p>}
+          <Button
+            type="button"
+            size="lg"
+            className="w-full"
+            onClick={() => {
+              setSummaryError(null);
+              setFeedbackSheet("finish");
+            }}
+            pending={finishing}
+          >
+            Finish workout
+          </Button>
+        </div>
+      )}
 
       {feedbackSheet && (
         <SessionFeedbackSheet

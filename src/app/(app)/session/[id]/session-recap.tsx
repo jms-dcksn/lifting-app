@@ -1,15 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { buttonClasses } from "@/components/ui/button-styles";
-import { sessionPath } from "@/lib/session-paths";
 import type { ExerciseRecords } from "@/lib/strength/records";
 import type { SessionFeedback } from "@/lib/session-feedback";
 import { retryServerAction } from "@/lib/retry";
 import { updateSessionFeedback } from "../actions";
 import { AchievementRecap } from "./achievements";
 import { SessionFeedbackDetails, SessionFeedbackSheet } from "./session-feedback";
+import { RecapNav } from "./session-nav";
 
 export function SessionRecap({
   sessionId,
@@ -48,14 +46,7 @@ export function SessionRecap({
 
       <SessionFeedbackDetails feedback={feedback} onEdit={() => setEditing(true)} />
 
-      <div className="sticky bottom-0 -mx-4 mt-auto flex flex-col gap-2 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
-        <Link href="/" className={buttonClasses("primary", "lg", "w-full animate-rise")}>
-          Home
-        </Link>
-        <Link href={sessionPath(sessionId)} className={buttonClasses("secondary", "lg", "w-full")}>
-          View workout
-        </Link>
-      </div>
+      <RecapNav sessionId={sessionId} />
 
       {editing && (
         <SessionFeedbackSheet

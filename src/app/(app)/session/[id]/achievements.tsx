@@ -1,5 +1,11 @@
-import { Card, CardLabel } from "@/components/ui/card";
-import { recordCounts, type ExerciseRecords, type RepRecord } from "@/lib/strength/records";
+import Link from "next/link";
+import {
+  recapHeadline,
+  recapLines,
+  recordCounts,
+  type ExerciseRecords,
+  type RepRecord,
+} from "@/lib/strength/records";
 
 function repLabel(record: RepRecord, isBodyweight: boolean) {
   const load = isBodyweight
@@ -35,26 +41,73 @@ export function AchievementPills({ groups, exerciseId }: { groups: ExerciseRecor
   );
 }
 
-export function AchievementRecap({ groups }: { groups: ExerciseRecords[] }) {
-  if (!groups.length) return null;
+export function AchievementRecap({
+  groups,
+  dayName,
+  totalSets,
+  titleAs = "h2",
+  empty = "hide",
+}: {
+  groups: ExerciseRecords[];
+  dayName: string;
+  totalSets: number;
+  titleAs?: "h1" | "h2";
+  empty?: "hide" | "hero";
+}) {
   const counts = recordCounts(groups);
-  const headline = [
-    counts.reps ? `${counts.reps} rep ${counts.reps === 1 ? "PR" : "PRs"}` : null,
-    counts.e1rm ? `${counts.e1rm} e1RM ${counts.e1rm === 1 ? "record" : "records"}` : null,
-  ].filter(Boolean).join(" · ");
+  const headline = recapHeadline(counts);
+  if (!headline && empty === "hide") return null;
+
+  const Title = titleAs;
+  const hasRecords = headline != null;
+  // Staggered rise so the payoff screen lands as a moment, not a flash.
+  let step = 0;
+  const delay = () => ({ animationDelay: `${step++ * 70}ms` });
+
   return (
-    <Card>
-      <CardLabel>Workout achievements</CardLabel>
-      <p className="mt-1 text-heading">{headline}</p>
-      <p className="text-caption text-muted">Across {counts.exercises} {counts.exercises === 1 ? "exercise" : "exercises"}</p>
-      <ul className="mt-3 flex flex-col gap-3">
-        {groups.map((group) => (
-          <li key={group.key}>
-            <h3 className="text-body font-medium">{group.name}</h3>
-            <AchievementPills groups={[group]} />
-          </li>
-        ))}
-      </ul>
-    </Card>
+    <section aria-label="Workout recap">
+      <header className="animate-rise" style={delay()}>
+        <p
+          className={`text-caption font-semibold uppercase tracking-[0.16em] ${
+            hasRecords ? "text-record" : "text-muted"
+          }`}
+        >
+          Workout recap
+        </p>
+        <Title
+          className={hasRecords ? "mt-2 text-recap" : "mt-2 text-display"}
+        >
+          {headline ?? `${dayName} done`}
+        </Title>
+        {!hasRecords && (
+          <p className="mt-2 text-body text-muted">
+            {totalSets} working {totalSets === 1 ? "set" : "sets"}
+          </p>
+        )}
+      </header>
+      {hasRecords && (
+        <ul className="mt-8 list-none p-0">
+          {groups.map((group) => (
+            <li
+              key={group.key}
+              className="flex animate-rise items-baseline justify-between gap-4 border-t border-border py-3.5"
+              style={delay()}
+            >
+              <Link
+                href={`/history/${group.exerciseId}`}
+                className="min-w-0 text-body font-medium underline-offset-2 hover:underline"
+              >
+                {group.name}
+              </Link>
+              <div className="shrink-0 text-right text-body tabular-nums text-record">
+                {recapLines(group).map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

@@ -65,6 +65,33 @@ export function ReadinessPrompt({ sessionId }: { sessionId: string }) {
   );
 }
 
+export function SessionFeedbackDetails({
+  feedback,
+  onEdit,
+}: {
+  feedback: SessionFeedback;
+  onEdit?: () => void;
+}) {
+  const summary = feedback.jointPain === "significant"
+    ? "Significant joint pain"
+    : feedback.jointPain || feedback.note
+      ? "Notes"
+      : "Session notes";
+
+  return (
+    <details>
+      <summary
+        className={`min-h-11 cursor-pointer py-2 text-caption font-semibold uppercase tracking-wide ${
+          feedback.jointPain === "significant" ? "text-danger" : "text-muted"
+        }`}
+      >
+        {summary}
+      </summary>
+      <SessionFeedbackCard feedback={feedback} onEdit={onEdit} />
+    </details>
+  );
+}
+
 export function SessionFeedbackCard({
   feedback,
   onEdit,

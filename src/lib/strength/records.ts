@@ -155,6 +155,36 @@ export function recordCounts(groups: ExerciseRecords[]) {
   };
 }
 
+export type RecordCounts = ReturnType<typeof recordCounts>;
+
+/** Finish-recap hero. A single "N PRs" number is only honest when every record is the same kind. */
+export function recapHeadline(counts: RecordCounts) {
+  if (counts.reps === 0 && counts.e1rm === 0) return null;
+  if (counts.reps > 0 && counts.e1rm > 0) {
+    return [
+      `${counts.reps} rep ${counts.reps === 1 ? "PR" : "PRs"}`,
+      `${counts.e1rm} e1RM ${counts.e1rm === 1 ? "record" : "records"}`,
+    ].join(" · ");
+  }
+  const n = counts.reps || counts.e1rm;
+  return `${n} ${n === 1 ? "PR" : "PRs"}`;
+}
+
+function compactDelta(improvement: number | null) {
+  return improvement == null ? "" : ` +${improvement}`;
+}
+
+/** Compact recap lines for one exercise/equipment scope. No fabricated deltas. */
+export function recapLines(group: ExerciseRecords) {
+  const lines = group.repRecords.map((record) =>
+    `${record.load} × ${record.reps}${compactDelta(record.improvement)}`,
+  );
+  if (group.e1rmRecord) {
+    lines.push(`${group.e1rmRecord.value} e1RM${compactDelta(group.e1rmRecord.improvement)}`);
+  }
+  return lines;
+}
+
 export function recordsForSlot(groups: ExerciseRecords[], slotId: string) {
   return groups.map((group) => ({
     ...group,

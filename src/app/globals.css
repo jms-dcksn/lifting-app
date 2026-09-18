@@ -2,7 +2,8 @@
 
 /*
  * Design tokens — the P6 contract (docs/PLAN.md):
- * near-monochrome; color is semantic only (overload up/down, calibrate, danger);
+ * near-monochrome; color is semantic only (overload up/down, calibrate, danger, record);
+
  * one card radius, one control radius; motion 150–250ms, transform/opacity only.
  */
 
@@ -20,6 +21,7 @@
   --overload-up: #059669;
   --overload-down: #dc2626;
   --calibrate: #b45309;
+  --record: #92650a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -33,10 +35,11 @@
     --faint: #71717a;
     --accent: #ffffff;
     --accent-foreground: #0a0a0a;
-    --overload-up: #34d399;
-    --overload-down: #f87171;
-    --calibrate: #fbbf24;
-  }
+  --overload-up: #34d399;
+  --overload-down: #f87171;
+  --calibrate: #fbbf24;
+  --record: #e8c547;
+}
 }
 
 @theme inline {
@@ -53,6 +56,7 @@
   --color-overload-down: var(--overload-down);
   --color-danger: var(--overload-down);
   --color-calibrate: var(--calibrate);
+  --color-record: var(--record);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -63,6 +67,11 @@
   --text-display--line-height: 2rem;
   --text-display--font-weight: 600;
   --text-display--letter-spacing: -0.025em;
+  /* Finish recap hero only — not a fifth general scale step. */
+  --text-recap: 2.75rem;
+  --text-recap--line-height: 0.95;
+  --text-recap--font-weight: 600;
+  --text-recap--letter-spacing: -0.06em;
   --text-heading: 1rem;
   --text-heading--line-height: 1.5rem;
   --text-heading--font-weight: 600;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { EXERCISE_BY_ID } from "./coefficients";
 import { computeE1rm } from "./e1rm";
-import { historicalBodyweight, recordCounts, recordsForSlot, validSetNumbers, workoutRecords, type RecordSet } from "./records";
+import { historicalBodyweight, recapHeadline, recapLines, recordCounts, recordsForSlot, validSetNumbers, workoutRecords, type RecordSet } from "./records";
 
 const start = "2026-09-12T10:00:00Z";
 const catalog = { ...EXERCISE_BY_ID,
@@ -156,6 +156,27 @@ describe("workout records", () => {
     expect(detect([...rows, ...rows])).toEqual(detect(rows));
     expect(detect([...rows].reverse())).toEqual(detect(rows));
     expect(detect(JSON.parse(JSON.stringify(rows)))).toEqual(detect(rows));
+  });
+
+  it("writes a recap hero that does not mix rep and e1RM into one dishonest count", () => {
+    expect(recapHeadline({ reps: 0, e1rm: 0, exercises: 0 })).toBeNull();
+    expect(recapHeadline({ reps: 2, e1rm: 0, exercises: 1 })).toBe("2 PRs");
+    expect(recapHeadline({ reps: 0, e1rm: 1, exercises: 1 })).toBe("1 PR");
+    expect(recapHeadline({ reps: 1, e1rm: 1, exercises: 1 })).toBe("1 rep PR · 1 e1RM record");
+    expect(recapHeadline({ reps: 2, e1rm: 1, exercises: 1 })).toBe("2 rep PRs · 1 e1RM record");
+  });
+
+  it("formats compact recap lines without inventing deltas", () => {
+    const mixed = detect([set(), current()])[0];
+    expect(recapLines(mixed)).toEqual([
+      "100 × 10 +2",
+      `${mixed.e1rmRecord!.value} e1RM +${mixed.e1rmRecord!.improvement}`,
+    ]);
+    const first = detect([current({ id: "first", reps: 8 }), current({ id: "next", created_at: "2026-09-12T10:10:00Z" })])[0];
+    expect(recapLines(first)).toEqual([
+      "100 × 10",
+      `${first.e1rmRecord!.value} e1RM`,
+    ]);
   });
 
   it("keeps records attached to the winning slot across swaps and duplicated exercises", () => {

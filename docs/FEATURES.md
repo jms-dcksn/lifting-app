@@ -118,15 +118,19 @@ Adaptive plateau engine under §5.
   shows a "Plateau detected" card before set entry: a rep-range change (with starting weight)
   or ranked swap candidates, each with **Accept / Keep going / Other options**. Accepting
   applies the change for this and future sessions; the card self-clears once accepted.
-- **Workout records** — saved sets show exact-exercise rep/e1RM PRs; completion recaps replay
-  the same records and update after edits/deletions. [Eligibility](DECISIONS.md#workout-records).
+- **Workout records** — saved sets show exact-exercise rep/e1RM PRs; the finish recap
+  replays the same records as a cinematic hero (`N PRs`, or the two-part count when mixing
+  kinds) plus compact per-exercise lines, and updates after edits/deletions.
+  [Eligibility](DECISIONS.md#workout-records).
 - **Quick history** — a Sheet loads ten latest sets from previous workouts across explicitly
   linked exercise variants without resetting set entry or the rest timer.
-- **Finish session** — `finishSession` stamps `finished_at` and returns a per-lift summary
-  with overload deltas (latest session vs that exercise's previous session).
+- **Finish session** — `finishSession` stamps `finished_at` and returns working-set count,
+  canonical records, and saved feedback. The recap hero is the records (or `{day} done`
+  when there are none). Joint pain / notes sit behind a details control. Done goes home.
 - **Minimal session feedback** — a skippable 1–5 readiness tap appears before the first set;
-  finish opens an optional joint-pain + short-note sheet. Finished sessions show the saved
-  values and allow pain/note edits without changing the original finish time.
+  finish opens an optional joint-pain + short-note sheet. Finished sessions keep the saved
+  values behind the recap details control and allow pain/note edits without changing the
+  original finish time.
 
 ### Rest timer
 - **Auto-start on log** — logging a set starts a single session-wide rest countdown with
@@ -303,8 +307,9 @@ heaviest raw load per exercise), `exerciseSummaries`, `patternWeekStats`, `lates
 ## 11. Design system & UI primitives (`src/components/ui/`)
 
 - **Semantic design tokens** in `globals.css` — near-monochrome palette where color is
-  *semantic only* (overload up/down, calibrate, danger); one type scale, one card radius, one
-  control radius, a single content-column width (`max-w-page`); Geist fonts.
+  *semantic only* (overload up/down, calibrate, danger, record gold); one type scale, one card radius, one
+  control radius, a single content-column width (`max-w-page`); Geist fonts. `--text-recap`
+  is the finish-recap hero only.
 - **Motion tokens** — `animate-tick/row-in/rise`, `[data-exiting]` exit animation, skeleton
   pulse; a global `prefers-reduced-motion` kill-switch.
 - **`Sheet`** — the one overlay primitive: native `<dialog>` bottom sheet with focus trap,

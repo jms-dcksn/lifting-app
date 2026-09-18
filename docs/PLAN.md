@@ -473,6 +473,19 @@ increment), working sets only, bodyweight included, just-me-first.
 - [x] Preserve historical comparisons after later workouts and recalculate edits/deletions.
 - [x] Verify eligibility, bodyweight/assistance, precision, pagination, save failures, and summary reuse.
 
+## Cinematic workout recap (#94)
+
+- [x] Finish recap uses a record-count hero (`N PRs`, or the two-part count when mixing
+      rep and e1RM) and compact per-exercise lines in `--record` gold.
+- [x] A workout with no records still completes with `{dayName} done` plus working-set
+      count, without gold or invented records.
+- [x] Drop the top-e1RM table from the recap hero; keep history links on record rows.
+- [x] Put joint pain / session notes behind a details control, not in the hero.
+- [x] Reopened sessions still show the recap above editable cards; **View summary**
+      still reloads this screen. No schema or record-rule changes.
+- [x] Existing workout-records / recap action tests stay green; recap copy helpers
+      and a focused recap render case cover mixed vs single-kind headlines.
+
 ## Progress epic #27 — increment 1: weight calendar (#28)
 
 - [x] Shared month calendar and weight Sheet on Home, Progress, and Settings.

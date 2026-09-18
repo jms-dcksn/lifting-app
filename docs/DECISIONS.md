@@ -490,13 +490,19 @@ authenticated `loadWorkoutRecords` read path. No schema migration is required.
   on their exercise card. Pills have text and a star as well as semantic color.
 - Both types can appear together. Records from an exercise swapped out mid-workout
   retain their original exercise name. Completed cards with records remain readable.
-- Finish shows a compact achievement count and one row per exercise/equipment scope.
+- Finish recap is the payoff: a `--text-recap`-size hero for records earned this workout
+  (`2 PRs`, or the two-part count when a single number would mix rep and e1RM),
+  then one row per exercise/equipment scope with compact lines (`225 × 8 +1`,
+  `275 e1RM +5`) in record gold. History links stay on the exercise name.
   Several improvements at one load collapse to the best reps; distinct loads remain.
-  One best e1RM is included per scope. The existing top-e1RM table and feedback remain.
+  One best e1RM is included per scope. The top-e1RM table is not on this screen.
+- A workout with no records still finishes: `{dayName} done` plus working-set count,
+  with no gold and no invented records. Joint pain and the session note sit behind
+  a details control, not in the hero.
 - Reopening a finished session shows its recap above the editable set cards. The
-  **View summary** button reloads the completion summary. Edits/deletions update records.
-- No records means no extra section. No toast, celebration effect, or announcement
-  is replayed on rerender, refresh, or resume. Optimistic rows never earn records.
+  **View summary** button reloads the completion recap. Edits/deletions update records.
+- No records on resume means no extra recap section. No toast, celebration effect, or
+  announcement is replayed on rerender, refresh, or resume. Optimistic rows never earn records.
 
 ### Comparability and eligibility
 
@@ -554,7 +560,10 @@ do not add achievement counts. Set IDs identify the winning slot for card placem
 ### Verification
 
 - `strength/records.test.ts`: mixed/consolidated records, scope, numeric eligibility,
-  precision, bodyweight/assistance, first observations, edits, deletes, and replay stability.
+  precision, bodyweight/assistance, first observations, edits, deletes, replay stability,
+  recap headline mixing, and compact recap lines.
+- `achievement-recap.test.tsx`: finish hero copy, gold compact lines, history links,
+  hidden resume recap when empty, and no-record finish without gold.
 - `workout-records.test.ts`: authenticated query scoping, time boundary, pagination past
   1,000 historical sets, empty sessions, and failed reads.
 - `record-actions.test.ts`: real save/edit/delete/finish actions through the loader and

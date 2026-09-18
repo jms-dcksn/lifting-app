@@ -131,6 +131,28 @@ invalidate the history drill-down. Period tracking design (#32) specifies option
 bands on weight and e1RM charts; see [PERIOD-TRACKING.md](PERIOD-TRACKING.md) for the complete
 contract. Implementation in #33 adds the view toggle and chart overlays.
 
+## Period × performance weeks (#105)
+
+When period tracking is enabled, month review shows one glanceable card above the summary
+metrics. It joins the selected month window, observed `period_observation` dates, weekly
+bodyweight averages, finished workouts, and canonical PR counts. Each row is a Monday-Sunday
+week clipped to the month (and to today when the month is in progress).
+
+- Purple day marks are observed period days only. Gaps are not filled. Days outside the
+  month window stay empty even when the ISO week spills.
+- Weight is that week's logged average versus the previous ISO week, using the same
+  `bodyweightTrend` helper as the weight card. Missing averages stay blank.
+- Strength is canonical PR count from `workoutRecords` in that week. Workout ticks on the
+  day strip are finished sessions, including sessions with no records.
+- Period weeks / Other weeks totals are descriptive counts and mean weekly weight change.
+  They do not classify stalls, change PR totals, infer a cycle, or recommend training.
+- The card is omitted unless `sex = female` and `period_tracking_enabled`. Coach, exports,
+  and the weekly API are unchanged and still receive no period data.
+
+`buildPeriodPerformanceOverlay` is the pure join. `MonthlyReport.currentWorkouts` lists
+finished sessions in the current window so the overlay can count training days without a
+second query. No migration or new secrets.
+
 No new tables, secrets, dependencies or migrations. Existing paginated reads retain the
 complete historical record baseline through the selected cutoff; this slice does not add
 materialized baselines or solve the documented full-history read cost. #32 remains design

@@ -43,6 +43,7 @@ describe("monthly report", () => {
     expect(r.current.repPrs).toBe(recordCounts(recaps).reps);
     expect(r.current.e1rmPrs).toBe(recordCounts(recaps).e1rm);
     expect(r.current).toMatchObject({ repPrs: 1, e1rmPrs: 1, workouts: 2, workoutsWithRecords: 1 });
+    expect(r.currentWorkouts.map((workout) => workout.date)).toEqual(["2026-09-02", "2026-09-08"]);
     expect(r.achievements[0].records[0].repRecords[0].reps).toBe(11);
     expect(r.prior.repPrs).toBe(1);
     expect(r.lifts[0].currentExposures).toBe(2);

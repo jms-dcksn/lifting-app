@@ -1,4 +1,5 @@
 import { LiftRow } from "./lift-detail";
+import { PeriodPerformanceCard } from "./period-performance";
 import Link from "next/link";
 import { Card, CardLabel } from "@/components/ui/card";
 import { buttonClasses } from "@/components/ui/button-styles";
@@ -6,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { InfoButton } from "@/components/ui/info-button";
 import { Input } from "@/components/ui/input";
 import { shiftMonth } from "@/lib/weight-calendar";
-import { dateKey } from "@/lib/bodyweight";
+import { dateKey, type BodyweightEntry } from "@/lib/bodyweight";
 import type { MonthlyReport } from "@/lib/monthly-progress";
 import type { PeriodObservation } from "@/lib/period-calendar";
+import { buildPeriodPerformanceOverlay } from "@/lib/period-performance";
 
 const amount = (n: number | null) => n == null ? "—" : `${n.toFixed(1)} lb`;
 const label = (month: string) => new Date(`${month}-01T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -18,10 +20,12 @@ export function MonthlyReview({
   report,
   eligible,
   periodObservations,
+  weightEntries,
 }: {
   report: MonthlyReport;
   eligible?: boolean;
   periodObservations?: PeriodObservation[];
+  weightEntries?: BodyweightEntry[];
 }) {
   const improving = report.lifts.filter(l => l.state === "improving");
   const repOnly = report.lifts.filter(l => l.state !== "improving" && l.repGains.length > 0);
@@ -32,6 +36,15 @@ export function MonthlyReview({
     recordGroups.set(record.key, group);
   }
   const stalls = report.stalls.filter(s => s.state === "plateau");
+  const overlay = eligible
+    ? buildPeriodPerformanceOverlay({
+        window: report.windows.current,
+        periodDates: (periodObservations ?? []).map((observation) => observation.observedOn),
+        entries: weightEntries ?? [],
+        workouts: report.currentWorkouts,
+        achievements: report.achievements,
+      })
+    : null;
   const currentMonth = dateKey(new Date(report.generatedAt), report.timeZone).slice(0, 7);
   const metrics = [
     ["Workouts", report.current.workouts, report.prior.workouts],
@@ -64,6 +77,7 @@ export function MonthlyReview({
         Windows use {report.timeZone}.
       </InfoButton>
     </div>
+    {overlay && <PeriodPerformanceCard overlay={overlay} />}
     <div className="grid grid-cols-2 gap-2">
       {metrics.map(([name, value, previous]) => <Card key={name} className="min-w-0 p-3">
         <CardLabel>{name}</CardLabel><p className="mt-2 text-heading tabular-nums">{value}</p>

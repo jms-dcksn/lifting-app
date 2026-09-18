@@ -16,7 +16,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |
 | Active substitutions / pre-workout choices | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
 | Weight observations, charts and goal distance | [Calendar](WEIGHT-CALENDAR.md), [trends](WEIGHT-TRENDS.md) |
-| Monthly comparisons and shared stall evidence | [Monthly progress](MONTHLY-PROGRESS.md) |
+| Monthly comparisons, shared stall evidence, or period × performance weeks | [Monthly progress](MONTHLY-PROGRESS.md) |
 | Strong Foundations template rationale | [Strong Foundations](STRONG-FOUNDATIONS.md) |
 
 [PLAN](PLAN.md) mixes completed milestones with remaining work; its original estimates and
@@ -26,9 +26,10 @@ baseline, not a current bug list. Files under `superpowers/plans/` and `superpow
 are dated design/implementation records; their commands and file maps are not current runbooks.
 
 As of 2026-09-18: the Train/Board/Program/You tab shell (epic #93), cinematic recap, Board
-compounds/pins, and the monthly dashboard (#31) are implemented. See [Features](FEATURES.md)
-for current behavior. Issue numbers here identify planned slices, not a live GitHub status
-check. Historical verification counts describe their original runs.
+compounds/pins, the monthly dashboard (#31), and the period × performance week overlay (#105)
+are implemented. See [Features](FEATURES.md) for current behavior. Issue numbers here identify
+planned slices, not a live GitHub status check. Historical verification counts describe their
+original runs.
 
 Update the owning document when behavior changes. Keep root instructions short, link new
 contracts by task trigger, and avoid copying inventories or counts available in source.

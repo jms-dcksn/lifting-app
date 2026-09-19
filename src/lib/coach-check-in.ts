@@ -155,6 +155,7 @@ export interface SpecializationVolumeReport {
   label: string;
   workingSets: number;
   hardSets: number;
+  prescribedSets: number;
 }
 
 export interface CoachWindowReport {
@@ -304,6 +305,7 @@ export function formatCoachCheckIn(report: CoachCheckInReport): string {
   const prior = report.prior;
   const duration = current.duration.averageMinutes;
   const rir = current.rirExecution;
+  const shortfall = formatSpecializationShortfall(current.specializationVolume);
   const lines = [
     "WEEKLY TRAINING CHECK-IN",
     `Report schema: ${report.version}`,
@@ -329,17 +331,10 @@ export function formatCoachCheckIn(report: CoachCheckInReport): string {
     ...current.specializationVolume.map(
       (group) => `${group.label}: ${group.workingSets} / ${group.hardSets}`,
     ),
+    ...(shortfall ? [shortfall] : []),
     "",
     "PERFORMANCE TREND (last 4 comparable exposures)",
-    ...(report.exerciseTrends.length > 0
-      ? report.exerciseTrends.map((trend) => {
-          const comparison =
-            trend.changePercent == null
-              ? "needs 4 exposures"
-              : `${signedDecimal(trend.changePercent)}% recent-two vs prior-two`;
-          return `${trend.exerciseName}: ${trend.classification.replace("_", " ")} · ${comparison}`;
-        })
-      : ["No exercise exposures available."]),
+    ...formatExerciseTrends(report.exerciseTrends),
     "",
     "FIXED-LOAD REP PROGRESS (current vs prior window)",
     ...(report.fixedLoadRepProgress.length > 0
@@ -467,7 +462,7 @@ function buildWindowReport(
         prescribedWorkingSets === 0 ? null : workingSets.length / prescribedWorkingSets,
     },
     rirExecution,
-    specializationVolume: specializationVolume(workingSets, context.definitions),
+    specializationVolume: specializationVolume(workingSets, finishedSessions, context),
     sessions: finishedSessions.map((session) =>
       buildSessionReport(context, session, workingSets),
     ),
@@ -693,22 +688,72 @@ function bestRepsByLoad(
 
 function specializationVolume(
   sets: CoachSetInput[],
-  definitions: Record<string, ExerciseDef>,
+  finishedSessions: CoachSessionInput[],
+  context: BuildContext,
 ): SpecializationVolumeReport[] {
   return (Object.entries(SPECIALIZATION_GROUPS) as Array<
     [SpecializationGroup, (typeof SPECIALIZATION_GROUPS)[SpecializationGroup]]
   >).map(([group, definition]) => {
     const matching = sets.filter((set) => {
-      const pattern = definitions[set.exerciseId]?.pattern;
+      const pattern = context.definitions[set.exerciseId]?.pattern;
       return pattern != null && definition.patterns.includes(pattern);
     });
+    let prescribedSets = 0;
+    for (const session of finishedSessions) {
+      const sessionSlots = session.programDayId
+        ? context.slotsByDay.get(session.programDayId) ?? []
+        : [];
+      for (const slot of sessionSlots) {
+        const pattern = context.definitions[slot.exerciseId]?.pattern;
+        if (!pattern || !definition.patterns.includes(pattern)) continue;
+        const prescription = effectivePrescription(context, session, slot);
+        if (prescription.targetRirMin > 1) continue;
+        prescribedSets += prescription.targetSets;
+      }
+    }
     return {
       group,
       label: definition.label,
       workingSets: matching.length,
       hardSets: matching.filter((set) => set.rir != null && set.rir <= 1).length,
+      prescribedSets,
     };
   });
+}
+
+export function specializationHardSetShortfalls(
+  volume: SpecializationVolumeReport[],
+): SpecializationVolumeReport[] {
+  return volume.filter((group) => group.prescribedSets > 0 && group.hardSets < group.prescribedSets);
+}
+
+export function formatSpecializationShortfall(
+  volume: SpecializationVolumeReport[],
+): string | null {
+  const shortfalls = specializationHardSetShortfalls(volume);
+  if (shortfalls.length === 0) return null;
+  return `Hard-set shortfall: ${shortfalls
+    .map((group) => `${group.label} ${group.hardSets}/${group.prescribedSets}`)
+    .join(" · ")}`;
+}
+
+function formatExerciseTrends(trends: ExerciseTrendReport[]): string[] {
+  const classified = trends.filter((trend) => trend.classification !== "insufficient_data");
+  const waiting = trends.length - classified.length;
+  if (classified.length === 0 && waiting === 0) return ["No exercise exposures available."];
+  const lines = classified.map((trend) => {
+    const comparison =
+      trend.changePercent == null
+        ? "needs 4 exposures"
+        : `${signedDecimal(trend.changePercent)}% recent-two vs prior-two`;
+    return `${trend.exerciseName}: ${trend.classification.replace("_", " ")} · ${comparison}`;
+  });
+  if (waiting > 0) {
+    lines.push(
+      `${waiting} exercise${waiting === 1 ? "" : "s"} waiting on 4 comparable exposures.`,
+    );
+  }
+  return lines;
 }
 
 function effectivePrescription(

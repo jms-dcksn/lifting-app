@@ -8,6 +8,7 @@ import type {
 import { dateKey } from "./bodyweight";
 import { resolvePrescription } from "./periodization";
 import { isDeload, type StallAssessment } from "./stall-report";
+import type { ExerciseDef, Pattern } from "./strength/coefficients";
 import {
   selectProgressionReference,
   sessionTarget,
@@ -25,6 +26,7 @@ export type CoachRecommendationKind =
   | "insufficient_data";
 
 export type RecommendationConfidence = "insufficient" | "low" | "medium" | "high";
+export type RecommendationPriority = "now" | "next";
 
 export interface CoachRecommendation {
   key: string;
@@ -46,7 +48,29 @@ export interface CoachRecommendation {
   };
   confidence: RecommendationConfidence;
   dataSufficiency: string;
+  priority: RecommendationPriority;
 }
+
+const COMPOUND_PATTERNS = new Set<Pattern>([
+  "horizontal_press",
+  "vertical_press",
+  "horizontal_pull",
+  "vertical_pull",
+  "squat",
+  "hinge",
+  "lunge",
+  "hip_thrust",
+]);
+
+const CONFIDENCE_SCORE: Record<RecommendationConfidence, number> = {
+  insufficient: 0,
+  low: 1,
+  medium: 2,
+  high: 3,
+};
+
+// Medium add-load on a compound scores 16. Isolation hold/chase-reps stays well below.
+const NOW_SCORE = 16;
 
 export interface BuildCoachRecommendationsInput
   extends Pick<
@@ -81,7 +105,7 @@ export function buildCoachRecommendations(
   const painful = currentSessions.filter((session) => session.jointPain === "significant");
   if (painful.length > 0) {
     const latest = painful.at(-1) as CoachSessionInput;
-    return [recommendation({
+    return rankCoachRecommendations([recommendation({
       kind: "pain_review",
       slotId: "session",
       exerciseId: null,
@@ -98,14 +122,71 @@ export function buildCoachRecommendations(
       dataSufficiency: "A significant pain flag is sufficient for a conservative stop signal; this is not a diagnosis.",
       windowStart: input.report.windows.current.startDate,
       windowEnd: input.report.windows.current.endDate,
-    })];
+    })], input.definitions);
   }
 
   const activeSlots = input.activeProgramId
     ? input.slots.filter((slot) => slot.programId === input.activeProgramId)
     : [];
 
-  return activeSlots.map((slot) => recommendationForSlot(input, slot));
+  return rankCoachRecommendations(
+    activeSlots.map((slot) => recommendationForSlot(input, slot)),
+    input.definitions,
+  );
+}
+
+export function rankCoachRecommendations(
+  recommendations: CoachRecommendation[],
+  definitions: Record<string, ExerciseDef>,
+): CoachRecommendation[] {
+  return recommendations
+    .map((item, index) => {
+      const score = recommendationRankScore(item, definitions);
+      const priority: RecommendationPriority =
+        item.kind === "pain_review" || score >= NOW_SCORE ? "now" : "next";
+      return { item: { ...item, priority }, score, index };
+    })
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .map((entry) => entry.item);
+}
+
+export function recommendationRankScore(
+  item: Pick<CoachRecommendation, "kind" | "confidence" | "exerciseId">,
+  definitions: Record<string, ExerciseDef>,
+): number {
+  return CONFIDENCE_SCORE[item.confidence]
+    * kindImpact(item.kind, isCompoundExercise(item.exerciseId, definitions));
+}
+
+function kindImpact(kind: CoachRecommendationKind, compound: boolean): number {
+  const compoundBonus = compound ? 2 : 0;
+  switch (kind) {
+    case "pain_review":
+      return 10;
+    case "reduce_load":
+      return 9;
+    case "plateau_review":
+      return 7;
+    case "add_load":
+      return 6 + compoundBonus;
+    case "keep_movement":
+      return 3 + (compound ? 1 : 0);
+    case "deload_hold":
+      return 2;
+    case "add_rep":
+      return 2 + (compound ? 1 : 0);
+    case "insufficient_data":
+      return 0;
+  }
+}
+
+function isCompoundExercise(
+  exerciseId: string | null,
+  definitions: Record<string, ExerciseDef>,
+): boolean {
+  if (!exerciseId) return true;
+  const pattern = definitions[exerciseId]?.pattern;
+  return pattern != null && COMPOUND_PATTERNS.has(pattern);
 }
 
 function recommendationForSlot(
@@ -486,6 +567,7 @@ function recommendation(input: {
     },
     confidence: input.confidence,
     dataSufficiency: input.dataSufficiency,
+    priority: "next",
   };
 }
 
@@ -522,12 +604,22 @@ function trim(value: number) {
 export function formatCoachRecommendations(recommendations: CoachRecommendation[]) {
   const lines = ["COACH RECOMMENDATIONS"];
   if (recommendations.length === 0) return [...lines, "No current recommendations."].join("\n");
-  for (const item of recommendations) {
-    lines.push(
-      `${item.programDayName ? `${item.programDayName} · ` : ""}${item.exerciseName ?? "Overall review"}: ${item.action.label}`,
-      `Why: ${item.rationale}`,
-      `Evidence: ${item.evidence.exposureCount} exposure${item.evidence.exposureCount === 1 ? "" : "s"}, ${item.evidence.windowStart}–${item.evidence.windowEnd} · confidence ${item.confidence}`,
-    );
+  const now = recommendations.filter((item) => item.priority === "now");
+  const next = recommendations.filter((item) => item.priority !== "now");
+  const grouped = now.length > 0 && next.length > 0;
+  if (grouped) lines.push("Do first");
+  for (const item of grouped ? now : recommendations) pushFormattedRecommendation(lines, item);
+  if (grouped) {
+    lines.push("Also");
+    for (const item of next) pushFormattedRecommendation(lines, item);
   }
   return lines.join("\n");
+}
+
+function pushFormattedRecommendation(lines: string[], item: CoachRecommendation) {
+  lines.push(
+    `${item.programDayName ? `${item.programDayName} · ` : ""}${item.exerciseName ?? "Overall review"}: ${item.action.label}`,
+    `Why: ${item.rationale}`,
+    `Evidence: ${item.evidence.exposureCount} exposure${item.evidence.exposureCount === 1 ? "" : "s"}, ${item.evidence.windowStart}–${item.evidence.windowEnd} · confidence ${item.confidence}`,
+  );
 }

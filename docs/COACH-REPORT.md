@@ -30,7 +30,12 @@ not recommend programming changes or mutate training data.
   sets that cannot be matched to a program slot are reported explicitly.
 - **Hard sets:** non-warmup sets at RIR 0–1. Specialization totals use the explicit mappings
   below. Mappings intentionally overlap because one compound set may provide meaningful volume
-  to more than one specialization group.
+  to more than one specialization group. Each group also carries `prescribedSets`: the
+  effective target-set count from finished sessions in that window, using the programmed
+  slot exercise and skipping prescriptions whose target RIR floor is above 1 (deload / easy
+  phases). This field is additive on schema 1.0. When hard sets miss that count, the check-in
+  and clipboard surface a one-line flag (`Hard-set shortfall: Hamstrings 5/6 · Glutes 6/7`).
+  The flag does not rewrite the program.
 - **Fixed-load progress:** exact exercise and exact raw logged weight, comparing the best reps
   in the current window with the best reps in the prior window.
 
@@ -50,7 +55,9 @@ Each exercise needs four completed exposures with valid e1RM values. The last tw
 form the recent pair and the preceding two form the comparison pair. `gaining` or `declining`
 requires both recent marks to clear both comparison marks by the 1% noise margin. Otherwise the
 classification is `flat`; fewer than four valid exposures is `insufficient_data`. This prevents
-one unusually good or poor session from becoming a trend.
+one unusually good or poor session from becoming a trend. The snapshot and clipboard hide the
+per-exercise insufficient-data list and collapse it to a count (`N waiting on 4 exposures`)
+until an exercise has four comparable marks.
 
 ## Privacy and compatibility
 
@@ -93,7 +100,7 @@ deployment settings if database access is suspected to be exposed.
 
 `src/lib/coach-recommendations.ts` is a separate deterministic proposal layer over this factual
 report and its source rows. Keeping it separate preserves the v1 report contract while allowing
-the You workflow and clipboard export to add coaching actions.
+the Track Coach workflow and clipboard export to add coaching actions.
 
 - Normal load and rep proposals call `sessionTarget()` with the same bounded best-recent reference
   as the active workout. The slot's latest exact-exercise exposure anchors the window; a stronger
@@ -126,6 +133,13 @@ as next-step cards. The remaining section is collapsible (initially open), with 
 count and rationale/evidence collapsed per suggestion. If nothing needs review, one compact
 empty-state line replaces the list. The API and coaching export retain the full diagnostic
 recommendations; this is a presentation change, not a change to the recommendation engine.
+
+After generation, proposals are ranked by confidence × impact so the list is not slot order.
+Medium-or-better `add_load` on compounds (press, pull, squat, hinge, lunge, hip thrust) scores
+as `now`; low-confidence hold-load / chase-reps on isolation scores as `next`. Pain, repeated
+effort misses, and plateau reviews stay at the top. Mixed lists use Do first / Also tiers in
+the UI and clipboard. Double-progression still comes from `sessionTarget()`; ranking does not
+invent a second progression rule.
 
 ## Shared stall evidence
 

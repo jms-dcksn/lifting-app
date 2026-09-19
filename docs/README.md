@@ -17,6 +17,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |
 | Active substitutions / pre-workout choices | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
 | Weight observations, charts and goal distance | [Calendar](WEIGHT-CALENDAR.md), [trends](WEIGHT-TRENDS.md) |
+| Monthly comparisons, shared stall evidence, or period × performance weeks | [Monthly progress](MONTHLY-PROGRESS.md) |
 | Track Explore destinations, body measurements, or per-exercise volume | [Track body and volume plan](superpowers/plans/2026-09-19-track-body-volume.md) |
 | Strong Foundations template rationale | [Strong Foundations](STRONG-FOUNDATIONS.md) |
 
@@ -28,7 +29,8 @@ are dated design/implementation records; their commands and file maps are not cu
 
 As of 2026-09-19: the Lift/Track/Program/You tab shell (epic #93), cinematic recap, Track
 compounds/pins, the monthly dashboard (#31), the period × performance week overlay (#105),
-and exercise review Slices A–F (#115 dump removal, #116 one destination, #117 Today / 21-day / chart, #118 month-to-month, #119 entry equipment params)
+exercise review Slices A–F (#115 dump removal, #116 one destination, #117 Today / 21-day / chart, #118 month-to-month, #119 entry equipment params),
+and coach check-in QoL (#126: ranked proposals with Do first / Also tiers, collapsed insufficient-data trends, specialization hard-set shortfall flag)
 are implemented. See [Features](FEATURES.md) for current behavior. Issue numbers here identify
 planned slices, not a live GitHub status check. Historical verification counts describe their
 original runs.

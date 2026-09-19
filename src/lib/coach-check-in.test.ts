@@ -4,6 +4,8 @@ import {
   SPECIALIZATION_GROUPS,
   buildCoachCheckInReport,
   formatCoachCheckIn,
+  formatSpecializationShortfall,
+  specializationHardSetShortfalls,
   type BuildCoachReportInput,
   type CoachPhaseInput,
   type CoachSessionInput,
@@ -328,5 +330,91 @@ describe("buildCoachCheckInReport", () => {
     expect(report.current.setExecution.completionRate).toBeNull();
     expect(report.exerciseTrends).toEqual([]);
     expect(report.fixedLoadRepProgress).toEqual([]);
+  });
+
+  it("collapses insufficient-data trends instead of listing each exercise", () => {
+    const thin = [1, 2, 3].map((week) =>
+      session(`curl-${week}`, `2026-08-${String(week * 7).padStart(2, "0")}T15:00:00Z`),
+    );
+    const full = [1, 2, 3, 4].map((week) =>
+      session(`bench-${week}`, `2026-08-${String(week * 6).padStart(2, "0")}T16:00:00Z`),
+    );
+    const report = buildCoachCheckInReport(input({
+      sessions: [...thin, ...full],
+      sets: [
+        ...thin.map((item) => set(item.id, "bb-curl", {
+          e1rm: 55,
+          createdAt: item.performedAt,
+        })),
+        ...full.map((item, index) => set(item.id, "bb-bench", {
+          e1rm: [100, 101, 104, 105][index],
+          createdAt: item.performedAt,
+        })),
+      ],
+    }));
+    const output = formatCoachCheckIn(report);
+
+    expect(report.exerciseTrends.find((trend) => trend.exerciseId === "bb-curl")?.classification)
+      .toBe("insufficient_data");
+    expect(output).toContain("Barbell Bench Press: gaining");
+    expect(output).toContain("1 exercise waiting on 4 comparable exposures.");
+    expect(output).not.toContain("Barbell Curl: insufficient data");
+    expect(output).not.toContain("needs 4 exposures");
+  });
+
+  it("flags specialization hard-set shortfalls against completed-session prescriptions", () => {
+    const current = session("current", "2026-09-01T15:00:00Z");
+    const rdl = slot({ id: "rdl", exerciseId: "bb-rdl", targetSets: 3 });
+    const thrust = slot({ id: "thrust", exerciseId: "bb-hip-thrust", targetSets: 4 });
+    const curl = slot({ id: "curl", exerciseId: "seated-leg-curl", targetSets: 3 });
+    const setsFor = (
+      slotId: string,
+      exerciseId: string,
+      hardCount: number,
+      targetSets: number,
+    ) =>
+      Array.from({ length: targetSets }, (_, index) => set(current.id, exerciseId, {
+        programSlotId: slotId,
+        setIndex: index,
+        rir: index < hardCount ? 1 : 2,
+        createdAt: `2026-09-01T15:${String(index).padStart(2, "0")}:00Z`,
+      }));
+    const report = buildCoachCheckInReport(input({
+      sessions: [current],
+      slots: [rdl, thrust, curl],
+      sets: [
+        ...setsFor(rdl.id, "bb-rdl", 3, 3),
+        ...setsFor(thrust.id, "bb-hip-thrust", 3, 4),
+        ...setsFor(curl.id, "seated-leg-curl", 2, 3),
+      ],
+    }));
+
+    const hamstrings = report.current.specializationVolume.find((group) => group.group === "hamstrings");
+    const glutes = report.current.specializationVolume.find((group) => group.group === "glutes");
+    expect(hamstrings).toMatchObject({ hardSets: 5, prescribedSets: 6 });
+    expect(glutes).toMatchObject({ hardSets: 6, prescribedSets: 7 });
+    expect(specializationHardSetShortfalls(report.current.specializationVolume).map((group) => group.group))
+      .toEqual(["hamstrings", "glutes"]);
+    expect(formatSpecializationShortfall(report.current.specializationVolume)).toBe(
+      "Hard-set shortfall: Hamstrings 5/6 · Glutes 6/7",
+    );
+    expect(formatCoachCheckIn(report)).toContain("Hard-set shortfall: Hamstrings 5/6 · Glutes 6/7");
+  });
+
+  it("does not flag specialization shortfall when hard sets meet the prescription", () => {
+    const current = session("current", "2026-09-01T15:00:00Z");
+    const report = buildCoachCheckInReport(input({
+      sessions: [current],
+      slots: [slot({ exerciseId: "bb-rdl", targetSets: 2 })],
+      sets: [
+        set(current.id, "bb-rdl", { setIndex: 0, rir: 1, createdAt: "2026-09-01T15:01:00Z" }),
+        set(current.id, "bb-rdl", { setIndex: 1, rir: 0, createdAt: "2026-09-01T15:02:00Z" }),
+      ],
+    }));
+
+    expect(report.current.specializationVolume.find((group) => group.group === "hamstrings"))
+      .toMatchObject({ hardSets: 2, prescribedSets: 2 });
+    expect(formatSpecializationShortfall(report.current.specializationVolume)).toBeNull();
+    expect(formatCoachCheckIn(report)).not.toContain("Hard-set shortfall");
   });
 });

@@ -315,7 +315,8 @@ Secondary, not equal cards, behind Explore:
   name-plus-percent improvements and rep-gain sentences (no all-lifts dump or SVG trends),
   stalls (name links to Exercise review with `month` and `equipment`; session evidence and
   in-progress Coach stay), achievements, and the shared weight card
-- Coach (`/analytics/coach`) — check-in snapshot, next-step proposals, and clipboard export.
+- Coach (`/analytics/coach`) — check-in snapshot, ranked next-step proposals (Do first / Also),
+  collapsed insufficient-data trends, a one-line hard-set shortfall flag, and clipboard export.
   Stall links use `?exercise=`. `/settings?coachExercise=` redirects here.
 - Body (`/analytics/body`) — weight trend chart and (later) tape measurements
 - Volume (`/analytics/volume`) — weekly total tonnage

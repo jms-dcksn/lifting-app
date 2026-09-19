@@ -381,4 +381,63 @@ describe("buildCoachRecommendations", () => {
     expect(output).toContain("confidence low");
     expect(output).toContain("Upper A · Barbell Bench Press");
   });
+
+  it("ranks medium compound load-adds ahead of low-confidence isolation hold/chase-reps", () => {
+    const sessions = [session(4), session(5)];
+    const curlSlot: CoachSlotInput = {
+      ...slot,
+      id: "slot-curl",
+      exerciseId: "bb-curl",
+    };
+    const benchSlot: CoachSlotInput = {
+      ...slot,
+      id: "slot-bench",
+      exerciseId: "bb-bench",
+    };
+    const recommendations = build(
+      sessions,
+      [
+        set(sessions[0].id, {
+          programSlotId: benchSlot.id,
+          exerciseId: "bb-bench",
+          reps: 10,
+          createdAt: sessions[0].performedAt,
+        }),
+        set(sessions[1].id, {
+          programSlotId: benchSlot.id,
+          exerciseId: "bb-bench",
+          reps: 10,
+          createdAt: sessions[1].performedAt,
+        }),
+        set(sessions[1].id, {
+          programSlotId: curlSlot.id,
+          exerciseId: "bb-curl",
+          weight: 45,
+          reps: 8,
+          e1rm: 56,
+          createdAt: sessions[1].performedAt,
+        }),
+      ],
+      { slots: [curlSlot, benchSlot] },
+    );
+
+    expect(recommendations.map((item) => item.exerciseName)).toEqual([
+      "Barbell Bench Press",
+      "Barbell Curl",
+    ]);
+    expect(recommendations[0]).toMatchObject({
+      kind: "add_load",
+      confidence: "medium",
+      priority: "now",
+    });
+    expect(recommendations[1]).toMatchObject({
+      kind: "add_rep",
+      confidence: "low",
+      priority: "next",
+    });
+
+    const output = formatCoachRecommendations(recommendations);
+    expect(output.indexOf("Do first")).toBeLessThan(output.indexOf("Also"));
+    expect(output.indexOf("Barbell Bench Press")).toBeLessThan(output.indexOf("Barbell Curl"));
+  });
 });

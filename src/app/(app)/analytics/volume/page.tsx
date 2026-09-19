@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
+  exerciseSummaries,
+  resolveVolumeExerciseId,
+  rowsForExercise,
   sessionTonnage,
   weeklyVolume,
   type AnalyticsSetRow,
@@ -11,6 +14,8 @@ import { getCurrentBodyweight } from "@/lib/current-bodyweight";
 import { Card, CardLabel } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
 import { VolumeChart, type VolumeChartPoint } from "../volume-chart";
+import { VolumeExercisePicker } from "./volume-exercise-picker";
+import type { ExerciseListItem } from "../exercise-list";
 
 type AnalyticsQueryRow = {
   id: string;
@@ -39,7 +44,12 @@ type AnalyticsQueryRow = {
     | null;
 };
 
-export default async function VolumePage() {
+export default async function VolumePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ exercise?: string | string[] }>;
+}) {
+  const query = await searchParams;
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub as string | undefined;
@@ -60,7 +70,13 @@ export default async function VolumePage() {
 
   const catalog = await getCatalogMap(supabase, userId);
   const analyticsRows = normalizeRows((rows ?? []) as AnalyticsQueryRow[]);
-  const sessionVolume = sessionTonnage(analyticsRows, catalog, bodyweight);
+  const summaries = exerciseSummaries(analyticsRows);
+  const selectedId = resolveVolumeExerciseId(
+    query.exercise,
+    new Set(summaries.map((summary) => summary.exerciseId)),
+  );
+  const filtered = selectedId ? rowsForExercise(analyticsRows, selectedId) : analyticsRows;
+  const sessionVolume = sessionTonnage(filtered, catalog, bodyweight);
   const volume = weeklyVolume(sessionVolume);
   const totalVolume = volume.reduce((sum, point) => sum + point.tonnage, 0);
   const latestVolume = volume.at(-1);
@@ -73,6 +89,20 @@ export default async function VolumePage() {
     tooltip: `${shortDate(point.weekStart)} - ${shortDate(point.weekEnd)}`,
     tonnage: Math.round(point.tonnage),
   }));
+  const listItems: ExerciseListItem[] = summaries.map((summary) => ({
+    exerciseId: summary.exerciseId,
+    equipmentInstanceId: summary.equipmentInstanceId,
+    name: catalog[summary.exerciseId]?.name ?? summary.exerciseId,
+    pattern: catalog[summary.exerciseId]?.pattern ?? "unknown",
+    currentE1rm: summary.currentE1rm,
+    bestE1rm: summary.bestE1rm,
+    lastPerformedAt: summary.lastPerformedAt,
+    sessionCount: summary.sessionCount,
+    delta: summary.delta,
+  }));
+  const selectedName = selectedId
+    ? (catalog[selectedId]?.name ?? selectedId)
+    : null;
 
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
@@ -81,10 +111,19 @@ export default async function VolumePage() {
       <Card>
         <div className="mb-3">
           <div className="mb-1 flex items-center gap-1">
-            <CardLabel>Total volume</CardLabel>
-            {excludedSets > 0 && (
-              <InfoButton title="Excluded sets" label="About excluded bodyweight sets">
-                Sets without a bodyweight reading are left out of tonnage.
+            <CardLabel>{selectedName ?? "Total volume"}</CardLabel>
+            {(selectedId || excludedSets > 0) && (
+              <InfoButton
+                title={selectedId ? "Mixed equipment" : "Excluded sets"}
+                label={selectedId ? "About mixed machines" : "About excluded bodyweight sets"}
+              >
+                {selectedId
+                  ? "Every machine for this exercise shares one series."
+                  : null}
+                {selectedId && excludedSets > 0 ? " " : null}
+                {excludedSets > 0
+                  ? "Sets without a bodyweight reading are left out of tonnage."
+                  : null}
               </InfoButton>
             )}
           </div>
@@ -99,6 +138,7 @@ export default async function VolumePage() {
           <p className="text-body text-muted">One week so far — the chart appears after the next week.</p>
         )}
       </Card>
+      <VolumeExercisePicker items={listItems} selectedId={selectedId} />
     </div>
   );
 }

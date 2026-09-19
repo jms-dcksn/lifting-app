@@ -48,7 +48,7 @@ or gone.
 
 The app layout remains a Server Component. `AppShell` renders a bottom tab bar (Lift,
 Track, Program, You) with `aria-current` on the active destination. Track is current on
-`/analytics` and `/history/...`. Hide it on `/session/[id]`
+`/analytics`, `/analytics/*`, and `/history/...`. Hide it on `/session/[id]`
 (including `/session/[id]/recap`), `/workout/next`, `/program/new`, and program edit. Recap
 and finished workouts therefore own Home (and View recap / View workout) as sticky exits.
 Pathname-only hide covers session/planner/builder-new before `searchParams` resolve so those

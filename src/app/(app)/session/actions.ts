@@ -302,6 +302,8 @@ export async function editSet(input: EditSetInput) {
   revalidateSession(existing.session_id);
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
+  revalidatePath("/analytics/volume");
+  revalidatePath("/analytics/coach");
   revalidatePath("/history/[exerciseId]", "page");
   return { recomputeWarning };
 }
@@ -330,6 +332,8 @@ export async function deleteSet(setId: string) {
   revalidateSession(existing.session_id);
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
+  revalidatePath("/analytics/volume");
+  revalidatePath("/analytics/coach");
   revalidatePath("/history/[exerciseId]", "page");
   return { recomputeWarning };
 }
@@ -492,6 +496,8 @@ export async function finishSession(
   revalidatePath("/");
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
+  revalidatePath("/analytics/volume");
+  revalidatePath("/analytics/coach");
   revalidatePath("/history/[exerciseId]", "page");
   revalidateSession(sessionId);
   return {

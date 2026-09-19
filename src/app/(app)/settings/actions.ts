@@ -67,6 +67,8 @@ export async function saveProfile(formData: FormData) {
   revalidatePath("/settings");
   revalidatePath("/");
   revalidatePath("/analytics");
+  revalidatePath("/analytics/body");
+  revalidatePath("/analytics/month");
   revalidatePath("/session/[id]", "page");
 }
 
@@ -98,6 +100,8 @@ export async function enablePeriodTracking() {
 
   revalidatePath("/settings");
   revalidatePath("/analytics");
+  revalidatePath("/analytics/body");
+  revalidatePath("/analytics/month");
 }
 
 export async function disablePeriodTracking(deleteHistory: boolean) {
@@ -131,6 +135,8 @@ export async function disablePeriodTracking(deleteHistory: boolean) {
 
   revalidatePath("/settings");
   revalidatePath("/analytics");
+  revalidatePath("/analytics/body");
+  revalidatePath("/analytics/month");
 }
 
 export async function deletePeriodHistory() {
@@ -154,4 +160,7 @@ export async function deletePeriodHistory() {
   }
 
   revalidatePath("/settings");
+  revalidatePath("/analytics");
+  revalidatePath("/analytics/body");
+  revalidatePath("/analytics/month");
 }

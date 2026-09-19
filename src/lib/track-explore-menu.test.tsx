@@ -45,7 +45,6 @@ describe("TrackExploreMenu", () => {
         <TrackExploreMenu
           weekPrs={<p>Week PR list</p>}
           allLifts={<p>All lifts</p>}
-          volumeAndWeight={<p>Volume</p>}
         />,
       );
     });
@@ -57,6 +56,10 @@ describe("TrackExploreMenu", () => {
     });
     expect(host.textContent).toContain("This week's PRs");
     expect(host.textContent).toContain("Month review");
+    expect(host.textContent).toContain("Coach");
+    expect(host.textContent).toContain("Body");
+    expect(host.textContent).toContain("Volume");
+    expect(host.textContent).not.toContain("Volume & weight");
 
     const weekPrs = [...host.querySelectorAll("button")].find((button) =>
       button.textContent === "This week's PRs",
@@ -67,6 +70,25 @@ describe("TrackExploreMenu", () => {
 
     expect(host.textContent).toContain("Week PR list");
     expect(host.textContent).not.toContain("All lifts");
-    expect(host.textContent).not.toContain("Volume");
+  });
+
+  it("links Coach, Body, and Volume as Track routes", () => {
+    act(() => {
+      root.render(
+        <TrackExploreMenu
+          weekPrs={<p>Week PR list</p>}
+          allLifts={<p>All lifts</p>}
+        />,
+      );
+    });
+    act(() => {
+      host.querySelector<HTMLButtonElement>('button[aria-label="Explore Track"]')!.click();
+    });
+
+    const hrefs = [...host.querySelectorAll("a")].map((anchor) => anchor.getAttribute("href"));
+    expect(hrefs).toContain("/analytics/month");
+    expect(hrefs).toContain("/analytics/coach");
+    expect(hrefs).toContain("/analytics/body");
+    expect(hrefs).toContain("/analytics/volume");
   });
 });

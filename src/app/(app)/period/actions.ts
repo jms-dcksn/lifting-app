@@ -38,6 +38,8 @@ export async function savePeriodObservation(
   if (result.ok) {
     revalidatePath("/settings");
     revalidatePath("/analytics");
+    revalidatePath("/analytics/body");
+    revalidatePath("/analytics/month");
   }
   return result;
 }
@@ -50,6 +52,8 @@ export async function deletePeriodObservation(
   if (result.ok) {
     revalidatePath("/settings");
     revalidatePath("/analytics");
+    revalidatePath("/analytics/body");
+    revalidatePath("/analytics/month");
   }
   return result;
 }

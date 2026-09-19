@@ -8,15 +8,13 @@ import { IconMore } from "@/components/ui/icons";
 import { InfoButton } from "@/components/ui/info-button";
 import { Sheet, useSheetDismiss } from "@/components/ui/sheet";
 
-type Panel = "menu" | "weekPrs" | "lifts" | "volume";
+type Panel = "menu" | "weekPrs" | "lifts";
 
 export function TrackExploreMenu({
   allLifts,
-  volumeAndWeight,
   weekPrs,
 }: {
   allLifts: React.ReactNode;
-  volumeAndWeight: React.ReactNode;
   weekPrs: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -31,7 +29,6 @@ export function TrackExploreMenu({
     menu: "Explore Track",
     weekPrs: "This week's PRs",
     lifts: "All lifts",
-    volume: "Volume & weight",
   };
 
   return (
@@ -44,7 +41,6 @@ export function TrackExploreMenu({
           <TrackExploreBody
             panel={panel}
             allLifts={allLifts}
-            volumeAndWeight={volumeAndWeight}
             weekPrs={weekPrs}
             onClose={close}
             onPanel={setPanel}
@@ -58,14 +54,12 @@ export function TrackExploreMenu({
 function TrackExploreBody({
   panel,
   allLifts,
-  volumeAndWeight,
   weekPrs,
   onClose,
   onPanel,
 }: {
   panel: Panel;
   allLifts: React.ReactNode;
-  volumeAndWeight: React.ReactNode;
   weekPrs: React.ReactNode;
   onClose: () => void;
   onPanel: (panel: Panel) => void;
@@ -74,7 +68,6 @@ function TrackExploreBody({
   const titles: Record<Exclude<Panel, "menu">, string> = {
     weekPrs: "This week's PRs",
     lifts: "All lifts",
-    volume: "Volume & weight",
   };
 
   return (
@@ -104,13 +97,27 @@ function TrackExploreBody({
             >
               All lifts
             </button>
-            <button
-              type="button"
-              className="min-h-11 py-3 text-left text-body"
-              onClick={() => onPanel("volume")}
+            <Link
+              href="/analytics/coach"
+              className="min-h-11 py-3 text-body"
+              onClick={onClose}
             >
-              Volume & weight
-            </button>
+              Coach
+            </Link>
+            <Link
+              href="/analytics/body"
+              className="min-h-11 py-3 text-body"
+              onClick={onClose}
+            >
+              Body
+            </Link>
+            <Link
+              href="/analytics/volume"
+              className="min-h-11 py-3 text-body"
+              onClick={onClose}
+            >
+              Volume
+            </Link>
           </nav>
         </>
       ) : (
@@ -130,7 +137,7 @@ function TrackExploreBody({
               </InfoButton>
             ) : null}
           </div>
-          {panel === "lifts" ? allLifts : panel === "volume" ? volumeAndWeight : weekPrs}
+          {panel === "lifts" ? allLifts : weekPrs}
         </>
       )}
       <Button type="button" variant="ghost" onClick={dismiss}>

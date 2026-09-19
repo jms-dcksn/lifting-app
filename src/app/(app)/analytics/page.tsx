@@ -1,19 +1,12 @@
 import { redirect } from "next/navigation";
-import { WeightTrendCard } from "./weight-trend-card";
-import { loadWeightHistory } from "@/lib/weight-history";
 import {
   exerciseSummaries,
-  sessionTonnage,
-  weeklyVolume,
   type AnalyticsSetRow,
 } from "@/lib/analytics";
 import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
 import { Card, CardLabel } from "@/components/ui/card";
-import { InfoButton } from "@/components/ui/info-button";
 import { ExerciseList, type ExerciseListItem } from "./exercise-list";
-import { VolumeChart, type VolumeChartPoint } from "./volume-chart";
-import { dateKey } from "@/lib/bodyweight";
 import {
   buildBoardLifts,
   defaultCompoundIds,
@@ -61,25 +54,15 @@ export default async function AnalyticsPage() {
   const userId = claims?.claims?.sub as string | undefined;
   if (!userId) redirect("/login");
 
-  const today = dateKey(new Date());
-  const [
-    { data: rows, error },
-    { data: profile, error: profileError },
-    bodyweightEntries,
-  ] = await Promise.all([
-    supabase
-      .from("set_log")
-      .select(
-        "id, session_id, program_slot_id, exercise_id, equipment_instance_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at, finished_at, program_id)",
-      )
-      .eq("user_id", userId)
-      .eq("is_warmup", false)
-      .order("created_at", { ascending: true }),
-    supabase.from("profile").select("bodyweight, goal_weight").eq("id", userId).maybeSingle(),
-    loadWeightHistory(supabase, userId, today),
-  ]);
+  const { data: rows, error } = await supabase
+    .from("set_log")
+    .select(
+      "id, session_id, program_slot_id, exercise_id, equipment_instance_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at, finished_at, program_id)",
+    )
+    .eq("user_id", userId)
+    .eq("is_warmup", false)
+    .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
-  if (profileError) throw new Error(profileError.message);
 
   const catalog = await getCatalogMap(supabase, userId);
   const [pinRows, week] = await Promise.all([
@@ -87,21 +70,7 @@ export default async function AnalyticsPage() {
     loadWeekRecordChips(supabase, userId, catalog),
   ]);
   const analyticsRows = normalizeRows((rows ?? []) as AnalyticsQueryRow[]);
-  const bodyweight = bodyweightEntries[0]?.weight ?? profile?.bodyweight ?? null;
   const summaries = exerciseSummaries(analyticsRows);
-  const sessionVolume = sessionTonnage(analyticsRows, catalog, bodyweight);
-  const volume = weeklyVolume(sessionVolume);
-  const totalVolume = volume.reduce((sum, point) => sum + point.tonnage, 0);
-  const latestVolume = volume.at(-1);
-  const previousVolume = volume.at(-2);
-  const volumeDelta =
-    latestVolume && previousVolume ? latestVolume.tonnage - previousVolume.tonnage : null;
-  const excludedSets = sessionVolume.reduce((sum, point) => sum + point.excludedSetCount, 0);
-  const chartData: VolumeChartPoint[] = volume.map((point) => ({
-    date: formatWeekLabel(point.weekStart),
-    tooltip: `${shortDate(point.weekStart)} - ${shortDate(point.weekEnd)}`,
-    tonnage: Math.round(point.tonnage),
-  }));
   const listItems: ExerciseListItem[] = summaries.map((summary) => ({
     exerciseId: summary.exerciseId,
     equipmentInstanceId: summary.equipmentInstanceId,
@@ -150,32 +119,6 @@ export default async function AnalyticsPage() {
           <TrackExploreMenu
             weekPrs={<WeekPrList sessions={week.sessions} />}
             allLifts={<ExerciseList items={listItems} />}
-            volumeAndWeight={
-              <>
-                <WeightTrendCard entries={bodyweightEntries} today={today} goal={profile?.goal_weight ?? null} />
-                <Card>
-                  <div className="mb-3">
-                    <div className="mb-1 flex items-center gap-1">
-                      <CardLabel>Total volume</CardLabel>
-                      {excludedSets > 0 && (
-                        <InfoButton title="Excluded sets" label="About excluded bodyweight sets">
-                          Sets without a bodyweight reading are left out of tonnage.
-                        </InfoButton>
-                      )}
-                    </div>
-                    <p className="text-heading tabular-nums">{formatWhole(totalVolume)} lb</p>
-                    {volumeDelta != null && (
-                      <p className="text-caption text-muted">{signedVolume(volumeDelta)} vs last week</p>
-                    )}
-                  </div>
-                  {chartData.length >= 2 ? (
-                    <VolumeChart data={chartData} />
-                  ) : (
-                    <p className="text-body text-muted">One week so far — the chart appears after the next week.</p>
-                  )}
-                </Card>
-              </>
-            }
           />
           <PinEditorButton items={pinItems} />
         </div>
@@ -217,22 +160,4 @@ function normalizeRows(rows: AnalyticsQueryRow[]): AnalyticsSetRow[] {
       },
     ];
   });
-}
-
-function formatWhole(value: number) {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
-}
-
-function shortDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-function formatWeekLabel(weekStart: string) {
-  const date = new Date(`${weekStart}T00:00:00Z`);
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-function signedVolume(value: number) {
-  const rounded = Math.round(value);
-  return `${rounded > 0 ? "+" : ""}${formatWhole(rounded)} lb`;
 }

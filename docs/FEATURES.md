@@ -315,9 +315,13 @@ Secondary, not equal cards, behind Explore:
   name-plus-percent improvements and rep-gain sentences (no all-lifts dump or SVG trends),
   stalls (name links to Exercise review with `month` and `equipment`; session evidence and
   in-progress Coach stay), achievements, and the shared weight card
-- Volume chart and weight trends
+- Coach (`/analytics/coach`) — check-in snapshot, ranked next-step proposals (Do first / Also),
+  collapsed insufficient-data trends, a one-line hard-set shortfall flag, and clipboard export.
+  Stall links use `?exercise=`. `/settings?coachExercise=` redirects here.
+- Body (`/analytics/body`) — weight trend chart and (later) tape measurements
+- Volume (`/analytics/volume`) — weekly total tonnage
 
-Coach check-in and proposals live on You (`/settings`). The weekly API
+Coach check-in and proposals live on Track Explore, not You. The weekly API
 (`GET /api/coach/v1/weekly`) is unchanged. Canonical eligibility stays `workoutRecords`
 and monthly contracts; the old Progress records feed is gone.
 
@@ -328,7 +332,7 @@ Coach contract.
 ## 9. You (`/settings`)
 
 - **Bodyweight history** — quick date/weight logging, edit/remove, recent readings, latest value,
-  sparse seven-day average, and change from the preceding seven days. You, Track Explore, and
+  sparse seven-day average, and change from the preceding seven days. You, Track Body, and
   the shared calendar all log weight; moves onto occupied dates require explicit replacement
   confirmation and use an atomic RPC. See [weight calendar](WEIGHT-CALENDAR.md).
 - **Current bodyweight rule** — the newest dated observation drives pull-up/assisted calculations;
@@ -346,10 +350,7 @@ Coach contract.
   bleeding days; they appear as context bands on monthly charts and as the period × performance
   week overlay on month review. Design spec: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
   Implementation: #33 and #105. Period data stays in-app and is not sent to Coach.
-- **Coach** — check-in snapshot, ranked next-step proposals (Do first / Also), collapsed
-  insufficient-data trends, and a one-line specialization hard-set shortfall flag. Clipboard
-  and weekly API share the same report plus ranked proposals. Weekly API auth is unchanged.
-- **Sign out**.
+- **Sign out**. Coach lives on Track Explore (`/analytics/coach`).
 
 ## 10. App shell & navigation
 

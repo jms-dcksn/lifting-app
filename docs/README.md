@@ -18,6 +18,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Active substitutions / pre-workout choices | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
 | Weight observations, charts and goal distance | [Calendar](WEIGHT-CALENDAR.md), [trends](WEIGHT-TRENDS.md) |
 | Monthly comparisons, shared stall evidence, or period × performance weeks | [Monthly progress](MONTHLY-PROGRESS.md) |
+| Track Explore destinations, body measurements, or per-exercise volume | [Track body and volume plan](superpowers/plans/2026-09-19-track-body-volume.md) |
 | Strong Foundations template rationale | [Strong Foundations](STRONG-FOUNDATIONS.md) |
 
 [PLAN](PLAN.md) mixes completed milestones with remaining work; its original estimates and

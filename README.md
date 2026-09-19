@@ -81,8 +81,8 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/proxy.ts` — Next.js 16 session proxy (replaces `middleware.ts`); refreshes Supabase session on matched requests
 - `src/app/(app)/program/` — summary tile grid + dedicated read-only detail route + builder (Classic/Adaptive style, catalog-driven picker, custom exercises, server actions)
 - `src/app/(app)/exercise/actions.ts` — `resolveVariant` (find-or-create a machine brand/type variant) and `createCustomExercise` server actions
-- `src/app/(app)/settings/` — bodyweight history/trend, goal weight, default rest-between-sets, rest-complete tone editor, Coach check-in and proposals, and sign out (You tab)
-- `src/app/(app)/analytics/` — Track: 2-column compound scoreboard (catalog reference lifts with history; hidden otherwise); Explore menu (this week's PRs, all-lifts search, volume and weight); and month review
+- `src/app/(app)/settings/` — bodyweight history/trend, goal weight, default rest-between-sets, rest-complete tone editor, period tracking, and sign out (You tab)
+- `src/app/(app)/analytics/` — Track: 2-column compound scoreboard (catalog reference lifts with history; hidden otherwise); Explore menu (this week's PRs, all-lifts search, month review, Coach, Body, Volume)
 - `src/app/api/coach/v1/weekly/` — private, no-store endpoint for the scheduled Coach check-in
 - `docs/COACH-REPORT.md` — exact v1 windows, metrics, trend rules, privacy contract, and limitations
 - `src/lib/exercise-review-sessions.ts` — pure helper: groups finished sets by session, computes session-best e1RM, 21-day recent window, and chart point series

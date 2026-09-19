@@ -54,7 +54,8 @@ put new detail in the relevant reference and add a trigger here only when needed
 | Home preview, planner cookies, or session creation | [Workout planning](docs/WORKOUT-PLANNING.md) |
 | PR pills, completion recaps, or historical set edits | [Workout records](docs/DECISIONS.md#workout-records) |
 | Exercise review Today, 21-day window, or e1RM chart | [Exercise review spec](docs/superpowers/specs/2026-09-19-exercise-review-design.md); [Features](docs/FEATURES.md) |
-| Coach report, proposals, progression references, or private weekly API | [Coach contract](docs/COACH-REPORT.md) and [architecture: strength](docs/ARCHITECTURE.md#strength-and-exercise-identity) |
+| Coach report, proposals, Track Coach UI, or private weekly API | [Coach contract](docs/COACH-REPORT.md) and [architecture: strength](docs/ARCHITECTURE.md#strength-and-exercise-identity) |
+| Track Explore destinations (Coach, Body, Volume) | [Track body and volume plan](docs/superpowers/plans/2026-09-19-track-body-volume.md); [Features](docs/FEATURES.md) |
 | Weight writes, date moves, or shared calendar | [Weight calendar](docs/WEIGHT-CALENDAR.md) |
 | Weight charts, history pagination, or goal distance | [Weight trends](docs/WEIGHT-TRENDS.md) |
 | Monthly comparisons, PR totals, stall classification, or period × performance weeks | [Monthly progress](docs/MONTHLY-PROGRESS.md); Coach/Fluid/monthly share `stall-report.ts`; [period tracking](docs/PERIOD-TRACKING.md) |

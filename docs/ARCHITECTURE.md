@@ -119,8 +119,8 @@ and rotation live in [Coach report](COACH-REPORT.md#weekly-coach-api) and [deplo
   (`none` or the instance id) so the page never blends machines. Track
   (`/analytics`) uses `analytics.ts` summaries plus `board.ts` for default compounds and
   pin visibility; those summaries pick the latest finished instance per exercise.
-  Volume, weight trends, and this week's full PR list sit in Track
-  Explore; Coach lives on You. The Track tab stays current on `/history/...`.
+  Volume and this week's full PR list sit in Track Explore. Weight trends live on Body.
+  Coach lives on Track (`/analytics/coach`). The Track tab stays current on `/history/...`.
   Pattern-strength replay does not replay historical personal machine coefficients.
 - Pins are an owner-scoped display table (`user_exercise_pin`). They do not change `set_log`,
   coefficients, swaps, or `workoutRecords` eligibility. Cap 8 is enforced in the action.

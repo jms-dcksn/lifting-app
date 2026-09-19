@@ -346,7 +346,9 @@ Coach contract.
   bleeding days; they appear as context bands on monthly charts and as the period × performance
   week overlay on month review. Design spec: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
   Implementation: #33 and #105. Period data stays in-app and is not sent to Coach.
-- **Coach** — check-in snapshot, next-step proposals, and clipboard export. Weekly API unchanged.
+- **Coach** — check-in snapshot, ranked next-step proposals (Do first / Also), collapsed
+  insufficient-data trends, and a one-line specialization hard-set shortfall flag. Clipboard
+  and weekly API share the same report plus ranked proposals. Weekly API auth is unchanged.
 - **Sign out**.
 
 ## 10. App shell & navigation

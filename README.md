@@ -68,7 +68,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/lib/analytics.ts` — framework-free aggregation helpers for Track
 - `src/lib/coach-check-in.ts` — versioned canonical coach report plus its clipboard formatter
 - `src/lib/coach-recommendations.ts` — deterministic, evidence-backed weekly proposals with
-  deload/pain/RIR/plateau guardrails
+  deload/pain/RIR/plateau guardrails; ranked by confidence × impact into Do first / Also tiers
 - `src/lib/coach-api.ts` / `src/lib/coach-weekly-data.ts` — authenticated, read-only weekly Coach
   API contract and explicitly user-scoped server data loader
 - `src/lib/bodyweight.ts` — pure seven-day bodyweight windows, sparse averages, and week-over-week trend

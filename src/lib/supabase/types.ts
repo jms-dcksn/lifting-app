@@ -38,6 +38,36 @@ export type Database = {
         }
         Relationships: []
       }
+      body_measurement_log: {
+        Row: {
+          created_at: string
+          id: string
+          inches: number
+          logged_on: string
+          site: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inches: number
+          logged_on: string
+          site: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inches?: number
+          logged_on?: string
+          site?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bodyweight_log: {
         Row: {
           created_at: string

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDateKey, hideAppChrome, inLocalDays } from "./app-chrome";
+import { addDateKey, hideAppChrome, inLocalDays, isTrackPath } from "./app-chrome";
 
 describe("hideAppChrome", () => {
   it("hides session, recap, planner, and builder surfaces", () => {
@@ -19,6 +19,20 @@ describe("hideAppChrome", () => {
     expect(hideAppChrome("/program/abc")).toBe(false);
     expect(hideAppChrome("/settings")).toBe(false);
     expect(hideAppChrome("/history/bb-bench")).toBe(false);
+  });
+});
+
+describe("isTrackPath", () => {
+  it("treats Exercise review as Track", () => {
+    expect(isTrackPath("/history/bb-bench")).toBe(true);
+    expect(isTrackPath("/history/cable-curl")).toBe(true);
+    expect(isTrackPath("/analytics")).toBe(true);
+    expect(isTrackPath("/analytics/month")).toBe(true);
+    expect(isTrackPath("/")).toBe(false);
+    expect(isTrackPath("/program")).toBe(false);
+    expect(isTrackPath("/settings")).toBe(false);
+    expect(isTrackPath("/session/abc")).toBe(false);
+    expect(isTrackPath("/history")).toBe(false);
   });
 });
 

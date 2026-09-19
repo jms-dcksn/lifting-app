@@ -1,6 +1,8 @@
 # Unified Exercise review design
 
-**Status:** Slice A shipped (month-review all-lifts dump and SVG trends removed). Slices B–E remain proposed.
+**Status:** Slices A–B shipped. Slice B unifies `/history/[exerciseId]` (month is back-link
+context, not a second page). Slices C–F remain proposed (Today / 21-day, chart window,
+month-to-month widget, entry equipment params).
 
 **Audited:** boarded product UI on `main` at `fc8a87a` (Lift tab rename). Surfaces:
 `src/app/(app)/history/[exerciseId]/`, `src/app/(app)/analytics/` (Track tiles, Explore,

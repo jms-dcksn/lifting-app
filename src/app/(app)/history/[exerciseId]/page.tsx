@@ -1,21 +1,10 @@
-import { monthlyWindows } from "@/lib/monthly-progress";
-import { loadMonthlyReport } from "@/lib/monthly-progress-data";
-import { MonthlyHistory } from "./monthly-history";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import { getCatalogMap } from "@/lib/catalog";
-import { Card, CardLabel } from "@/components/ui/card";
-import { E1rmChart, type ChartPoint } from "./e1rm-chart";
-import { PinButton } from "../../pins/pin-button";
 import { defaultCompoundIds, isExercisePinned } from "@/lib/board";
 import { loadUserPinRows } from "@/lib/pins-data";
-
-interface SessionGroup {
-  sessionId: string;
-  performedAt: string;
-  bestE1rm: number | null;
-  sets: { id: string; weight: number; reps: number; rir: number | null }[];
-}
+import { reviewMonthParam } from "@/lib/review-month";
+import { ExerciseReview, type SessionGroup } from "./exercise-review";
 
 export default async function HistoryPage({
   params, searchParams,
@@ -31,27 +20,24 @@ export default async function HistoryPage({
 
   const catalog = await getCatalogMap(supabase, userId);
   const query = await searchParams;
-  if (query.month !== undefined) {
-    const now = new Date();
-    if (typeof query.month !== "string" || (query.equipment !== undefined && typeof query.equipment !== "string")) redirect("/analytics/month");
-    try { monthlyWindows(query.month, now); } catch { redirect("/analytics/month"); }
-    const report = await loadMonthlyReport(supabase, userId, query.month, catalog, now);
-    return <MonthlyHistory report={report} exerciseId={exerciseId} equipment={query.equipment === "none" || !query.equipment ? null : query.equipment} />;
-  }
+  const reviewMonth = reviewMonthParam(query.month);
   const pinRows = await loadUserPinRows(supabase, userId);
   const def = catalog[exerciseId];
   const name = def?.name ?? exerciseId;
   const isBodyweight = def?.equipment === "bodyweight";
+  const pin = def && !def.machineTemplate
+    ? { exerciseId, pinned: isExercisePinned(pinRows, defaultCompoundIds(catalog), exerciseId), name }
+    : undefined;
 
-  const { data: rows } = await supabase
+  const { data: rows, error } = await supabase
     .from("set_log")
     .select("id, weight, reps, rir, e1rm, session_id, created_at, workout_session!inner(performed_at)")
     .eq("user_id", userId)
     .eq("exercise_id", exerciseId)
     .eq("is_warmup", false)
     .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
 
-  // Group working sets by session, in session (performed_at) order.
   const bySession = new Map<string, SessionGroup>();
   for (const r of rows ?? []) {
     let g = bySession.get(r.session_id);
@@ -71,109 +57,20 @@ export default async function HistoryPage({
     (a, b) => a.performedAt.localeCompare(b.performedAt),
   );
 
-  const chartData: ChartPoint[] = sessions
-    .filter((s) => s.bestE1rm != null)
-    .map((s) => ({ date: shortDate(s.performedAt), e1rm: s.bestE1rm as number }));
-
-  // Overload signal: best e1RM of the latest session vs the session before it.
-  const withE1rm = sessions.filter((s) => s.bestE1rm != null);
-  const latest = withE1rm.at(-1);
-  const previous = withE1rm.at(-2);
-  const delta =
-    latest?.bestE1rm != null && previous?.bestE1rm != null
-      ? latest.bestE1rm - previous.bestE1rm
-      : null;
-
+  if (!def && sessions.length === 0) {
+    return <ExerciseReview status="missing" reviewMonth={reviewMonth} />;
+  }
+  if (sessions.length === 0) {
+    return <ExerciseReview status="empty" name={name} reviewMonth={reviewMonth} pin={pin} />;
+  }
   return (
-    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
-      <header className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-display">{name}</h1>
-          <p className="text-body text-muted">
-            {sessions.length} session{sessions.length === 1 ? "" : "s"} logged
-            {latest?.bestE1rm != null && ` · current e1RM ${Math.round(latest.bestE1rm)} lb`}
-          </p>
-        </div>
-        {def && !def.machineTemplate && (
-          <PinButton
-            exerciseId={exerciseId}
-            pinned={isExercisePinned(pinRows, defaultCompoundIds(catalog), exerciseId)}
-            name={name}
-          />
-        )}
-      </header>
-
-      {sessions.length === 0 ? (
-        <p className="text-body text-muted">No working sets logged yet.</p>
-      ) : (
-        <>
-          {delta != null && <OverloadBadge delta={delta} />}
-
-          {chartData.length >= 2 ? (
-            <Card>
-              <CardLabel className="mb-2">e1RM over time</CardLabel>
-              <E1rmChart data={chartData} />
-            </Card>
-          ) : (
-            <Card>
-              <CardLabel className="mb-2">e1RM over time</CardLabel>
-              <p className="text-body text-muted">
-                One session so far — log another to see your trend line.
-              </p>
-            </Card>
-          )}
-
-          <section className="flex flex-col gap-3">
-            {[...sessions].reverse().map((s) => (
-              <Card key={s.sessionId}>
-                <div className="flex items-baseline justify-between">
-                  <h3 className="text-body font-semibold">{longDate(s.performedAt)}</h3>
-                  {s.bestE1rm != null && (
-                    <span className="text-caption text-muted tabular-nums">
-                      best e1RM {Math.round(s.bestE1rm)} lb
-                    </span>
-                  )}
-                </div>
-                <ul className="mt-2 flex flex-col gap-1">
-                  {s.sets.map((set, i) => (
-                    <li key={set.id} className="text-body tabular-nums">
-                      <span className="text-faint">{i + 1}.</span> {set.weight} lb
-                      {isBodyweight ? " added" : ""} × {set.reps}
-                      {set.rir != null ? ` @ ${set.rir} RIR` : ""}
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-            ))}
-          </section>
-        </>
-      )}
-    </div>
+    <ExerciseReview
+      status="ready"
+      name={name}
+      isBodyweight={isBodyweight}
+      sessions={sessions}
+      reviewMonth={reviewMonth}
+      pin={pin}
+    />
   );
-}
-
-// Same delta vocabulary as the finish summary: a colored signed number, then context.
-function OverloadBadge({ delta }: { delta: number }) {
-  const rounded = Math.round(delta);
-  const cls =
-    rounded > 0 ? "text-overload-up" : rounded < 0 ? "text-overload-down" : "text-muted";
-  const signed = rounded > 0 ? `+${rounded}` : rounded < 0 ? `${rounded}` : "±0";
-  return (
-    <p className="flex items-baseline gap-2 text-body">
-      <span className={`font-semibold tabular-nums ${cls}`}>{signed} lb</span>
-      <span className="text-muted">e1RM vs last session</span>
-    </p>
-  );
-}
-
-function shortDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-function longDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
 }

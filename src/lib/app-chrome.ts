@@ -1,5 +1,10 @@
 import { dateKey } from "./bodyweight";
 
+export function isTrackPath(pathname: string) {
+  return pathname === "/analytics" || pathname.startsWith("/analytics/")
+    || pathname.startsWith("/history/");
+}
+
 /** Hide the tab bar on immersive flows that already own a sticky primary CTA. */
 export function hideAppChrome(pathname: string, search = "") {
   if (pathname.startsWith("/session/")) return true;

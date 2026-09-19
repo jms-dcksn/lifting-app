@@ -79,7 +79,7 @@ beat last time. Done = I use it for a real block.
 
 Program building, classic phases, Fluid adaptations, scoped swaps, pre-workout planning,
 workout records, Coach reports/API/proposals, weight calendar/trends, monthly review, the
-Train/Board/Program/You tab shell, cinematic recap, and Board compounds/pins are implemented.
+Train/Track/Program/You tab shell, cinematic recap, and Track compounds/pins are implemented.
 See [Features](FEATURES.md). Migrations and generated types are committed; remote
 migration/Auth state needs a live check. The numbered phase sections below retain the
 original build sequence and historical checks.

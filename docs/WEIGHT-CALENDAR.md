@@ -1,6 +1,6 @@
 # Weight calendar (#28)
 
-You (`/settings`) and the Board More weight card open the shared Weight calendar Sheet.
+You (`/settings`) and the Track More weight card open the shared Weight calendar Sheet.
 Today is selected initially; recent Settings readings open their own date. Browse with
 month arrows or Jump to month. The calendar starts on Monday; dots identify recorded
 readings and an outline identifies today. Arrow keys move focus, Home/End move within a
@@ -23,8 +23,8 @@ The migration adds only this function and its grants; it does not rewrite observ
 
 `getCurrentBodyweight` remains newest-date-first with the profile baseline as fallback.
 Calendar writes never update profile bodyweight, historical sets, e1RMs, or strength caches.
-They revalidate Home, You, Board, next-workout preview, and session pages. Goal
-setting changes now also revalidate Board.
+They revalidate Home, You, Track, next-workout preview, and session pages. Goal
+setting changes now also revalidate Track.
 
 ## Verification
 

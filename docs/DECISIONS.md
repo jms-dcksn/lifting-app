@@ -245,7 +245,7 @@ wider viewports.
 
 ## Phase 8 decisions
 
-**Analytics is a derived read model, not new schema.** Board reads working
+**Analytics is a derived read model, not new schema.** Track reads working
 `set_log` rows joined to `workout_session(performed_at, finished_at, program_id)` plus
 `profile.bodyweight`, then aggregates in `src/lib/analytics.ts`. No analytics tables,
 views, RPCs, or cached counters were added; single-user full-history scans are still
@@ -257,7 +257,7 @@ assisted exercises use the same convention as e1RM recompute. Sets whose effecti
 cannot be computed (notably bodyweight lifts without a stored bodyweight) are counted as
 excluded, not coerced to zero, and the UI names that exclusion beside the volume chart.
 
-**Board tiles funnel into the existing per-exercise history route.** The Board
+**Track tiles funnel into the existing per-exercise history route.** Track
 surfaces total volume, recent e1RM gainers, record events, and a searchable all-exercise
 list, but every lift row links to `history/[exerciseId]` rather than introducing another
 exercise chart surface. The only new client code is the Recharts volume chart and the
@@ -522,8 +522,8 @@ authenticated `loadWorkoutRecords` read path. No schema migration is required.
   with no gold and no invented records. Joint pain and the session note sit behind
   a details control, not in the hero.
 - Reopening a finished session shows the editable set cards with **Home** and **View recap**.
-  Recap lives at `/session/{id}/recap` (finish, last-session card, week chips, monthly
-  achievement links). Edits/deletions update records.
+  Recap lives at `/session/{id}/recap` (finish, last-session card chips, Track week list,
+  monthly achievement links). Edits/deletions update records.
 - Recap is `/session/{id}/recap` only; the workout page does not repeat that hero.
   No toast, celebration effect, or announcement is replayed on rerender, refresh, or
   resume. Optimistic rows never earn records.

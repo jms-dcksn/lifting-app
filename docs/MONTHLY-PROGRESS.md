@@ -1,7 +1,7 @@
 # Monthly progress — canonical metrics (#30)
 
 `/analytics/month?month=YYYY-MM` is an authenticated, read-only consumer of the pure
-version 1.2 `buildMonthlyReport`. Board links to it. No migration or new secrets.
+version 1.2 `buildMonthlyReport`. Track links to it. No migration or new secrets.
 
 ## Contract
 
@@ -98,7 +98,7 @@ keyset pagination, including short server pages. Monthly replay shares its histo
 stall loading. Coach currently loads an additional complete strength history for reliable
 stall evidence; broader weekly-report query pagination remains a separate existing limit.
 Failed reads surface an error rather than a partial, apparently authoritative report.
-No persisted monthly cache; finish/edit/delete revalidate the monthly and Board routes.
+No persisted monthly cache; finish/edit/delete revalidate the monthly and Track routes.
 Weekly response schema/version and record semantics remain unchanged.
 
 ## Monthly dashboard (#31)
@@ -163,7 +163,7 @@ TypeScript and production build. Authenticated phone/keyboard/screen-reader revi
 part of the Vercel preview review; server-rendered tests do not replace browser verification.
 
 Preview checklist:
-1. Open Board → Month review; compare current and completed months and their dates.
+1. Open Track → Month review; compare current and completed months and their dates.
 2. Open an improved lift, inspect supporting workouts, and return to the selected month.
 3. Expand achievements and All lifts; verify machine names and rep-only improvements.
 4. Follow a supported current stall to the filtered Coach next steps, then Show all.
@@ -187,7 +187,7 @@ short pages, >1,000 rows and failed reads. The first increment had 272 passing t
 rep gains, adaptations, swaps/equipment, incomplete/foreign history, metadata pagination,
 historical month cutoffs, and Fluid integration.
 
-Preview checklist: Board → Review monthly strength & records; switch months, inspect
+Preview checklist: Track → Review monthly strength & records; switch months, inspect
 current/prior dates, expand supporting workouts and achievements, follow a recap and
 use browser Back. Supported stalls appear in Worth reviewing with expandable workout evidence;
 unsupported signals stay hidden. Check narrow/mobile fit and keyboard month navigation. Validation: 296 tests, ESLint, TypeScript and production build pass. The new context

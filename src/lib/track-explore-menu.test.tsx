@@ -50,8 +50,10 @@ describe("TrackExploreMenu", () => {
       );
     });
 
+    const trigger = host.querySelector<HTMLButtonElement>('button[aria-label="Explore Track"]');
+    expect(trigger).toBeTruthy();
     act(() => {
-      host.querySelector('button[aria-label="Explore Track"]')?.click();
+      trigger!.click();
     });
     expect(host.textContent).toContain("This week's PRs");
     expect(host.textContent).toContain("Month review");

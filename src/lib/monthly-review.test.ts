@@ -6,6 +6,7 @@ import { MonthlyHistory } from "@/app/(app)/history/[exerciseId]/monthly-history
 import { buildMonthlyReport } from "./monthly-progress";
 import { EXERCISE_BY_ID } from "./strength/coefficients";
 import type { RecordSet } from "./strength/records";
+import type { BodyweightEntry } from "./bodyweight";
 
 const now = new Date("2026-09-14T18:00:00Z");
 const sessions = ["2026-08-02", "2026-09-02"].map((day, i) => ({ id: `s${i}`, user_id: "u", performed_at: `${day}T12:00:00Z`, finished_at: `${day}T13:00:00Z` }));
@@ -24,6 +25,34 @@ describe("monthly review presentation", () => {
     expect(html).toContain("/session/s1/recap");
     expect(html).toContain("Prior period dashed");
     expect(html).not.toContain("Worth reviewing");
+    expect(html).not.toContain("Period and performance");
+  });
+  it("overlays period weeks with weight change and PR counts when tracking is enabled", () => {
+    const report = makeReport();
+    const html = renderToStaticMarkup(createElement(MonthlyReview, {
+      report,
+      eligible: true,
+      periodObservations: [{ id: "p1", observedOn: "2026-09-02" }],
+      weightEntries: [
+        { id: "w0", loggedOn: "2026-08-31", weight: 148 },
+        { id: "w1", loggedOn: "2026-09-06", weight: 150 },
+        { id: "w2", loggedOn: "2026-09-13", weight: 151 },
+      ] satisfies BodyweightEntry[],
+    }));
+    expect(html).toContain("Period and performance");
+    expect(html).toContain("Period weeks");
+    expect(html).toContain("Other weeks");
+    expect(html).toContain("Sep 7-13");
+    expect(html).toContain("2 PRs");
+  });
+  it("keeps the overlay hidden when period tracking is not enabled", () => {
+    const html = renderToStaticMarkup(createElement(MonthlyReview, {
+      report: makeReport(),
+      eligible: false,
+      periodObservations: [{ id: "p1", observedOn: "2026-09-02" }],
+    }));
+    expect(html).not.toContain("Period and performance");
+    expect(html).not.toContain("Period weeks");
   });
   it("keeps weight access and omits unsupported insights for empty history", () => {
     const report = buildMonthlyReport({ userId: "u", month: "2026-09", now, sessions: [], sets: [], catalog: EXERCISE_BY_ID });

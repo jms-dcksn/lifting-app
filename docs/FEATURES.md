@@ -148,9 +148,13 @@ Adaptive plateau engine under §5.
   duration `slot.restSeconds ?? profile.default_rest_seconds`.
 - **Accurate across throttling** — tracks an absolute end timestamp (not a decrementing
   counter), tick every 250ms.
-- **Completion cues** — `navigator.vibrate` (always attempts) plus two short in-app Web
-  Audio beeps when rest ends (best-effort; AudioContext may no-op without a recent gesture).
-  Settings **Rest complete tone** (`profile.rest_tone_enabled`, default on) gates audio only.
+- **Completion cues** — `navigator.vibrate` (always attempts), a system notification when
+  the browser has granted permission, and two short in-app Web Audio beeps when rest ends
+  (tone is Settings-gated, default on). AudioContext may no-op without a recent gesture.
+  Settings **Rest complete tone** (`profile.rest_tone_enabled`) gates audio only.
+  Notifications use the browser permission, requested on first rest start or Settings
+  Enable, never on page load. A notification-only service worker (`/rest-sw.js`) schedules
+  the same banner so supporting browsers can still alert if the tab is frozen.
 - **Controls** — `+30s` and `Skip`; rendered in the sticky footer above Finish, absent when
   idle.
 - **Screen wake lock** — keeps the screen on for the session so the timer fires reliably.
@@ -263,7 +267,8 @@ cap 8 in the server action): unpinning a default hides it; pinning an extra adds
 
 Secondary, not equal cards:
 - All-lifts search (`ExerciseList`) behind a control
-- Month review
+- Month review, including a period × performance week overlay when tracking is enabled
+  (observed period days, weekly weight change, and PR counts on one card)
 - Volume chart and weight trends in a Board "More" sheet
 
 Coach check-in and proposals live on You (`/settings`). The weekly API
@@ -287,9 +292,14 @@ Coach contract.
 - **Rest complete tone** — checkbox (`profile.rest_tone_enabled`, default on); uncheck to
   silence in-tab beeps at rest end. Vibration is independent. Optional ⓘ holds short
   how-it-works copy (not a caption under the control).
+- **Rest complete notifications** — browser permission, not a profile column. Settings
+  shows off / on / blocked / unavailable and an Enable button while undecided. Denied
+  degrades to vibrate and optional tone; ⓘ explains how to re-enable and iPhone Home
+  Screen limits.
 - **Period tracking (optional)** — female-only opt-in menstrual period tracking. Mark observed
-  bleeding days; appear as context bands on monthly charts. Design spec: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
-  Implementation: #33.
+  bleeding days; they appear as context bands on monthly charts and as the period × performance
+  week overlay on month review. Design spec: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
+  Implementation: #33 and #105. Period data stays in-app and is not sent to Coach.
 - **Coach** — check-in snapshot, next-step proposals, and clipboard export. Weekly API unchanged.
 - **Sign out**.
 
@@ -326,7 +336,8 @@ Coach contract.
 ## 12. Platform & PWA
 
 - **Installable PWA** — web manifest (standalone display, "Lift" short name, black theme);
-  SVG app icon + Apple touch icon.
+  SVG app icon + Apple touch icon. `/rest-sw.js` is a notification helper only; it does
+  not cache or serve the app offline.
 - **Stack** — Next.js 16 (App Router, Server Actions, React 19) + Supabase (Postgres + Auth +
   RLS), deployed on Vercel.
 - **Online by design** — assumes connectivity during workouts; there is intentionally **no**

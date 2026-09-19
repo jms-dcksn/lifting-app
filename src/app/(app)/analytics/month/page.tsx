@@ -30,7 +30,12 @@ export default async function MonthPage({ searchParams }: { searchParams: Promis
   if (profile.error) throw new Error("Unable to load your weight goal. Please try again.");
   return <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
     <Link href="/analytics" className="min-h-11 py-2 text-body text-muted">← Board</Link>
-    <MonthlyReview report={report} eligible={eligible} periodObservations={periodObservations} />
+    <MonthlyReview
+      report={report}
+      eligible={eligible}
+      periodObservations={periodObservations}
+      weightEntries={entries}
+    />
     <section id="monthly-weight" aria-label="Monthly bodyweight" className="min-w-0">
       <WeightTrendCard
         key={month}

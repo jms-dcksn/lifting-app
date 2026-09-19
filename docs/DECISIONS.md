@@ -414,15 +414,37 @@ explicit non-goal, anticipating that a locked-pocket countdown could drift or ne
 keeps the screen on for the duration of a session. As a result the documented limitation is
 narrower than the spec feared: the timer is unreliable only if the user *manually* locks the
 phone or backgrounds the tab (JS timers throttle then) — not merely from leaving the screen
-untouched. No push/service-worker or browser Notification API was added; that remains out
-of scope. Completion audio is an in-app Web Audio pair of beeps (`profile.rest_tone_enabled`,
-default on in Settings); vibration is not gated by that toggle.
+untouched. Phase B left push, service-worker, and the Notification API out of scope.
+Completion audio is an in-app Web Audio pair of beeps (`profile.rest_tone_enabled`,
+default on in Settings); vibration is not gated by that toggle. #104 later added system
+notifications; see [rest completion notifications](#rest-completion-notifications-104).
 
 **Per-slot rest override is nullable, not a required field.** `program_slot.rest_seconds`
 defaults to `null` (use the profile default) rather than copying the profile's value at
 creation time. This keeps "most slots use the default" cheap to express and means a later
 change to the profile default automatically applies to every slot that hasn't been
 explicitly overridden.
+
+## Rest completion notifications (#104)
+
+Friend interview (first user): rest-complete cues did not fire when the phone was
+backgrounded. Phase B only used in-tab Web Audio plus `navigator.vibrate`. That is silent
+once the browser suspends the tab.
+
+**System notification when permitted, tone stays audio-only.** Rest complete still vibrates
+and still plays the Settings-gated beeps. A Notification API banner ("Rest over") fires when
+`Notification.permission === "granted"`. The tone checkbox does not gate the banner. There
+is no new profile column. Permission is per-browser.
+
+**Ask at first rest start or Settings Enable, never on load.** Logging a set is a user
+gesture, which iOS requires. Settings shows off / on / blocked / unavailable from that
+permission and an Enable button while undecided. Denied degrades to vibrate and optional
+tone. ⓘ explains how to re-enable. No caption under the control.
+
+**Notification-only service worker.** `/rest-sw.js` schedules the same banner from the rest
+end timestamp so Android can still alert if the page timer is frozen. It does not cache
+documents or add offline sync. iPhone still needs the Home Screen app (iOS 16.4+) and
+cannot guarantee lock-screen delivery. Native push remains out of scope (#43).
 
 ## Phase C decisions (machine brands, types, custom exercises)
 
@@ -588,9 +610,12 @@ unspecified) and explicit `period_tracking_enabled = true`. No inference from de
 weight, or training. Consent version and timestamp stored to support future opt-in changes.
 
 **Context bands, not analysis** — monthly review shows optional shaded bands on weight and e1RM
-charts when tracking is enabled. View toggle per session (not saved). Period data never alters
-stall classification, PR totals, weight calculations, or Coach recommendations. No Coach API or
-export inclusion in V1 (separate consent required for future sharing).
+charts when tracking is enabled. View toggle per session (not saved). #105 adds a descriptive
+Monday-Sunday overlay of observed period days, weekly weight change, and PR counts on the same
+month page. It groups weeks; it does not infer a cycle, compute a correlation, or change
+training. Period data never alters stall classification, PR totals, weight calculations, or
+Coach recommendations. No Coach API or export inclusion in V1 (separate consent required for
+future sharing).
 
 **Disable and deletion** — toggling off offers Keep history (private, re-enable shows it again)
 or Delete history (hard delete, irreversible). Changing sex from Female auto-disables without

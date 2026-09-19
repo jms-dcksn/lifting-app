@@ -276,6 +276,14 @@ period extends beyond the window (user can browse adjacent months to see continu
 - Weight and strength data remain authoritative; period markers add optional visual context for
   interpretation by the lifter.
 
+### 4.4 Period × performance week overlay (#105)
+
+Month review also shows a single week timeline when tracking is enabled. Each Monday-Sunday
+row overlays observed period days, that week's bodyweight-average change, and canonical PR
+counts. This is the glanceable answer to "in a period week, what happened to weight and
+strength?" It reuses the same eligibility gate, month clipping, and no-inference rules as
+the chart bands. Helper copy stays behind ⓘ. Period data is not sent to Coach.
+
 ---
 
 ## 5. Settings and state transitions

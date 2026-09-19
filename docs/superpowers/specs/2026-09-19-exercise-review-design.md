@@ -1,6 +1,6 @@
 # Unified Exercise review design
 
-**Status:** Proposed. Spec only. No product UI in this PR. Awaiting James approval.
+**Status:** Slice A shipped (420e959 — removes month-review all-lifts dump and SVG trends). Slices B–E remain proposed.
 
 **Audited:** boarded product UI on `main` at `fc8a87a` (Lift tab rename). Surfaces:
 `src/app/(app)/history/[exerciseId]/`, `src/app/(app)/analytics/` (Track tiles, Explore,

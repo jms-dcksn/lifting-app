@@ -319,7 +319,9 @@ Secondary, not equal cards, behind Explore:
   collapsed insufficient-data trends, a one-line hard-set shortfall flag, and clipboard export.
   Stall links use `?exercise=`. `/settings?coachExercise=` redirects here.
 - Body (`/analytics/body`) — weight trend chart and tape measurements (waist, neck, arm, thigh, chest)
-- Volume (`/analytics/volume`) — weekly total tonnage
+- Volume (`/analytics/volume`) — weekly tonnage for all training or one logged
+  exercise (`?exercise=`). Search matches All lifts (one row per exercise). Unknown
+  ids fall back to all training. Mixed machines share one series.
 
 Coach check-in and proposals live on Track Explore, not You. The weekly API
 (`GET /api/coach/v1/weekly`) is unchanged. Canonical eligibility stays `workoutRecords`

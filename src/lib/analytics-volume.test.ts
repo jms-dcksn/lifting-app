@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { identityVolume, weeklyVolume, type AnalyticsSetRow } from "./analytics";
+import {
+  identityVolume,
+  rowsForExercise,
+  sessionTonnage,
+  weeklyVolume,
+  type AnalyticsSetRow,
+} from "./analytics";
 import { monthlyWindows } from "./monthly-progress";
 import { EXERCISE_BY_ID } from "./strength/coefficients";
 
@@ -63,5 +69,61 @@ describe("identityVolume", () => {
     const sep = monthlyWindows("2026-09", now).current;
     expect(identityVolume([warmup, working], sep, defs, null)).toBe(800);
     expect(identityVolume([pullup], sep, { "weighted-pullup": EXERCISE_BY_ID["weighted-pullup"] }, null)).toBe(0);
+  });
+});
+
+describe("rowsForExercise", () => {
+  it("keeps every equipment instance of that exercise and drops other lifts", () => {
+    const bench = row("bench", "2026-09-02T12:00:00Z", { weight: 100, reps: 8 });
+    const otherBar = row("other", "2026-09-02T12:00:00Z", {
+      sessionId: "other",
+      equipmentInstanceId: "other-bar",
+      weight: 95,
+      reps: 10,
+    });
+    const squat = row("squat", "2026-09-02T12:00:00Z", {
+      sessionId: "squat",
+      exerciseId: "bb-back-squat",
+      weight: 200,
+      reps: 5,
+    });
+
+    expect(rowsForExercise([bench, otherBar, squat], "bb-bench").map((item) => item.id)).toEqual([
+      "bench",
+      "other",
+    ]);
+  });
+
+  it("drops warmups before sessionTonnage", () => {
+    const warmup = row("w", "2026-09-02T12:00:00Z", { isWarmup: true, weight: 100, reps: 8 });
+    const working = row("s", "2026-09-02T12:00:00Z", { sessionId: "s", weight: 100, reps: 5 });
+    const filtered = rowsForExercise([warmup, working], "bb-bench");
+
+    expect(filtered.map((item) => item.id)).toEqual(["s"]);
+    expect(sessionTonnage(filtered, defs, null)).toEqual([
+      {
+        sessionId: "s",
+        performedAt: "2026-09-02T12:00:00Z",
+        programId: null,
+        tonnage: 500,
+        setCount: 1,
+        excludedSetCount: 0,
+      },
+    ]);
+  });
+
+  it("leaves bodyweight sets without a reading out of weeklyVolume", () => {
+    const pullup: AnalyticsSetRow = {
+      ...row("bw", "2026-09-02T12:00:00Z", { weight: 25, reps: 8 }),
+      exerciseId: "weighted-pullup",
+    };
+    const filtered = rowsForExercise([pullup], "weighted-pullup");
+    const volume = weeklyVolume(
+      sessionTonnage(filtered, { "weighted-pullup": EXERCISE_BY_ID["weighted-pullup"] }, null),
+    );
+
+    expect(volume).toEqual([
+      { weekStart: "2026-08-31", weekEnd: "2026-09-06", tonnage: 0 },
+    ]);
   });
 });

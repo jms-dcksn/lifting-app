@@ -81,6 +81,21 @@ const HARD_RIR = 2; // RIR <= this counts as a hard (stimulating) set
 
 type ExerciseDefs = Record<string, ExerciseDef>;
 
+export function rowsForExercise(
+  rows: AnalyticsSetRow[],
+  exerciseId: string,
+): AnalyticsSetRow[] {
+  return rows.filter((row) => row.exerciseId === exerciseId && !row.isWarmup);
+}
+
+export function resolveVolumeExerciseId(
+  raw: string | string[] | undefined,
+  knownIds: ReadonlySet<string>,
+): string | null {
+  if (typeof raw !== "string" || raw === "" || !knownIds.has(raw)) return null;
+  return raw;
+}
+
 export function sessionTonnage(
   rows: AnalyticsSetRow[],
   defs: ExerciseDefs,

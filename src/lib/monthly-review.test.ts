@@ -2,7 +2,6 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { MonthlyReview } from "@/app/(app)/analytics/month/review";
-import { MonthlyHistory } from "@/app/(app)/history/[exerciseId]/monthly-history";
 import { buildMonthlyReport } from "./monthly-progress";
 import { EXERCISE_BY_ID } from "./strength/coefficients";
 import type { RecordSet } from "./strength/records";
@@ -89,14 +88,5 @@ describe("monthly review presentation", () => {
     expect(html).toContain('href="#monthly-weight"');
     expect(html).not.toContain("Where you improved");
     expect(html).not.toContain("Worth reviewing");
-  });
-  it("never merges equipment in monthly history and preserves the return month", () => {
-    const report = makeReport([...sets, { ...sets[1], id: "other", equipment_instance_id: "machine-b", e1rm: 999 }]);
-    const html = renderToStaticMarkup(createElement(MonthlyHistory, { report, exerciseId: "bb-bench", equipment: null }));
-    expect(html).toContain("140.0 lb → 150.0 lb");
-    expect(html).not.toContain("999.0");
-    expect(html).toContain('href="/analytics/month?month=2026-09"');
-    const missing = renderToStaticMarkup(createElement(MonthlyHistory, { report, exerciseId: "bb-bench", equipment: "missing" }));
-    expect(missing).toContain("No working sets for this exact exercise");
   });
 });

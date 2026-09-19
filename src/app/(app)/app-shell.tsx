@@ -5,11 +5,11 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { cx } from "@/components/ui/cx";
 import { IconGrid, IconPlay, IconProgram, IconUser } from "@/components/ui/icons";
-import { hideAppChrome } from "@/lib/app-chrome";
+import { hideAppChrome, isTrackPath } from "@/lib/app-chrome";
 
 const tabs = [
   { href: "/", label: "Lift", icon: IconPlay, match: (path: string) => path === "/" },
-  { href: "/analytics", label: "Track", icon: IconGrid, match: (path: string) => path === "/analytics" || path.startsWith("/analytics/") },
+  { href: "/analytics", label: "Track", icon: IconGrid, match: isTrackPath },
   { href: "/program", label: "Program", icon: IconProgram, match: (path: string) => path === "/program" || path.startsWith("/program/") },
   { href: "/settings", label: "You", icon: IconUser, match: (path: string) => path === "/settings" || path.startsWith("/settings/") },
 ];
@@ -46,7 +46,7 @@ function ShellFrame({
   );
 }
 
-function TabBar({ pathname = "" }: { pathname?: string }) {
+export function TabBar({ pathname = "" }: { pathname?: string }) {
   return (
     <nav
       aria-label="Primary"

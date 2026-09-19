@@ -119,9 +119,9 @@ historical bodyweight rules. These monthly gains need not be all-time PRs and do
 record totals or e1RM classification. Editing/removing source sets rebuilds the result.
 
 Improved and rep-gain names link to `/history/[exerciseId]?month=YYYY-MM&equipment=...`;
-`none` explicitly means no equipment instance. That route still consumes the same report
-and offers a selected-month return link. It never blends instances or borrows the older
-all-history route's aggregate. The unfiltered history route retains its existing behavior.
+`none` explicitly means no equipment instance. That URL opens the shared Exercise review
+with a back link to the selected month. It does not replace the page with a monthly-only
+template. Equipment identity on the review screen is still the later Slice F wiring.
 
 The shared weight card follows the selected month, including rolling lookback before the
 first day. Its summary is as of the selected end date; the goal is explicitly the current

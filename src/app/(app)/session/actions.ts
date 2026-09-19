@@ -239,6 +239,7 @@ export async function logSet(input: LogSetInput) {
       .maybeSingle();
     if (readError || !existing) throw new Error("Could not retrieve existing set");
     revalidateSession(input.sessionId);
+    revalidatePath("/history/[exerciseId]", "page");
     return { ...existing, recomputeWarning: null };
   }
 
@@ -251,6 +252,7 @@ export async function logSet(input: LogSetInput) {
     recomputeWarning = "Set saved, but couldn't update exercise stats. Your progress tracking may be temporarily out of sync.";
   }
   revalidateSession(input.sessionId);
+  revalidatePath("/history/[exerciseId]", "page");
   return { ...data, recomputeWarning };
 }
 

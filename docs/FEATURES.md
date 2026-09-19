@@ -247,13 +247,21 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
   the calibration-critical session actions.
 - **Known brands & type labels** — `KNOWN_BRANDS`, `MACHINE_TYPE_LABEL` exported for the UI.
 
-## 7. Exercise history (`/history/[exerciseId]`)
+## 7. Exercise review (`/history/[exerciseId]`)
+
+One screen for Track tiles, Explore All lifts, recap, in-session title links, and
+Month review lift names. Optional `equipment` and `month` query params stay on the URL.
+`month=YYYY-MM` only seeds a **Back to {month} month review** link when the month is
+valid. It does not swap in a monthly-history page. Invalid months are ignored.
 
 - **Per-session e1RM series** — fetches that exercise's working sets, groups by session,
   computes best-e1RM-per-session.
 - **Overload badge** — latest session vs the session before it.
 - **Line chart** — Recharts e1RM-over-time chart (`e1rm-chart.tsx`).
 - **Pin** — header `IconButton` writes `user_exercise_pin` (display preference only).
+- **Empty states** — missing catalog exercise vs no working sets. Load failures use
+  Exercise review error copy, not Month review's.
+- **Tab** — Track is `aria-current` on `/history/...`.
 
 ## 8. Track (`/analytics`, nav label "Track")
 
@@ -308,7 +316,7 @@ Coach contract.
 
 ## 10. App shell & navigation
 
-- **Bottom tabs** — Lift (`/`), Track (`/analytics`), Program (`/program`), You (`/settings`);
+- **Bottom tabs** — Lift (`/`), Track (`/analytics` and `/history/...`), Program (`/program`), You (`/settings`);
   icons plus labels, `aria-current` on the active tab (`app-shell.tsx`). Hidden on session
   routes (active workout, recap, finished sets), next-workout planner, and program builder.
 - **Auth gate** — layout is a Server Component gating on `getClaims()`.

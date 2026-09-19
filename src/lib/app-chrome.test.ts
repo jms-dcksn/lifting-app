@@ -32,6 +32,7 @@ describe("isTrackPath", () => {
     expect(isTrackPath("/program")).toBe(false);
     expect(isTrackPath("/settings")).toBe(false);
     expect(isTrackPath("/session/abc")).toBe(false);
+    expect(isTrackPath("/history")).toBe(false);
   });
 });
 

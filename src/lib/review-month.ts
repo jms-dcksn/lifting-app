@@ -1,6 +1,5 @@
 import { monthlyWindows } from "./monthly-progress";
 
-/** Valid `?month=YYYY-MM` for Exercise review context. Invalid values are ignored. */
 export function reviewMonthParam(
   month: string | string[] | undefined,
   now = new Date(),

@@ -74,9 +74,9 @@ function ReviewShell({
 }
 
 function ReadyBody({ sessions, isBodyweight }: { sessions: SessionGroup[]; isBodyweight: boolean }) {
-  const chartData: ChartPoint[] = sessions
-    .filter((s) => s.bestE1rm != null)
-    .map((s) => ({ date: shortDate(s.performedAt), e1rm: s.bestE1rm as number }));
+  const chartData: ChartPoint[] = sessions.flatMap((s) =>
+    s.bestE1rm == null ? [] : [{ date: shortDate(s.performedAt), e1rm: s.bestE1rm }],
+  );
   const withE1rm = sessions.filter((s) => s.bestE1rm != null);
   const latest = withE1rm.at(-1);
   const previous = withE1rm.at(-2);

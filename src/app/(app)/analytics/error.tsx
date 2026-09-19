@@ -5,7 +5,7 @@ import Link from "next/link";
 export default function AnalyticsError({ reset }: { reset: () => void }) {
   return (
     <div className="mx-auto w-full max-w-page px-4 py-6" role="alert">
-      <h2 className="text-heading">Progress could not load</h2>
+      <h2 className="text-heading">Track could not load</h2>
       <p className="my-3 text-body text-muted">
         Your workout history has not changed. Please try again.
       </p>

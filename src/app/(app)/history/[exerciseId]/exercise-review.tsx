@@ -19,8 +19,17 @@ import { ReviewChart } from "./review-chart";
 
 type PinProps = { exerciseId: string; pinned: boolean; name: string };
 
+export type EquipmentChoice = {
+  id: string | null;
+  label: string;
+  href: string;
+  selected: boolean;
+};
+
 export type ExerciseReviewProps = {
   reviewMonth: string | null;
+  equipmentLabel?: string | null;
+  equipmentChoices?: EquipmentChoice[];
 } & (
   | { status: "missing" }
   | { status: "empty"; name: string; pin?: PinProps }
@@ -49,13 +58,30 @@ export function ExerciseReview(props: ExerciseReviewProps) {
     );
   }
 
-  const { name, pin, reviewMonth } = props;
+  const { name, pin, reviewMonth, equipmentLabel, equipmentChoices } = props;
   return (
     <ReviewShell reviewMonth={reviewMonth}>
       <header className="flex items-start justify-between gap-3">
-        <h1 className="text-display">{name}</h1>
+        <div className="min-w-0">
+          <h1 className="text-display">{name}</h1>
+          {equipmentLabel && <p className="mt-1 text-caption text-muted">{equipmentLabel}</p>}
+        </div>
         {pin && <PinButton exerciseId={pin.exerciseId} pinned={pin.pinned} name={pin.name} />}
       </header>
+      {equipmentChoices && equipmentChoices.length > 1 && (
+        <nav aria-label="Equipment" className="flex flex-wrap gap-x-4 gap-y-1">
+          {equipmentChoices.map((choice) => (
+            <Link
+              key={choice.id ?? "none"}
+              href={choice.href}
+              aria-current={choice.selected ? "page" : undefined}
+              className={choice.selected ? "min-h-11 py-2 text-body font-medium" : "min-h-11 py-2 text-body underline"}
+            >
+              {choice.label}
+            </Link>
+          ))}
+        </nav>
+      )}
       {props.status === "empty" ? (
         <p className="text-body text-muted">No working sets logged yet.</p>
       ) : (

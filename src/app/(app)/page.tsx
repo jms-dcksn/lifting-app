@@ -57,7 +57,7 @@ export default async function Home() {
     loadWeekRecordChips(supabase, userId, catalog),
     supabase
       .from("set_log")
-      .select("id, session_id, exercise_id, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at)")
+      .select("id, session_id, exercise_id, equipment_instance_id, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at, finished_at)")
       .eq("user_id", userId)
       .eq("is_warmup", false)
       .order("created_at", { ascending: true }),
@@ -183,6 +183,7 @@ function normalizeHomeRows(
     id: string;
     session_id: string;
     exercise_id: string;
+    equipment_instance_id: string | null;
     weight: number;
     reps: number;
     rir: number | null;
@@ -190,8 +191,8 @@ function normalizeHomeRows(
     created_at: string;
     is_warmup: boolean;
     workout_session:
-      | { performed_at: string }
-      | { performed_at: string }[]
+      | { performed_at: string; finished_at: string | null }
+      | { performed_at: string; finished_at: string | null }[]
       | null;
   }>,
 ): AnalyticsSetRow[] {
@@ -202,12 +203,14 @@ function normalizeHomeRows(
       id: row.id,
       sessionId: row.session_id,
       exerciseId: row.exercise_id,
+      equipmentInstanceId: row.equipment_instance_id,
       weight: row.weight,
       reps: row.reps,
       rir: row.rir,
       e1rm: row.e1rm,
       createdAt: row.created_at,
       performedAt: session.performed_at,
+      finishedAt: session.finished_at,
       isWarmup: row.is_warmup,
     }];
   });

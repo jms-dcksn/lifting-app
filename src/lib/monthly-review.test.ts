@@ -89,4 +89,37 @@ describe("monthly review presentation", () => {
     expect(html).not.toContain("Where you improved");
     expect(html).not.toContain("Worth reviewing");
   });
+
+  it("links stalls into Exercise review with month and equipment", () => {
+    const report = {
+      ...makeReport(),
+      stalls: [{
+        slotId: "slot",
+        exerciseId: "leg-press",
+        equipmentInstanceId: "cybex",
+        name: "Leg Press",
+        state: "plateau" as const,
+        patience: 3,
+        stalledExposures: 3,
+        stalledSinceDays: 14,
+        lastImprovementAt: "2026-09-02T12:00:00Z",
+        phaseName: null,
+        repMin: 8,
+        repMax: 12,
+        points: [{
+          sessionId: "s1",
+          sessionAt: "2026-09-02T12:00:00Z",
+          bestE1rm: 250,
+          repGain: false,
+        }],
+      }],
+    };
+    const html = renderToStaticMarkup(createElement(MonthlyReview, { report }));
+    expect(html).toContain("Worth reviewing");
+    expect(html).toContain("Leg Press");
+    expect(html).toContain("month=2026-09&amp;equipment=cybex");
+    expect(html).toContain("/session/s1");
+    expect(html).not.toContain("Equipment cybex");
+  });
 });
+

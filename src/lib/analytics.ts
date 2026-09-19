@@ -7,6 +7,7 @@ export interface AnalyticsSetRow {
   id: string;
   sessionId: string;
   exerciseId: string;
+  equipmentInstanceId?: string | null;
   weight: number;
   reps: number;
   rir: number | null;
@@ -50,6 +51,7 @@ export interface WeightPr {
 
 export interface ExerciseSummary {
   exerciseId: string;
+  equipmentInstanceId: string | null;
   currentE1rm: number | null;
   bestE1rm: number | null;
   lastPerformedAt: string;
@@ -197,24 +199,31 @@ export function weightPrs(rows: AnalyticsSetRow[]): WeightPr[] {
 }
 
 export function exerciseSummaries(rows: AnalyticsSetRow[]): ExerciseSummary[] {
-  const byExercise = new Map<
+  const byIdentity = new Map<
     string,
-    Map<string, { performedAt: string; bestE1rm: number | null }>
+    {
+      exerciseId: string;
+      equipmentInstanceId: string | null;
+      sessions: Map<string, { performedAt: string; bestE1rm: number | null }>;
+    }
   >();
 
   for (const row of chronologicalRows(rows)) {
     if (row.isWarmup) continue;
+    if (row.finishedAt === null) continue;
 
-    let sessions = byExercise.get(row.exerciseId);
-    if (!sessions) {
-      sessions = new Map();
-      byExercise.set(row.exerciseId, sessions);
+    const equipmentInstanceId = row.equipmentInstanceId ?? null;
+    const identityKey = `${row.exerciseId}\0${equipmentInstanceId ?? ""}`;
+    let identity = byIdentity.get(identityKey);
+    if (!identity) {
+      identity = { exerciseId: row.exerciseId, equipmentInstanceId, sessions: new Map() };
+      byIdentity.set(identityKey, identity);
     }
 
-    let session = sessions.get(row.sessionId);
+    let session = identity.sessions.get(row.sessionId);
     if (!session) {
       session = { performedAt: row.performedAt, bestE1rm: null };
-      sessions.set(row.sessionId, session);
+      identity.sessions.set(row.sessionId, session);
     }
 
     if (row.e1rm != null && (session.bestE1rm == null || row.e1rm > session.bestE1rm)) {
@@ -222,33 +231,53 @@ export function exerciseSummaries(rows: AnalyticsSetRow[]): ExerciseSummary[] {
     }
   }
 
-  return [...byExercise.entries()]
-    .map(([exerciseId, sessionsById]) => {
-      const sessions = [...sessionsById.values()].sort(compareSessions);
-      const withE1rm = sessions.filter(
-        (session): session is { performedAt: string; bestE1rm: number } =>
-          session.bestE1rm != null,
-      );
-      const latest = withE1rm.at(-1);
-      const previous = withE1rm.at(-2);
-      const bestE1rm =
-        withE1rm.length > 0
-          ? Math.max(...withE1rm.map((session) => session.bestE1rm))
-          : null;
-      const delta = latest && previous ? latest.bestE1rm - previous.bestE1rm : null;
+  const latestByExercise = new Map<string, ExerciseSummary>();
+  for (const identity of byIdentity.values()) {
+    const summary = summaryFromSessions(
+      identity.exerciseId,
+      identity.equipmentInstanceId,
+      identity.sessions,
+    );
+    const prior = latestByExercise.get(identity.exerciseId);
+    if (!prior || summary.lastPerformedAt > prior.lastPerformedAt) {
+      latestByExercise.set(identity.exerciseId, summary);
+    }
+  }
 
-      return {
-        exerciseId,
-        currentE1rm: latest?.bestE1rm ?? null,
-        bestE1rm,
-        lastPerformedAt: sessions.at(-1)?.performedAt ?? "",
-        sessionCount: sessions.length,
-        delta,
-        trend: trendFromDelta(delta),
-        e1rmSeries: withE1rm.map((session) => session.bestE1rm),
-      };
-    })
-    .sort((a, b) => b.lastPerformedAt.localeCompare(a.lastPerformedAt));
+  return [...latestByExercise.values()].sort((a, b) =>
+    b.lastPerformedAt.localeCompare(a.lastPerformedAt),
+  );
+}
+
+function summaryFromSessions(
+  exerciseId: string,
+  equipmentInstanceId: string | null,
+  sessionsById: Map<string, { performedAt: string; bestE1rm: number | null }>,
+): ExerciseSummary {
+  const sessions = [...sessionsById.values()].sort(compareSessions);
+  const withE1rm = sessions.filter(
+    (session): session is { performedAt: string; bestE1rm: number } =>
+      session.bestE1rm != null,
+  );
+  const latest = withE1rm.at(-1);
+  const previous = withE1rm.at(-2);
+  const bestE1rm =
+    withE1rm.length > 0
+      ? Math.max(...withE1rm.map((session) => session.bestE1rm))
+      : null;
+  const delta = latest && previous ? latest.bestE1rm - previous.bestE1rm : null;
+
+  return {
+    exerciseId,
+    equipmentInstanceId,
+    currentE1rm: latest?.bestE1rm ?? null,
+    bestE1rm,
+    lastPerformedAt: sessions.at(-1)?.performedAt ?? "",
+    sessionCount: sessions.length,
+    delta,
+    trend: trendFromDelta(delta),
+    e1rmSeries: withE1rm.map((session) => session.bestE1rm),
+  };
 }
 
 // Working sets and hard sets per movement pattern per week — push/pull/legs balance

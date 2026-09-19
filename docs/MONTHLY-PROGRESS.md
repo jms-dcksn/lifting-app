@@ -122,8 +122,9 @@ Improved and rep-gain names link to `/history/[exerciseId]?month=YYYY-MM&equipme
 `none` explicitly means no equipment instance. That URL opens the shared Exercise review
 with a back link to the selected month. It does not replace the page with a monthly-only
 template. Exercise review's month-to-month widget uses each selected month's Chicago
-window (`monthlyWindows` current side) plus identity-filtered `identityVolume`. Equipment
-identity on the review screen is still the later Slice F wiring.
+window (`monthlyWindows` current side) plus identity-filtered `identityVolume`.
+Worth-reviewing stall names use the same Exercise review URL (session evidence and the
+in-progress Coach link stay).
 
 The shared weight card follows the selected month, including rolling lookback before the
 first day. Its summary is as of the selected end date; the goal is explicitly the current

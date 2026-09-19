@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cx } from "@/components/ui/cx";
+import { exerciseReviewHref } from "@/lib/exercise-review-href";
 
 export interface ExerciseListItem {
   exerciseId: string;
+  equipmentInstanceId: string | null;
   name: string;
   pattern: string;
   currentE1rm: number | null;
@@ -43,7 +45,10 @@ export function ExerciseList({ items }: { items: ExerciseListItem[] }) {
         {filtered.map((item) => (
           <li key={item.exerciseId}>
             <Link
-              href={`/history/${item.exerciseId}`}
+              href={exerciseReviewHref({
+                exerciseId: item.exerciseId,
+                equipmentInstanceId: item.equipmentInstanceId,
+              })}
               className="flex min-h-16 items-center justify-between gap-3 py-3 text-left"
             >
               <span className="min-w-0">

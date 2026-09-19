@@ -12,6 +12,7 @@ import type { MonthlyReport } from "@/lib/monthly-progress";
 import type { PeriodObservation } from "@/lib/period-calendar";
 import { buildPeriodPerformanceOverlay } from "@/lib/period-performance";
 import { sessionRecapPath } from "@/lib/session-paths";
+import { exerciseReviewHref } from "@/lib/exercise-review-href";
 
 const amount = (n: number | null) => n == null ? "—" : `${n.toFixed(1)} lb`;
 const label = (month: string) => new Date(`${month}-01T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -120,8 +121,11 @@ export function MonthlyReview({
         </InfoButton>
       </div>
       <ul className="mt-3 divide-y divide-border">{stalls.map(stall => <li key={stall.slotId} className="py-3">
-        <p className="font-medium">{stall.name}</p>
-        {stall.equipmentInstanceId && <p className="break-all text-caption text-muted">Equipment {stall.equipmentInstanceId}</p>}
+        <Link href={exerciseReviewHref({
+          exerciseId: stall.exerciseId,
+          equipmentInstanceId: stall.equipmentInstanceId,
+          month: report.month,
+        })} className="min-h-11 py-2 font-medium underline">{stall.name}</Link>
         <p className="mt-1 text-body">{stall.stalledExposures} stalled exposures across {stall.stalledSinceDays} days</p>
         <p className="text-caption text-muted">{stall.repMin}–{stall.repMax} reps{stall.phaseName ? ` · ${stall.phaseName}` : ""} · Last improvement/baseline: {dateKey(new Date(stall.lastImprovementAt!), report.timeZone)}</p>
         <details className="mt-1">

@@ -7,6 +7,7 @@ import {
   recordCounts,
   type ExerciseRecords,
 } from "@/lib/strength/records";
+import { exerciseReviewHref } from "@/lib/exercise-review-href";
 
 export function AchievementPills({ groups, exerciseId }: { groups: ExerciseRecords[]; exerciseId?: string }) {
   if (!groups.length) return null;
@@ -81,7 +82,10 @@ export function AchievementRecap({
               style={delay()}
             >
               <Link
-                href={`/history/${group.exerciseId}`}
+                href={exerciseReviewHref({
+                  exerciseId: group.exerciseId,
+                  equipmentInstanceId: group.equipmentInstanceId,
+                })}
                 className="min-w-0 text-body font-medium underline-offset-2 hover:underline"
               >
                 {group.name}
@@ -93,7 +97,10 @@ export function AchievementRecap({
                   ))}
                 </div>
                 <Link
-                  href={`/history/${group.exerciseId}`}
+                  href={exerciseReviewHref({
+                    exerciseId: group.exerciseId,
+                    equipmentInstanceId: group.equipmentInstanceId,
+                  })}
                   aria-label={`View history for ${group.name}`}
                   className={iconButtonClasses("ghost")}
                 >

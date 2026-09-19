@@ -61,7 +61,9 @@ two-option **Last 8 workouts** / **All history** toggle (`aria-pressed`), same `
 language as the weight range control. Month-to-month uses two `Input type="month"`
 controls (this month / other month) with paired metric columns, not an empty-to-value
 arrow. Program names are a muted caption under the chart window and under the compare
-card.
+card. When an exercise has more than one equipment instance, Exercise review offers a
+row of text links (`aria-current` on the selected identity). Not a select or a third
+chart control.
 
 The active workout owns one rest timer. It uses an absolute end timestamp to tolerate tab
 throttling, starts optimistically when logging, and uses per-slot rest or the profile default.

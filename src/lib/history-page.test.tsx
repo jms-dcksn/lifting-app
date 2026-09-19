@@ -35,14 +35,24 @@ const query = {
     Promise.resolve(resolve({ data: setRows, error: null })),
 };
 let setRows: unknown[] = [];
+let instanceRows: { id: string; label: string | null; gym: string | null }[] = [];
 
-function from() {
-  return query;
+const instanceQuery = {
+  select: vi.fn(() => instanceQuery),
+  eq: vi.fn(() => instanceQuery),
+  in: vi.fn(() => instanceQuery),
+  then: (resolve: (result: { data: unknown[]; error: null }) => unknown) =>
+    Promise.resolve(resolve({ data: instanceRows, error: null })),
+};
+
+function from(table?: string) {
+  return table === "equipment_instance" ? instanceQuery : query;
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
   setRows = [];
+  instanceRows = [];
   mocks.client.mockResolvedValue({
     auth: { getClaims: async () => ({ data: { claims: { sub: "user" } } }) },
     from,
@@ -105,5 +115,49 @@ describe("HistoryPage route", () => {
     expect(html).toContain("Month to month");
     expect(html).toContain("150.0 lb");
     expect(mocks.periodRows).not.toHaveBeenCalled();
+  });
+
+  it("filters to the requested equipment instance instead of blending", async () => {
+    setRows = [
+      {
+        id: "old",
+        weight: 400,
+        reps: 8,
+        rir: 1,
+        e1rm: 500,
+        session_id: "s1",
+        created_at: "2026-08-01T12:05:00Z",
+        exercise_id: "leg-press",
+        equipment_instance_id: "hammer",
+        workout_session: { performed_at: "2026-08-01T12:00:00Z", finished_at: "2026-08-01T13:00:00Z" },
+      },
+      {
+        id: "new",
+        weight: 200,
+        reps: 8,
+        rir: 1,
+        e1rm: 250,
+        session_id: "s2",
+        created_at: "2026-09-16T12:05:00Z",
+        exercise_id: "leg-press",
+        equipment_instance_id: "cybex",
+        workout_session: { performed_at: "2026-09-16T12:00:00Z", finished_at: "2026-09-16T13:00:00Z" },
+      },
+    ];
+    instanceRows = [
+      { id: "hammer", label: "Hammer", gym: null },
+      { id: "cybex", label: "Cybex", gym: null },
+    ];
+    const selected = renderToStaticMarkup(await render("leg-press", { equipment: "hammer" }));
+    expect(selected).toContain("500.0 lb");
+    expect(selected).not.toContain("250.0 lb");
+    expect(selected).toContain("Hammer");
+    expect(selected).toContain("Cybex");
+    expect(selected).toContain("equipment=cybex");
+
+    const latest = renderToStaticMarkup(await render("leg-press", {}));
+    expect(latest).toContain("250.0 lb");
+    expect(latest).not.toContain("500.0 lb");
+    expect(latest).toContain("Cybex");
   });
 });

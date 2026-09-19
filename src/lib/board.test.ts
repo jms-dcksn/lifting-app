@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   PIN_CAP,
+  buildBoardLifts,
   canPinExercise,
   defaultCompoundIds,
   isExercisePinned,
@@ -100,5 +101,26 @@ describe("board copy", () => {
       sessionRecordChips("w1", [group]),
     );
     expect(sessionRecordSummary([group])).toBe("2 PRs");
+  });
+});
+
+describe("buildBoardLifts", () => {
+  it("carries the latest-instance equipment onto the tile", () => {
+    const lifts = buildBoardLifts({
+      catalog: EXERCISE_BY_ID,
+      pins: [],
+      summaries: [{
+        exerciseId: "bb-bench",
+        equipmentInstanceId: "pad-1",
+        currentE1rm: 150,
+        delta: 5,
+        e1rmSeries: [145, 150],
+      }],
+      weekExerciseIds: [],
+    });
+    expect(lifts.find((lift) => lift.exerciseId === "bb-bench")).toMatchObject({
+      equipmentInstanceId: "pad-1",
+      currentE1rm: 150,
+    });
   });
 });

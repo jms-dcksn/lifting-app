@@ -46,7 +46,7 @@ function set(s: MonthlySession, reps = 8, extra: Partial<RecordSet> = {}): Recor
 }
 
 function source(sessions: MonthlySession[], sets: RecordSet[]) {
-  return { userId: "u", exerciseId: "bb-bench", catalog, sessions, sets, bodyweight: null };
+  return { userId: "u", exerciseId: "bb-bench", equipmentInstanceId: null, catalog, sessions, sets, bodyweight: null };
 }
 
 describe("reviewCompareDefaults", () => {
@@ -131,6 +131,17 @@ describe("reviewMonthSide", () => {
     expect(sep).toMatchObject({ trained: true, bestE1rm: 75.3, exposures: 1 });
     expect(aug.trained).toBe(false);
     expect(aug.bestE1rm).toBeNull();
+  });
+
+  it("does not blend a second equipment instance into the selected identity", () => {
+    const september = session("sep", "2026-09-02");
+    const other = session("other", "2026-09-16");
+    const src = source([september, other], [
+      set(september, 8, { e1rm: 140 }),
+      set(other, 8, { e1rm: 400, equipment_instance_id: "other-machine" }),
+    ]);
+    const sep = reviewMonthSide("2026-09", src, now);
+    expect(sep).toMatchObject({ trained: true, bestE1rm: 140, exposures: 1, volume: 800 });
   });
 });
 

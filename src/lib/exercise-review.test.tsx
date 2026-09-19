@@ -28,6 +28,7 @@ function monthSourceFrom(sessions: ReviewSession[]): ReviewMonthSource {
   return {
     userId: "u",
     exerciseId: "bb-bench",
+    equipmentInstanceId: null,
     catalog: { "bb-bench": EXERCISE_BY_ID["bb-bench"] },
     sessions: sessions.map((session) => ({
       id: session.sessionId,
@@ -255,5 +256,33 @@ describe("exercise review", () => {
     const html = renderToStaticMarkup(ready(sessions, { reviewMonth: "2026-09" }));
     expect(html).toContain("Program: Strong Foundations");
     expect(html).not.toContain("No program");
+  });
+
+  it("labels equipment and offers a switcher when several instances exist", () => {
+    const html = renderToStaticMarkup(createElement(ExerciseReview, {
+      status: "ready",
+      name: "Leg Press",
+      isBodyweight: false,
+      sessions: oneSession,
+      reviewMonth: "2026-09",
+      now,
+      monthSource: monthSourceFrom(oneSession),
+      equipmentLabel: "Cybex",
+      equipmentChoices: [
+        { id: "cybex", label: "Cybex", href: "/history/leg-press?month=2026-09&equipment=cybex", selected: true },
+        { id: "hammer", label: "Hammer", href: "/history/leg-press?month=2026-09&equipment=hammer", selected: false },
+      ],
+    }));
+    expect(html).toContain("Leg Press");
+    expect(html).toContain("Cybex");
+    expect(html).toContain("Hammer");
+    expect(html).toContain('aria-current="page"');
+    expect(html).toContain("equipment=hammer");
+    expect(html).toContain('aria-label="Equipment"');
+  });
+
+  it("hides the switcher when there is only one identity", () => {
+    const html = renderToStaticMarkup(ready());
+    expect(html).not.toContain('aria-label="Equipment"');
   });
 });

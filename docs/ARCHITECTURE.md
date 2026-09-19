@@ -115,9 +115,11 @@ and rotation live in [Coach report](COACH-REPORT.md#weekly-coach-api) and [deplo
   history only when tracking is on. Month-to-month volume uses Chicago `monthlyWindows`
   and `identityVolume` beside `sessionTonnage`; do not reuse UTC `weeklyVolume` weeks.
   Program captions read distinct `program.name` values from `workout_session.program_id`
-  in the chart window and in the selected months. Track
+  in the chart window and in the selected months. Entry points pass `equipment`
+  (`none` or the instance id) so the page never blends machines. Track
   (`/analytics`) uses `analytics.ts` summaries plus `board.ts` for default compounds and
-  pin visibility. Volume, weight trends, and this week's full PR list sit in Track
+  pin visibility; those summaries pick the latest finished instance per exercise.
+  Volume, weight trends, and this week's full PR list sit in Track
   Explore; Coach lives on You. The Track tab stays current on `/history/...`.
   Pattern-strength replay does not replay historical personal machine coefficients.
 - Pins are an owner-scoped display table (`user_exercise_pin`). They do not change `set_log`,

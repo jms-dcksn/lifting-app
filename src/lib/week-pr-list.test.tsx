@@ -55,7 +55,7 @@ describe("WeekPrList", () => {
     });
 
     expect(host.querySelector('a[href="/session/s1/recap"]')?.textContent).toContain("2 PRs");
-    expect(host.querySelector('a[href="/history/bb-bench"]')?.textContent).toContain("Barbell Bench Press");
+    expect(host.querySelector('a[href="/history/bb-bench?equipment=none"]')?.textContent).toContain("Barbell Bench Press");
     expect(host.textContent).toContain("225 × 8 +1");
     expect(host.textContent).toContain("275 e1RM +5");
   });
@@ -67,5 +67,22 @@ describe("WeekPrList", () => {
 
     expect(host.textContent).toContain("No records this week.");
     expect(host.querySelector("a")).toBeNull();
+  });
+
+  it("passes equipment from the record group into Exercise review", () => {
+    act(() => {
+      root.render(
+        <WeekPrList
+          sessions={[
+            {
+              sessionId: "s1",
+              performedAt: "2026-09-16T12:00:00Z",
+              groups: [{ ...group, exerciseId: "leg-press", equipmentInstanceId: "cybex", name: "Leg Press", key: '["leg-press","cybex"]' }],
+            },
+          ]}
+        />,
+      );
+    });
+    expect(host.querySelector('a[href="/history/leg-press?equipment=cybex"]')?.textContent).toContain("Leg Press");
   });
 });

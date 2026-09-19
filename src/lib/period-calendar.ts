@@ -25,10 +25,19 @@ export async function loadPeriodObservations(
   userId: string,
   month: string
 ): Promise<PeriodObservation[]> {
-  const eligible = await isEligibleForPeriodTracking(db, userId);
-  if (!eligible) return [];
-
   const { start, end } = monthRange(month);
+  return loadPeriodObservationsInRange(db, userId, start, end);
+}
+
+export async function loadPeriodObservationsInRange(
+  db: SupabaseClient<Database>,
+  userId: string,
+  start: string,
+  end: string
+): Promise<PeriodObservation[]> {
+  const eligible = await isEligibleForPeriodTracking(db, userId);
+  if (!eligible || start > end) return [];
+
   const { data, error } = await db
     .from("period_observation")
     .select("id, observed_on")

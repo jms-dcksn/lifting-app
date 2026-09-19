@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
   client: vi.fn(),
   catalog: vi.fn(),
   pins: vi.fn(),
+  periodEligible: vi.fn(async () => false),
+  periodRows: vi.fn(async () => []),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.client }));
@@ -15,29 +17,38 @@ vi.mock("@/lib/catalog", () => ({ getCatalogMap: mocks.catalog }));
 vi.mock("@/lib/pins-data", () => ({ loadUserPinRows: mocks.pins }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("@/app/(app)/pins/pin-button", () => ({ PinButton: () => null }));
+vi.mock("@/lib/period-calendar", () => ({
+  isEligibleForPeriodTracking: mocks.periodEligible,
+  loadPeriodObservationsInRange: mocks.periodRows,
+}));
 
 import HistoryPage from "@/app/(app)/history/[exerciseId]/page";
 import { EXERCISE_BY_ID } from "./strength/coefficients";
 
+const query = {
+  select: vi.fn(() => query),
+  eq: vi.fn(() => query),
+  not: vi.fn(() => query),
+  order: vi.fn(() => query),
+  then: (resolve: (result: { data: unknown[]; error: null }) => unknown) =>
+    Promise.resolve(resolve({ data: setRows, error: null })),
+};
+let setRows: unknown[] = [];
+
 function from() {
-  const query = {
-    select: () => query,
-    eq: () => query,
-    order: () => query,
-    then: (resolve: (result: { data: unknown[]; error: null }) => unknown) =>
-      Promise.resolve(resolve({ data: [], error: null })),
-  };
   return query;
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
+  setRows = [];
   mocks.client.mockResolvedValue({
     auth: { getClaims: async () => ({ data: { claims: { sub: "user" } } }) },
     from,
   });
   mocks.catalog.mockResolvedValue(EXERCISE_BY_ID);
   mocks.pins.mockResolvedValue([]);
+  mocks.periodEligible.mockResolvedValue(false);
 });
 
 function render(exerciseId: string, search: { month?: string | string[]; equipment?: string }) {
@@ -72,5 +83,24 @@ describe("HistoryPage route", () => {
     expect(html).toContain("Exercise not found");
     expect(html).toContain("This exercise is not in your catalog.");
     expect(html).toContain("Back to 2026-09 month review");
+  });
+
+  it("reads finished sessions only and renders Today without loading period data when ineligible", async () => {
+    setRows = [{
+      id: "r1",
+      weight: 100,
+      reps: 10,
+      rir: 1,
+      e1rm: 150,
+      session_id: "s1",
+      created_at: "2026-09-02T12:05:00Z",
+      workout_session: { performed_at: "2026-09-02T12:00:00Z", finished_at: "2026-09-02T13:00:00Z" },
+    }];
+    const html = renderToStaticMarkup(await render("bb-bench", {}));
+    expect(query.not).toHaveBeenCalledWith("workout_session.finished_at", "is", null);
+    expect(html).toContain("Today");
+    expect(html).toContain("150.0 lb");
+    expect(html).toContain("Last 8 workouts");
+    expect(mocks.periodRows).not.toHaveBeenCalled();
   });
 });

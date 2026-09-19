@@ -56,7 +56,9 @@ routes never flash the tab bar. Sign out lives on You. Pins are a display prefer
 `IconButton` pin/unpin on Track tiles, session slots, and history headers, plus an edit-pins
 `Sheet`. Unpinning a default compound hides it; pinning an extra adds a tile. Cap 8 is
 refused in the action. Charts, clipboard, search, and interactive controls are client
-components; data loading and auth remain server-side.
+components; data loading and auth remain server-side. Exercise review's e1RM card uses a
+two-option **Last 8 workouts** / **All history** toggle (`aria-pressed`), same `Button`
+language as the weight range control.
 
 The active workout owns one rest timer. It uses an absolute end timestamp to tolerate tab
 throttling, starts optimistically when logging, and uses per-slot rest or the profile default.

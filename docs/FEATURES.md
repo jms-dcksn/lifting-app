@@ -254,10 +254,20 @@ Month review lift names. Optional `equipment` and `month` query params stay on t
 `month=YYYY-MM` only seeds a **Back to {month} month review** link when the month is
 valid. It does not swap in a monthly-history page. Invalid months are ignored.
 
-- **Per-session e1RM series** — fetches that exercise's working sets, groups by session,
-  computes best-e1RM-per-session.
-- **Overload badge** — latest session vs the session before it.
-- **Line chart** — Recharts e1RM-over-time chart (`e1rm-chart.tsx`).
+- **Finished sessions** — working sets from sessions with `finished_at` (not in the
+  future), grouped by `groupReviewSessions`. Dates use Chicago `dateKey`. Stored e1RM
+  displays at 0.1 lb on this screen.
+- **Today** — last finished session date, session-best e1RM, signed delta vs the previous
+  session when both have estimates, and that session's working sets. No "No prior
+  comparison" label. How-it-works copy is behind ⓘ.
+- **Past three weeks** — last 21 Chicago days: workout count, best e1RM, first-to-last
+  change when two session-bests exist. One session in the window shows date and e1RM.
+  None in the window shows `Last trained {date}`. Omitted when history has only one
+  session. No sparkline.
+- **e1RM chart** — Recharts `E1rmChart`. Default last 8 session-bests; **All history**
+  toggle. Period bands only on All history when tracking is on (female + opt-in). Fewer
+  than two points: "One session so far. Log another to see the trend."
+- **Session list** — newest first; each date links to `/session/{id}`.
 - **Pin** — header `IconButton` writes `user_exercise_pin` (display preference only).
 - **Empty states** — missing catalog exercise vs no working sets. Load failures use
   Exercise review error copy, not Month review's.

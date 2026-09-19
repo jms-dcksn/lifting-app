@@ -1,6 +1,7 @@
-import type {
-  CoachCheckInReport,
-  TrendClassification,
+import {
+  formatSpecializationShortfall,
+  type CoachCheckInReport,
+  type TrendClassification,
 } from "@/lib/coach-check-in";
 import { cx } from "@/components/ui/cx";
 
@@ -17,6 +18,10 @@ export function CoachReportSummary({ report }: { report: CoachCheckInReport }) {
   const classified = report.exerciseTrends
     .filter((trend) => trend.classification !== "insufficient_data")
     .slice(0, 4);
+  const waiting = report.exerciseTrends.filter(
+    (trend) => trend.classification === "insufficient_data",
+  );
+  const shortfall = formatSpecializationShortfall(current.specializationVolume);
 
   return (
     <div className="mb-4 flex flex-col gap-4 border-y border-border py-4">
@@ -83,26 +88,44 @@ export function CoachReportSummary({ report }: { report: CoachCheckInReport }) {
             </li>
           ))}
         </ul>
+        {shortfall && <p className="mt-2 text-caption">{shortfall}</p>}
       </div>
 
-      {classified.length > 0 && (
+      {(classified.length > 0 || waiting.length > 0) && (
         <div>
           <p className="mb-2 text-caption font-semibold uppercase tracking-wide text-muted">
             Four-exposure trend
           </p>
-          <ul className="flex flex-col gap-1">
-            {classified.map((trend) => (
-              <li
-                key={trend.exerciseId}
-                className="flex items-baseline justify-between gap-3 text-caption"
-              >
-                <span className="truncate">{trend.exerciseName}</span>
-                <span className={trendClass(trend.classification)}>
-                  {trend.classification} · {trend.changePercent == null ? "—" : `${signed(trend.changePercent)}%`}
-                </span>
-              </li>
-            ))}
-          </ul>
+          {classified.length > 0 && (
+            <ul className="flex flex-col gap-1">
+              {classified.map((trend) => (
+                <li
+                  key={trend.exerciseId}
+                  className="flex items-baseline justify-between gap-3 text-caption"
+                >
+                  <span className="truncate">{trend.exerciseName}</span>
+                  <span className={trendClass(trend.classification)}>
+                    {trend.classification} · {trend.changePercent == null ? "—" : `${signed(trend.changePercent)}%`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {waiting.length > 0 && (
+            <details className={classified.length > 0 ? "mt-2 text-caption text-muted" : "text-caption text-muted"}>
+              <summary className="cursor-pointer select-none">
+                {waiting.length} waiting on 4 exposures
+              </summary>
+              <ul className="mt-1 flex flex-col gap-1">
+                {waiting.map((trend) => (
+                  <li key={trend.exerciseId} className="flex justify-between gap-3">
+                    <span className="truncate">{trend.exerciseName}</span>
+                    <span className="tabular-nums">{trend.exposureCount}/4</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
         </div>
       )}
     </div>

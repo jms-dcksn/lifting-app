@@ -43,6 +43,10 @@ export function CoachRecommendationList({
     );
   }
 
+  const doFirst = pending.filter((item) => item.priority === "now");
+  const also = pending.filter((item) => item.priority !== "now");
+  const showTiers = doFirst.length > 0 && also.length > 0;
+
   return (
     <details id="coach-next-steps" open className="mb-4 border-y border-border py-4">
       <summary className="cursor-pointer select-none text-caption font-semibold uppercase tracking-wide text-muted">
@@ -62,39 +66,69 @@ export function CoachRecommendationList({
             </Button>
           </form>
         </div>
-        {pending.map((item) => (
-          <article key={item.key} className="border-t border-border pt-4 first:border-0 first:pt-0">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-heading">
-                  {item.programDayName ? `${item.programDayName} · ` : ""}
-                  {item.exerciseName ?? "Overall review"}
-                </p>
-                <p className="text-body">{item.action.label}</p>
-              </div>
-              <span className="shrink-0 text-caption uppercase tracking-wide text-muted">
-                {item.confidence}
-              </span>
-            </div>
-            <details className="mt-2 text-caption text-muted">
-              <summary className="cursor-pointer select-none">Why this suggestion? · {item.evidence.exposureCount} exposure{item.evidence.exposureCount === 1 ? "" : "s"}</summary>
-              <p className="mt-2">{item.rationale}</p>
-              <p className="mt-1">{item.dataSufficiency}</p>
-              {item.evidence.summary.length > 0 && (
-                <ul className="mt-1 list-disc pl-4">
-                  {item.evidence.summary.map((line, index) => <li key={`${item.key}-${index}`}>{line}</li>)}
-                </ul>
-              )}
-            </details>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              <DecisionForm recommendationKey={item.key} status="accepted" label="Accept" />
-              <DecisionForm recommendationKey={item.key} status="deferred" label="Later" />
-              <DecisionForm recommendationKey={item.key} status="dismissed" label="Dismiss" />
-            </div>
-          </article>
-        ))}
+        {showTiers ? (
+          <>
+            <RecommendationTier label="Do first" items={doFirst} />
+            <RecommendationTier label="Also" items={also} />
+          </>
+        ) : (
+          <RecommendationItems items={pending} />
+        )}
       </div>
     </details>
+  );
+}
+
+function RecommendationTier({
+  label,
+  items,
+}: {
+  label: string;
+  items: CoachRecommendation[];
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-caption font-semibold uppercase tracking-wide text-muted">{label}</p>
+      <RecommendationItems items={items} />
+    </div>
+  );
+}
+
+function RecommendationItems({ items }: { items: CoachRecommendation[] }) {
+  return (
+    <>
+      {items.map((item) => (
+        <article key={item.key} className="border-t border-border pt-4 first:border-0 first:pt-0">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-heading">
+                {item.programDayName ? `${item.programDayName} · ` : ""}
+                {item.exerciseName ?? "Overall review"}
+              </p>
+              <p className="text-body">{item.action.label}</p>
+            </div>
+            <span className="shrink-0 text-caption uppercase tracking-wide text-muted">
+              {item.confidence}
+            </span>
+          </div>
+          <details className="mt-2 text-caption text-muted">
+            <summary className="cursor-pointer select-none">Why this suggestion? · {item.evidence.exposureCount} exposure{item.evidence.exposureCount === 1 ? "" : "s"}</summary>
+            <p className="mt-2">{item.rationale}</p>
+            <p className="mt-1">{item.dataSufficiency}</p>
+            {item.evidence.summary.length > 0 && (
+              <ul className="mt-1 list-disc pl-4">
+                {item.evidence.summary.map((line, index) => <li key={`${item.key}-${index}`}>{line}</li>)}
+              </ul>
+            )}
+          </details>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <DecisionForm recommendationKey={item.key} status="accepted" label="Accept" />
+            <DecisionForm recommendationKey={item.key} status="deferred" label="Later" />
+            <DecisionForm recommendationKey={item.key} status="dismissed" label="Dismiss" />
+          </div>
+        </article>
+      ))}
+    </>
   );
 }
 

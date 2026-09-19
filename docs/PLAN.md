@@ -74,6 +74,8 @@ beat last time. Done = I use it for a real block.
 - [x] Add one-tap acceptance for all actionable, currently visible Coach proposals.
 - [x] Hide accepted and insufficient-data next steps; collapse the pending section and per-item explanations.
 - [x] Preview the next workout's exercises and effective weekly prescriptions on Home.
+- [x] Rank Coach next steps by confidence × impact, collapse insufficient-data trends, and
+      flag specialization hard-set shortfalls (#126).
 
 ## Current code baseline (2026-09-18)
 

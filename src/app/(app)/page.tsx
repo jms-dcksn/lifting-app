@@ -144,7 +144,12 @@ export default async function Home() {
 
       {preview.length > 0 && (
         <section>
-          <h2 className="mb-2 text-caption font-semibold uppercase tracking-wide text-muted">Board</h2>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="text-caption font-semibold uppercase tracking-wide text-muted">Track</h2>
+            <Link href="/analytics" className="min-h-11 py-2 text-caption font-medium text-muted">
+              View all
+            </Link>
+          </div>
           <BoardGrid lifts={preview} pinnedIds={preview.map((lift) => lift.exerciseId)} showPin={false} />
         </section>
       )}

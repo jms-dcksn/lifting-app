@@ -9,7 +9,7 @@ import { hideAppChrome } from "@/lib/app-chrome";
 
 const tabs = [
   { href: "/", label: "Train", icon: IconPlay, match: (path: string) => path === "/" },
-  { href: "/analytics", label: "Board", icon: IconGrid, match: (path: string) => path === "/analytics" || path.startsWith("/analytics/") },
+  { href: "/analytics", label: "Track", icon: IconGrid, match: (path: string) => path === "/analytics" || path.startsWith("/analytics/") },
   { href: "/program", label: "Program", icon: IconProgram, match: (path: string) => path === "/program" || path.startsWith("/program/") },
   { href: "/settings", label: "You", icon: IconUser, match: (path: string) => path === "/settings" || path.startsWith("/settings/") },
 ];

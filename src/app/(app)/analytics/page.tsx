@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { WeightTrendCard } from "./weight-trend-card";
 import { loadWeightHistory } from "@/lib/weight-history";
@@ -12,8 +11,6 @@ import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
 import { Card, CardLabel } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
-import { iconButtonClasses } from "@/components/ui/icon-button-styles";
-import { IconCalendar } from "@/components/ui/icons";
 import { ExerciseList, type ExerciseListItem } from "./exercise-list";
 import { VolumeChart, type VolumeChartPoint } from "./volume-chart";
 import { dateKey } from "@/lib/bodyweight";
@@ -28,7 +25,7 @@ import { loadUserPinRows } from "@/lib/pins-data";
 import { loadWeekRecordChips } from "@/lib/week-records-data";
 import { PinEditorButton, type PinEditorItem } from "../pins/pin-editor";
 import { BoardGrid } from "./board-grid";
-import { BoardSheet } from "./board-sheet";
+import { TrackExploreMenu } from "./track-explore-menu";
 
 type AnalyticsQueryRow = {
   id: string;
@@ -145,39 +142,38 @@ export default async function AnalyticsPage() {
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
       <header className="flex items-start justify-between gap-3">
-        <h1 className="text-display">Board</h1>
+        <h1 className="text-display">Track</h1>
         <div className="flex">
-          <Link href="/analytics/month" className={iconButtonClasses("ghost")} aria-label="Month review">
-            <IconCalendar />
-          </Link>
-          <BoardSheet label="All lifts" icon="search" title="All lifts">
-            <ExerciseList items={listItems} />
-          </BoardSheet>
-          <PinEditorButton items={pinItems} />
-          <BoardSheet label="More" icon="more" title="More">
-            <WeightTrendCard entries={bodyweightEntries} today={today} goal={profile?.goal_weight ?? null} />
-            <Card>
-              <div className="mb-3">
-                <div className="mb-1 flex items-center gap-1">
-                  <CardLabel>Total volume</CardLabel>
-                  {excludedSets > 0 && (
-                    <InfoButton title="Excluded sets" label="About excluded bodyweight sets">
-                      Sets without a bodyweight reading are left out of tonnage.
-                    </InfoButton>
+          <TrackExploreMenu
+            allLifts={<ExerciseList items={listItems} />}
+            volumeAndWeight={
+              <>
+                <WeightTrendCard entries={bodyweightEntries} today={today} goal={profile?.goal_weight ?? null} />
+                <Card>
+                  <div className="mb-3">
+                    <div className="mb-1 flex items-center gap-1">
+                      <CardLabel>Total volume</CardLabel>
+                      {excludedSets > 0 && (
+                        <InfoButton title="Excluded sets" label="About excluded bodyweight sets">
+                          Sets without a bodyweight reading are left out of tonnage.
+                        </InfoButton>
+                      )}
+                    </div>
+                    <p className="text-heading tabular-nums">{formatWhole(totalVolume)} lb</p>
+                    {volumeDelta != null && (
+                      <p className="text-caption text-muted">{signedVolume(volumeDelta)} vs last week</p>
+                    )}
+                  </div>
+                  {chartData.length >= 2 ? (
+                    <VolumeChart data={chartData} />
+                  ) : (
+                    <p className="text-body text-muted">One week so far — the chart appears after the next week.</p>
                   )}
-                </div>
-                <p className="text-heading tabular-nums">{formatWhole(totalVolume)} lb</p>
-                {volumeDelta != null && (
-                  <p className="text-caption text-muted">{signedVolume(volumeDelta)} vs last week</p>
-                )}
-              </div>
-              {chartData.length >= 2 ? (
-                <VolumeChart data={chartData} />
-              ) : (
-                <p className="text-body text-muted">One week so far — the chart appears after the next week.</p>
-              )}
-            </Card>
-          </BoardSheet>
+                </Card>
+              </>
+            }
+          />
+          <PinEditorButton items={pinItems} />
         </div>
       </header>
 

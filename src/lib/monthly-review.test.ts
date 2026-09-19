@@ -22,7 +22,7 @@ describe("monthly review presentation", () => {
     expect(html).toContain("Where you improved");
     expect(html).toContain("140.0 lb → 150.0 lb");
     expect(html).toContain("month=2026-09&amp;equipment=none");
-    expect(html).toContain("/session/s1");
+    expect(html).toContain("/session/s1/recap");
     expect(html).toContain("Prior period dashed");
     expect(html).not.toContain("Worth reviewing");
     expect(html).not.toContain("Period and performance");

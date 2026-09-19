@@ -521,10 +521,12 @@ authenticated `loadWorkoutRecords` read path. No schema migration is required.
 - A workout with no records still finishes: `{dayName} done` plus working-set count,
   with no gold and no invented records. Joint pain and the session note sit behind
   a details control, not in the hero.
-- Reopening a finished session shows its recap above the editable set cards. The
-  **View summary** button reloads the completion recap. Edits/deletions update records.
-- No records on resume means no extra recap section. No toast, celebration effect, or
-  announcement is replayed on rerender, refresh, or resume. Optimistic rows never earn records.
+- Reopening a finished session shows the editable set cards with **Home** and **View recap**.
+  Recap lives at `/session/{id}/recap` (finish, last-session card, week chips, monthly
+  achievement links). Edits/deletions update records.
+- Recap is `/session/{id}/recap` only; the workout page does not repeat that hero.
+  No toast, celebration effect, or announcement is replayed on rerender, refresh, or
+  resume. Optimistic rows never earn records.
 
 ### Comparability and eligibility
 

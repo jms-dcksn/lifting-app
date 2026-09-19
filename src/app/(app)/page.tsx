@@ -12,6 +12,8 @@ import { loadWeekRecordChips } from "@/lib/week-records-data";
 import { buildBoardLifts, sessionRecordSummary } from "@/lib/board";
 import { exerciseSummaries, type AnalyticsSetRow } from "@/lib/analytics";
 import { BoardGrid } from "./analytics/board-grid";
+import { LastSessionCard } from "./last-session-card";
+import { sessionRecapPath } from "@/lib/session-paths";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -129,7 +131,7 @@ export default async function Home() {
             {weekRecords.chips.map((chip) => (
               <li key={`${chip.sessionId}-${chip.exerciseId}-${chip.label}`}>
                 <Link
-                  href={`/session/${chip.sessionId}`}
+                  href={sessionRecapPath(chip.sessionId)}
                   className="inline-flex min-h-11 items-center rounded-full border border-record/40 bg-record/10 px-3 text-caption font-medium text-record"
                 >
                   {chip.label}
@@ -148,18 +150,12 @@ export default async function Home() {
       )}
 
       {lastSummary && (
-        <Link href={`/session/${lastSummary.id}`} className="block rounded-card focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground">
-          <Card>
-            <CardLabel className="mb-1">Last session</CardLabel>
-            {lastSummary.headline ? (
-              <p className="text-body font-medium text-record">{lastSummary.headline}</p>
-            ) : (
-              <p className="text-body">
-                {lastSummary.dayName} · {lastSummary.totalSets} working sets
-              </p>
-            )}
-          </Card>
-        </Link>
+        <LastSessionCard
+          sessionId={lastSummary.id}
+          dayName={lastSummary.dayName}
+          totalSets={lastSummary.totalSets}
+          headline={lastSummary.headline}
+        />
       )}
     </div>
   );

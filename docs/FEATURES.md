@@ -132,7 +132,7 @@ Adaptive plateau engine under §5.
   linked exercise variants without resetting set entry or the rest timer.
 - **Finish session** — `finishSession` stamps `finished_at` and navigates to
   `/session/{id}/recap`. The recap hero is the records (or `{day} done` when there are
-  none). Joint pain / notes sit behind a details control. Home goes to Train; View workout
+  none). Joint pain / notes sit behind a details control. Home goes to Lift; View workout
   opens the editable sets.
 - **Minimal session feedback** — a skippable 1–5 readiness tap appears before the first set;
   finish opens an optional joint-pain + short-note sheet. Recap and finished workouts keep
@@ -306,7 +306,7 @@ Coach contract.
 
 ## 10. App shell & navigation
 
-- **Bottom tabs** — Train (`/`), Track (`/analytics`), Program (`/program`), You (`/settings`);
+- **Bottom tabs** — Lift (`/`), Track (`/analytics`), Program (`/program`), You (`/settings`);
   icons plus labels, `aria-current` on the active tab (`app-shell.tsx`). Hidden on session
   routes (active workout, recap, finished sets), next-workout planner, and program builder.
 - **Auth gate** — layout is a Server Component gating on `getClaims()`.

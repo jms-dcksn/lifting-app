@@ -79,7 +79,7 @@ export default async function Home() {
           {program.name}
           {program.style === "fluid" ? "" : ` · Week ${week}/${program.weeks}`}
         </p>
-        <h1 className="text-display">Train</h1>
+        <h1 className="text-display">Lift</h1>
         {program.style === "fluid" ? (
           <p className="flex items-center gap-1 text-caption text-muted">
             Session {completed + 1} · Adaptive

@@ -11,7 +11,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Current module boundaries and engine/data invariants | [Architecture](ARCHITECTURE.md) |
 | Shared components and UI gotchas | [UI conventions](UI.md) |
 | Copy density (proposed) | [2026-09-16 spec](superpowers/specs/2026-09-16-visual-copy-density-design.md) |
-| Exercise review (Slices A–B shipped; C–F proposed) | [2026-09-19 spec](superpowers/specs/2026-09-19-exercise-review-design.md) |
+| Exercise review (Slices A–D shipped; E–F proposed) | [2026-09-19 spec](superpowers/specs/2026-09-19-exercise-review-design.md) |
 | Shipped behavior | [Features](FEATURES.md) |
 | Rationale and record eligibility | [Decisions](DECISIONS.md) |
 | Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |
@@ -28,7 +28,7 @@ are dated design/implementation records; their commands and file maps are not cu
 
 As of 2026-09-19: the Lift/Track/Program/You tab shell (epic #93), cinematic recap, Track
 compounds/pins, the monthly dashboard (#31), the period × performance week overlay (#105),
-and exercise review Slices A–B (#115 dump removal, #116 one `/history/[exerciseId]` destination)
+and exercise review Slices A–D (#115 dump removal, #116 one destination, #117 Today / 21-day / chart)
 are implemented. See [Features](FEATURES.md) for current behavior. Issue numbers here identify
 planned slices, not a live GitHub status check. Historical verification counts describe their
 original runs.

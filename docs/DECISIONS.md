@@ -97,13 +97,14 @@ different rep targets.
 ## Phase 4 decisions
 
 **Overload delta is computed live, keyed on `exercise_id` (not `program_slot_id`).**
-Both the per-exercise history page and the finish-session summary compare the latest
+Exercise review's Today card and the finish-session summary compare the latest
 session's best e1RM for an exercise against the best e1RM from that exercise's most
 recent *earlier* session, found via `set_log` joined to `workout_session.performed_at`
-(`workout_session!inner(performed_at)`). This is intentionally `exercise_id`-keyed, unlike
-progression's `program_slot_id` lookup: the overload signal is "is this exercise getting
-stronger over time" regardless of which slot/program it was logged under, including
-across a swap.
+and `finished_at`. Review grouping is `groupReviewSessions` (finished sessions only).
+This is intentionally `exercise_id`-keyed, unlike progression's `program_slot_id`
+lookup: the overload signal is "is this exercise getting stronger over time"
+regardless of which slot/program it was logged under, including across a swap.
+Review displays that delta at 0.1 lb.
 
 **`finishSession` now verifies session ownership via a select before updating.** Needed to
 read `performed_at` for the overload-delta query anyway. The action performs an explicit
@@ -113,9 +114,10 @@ keeps repeat summary views from moving the original finish time.
 
 **Charts: Recharts, client component, no server-side rendering of chart data.** The
 history page (`src/app/(app)/history/[exerciseId]/page.tsx`) is a Server Component that
-fetches and groups sets by session; the line chart itself
-(`e1rm-chart.tsx`) is a small `"use client"` wrapper around `recharts` `LineChart`. Matches
-the SPEC.md default ("Charts: Recharts").
+fetches finished sets; `groupReviewSessions` builds the series. `ReviewChart` toggles
+last 8 workouts vs All history and reuses `e1rm-chart.tsx` (`recharts` `LineChart`).
+Period bands apply only to All history when tracking is enabled. Matches the SPEC.md
+default ("Charts: Recharts").
 
 ## Phase 5 decisions
 

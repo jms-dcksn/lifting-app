@@ -49,7 +49,8 @@ fertility, and contraception remain out of scope.
 - Edit or clear previously marked days.
 - Backfill historical observations.
 - Markers on monthly calendar.
-- Shaded/labeled bands on weight and per-exercise e1RM timelines in `/analytics/month`.
+- Shaded/labeled bands on the monthly weight chart and on Exercise review **All history**
+  e1RM (not on the last-8 default). Period × performance weeks stay on Month review.
 - View toggle (show/hide) per monthly review session (not a persisted preference).
 - Disable tracking with choice to Keep history (private) or Delete history.
 - Delete account includes period history with other user data.

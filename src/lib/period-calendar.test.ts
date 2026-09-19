@@ -4,6 +4,7 @@ import type { Database } from "./supabase/types";
 import {
   isEligibleForPeriodTracking,
   loadPeriodObservations,
+  loadPeriodObservationsInRange,
   savePeriodObservation,
   deleteAllPeriodObservations,
 } from "./period-calendar";
@@ -147,6 +148,25 @@ describe("period-calendar", () => {
       const result = await loadPeriodObservations(db, "user-id", "2026-09");
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({ id: "1", observedOn: "2026-09-15" });
+    });
+
+    it("returns empty for ineligible range loads and does not invent observations", async () => {
+      const mockFrom = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({
+              data: { sex: "female", period_tracking_enabled: false },
+              error: null,
+            }),
+          }),
+        }),
+      });
+      (db.from as unknown) = mockFrom;
+
+      const result = await loadPeriodObservationsInRange(db, "user-id", "2026-01-01", "2026-09-19");
+      expect(result).toEqual([]);
+      expect(mockFrom).toHaveBeenCalledWith("profile");
+      expect(mockFrom).not.toHaveBeenCalledWith("period_observation");
     });
   });
 

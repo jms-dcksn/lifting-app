@@ -11,7 +11,10 @@ import {
   reviewToday,
   type ReviewSession,
 } from "@/lib/exercise-review-sessions";
+import { reviewCompareDefaults } from "@/lib/exercise-review-months";
+import { reviewMonthSides, type ReviewMonthSource } from "@/lib/exercise-review-month-stats";
 import { PinButton } from "../../pins/pin-button";
+import { MonthCompare } from "./month-compare";
 import { ReviewChart } from "./review-chart";
 
 type PinProps = { exerciseId: string; pinned: boolean; name: string };
@@ -30,6 +33,7 @@ export type ExerciseReviewProps = {
       now?: Date;
       periodEligible?: boolean;
       periodDates?: string[];
+      monthSource?: ReviewMonthSource;
     }
 );
 
@@ -61,6 +65,8 @@ export function ExerciseReview(props: ExerciseReviewProps) {
           now={props.now}
           periodEligible={props.periodEligible}
           periodDates={props.periodDates}
+          monthSource={props.monthSource}
+          reviewMonth={reviewMonth}
         />
       )}
     </ReviewShell>
@@ -92,16 +98,28 @@ function ReadyBody({
   now,
   periodEligible,
   periodDates,
+  monthSource,
+  reviewMonth,
 }: {
   sessions: ReviewSession[];
   isBodyweight: boolean;
   now?: Date;
   periodEligible?: boolean;
   periodDates?: string[];
+  monthSource?: ReviewMonthSource;
+  reviewMonth: string | null;
 }) {
   const today = reviewToday(sessions);
   const previous = sessions.length >= 2 ? sessions.at(-2) : null;
   const recent = sessions.length >= 2 ? reviewRecentWindow(sessions, now) : null;
+  const clock = now ?? new Date();
+  const defaults = reviewCompareDefaults(reviewMonth, clock);
+  const monthKeys = [
+    defaults.thisMonth,
+    defaults.otherMonth,
+    ...sessions.map((session) => session.dateKey.slice(0, 7)),
+  ];
+  const monthSides = monthSource ? reviewMonthSides(monthSource, monthKeys, clock) : {};
 
   return (
     <>
@@ -118,6 +136,14 @@ function ReadyBody({
         periodEligible={periodEligible}
         periodDates={periodDates}
       />
+      {monthSource && (
+        <MonthCompare
+          reviewMonth={reviewMonth}
+          nowIso={clock.toISOString()}
+          sides={monthSides}
+          sessions={sessions}
+        />
+      )}
       <section className="flex flex-col gap-3">
         {[...sessions].reverse().map((session) => (
           <Card key={session.sessionId}>

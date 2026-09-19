@@ -1,9 +1,10 @@
 # Unified Exercise review design
 
-**Status:** Slices A–D shipped. Slice B unifies `/history/[exerciseId]` (month is back-link
+**Status:** Slices A–E shipped. Slice B unifies `/history/[exerciseId]` (month is back-link
 context, not a second page). Slice C+D adds Today, the past 21 Chicago days, and the
-last-8 / All history chart (period overlay on All history only). Slices E–F remain
-proposed (month-to-month widget, entry equipment params).
+last-8 / All history chart (period overlay on All history only). Slice E adds the
+month-to-month compare and program captions. Slice F remains proposed (entry equipment
+params).
 
 **Audited:** boarded product UI on `main` at `fc8a87a` (Lift tab rename). Surfaces:
 `src/app/(app)/history/[exerciseId]/`, `src/app/(app)/analytics/` (Track tiles, Explore,

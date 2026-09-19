@@ -251,7 +251,8 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 
 One screen for Track tiles, Explore All lifts, recap, in-session title links, and
 Month review lift names. Optional `equipment` and `month` query params stay on the URL.
-`month=YYYY-MM` only seeds a **Back to {month} month review** link when the month is
+`month=YYYY-MM` seeds a **Back to {month} month review** link and the default
+"this month" side of the month-to-month compare when the month is
 valid. It does not swap in a monthly-history page. Invalid months are ignored.
 
 - **Finished sessions** — working sets from sessions with `finished_at` (not in the
@@ -266,7 +267,14 @@ valid. It does not swap in a monthly-history page. Invalid months are ignored.
   session. No sparkline.
 - **e1RM chart** — Recharts `E1rmChart`. Default last 8 session-bests; **All history**
   toggle. Period bands only on All history when tracking is on (female + opt-in). Fewer
-  than two points: "One session so far. Log another to see the trend."
+  than two points: "One session so far. Log another to see the trend." Program names
+  from `workout_session.program_id` appear as a muted caption under the visible window.
+- **Month to month** — two month pickers. Defaults: inbound `month` vs the previous
+  calendar month, or the current Chicago month vs previous. Metrics are paired values
+  (PRs, best stored e1RM at 0.1 lb, volume, exposures), not an empty-to-value arrow.
+  An untrained month reads as `none`. Volume uses Chicago `monthlyWindows` dates and
+  `identityVolume` (not UTC `weeklyVolume`). Canonical PRs reuse `workoutRecords` /
+  monthly achievements for this exercise.
 - **Session list** — newest first; each date links to `/session/{id}`.
 - **Pin** — header `IconButton` writes `user_exercise_pin` (display preference only).
 - **Empty states** — missing catalog exercise vs no working sets. Load failures use

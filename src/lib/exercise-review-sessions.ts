@@ -13,6 +13,7 @@ export type ReviewSetRow = {
   e1rm: number | null;
   performedAt: string;
   finishedAt: string | null;
+  programId?: string | null;
 };
 
 export type ReviewSessionSet = {
@@ -27,6 +28,8 @@ export type ReviewSession = {
   performedAt: string;
   dateKey: string;
   bestE1rm: number | null;
+  programId: string | null;
+  programName: string | null;
   sets: ReviewSessionSet[];
 };
 
@@ -63,6 +66,8 @@ export function groupReviewSessions(
         performedAt: row.performedAt,
         dateKey: dateKey(new Date(row.performedAt), timeZone),
         bestE1rm: null,
+        programId: row.programId ?? null,
+        programName: null,
         sets: [],
       };
       bySession.set(row.sessionId, session);
@@ -75,6 +80,16 @@ export function groupReviewSessions(
   return [...bySession.values()].sort(
     (a, b) => a.performedAt.localeCompare(b.performedAt) || a.sessionId.localeCompare(b.sessionId),
   );
+}
+
+export function withProgramNames(
+  sessions: ReviewSession[],
+  names: Map<string, string>,
+): ReviewSession[] {
+  return sessions.map((session) => ({
+    ...session,
+    programName: session.programId ? names.get(session.programId)?.trim() || null : null,
+  }));
 }
 
 export function reviewToday(sessions: ReviewSession[]) {

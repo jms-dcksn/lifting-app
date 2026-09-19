@@ -46,6 +46,8 @@ describe("groupReviewSessions", () => {
     expect(sessions[0]).toMatchObject({
       dateKey: "2026-09-02",
       bestE1rm: 150,
+      programId: null,
+      programName: null,
     });
     expect(sessions[0].sets.map((set) => set.id)).toEqual(["s1-a", "s1-b"]);
     expect(reviewToday(sessions)?.sessionId).toBe("s2");

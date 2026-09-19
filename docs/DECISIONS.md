@@ -263,7 +263,8 @@ excluded, not coerced to zero, and the UI names that exclusion beside the volume
 surfaces total volume, recent e1RM gainers, record events, and a searchable all-exercise
 list, but every lift row links to `history/[exerciseId]` rather than introducing another
 exercise chart surface. Month review uses the same route with `month` and `equipment`
-query params; those params do not swap the template. The Track tab is current on
+query params; those params do not swap the template. `month` also defaults the
+month-to-month compare on Exercise review. The Track tab is current on
 `/history/...`. The only new client code is the Recharts volume chart and the
 small searchable list component; data fetching and aggregation stay server-side.
 

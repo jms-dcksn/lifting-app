@@ -109,9 +109,13 @@ and rotation live in [Coach report](COACH-REPORT.md#weekly-coach-api) and [deplo
   This family grouping is for browsing; progression and records use exact exercise identity.
 - Per-exercise `/history/[exerciseId]` is Exercise review for every entry point. A `month`
   query is return-link context, not a second page. The screen answers Today (last finished
-  session), the past 21 Chicago days, then an e1RM chart (last 8 session-bests, or All
-  history). Session grouping lives in `exercise-review-sessions.ts`; only finished
-  sessions count. Period bands overlay All history only when tracking is on. Track
+  session), the past 21 Chicago days, an e1RM chart (last 8 session-bests, or All
+  history), then a month-to-month compare. Session grouping lives in
+  `exercise-review-sessions.ts`; only finished sessions count. Period bands overlay All
+  history only when tracking is on. Month-to-month volume uses Chicago `monthlyWindows`
+  and `identityVolume` beside `sessionTonnage`; do not reuse UTC `weeklyVolume` weeks.
+  Program captions read distinct `program.name` values from `workout_session.program_id`
+  in the chart window and in the selected months. Track
   (`/analytics`) uses `analytics.ts` summaries plus `board.ts` for default compounds and
   pin visibility. Volume, weight trends, and this week's full PR list sit in Track
   Explore; Coach lives on You. The Track tab stays current on `/history/...`.

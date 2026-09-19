@@ -3,7 +3,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ExerciseReview } from "@/app/(app)/history/[exerciseId]/exercise-review";
 import HistoryError from "@/app/(app)/history/[exerciseId]/error";
-import { groupReviewSessions, type ReviewSetRow } from "./exercise-review-sessions";
+import type { ReviewMonthSource } from "./exercise-review-month-stats";
+import { groupReviewSessions, type ReviewSession, type ReviewSetRow } from "./exercise-review-sessions";
+import { EXERCISE_BY_ID } from "./strength/coefficients";
 
 const now = new Date("2026-09-19T18:00:00Z");
 
@@ -22,15 +24,53 @@ const oneSession = sessionsFrom([{
   finishedAt: "2026-09-02T13:00:00Z",
 }]);
 
-function ready(sessions = oneSession, extra: { periodEligible?: boolean; periodDates?: string[] } = {}) {
+function monthSourceFrom(sessions: ReviewSession[]): ReviewMonthSource {
+  return {
+    userId: "u",
+    exerciseId: "bb-bench",
+    catalog: { "bb-bench": EXERCISE_BY_ID["bb-bench"] },
+    sessions: sessions.map((session) => ({
+      id: session.sessionId,
+      user_id: "u",
+      performed_at: session.performedAt,
+      finished_at: session.performedAt,
+      program_id: session.programId,
+    })),
+    sets: sessions.flatMap((session) =>
+      session.sets.map((set) => ({
+        id: set.id,
+        user_id: "u",
+        session_id: session.sessionId,
+        exercise_id: "bb-bench",
+        equipment_instance_id: null,
+        program_slot_id: null,
+        weight: set.weight,
+        reps: set.reps,
+        rir: set.rir,
+        e1rm: session.bestE1rm,
+        is_warmup: false,
+        created_at: session.performedAt,
+        workout_session: { performed_at: session.performedAt, finished_at: session.performedAt },
+      })),
+    ),
+    bodyweight: null,
+  };
+}
+
+function ready(
+  sessions = oneSession,
+  extra: { periodEligible?: boolean; periodDates?: string[]; reviewMonth?: string | null } = {},
+) {
   return createElement(ExerciseReview, {
     status: "ready",
     name: "Barbell Bench Press",
     isBodyweight: false,
     sessions,
-    reviewMonth: null,
+    reviewMonth: extra.reviewMonth ?? null,
     now,
-    ...extra,
+    monthSource: monthSourceFrom(sessions),
+    periodEligible: extra.periodEligible,
+    periodDates: extra.periodDates,
   });
 }
 
@@ -54,18 +94,12 @@ describe("exercise review", () => {
     expect(html).not.toContain("Exercise not found");
     expect(html).not.toContain("Today");
     expect(html).not.toContain("e1RM chart");
+    expect(html).not.toContain("Month to month");
     expect(html).not.toContain("No working sets for this exact exercise");
   });
 
   it("keeps the unfiltered review when a month query is present", () => {
-    const html = renderToStaticMarkup(createElement(ExerciseReview, {
-      status: "ready",
-      name: "Barbell Bench Press",
-      isBodyweight: false,
-      sessions: oneSession,
-      reviewMonth: "2026-09",
-      now,
-    }));
+    const html = renderToStaticMarkup(ready(oneSession, { reviewMonth: "2026-09" }));
     expect(html).toContain("Barbell Bench Press");
     expect(html).toContain("Today");
     expect(html).toContain("150.0 lb");
@@ -78,6 +112,12 @@ describe("exercise review", () => {
     expect(html).not.toContain("140.0 lb → 150.0 lb");
     expect(html).not.toContain("No prior comparison");
     expect(html).not.toContain("Compared with");
+    expect(html).toContain("Month to month");
+    expect(html).toContain('aria-label="This month"');
+    expect(html).toContain('value="2026-09"');
+    expect(html).toContain('value="2026-08"');
+    expect(html).toContain("none");
+    expect(html).not.toContain("No prior comparison");
   });
 
   it("omits the month back link when month is absent", () => {
@@ -155,6 +195,9 @@ describe("exercise review", () => {
     expect(html).not.toContain("e1RM over time with period days");
     expect(html).not.toContain("No prior comparison");
     expect(html).toContain('href="/session/s2"');
+    expect(html).toContain("Month to month");
+    expect(html).toContain("Exposures");
+    expect(html).toContain("Volume");
   });
 
   it("shows last trained when recent history is empty and skips a fake trend", () => {
@@ -184,5 +227,33 @@ describe("exercise review", () => {
     expect(html).toContain("Last trained");
     expect(html).not.toContain("Workouts");
     expect(html).not.toContain("No prior comparison");
+  });
+
+  it("defaults the compare to the inbound month and shows none without a fake arrow", () => {
+    const html = renderToStaticMarkup(ready(oneSession, { reviewMonth: "2026-09" }));
+    expect(html).toContain("Month to month");
+    expect(html).toContain('value="2026-09"');
+    expect(html).toContain('value="2026-08"');
+    expect(html).toContain("150.0 lb");
+    expect(html).toContain("none");
+    expect(html).not.toContain("— →");
+    expect(html).not.toContain("No prior comparison");
+  });
+
+  it("captions the program from sessions in the slice", () => {
+    const sessions = sessionsFrom([{
+      id: "r1",
+      sessionId: "s1",
+      weight: 100,
+      reps: 10,
+      rir: 1,
+      e1rm: 150,
+      performedAt: "2026-09-02T12:00:00Z",
+      finishedAt: "2026-09-02T13:00:00Z",
+      programId: "p1",
+    }]).map((session) => ({ ...session, programName: "Strong Foundations" }));
+    const html = renderToStaticMarkup(ready(sessions, { reviewMonth: "2026-09" }));
+    expect(html).toContain("Program: Strong Foundations");
+    expect(html).not.toContain("No program");
   });
 });

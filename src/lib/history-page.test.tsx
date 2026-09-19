@@ -29,6 +29,7 @@ const query = {
   select: vi.fn(() => query),
   eq: vi.fn(() => query),
   not: vi.fn(() => query),
+  in: vi.fn(() => query),
   order: vi.fn(() => query),
   then: (resolve: (result: { data: unknown[]; error: null }) => unknown) =>
     Promise.resolve(resolve({ data: setRows, error: null })),
@@ -101,6 +102,8 @@ describe("HistoryPage route", () => {
     expect(html).toContain("Today");
     expect(html).toContain("150.0 lb");
     expect(html).toContain("Last 8 workouts");
+    expect(html).toContain("Month to month");
+    expect(html).toContain("150.0 lb");
     expect(mocks.periodRows).not.toHaveBeenCalled();
   });
 });

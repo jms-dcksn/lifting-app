@@ -1,3 +1,4 @@
+import { dateKey } from "./bodyweight";
 import type { ExerciseDef, Pattern } from "./strength/coefficients";
 import { effectiveLoad } from "./strength/recompute";
 import { estimatePatternStrength, type ExerciseStat } from "./strength/recommend";
@@ -112,6 +113,24 @@ export function sessionTonnage(
   }
 
   return [...sessions.values()].sort(compareSessions);
+}
+
+/** Effective load × reps for one identity inside a Chicago date window. Not UTC weeks. */
+export function identityVolume(
+  rows: AnalyticsSetRow[],
+  window: { start: string; end: string },
+  defs: ExerciseDefs,
+  bodyweight: number | null,
+  timeZone = "America/Chicago",
+): number {
+  const inWindow = rows.filter((row) => {
+    const day = dateKey(new Date(row.performedAt), timeZone);
+    return day >= window.start && day <= window.end;
+  });
+  return sessionTonnage(inWindow, defs, bodyweight).reduce(
+    (sum, session) => sum + session.tonnage,
+    0,
+  );
 }
 
 export function weeklyVolume(

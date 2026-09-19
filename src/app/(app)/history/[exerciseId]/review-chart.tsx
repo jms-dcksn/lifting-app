@@ -6,11 +6,13 @@ import { Card, CardLabel } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
 import {
   periodDatesInChartRange,
+  REVIEW_CHART_SESSIONS,
   reviewChartPoints,
   type ReviewChartRange,
   type ReviewSession,
 } from "@/lib/exercise-review-sessions";
 import { E1rmChart } from "./e1rm-chart";
+import { ProgramCaption } from "./program-caption";
 
 export function ReviewChart({
   sessions,
@@ -22,6 +24,7 @@ export function ReviewChart({
   periodDates?: string[];
 }) {
   const [range, setRange] = useState<ReviewChartRange>("last8");
+  const windowSessions = range === "last8" ? sessions.slice(-REVIEW_CHART_SESSIONS) : sessions;
   const points = reviewChartPoints(sessions, range);
   const overlayDates =
     range === "all" && periodEligible ? periodDatesInChartRange(points, periodDates) : [];
@@ -60,6 +63,7 @@ export function ReviewChart({
           One session so far. Log another to see the trend.
         </p>
       )}
+      <ProgramCaption sessions={windowSessions} />
     </Card>
   );
 }

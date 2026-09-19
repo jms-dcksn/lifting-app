@@ -40,7 +40,8 @@ export async function saveCoachRecommendationDecision(formData: FormData) {
   if (error) throw new Error(`Unable to save recommendation decision: ${error.message}`);
 
   revalidatePath("/analytics");
-  revalidatePath("/settings");
+  revalidatePath("/analytics/coach");
+  revalidatePath("/analytics/month");
 }
 
 export async function acceptAllCoachRecommendations(formData: FormData) {
@@ -74,5 +75,6 @@ export async function acceptAllCoachRecommendations(formData: FormData) {
   if (error) throw new Error(`Unable to accept recommendations: ${error.message}`);
 
   revalidatePath("/analytics");
-  revalidatePath("/settings");
+  revalidatePath("/analytics/coach");
+  revalidatePath("/analytics/month");
 }

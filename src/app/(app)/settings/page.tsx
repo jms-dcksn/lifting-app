@@ -10,7 +10,6 @@ import { LogWeightButton } from "@/components/weight-calendar";
 import { PeriodTrackingSettings } from "@/components/period-tracking-settings";
 import { RestNotificationSettings } from "./rest-notification-settings";
 import { signOut } from "../actions";
-import { CoachSection } from "./coach-section";
 
 export default async function SettingsPage({
   searchParams,
@@ -19,6 +18,9 @@ export default async function SettingsPage({
 }) {
   const query = await searchParams;
   const coachExercise = typeof query.coachExercise === "string" ? query.coachExercise : undefined;
+  if (coachExercise) {
+    redirect(`/analytics/coach?exercise=${encodeURIComponent(coachExercise)}`);
+  }
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub as string | undefined;
@@ -186,8 +188,6 @@ export default async function SettingsPage({
         trackingEnabled={profile?.period_tracking_enabled ?? false}
         hasObservations={hasObservations}
       />
-
-      <CoachSection userId={userId} coachExercise={coachExercise} />
 
       <form action={signOut}>
         <Button type="submit" variant="ghost" className="w-full">

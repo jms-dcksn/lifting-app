@@ -15,6 +15,9 @@ describe("hideAppChrome", () => {
     expect(hideAppChrome("/")).toBe(false);
     expect(hideAppChrome("/analytics")).toBe(false);
     expect(hideAppChrome("/analytics/month")).toBe(false);
+    expect(hideAppChrome("/analytics/coach")).toBe(false);
+    expect(hideAppChrome("/analytics/body")).toBe(false);
+    expect(hideAppChrome("/analytics/volume")).toBe(false);
     expect(hideAppChrome("/program")).toBe(false);
     expect(hideAppChrome("/program/abc")).toBe(false);
     expect(hideAppChrome("/settings")).toBe(false);
@@ -28,6 +31,9 @@ describe("isTrackPath", () => {
     expect(isTrackPath("/history/cable-curl")).toBe(true);
     expect(isTrackPath("/analytics")).toBe(true);
     expect(isTrackPath("/analytics/month")).toBe(true);
+    expect(isTrackPath("/analytics/coach")).toBe(true);
+    expect(isTrackPath("/analytics/body")).toBe(true);
+    expect(isTrackPath("/analytics/volume")).toBe(true);
     expect(isTrackPath("/")).toBe(false);
     expect(isTrackPath("/program")).toBe(false);
     expect(isTrackPath("/settings")).toBe(false);

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>THROW AWAY Track IA prototype</title>
+  <style>
+    :root { --bg:#111; --fg:#f4f1ea; --muted:#9a958c; --line:#2a2a2a; --card:#1a1a1a; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.4 system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+    header { padding: 12px 16px; border-bottom: 1px solid var(--line); }
+    h1 { font-size: 14px; font-weight: 600; margin: 0; color: var(--muted); }
+    .phone { max-width: 390px; margin: 0 auto; min-height: 100vh; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+    nav.tabs { position: sticky; bottom: 0; display: grid; grid-template-columns: repeat(4,1fr); border-top: 1px solid var(--line); background: var(--bg); }
+    nav.tabs span { text-align: center; padding: 10px 0; font-size: 11px; color: var(--muted); }
+    nav.tabs .on { color: var(--fg); }
+    .row { display: flex; align-items: center; justify-content: space-between; padding: 16px; }
+    h2 { margin: 0; font-size: 28px; }
+    button, a.item { font: inherit; color: inherit; background: none; border: 0; }
+    .sheet { position: fixed; inset: auto 0 0; max-width: 390px; margin: 0 auto; background: var(--card); border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 16px 16px 80px; }
+    .item { display: block; width: 100%; text-align: left; padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .card { margin: 12px 16px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; }
+    .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .num { font-size: 22px; font-variant-numeric: tabular-nums; }
+    .chart { height: 88px; margin-top: 10px; background: linear-gradient(180deg, transparent 0%, transparent 40%, #2a2a2a 40%, #2a2a2a 41%, transparent 41%),
+      radial-gradient(circle at 10% 60%, #f4f1ea 2px, transparent 3px),
+      radial-gradient(circle at 30% 45%, #f4f1ea 2px, transparent 3px),
+      radial-gradient(circle at 55% 50%, #f4f1ea 2px, transparent 3px),
+      radial-gradient(circle at 80% 35%, #f4f1ea 2px, transparent 3px); }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    .chip { border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; font-size: 13px; }
+    .chip.on { background: var(--fg); color: var(--bg); }
+    .tiny { height: 56px; }
+    .bar { display: flex; gap: 8px; position: sticky; top: 0; background: #0b0b0b; padding: 8px; z-index: 2; overflow-x: auto; }
+    .bar button { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 12px; white-space: nowrap; }
+    .bar button.on { background: var(--fg); color: var(--bg); }
+    .note { padding: 8px 16px; font-size: 12px; color: var(--muted); }
+    .search { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="bar" id="switcher"></div>
+    <div id="root"></div>
+  </div>
+  <script>
+    const variants = [
+      { id: "explore-links", q: "Explore as destination links" },
+      { id: "explore-nested", q: "Explore keeps nested Volume panel" },
+      { id: "body-overlay", q: "Body: weight + one inches overlay" },
+      { id: "body-stack", q: "Body: six stacked charts" },
+      { id: "volume-search", q: "Volume: total plus search list" },
+    ];
+    let current = location.hash.slice(1) || "explore-links";
+
+    function render() {
+      document.querySelectorAll(".bar button").forEach((b) => b.classList.toggle("on", b.dataset.id === current));
+      const root = document.getElementById("root");
+      const map = {
+        "explore-links": explore(true),
+        "explore-nested": explore(false),
+        "body-overlay": body(false),
+        "body-stack": body(true),
+        "volume-search": volume(),
+      };
+      root.innerHTML = map[current];
+    }
+
+    function explore(links) {
+      const dest = links
+        ? `<button class="item">This week's PRs</button>
+           <a class="item">Month review</a>
+           <button class="item">All lifts</button>
+           <a class="item">Coach</a>
+           <a class="item">Body</a>
+           <a class="item">Volume</a>`
+        : `<button class="item">This week's PRs</button>
+           <a class="item">Month review</a>
+           <button class="item">All lifts</button>
+           <button class="item">Volume &amp; weight</button>
+           <p class="note">Coach still lives on You. Charts stay trapped in this sheet.</p>`;
+      return `
+        <header><h1>THROW AWAY · ${links ? "links" : "nested"}</h1></header>
+        <div class="row"><h2>Track</h2><button aria-label="Explore">···</button></div>
+        <div class="card"><div class="label">Squat</div><div class="num">315</div></div>
+        <div class="sheet">
+          <h2 style="font-size:20px">Explore</h2>
+          ${dest}
+        </div>
+        ${tabs("Track")}`;
+    }
+
+    function body(stack) {
+      const meas = stack
+        ? ["Waist 28.5 in","Neck 13.0 in","Arm 12.2 in","Thigh 22.0 in","Chest 34.5 in"].map((t) =>
+            `<div class="card"><div class="label">${t}</div><div class="chart tiny"></div></div>`).join("")
+        : `<div class="card">
+             <div class="label">Tape</div>
+             <div class="num">Waist 28.5 in</div>
+             <div class="chips">
+               <span class="chip on">Waist</span><span class="chip on">Neck</span>
+               <span class="chip">Arm</span><span class="chip">Thigh</span><span class="chip on">Chest</span>
+             </div>
+             <div class="chart"></div>
+           </div>`;
+      return `
+        <header><h1>THROW AWAY · body ${stack ? "stack" : "overlay"}</h1></header>
+        <div class="row"><a>← Track</a></div>
+        <div class="row"><h2>Body</h2><button>Log</button></div>
+        <div class="card"><div class="label">Bodyweight trend</div><div class="num">142.6 lb</div><div class="chart"></div></div>
+        ${meas}
+        ${tabs("Track")}`;
+    }
+
+    function volume() {
+      return `
+        <header><h1>THROW AWAY · volume search</h1></header>
+        <div class="row"><a>← Track</a></div>
+        <div class="row"><h2>Volume</h2></div>
+        <div class="card">
+          <div class="label">Total volume</div>
+          <div class="num">186,400 lb</div>
+          <div class="chips"><span class="chip on">All training</span><span class="chip">Goblet squat</span></div>
+          <div class="chart"></div>
+        </div>
+        <div class="card">
+          <input class="search" placeholder="Search logged exercises..." />
+          <button class="item">Goblet squat · 12 sessions</button>
+          <button class="item">Hip thrust · 11 sessions</button>
+          <button class="item">Lat pulldown · 10 sessions</button>
+        </div>
+        ${tabs("Track")}`;
+    }
+
+    function tabs(on) {
+      return `<nav class="tabs">${["Lift","Track","Program","You"].map((t) =>
+        `<span class="${t===on?"on":""}">${t}</span>`).join("")}</nav>`;
+    }
+
+    const bar = document.getElementById("switcher");
+    variants.forEach((v) => {
+      const b = document.createElement("button");
+      b.textContent = v.q;
+      b.dataset.id = v.id;
+      b.onclick = () => { current = v.id; location.hash = v.id; render(); };
+      bar.appendChild(b);
+    });
+    render();
+  </script>
+</body>
+</html>

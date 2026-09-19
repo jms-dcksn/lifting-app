@@ -45,7 +45,7 @@ describe("authenticated weight actions", () => {
     expect(rpc).toHaveBeenCalledWith("save_bodyweight_entry", {
       p_entry_id: id, p_logged_on: "2026-03-01", p_weight: 155, p_replace_entry_id: null,
     });
-    for (const path of ["/", "/settings", "/analytics", "/workout/next"]) expect(mocks.revalidate).toHaveBeenCalledWith(path);
+    for (const path of ["/", "/settings", "/analytics", "/analytics/month", "/analytics/body", "/workout/next"]) expect(mocks.revalidate).toHaveBeenCalledWith(path);
     expect(mocks.revalidate).toHaveBeenCalledWith("/session/[id]", "page");
     expect(from).not.toHaveBeenCalled(); // no profile/set/e1RM rewrite
   });

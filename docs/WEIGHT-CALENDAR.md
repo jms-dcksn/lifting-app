@@ -1,6 +1,6 @@
 # Weight calendar (#28)
 
-You (`/settings`) and the Track More weight card open the shared Weight calendar Sheet.
+You (`/settings`) and the Track Body weight card open the shared Weight calendar Sheet.
 Today is selected initially; recent Settings readings open their own date. Browse with
 month arrows or Jump to month. The calendar starts on Monday; dots identify recorded
 readings and an outline identifies today. Arrow keys move focus, Home/End move within a

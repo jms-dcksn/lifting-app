@@ -108,8 +108,9 @@ and rotation live in [Coach report](COACH-REPORT.md#weekly-coach-api) and [deplo
   variants, returns ten latest sets from previous workouts, and loads only when opened.
   This family grouping is for browsing; progression and records use exact exercise identity.
 - Per-exercise `/history/[exerciseId]` compares session-best e1RM with the previous exposure.
-  Board (`/analytics`) uses `analytics.ts` summaries plus `board.ts` for default compounds
-  and pin visibility. Volume and weight trends sit in a Board More sheet; Coach lives on You.
+  Track (`/analytics`) uses `analytics.ts` summaries plus `board.ts` for default compounds
+  and pin visibility. Volume, weight trends, and this week's full PR list sit in Track
+  Explore; Coach lives on You.
   Pattern-strength replay does not replay historical personal machine coefficients.
 - Pins are an owner-scoped display table (`user_exercise_pin`). They do not change `set_log`,
   coefficients, swaps, or `workoutRecords` eligibility. Cap 8 is enforced in the action.

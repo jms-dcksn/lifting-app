@@ -9,11 +9,10 @@ import { InfoButton } from "@/components/ui/info-button";
 import { startNextSession } from "./session/actions";
 import { loadWorkoutRecords } from "@/lib/workout-records";
 import { loadWeekRecordChips } from "@/lib/week-records-data";
-import { buildBoardLifts, sessionRecordSummary } from "@/lib/board";
+import { buildBoardLifts, sessionRecordChips, sessionRecordSummary } from "@/lib/board";
 import { exerciseSummaries, type AnalyticsSetRow } from "@/lib/analytics";
 import { BoardGrid } from "./analytics/board-grid";
 import { LastSessionCard } from "./last-session-card";
-import { sessionRecapPath } from "@/lib/session-paths";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -119,29 +118,6 @@ export default async function Home() {
         </Card>
       </Link>
 
-      {weekRecords.chips.length > 0 && (
-        <section>
-          <div className="mb-2 flex items-center gap-1">
-            <h2 className="text-caption font-semibold uppercase tracking-wide text-muted">This week</h2>
-            <InfoButton title="Records">
-              Gold chips are canonical rep or e1RM records from the last seven local days.
-            </InfoButton>
-          </div>
-          <ul className="flex flex-wrap gap-2">
-            {weekRecords.chips.map((chip) => (
-              <li key={`${chip.sessionId}-${chip.exerciseId}-${chip.label}`}>
-                <Link
-                  href={sessionRecapPath(chip.sessionId)}
-                  className="inline-flex min-h-11 items-center rounded-full border border-record/40 bg-record/10 px-3 text-caption font-medium text-record"
-                >
-                  {chip.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       {preview.length > 0 && (
         <section>
           <div className="mb-2 flex items-center justify-between gap-2">
@@ -160,6 +136,7 @@ export default async function Home() {
           dayName={lastSummary.dayName}
           totalSets={lastSummary.totalSets}
           headline={lastSummary.headline}
+          chips={lastSummary.chips}
         />
       )}
     </div>
@@ -197,6 +174,7 @@ async function summarizeLast(
     dayName: day?.name ?? "Workout",
     totalSets: current.filter((set) => !set.is_warmup).length,
     headline: sessionRecordSummary(achievements),
+    chips: sessionRecordChips(session.id, achievements),
   };
 }
 

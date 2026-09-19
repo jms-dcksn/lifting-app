@@ -6,12 +6,18 @@ import { loadWorkoutRecords } from "./workout-records";
 import { weekRecordChips, type WeekRecordChip } from "./board";
 import type { ExerciseRecords } from "./strength/records";
 
+export interface WeekRecordSession {
+  sessionId: string;
+  performedAt: string;
+  groups: ExerciseRecords[];
+}
+
 export async function loadWeekRecordChips(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   catalog: Record<string, ExerciseDef>,
   now = new Date(),
-): Promise<{ chips: WeekRecordChip[]; sessions: { sessionId: string; groups: ExerciseRecords[] }[] }> {
+): Promise<{ chips: WeekRecordChip[]; sessions: WeekRecordSession[] }> {
   const today = dateKey(now);
   const { data, error } = await supabase
     .from("workout_session")
@@ -22,7 +28,7 @@ export async function loadWeekRecordChips(
     .limit(24);
   if (error) throw new Error("Unable to load this week's records. Please try again.");
   const windowed = (data ?? []).filter((session) => inLocalDays(session.performed_at, today, 7));
-  const sessions: { sessionId: string; groups: ExerciseRecords[] }[] = [];
+  const sessions: WeekRecordSession[] = [];
   for (const session of windowed) {
     const { achievements } = await loadWorkoutRecords(
       supabase,
@@ -31,7 +37,13 @@ export async function loadWeekRecordChips(
       session.performed_at,
       catalog,
     );
-    if (achievements.length) sessions.push({ sessionId: session.id, groups: achievements });
+    if (achievements.length) {
+      sessions.push({
+        sessionId: session.id,
+        performedAt: session.performed_at,
+        groups: achievements,
+      });
+    }
   }
   return { chips: weekRecordChips(sessions), sessions };
 }

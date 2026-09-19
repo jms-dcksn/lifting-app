@@ -129,14 +129,12 @@ export interface WeekRecordChip {
   label: string;
 }
 
-export function weekRecordChips(sessions: { sessionId: string; groups: ExerciseRecords[] }[]) {
+export function sessionRecordChips(sessionId: string, groups: ExerciseRecords[]) {
   const chips: WeekRecordChip[] = [];
-  for (const session of sessions) {
-    for (const group of session.groups) {
-      const line = recapLines(group)[0];
-      if (!line) continue;
+  for (const group of groups) {
+    for (const line of recapLines(group)) {
       chips.push({
-        sessionId: session.sessionId,
+        sessionId,
         exerciseId: group.exerciseId,
         name: group.name,
         label: `${boardShortName({ id: group.exerciseId, name: group.name })} ${line}`,
@@ -144,6 +142,10 @@ export function weekRecordChips(sessions: { sessionId: string; groups: ExerciseR
     }
   }
   return chips;
+}
+
+export function weekRecordChips(sessions: { sessionId: string; groups: ExerciseRecords[] }[]) {
+  return sessions.flatMap((session) => sessionRecordChips(session.sessionId, session.groups));
 }
 
 export function sessionRecordSummary(groups: ExerciseRecords[]) {

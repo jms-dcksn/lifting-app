@@ -5,6 +5,7 @@ import {
   defaultCompoundIds,
   isExercisePinned,
   nextExtraPosition,
+  sessionRecordChips,
   sessionRecordSummary,
   signedDelta,
   visibleBoardIds,
@@ -81,14 +82,23 @@ describe("board copy", () => {
       repRecords: [{ setId: "s1", slotId: "slot", load: 225, weight: 225, reps: 8, improvement: 1 }],
       e1rmRecord: { setId: "s1", slotId: "slot", value: 275, improvement: 5 },
     };
-    expect(weekRecordChips([{ sessionId: "w1", groups: [group] }])).toEqual([
+    expect(sessionRecordChips("w1", [group])).toEqual([
       {
         sessionId: "w1",
         exerciseId: "bb-bench",
         name: "Barbell Bench Press",
         label: "Bench 225 × 8 +1",
       },
+      {
+        sessionId: "w1",
+        exerciseId: "bb-bench",
+        name: "Barbell Bench Press",
+        label: "Bench 275 e1RM +5",
+      },
     ]);
+    expect(weekRecordChips([{ sessionId: "w1", groups: [group] }])).toEqual(
+      sessionRecordChips("w1", [group]),
+    );
     expect(sessionRecordSummary([group])).toBe("2 PRs");
   });
 });

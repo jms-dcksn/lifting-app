@@ -7,11 +7,13 @@ export function LastSessionCard({
   dayName,
   totalSets,
   headline,
+  chips = [],
 }: {
   sessionId: string;
   dayName: string;
   totalSets: number;
   headline: string | null;
+  chips?: readonly { label: string }[];
 }) {
   const setsLabel = `${totalSets} working ${totalSets === 1 ? "set" : "sets"}`;
 
@@ -27,6 +29,18 @@ export function LastSessionCard({
         <p className={headline ? "mt-1 text-body text-muted" : "text-body"}>
           {dayName} · {setsLabel}
         </p>
+        {chips.length > 0 ? (
+          <ul className="mt-3 flex flex-wrap gap-2" aria-label="Session personal records">
+            {chips.map((chip) => (
+              <li
+                key={chip.label}
+                className="inline-flex items-center rounded-full border border-record/40 bg-record/10 px-3 py-1 text-caption font-medium text-record"
+              >
+                {chip.label}
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <p className="mt-4 text-caption font-medium">View recap →</p>
       </Link>
       <Link

@@ -40,13 +40,12 @@ Adaptive plateau engine under §5.
   linking back into it.
 - **Today's work** — day name, lift count, and set count; tap opens `/workout/next` (or the
   open session). The full slot list is not always-on.
-- **This week's records** — gold chips from canonical `workoutRecords` over the last seven
-  local days; tap opens `/session/{id}/recap`.
-- **Board preview** — optional recent-PR compound tiles only; pin controls stay off home.
-  Full Board stays on `/analytics`.
-- **Last session** — `{n} PRs` when that workout earned records, else day name + set count.
-  The card opens that workout's recap; **View workout** opens the editable sets. No top-e1RM
-  paragraph. Weight and Coach are not home jobs.
+- **Track preview** — optional recent-PR compound tiles only; pin controls stay off home.
+  Full Track stays on `/analytics`.
+- **Last session** — `{n} PRs` when that workout earned records, else day name + set count,
+  plus gold chips for that session's canonical `workoutRecords`. The card opens that
+  workout's recap; **View workout** opens the editable sets. No top-e1RM paragraph.
+  This week's full PR list lives on Track. Weight and Coach are not home jobs.
 - **Next workout planner** — `/workout/next` previews effective prescriptions and saves
   workout-only exercise choices in this browser before Start; [contract](WORKOUT-PLANNING.md).
 - **Block progress** — classic programs still show "{completed} of {total} sessions this block".
@@ -256,33 +255,35 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 - **Line chart** — Recharts e1RM-over-time chart (`e1rm-chart.tsx`).
 - **Pin** — header `IconButton` writes `user_exercise_pin` (display preference only).
 
-## 8. Board (`/analytics`, nav label "Board")
+## 8. Track (`/analytics`, nav label "Track")
 
-`/analytics` is the Board: a 2-column scoreboard of key compounds (squat, hinge, horizontal
+`/analytics` is Track: a 2-column scoreboard of key compounds (squat, hinge, horizontal
 press, vertical press, horizontal pull, vertical pull). Each tile shows the catalog reference
 lift when it has history (otherwise it stays hidden), current e1RM, signed delta or "held",
 a sparkline, and a `--record` flash when that lift earned a canonical record this week.
 Tap opens `/history/{id}`. Pins are owner-scoped display preferences (`user_exercise_pin`,
 cap 8 in the server action): unpinning a default hides it; pinning an extra adds a tile.
 
-Secondary, not equal cards:
-- All-lifts search (`ExerciseList`) behind a control
+Secondary, not equal cards, behind Explore:
+- This week's PRs — full canonical `workoutRecords` list over the last seven local days
+  (every recap line, grouped by session); tap a date for recap or an exercise for history
+- All-lifts search (`ExerciseList`)
 - Month review, including a period × performance week overlay when tracking is enabled
   (observed period days, weekly weight change, and PR counts on one card)
-- Volume chart and weight trends in a Board "More" sheet
+- Volume chart and weight trends
 
 Coach check-in and proposals live on You (`/settings`). The weekly API
 (`GET /api/coach/v1/weekly`) is unchanged. Canonical eligibility stays `workoutRecords`
 and monthly contracts; the old Progress records feed is gone.
 
 Pure helpers in `src/lib/analytics.ts` still compute volume, summaries, and (unused on the
-Board landing) training balance / pattern strength. See `docs/COACH-REPORT.md` for the
+Track landing) training balance / pattern strength. See `docs/COACH-REPORT.md` for the
 Coach contract.
 
 ## 9. You (`/settings`)
 
 - **Bodyweight history** — quick date/weight logging, edit/remove, recent readings, latest value,
-  sparse seven-day average, and change from the preceding seven days. You, Board More, and
+  sparse seven-day average, and change from the preceding seven days. You, Track Explore, and
   the shared calendar all log weight; moves onto occupied dates require explicit replacement
   confirmation and use an atomic RPC. See [weight calendar](WEIGHT-CALENDAR.md).
 - **Current bodyweight rule** — the newest dated observation drives pull-up/assisted calculations;
@@ -305,7 +306,7 @@ Coach contract.
 
 ## 10. App shell & navigation
 
-- **Bottom tabs** — Train (`/`), Board (`/analytics`), Program (`/program`), You (`/settings`);
+- **Bottom tabs** — Train (`/`), Track (`/analytics`), Program (`/program`), You (`/settings`);
   icons plus labels, `aria-current` on the active tab (`app-shell.tsx`). Hidden on session
   routes (active workout, recap, finished sets), next-workout planner, and program builder.
 - **Auth gate** — layout is a Server Component gating on `getClaims()`.

@@ -82,7 +82,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/app/(app)/program/` — summary tile grid + dedicated read-only detail route + builder (Classic/Adaptive style, catalog-driven picker, custom exercises, server actions)
 - `src/app/(app)/exercise/actions.ts` — `resolveVariant` (find-or-create a machine brand/type variant) and `createCustomExercise` server actions
 - `src/app/(app)/settings/` — bodyweight history/trend, goal weight, default rest-between-sets, rest-complete tone editor, Coach check-in and proposals, and sign out (You tab)
-- `src/app/(app)/analytics/` — Track: 2-column compound scoreboard (catalog reference lifts with history; hidden otherwise), volume chart and weight trends in a "More" sheet, Explore menu (week PR list, all-lifts search), and month review
+- `src/app/(app)/analytics/` — Track: 2-column compound scoreboard (catalog reference lifts with history; hidden otherwise); Explore menu (this week's PRs, all-lifts search, volume and weight); and month review
 - `src/app/api/coach/v1/weekly/` — private, no-store endpoint for the scheduled Coach check-in
 - `docs/COACH-REPORT.md` — exact v1 windows, metrics, trend rules, privacy contract, and limitations
 - `src/app/(app)/history/[exerciseId]/` — per-exercise history: e1RM line chart (Recharts) + overload signal vs the previous session

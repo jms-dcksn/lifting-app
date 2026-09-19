@@ -25,7 +25,7 @@ where later decisions and feature contracts say so. [UX-AUDIT](UX-AUDIT.md) reco
 baseline, not a current bug list. Files under `superpowers/plans/` and `superpowers/specs/`
 are dated design/implementation records; their commands and file maps are not current runbooks.
 
-As of 2026-09-18: the Train/Track/Program/You tab shell (epic #93), cinematic recap, Track
+As of 2026-09-18: the Lift/Track/Program/You tab shell (epic #93), cinematic recap, Track
 compounds/pins, the monthly dashboard (#31), and the period × performance week overlay (#105)
 are implemented. See [Features](FEATURES.md) for current behavior. Issue numbers here identify
 planned slices, not a live GitHub status check. Historical verification counts describe their

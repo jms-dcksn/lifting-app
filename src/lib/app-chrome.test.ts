@@ -11,7 +11,7 @@ describe("hideAppChrome", () => {
     expect(hideAppChrome("/session/abc", "")).toBe(true);
   });
 
-  it("keeps tabs on Train, Track, Program, You, and history", () => {
+  it("keeps tabs on Lift, Track, Program, You, and history", () => {
     expect(hideAppChrome("/")).toBe(false);
     expect(hideAppChrome("/analytics")).toBe(false);
     expect(hideAppChrome("/analytics/month")).toBe(false);

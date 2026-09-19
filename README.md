@@ -16,7 +16,7 @@ saves the replacement immediately. Program scope changes only that slot on that 
 workout scope leaves the next occurrence unchanged. Already logged sets retain their exercise,
 weight, reps, and RIR. See [exercise swap behavior](docs/EXERCISE-SWAPS.md).
 
-Tap **Today's work** on Train (home) to open a full-page planner with sets, reps, RIR, rest,
+Tap **Today's work** on Lift (home) to open a full-page planner with sets, reps, RIR, rest,
 and phase details. Choose specific machines or swap exercises before starting; selections
 apply to that workout and persist in the same browser. Start from either Home or the planner
 with those choices intact. See [workout planning](docs/WORKOUT-PLANNING.md).

@@ -78,7 +78,7 @@ consult each feature doc for execution requirements.
 
 Within an approved release, push the branch for a preview, inspect deployment checks, and
 smoke-test login/callback, program creation, planning/Start, logging/swapping/finishing,
-Board/monthly review, and weight calendar edits relevant to the change. Preview writes
+Track/monthly review, and weight calendar edits relevant to the change. Preview writes
 reach whichever Supabase project its environment selects. Merge/push to `main` releases
 through Vercel's integration. `.github/workflows/ci.yml` runs lint, typecheck, Vitest, and the
 build on every pull request, plus the pgTAP ownership suite against a local Supabase stack, so

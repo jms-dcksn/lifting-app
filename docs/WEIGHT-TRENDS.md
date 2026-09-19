@@ -1,6 +1,6 @@
 # Bodyweight trends — epic #27, slice #29
 
-The Board More sheet opens with measured weights (dots), trailing seven-calendar-day
+The Track More sheet opens with measured weights (dots), trailing seven-calendar-day
 means (line), and the saved goal (dashed reference). Default is 90 days; 30 days,
 six calendar months (month-end clamped), and all history are available. The chart
 uses numeric date positions, preserving real gaps and elapsed time. All values
@@ -54,15 +54,15 @@ summary cards, and weekly means after corrections/deletions.
 
 ## Vercel preview checklist
 
-1. Open Board → More on a phone; check chart, goal line, and range buttons fit.
+1. Open Track → More on a phone; check chart, goal line, and range buttons fit.
 2. Switch ranges: historical coverage changes, today's summary stays constant.
 3. Tap a raw dot, correct its weight, and confirm recalculated trend/weekly bars.
 4. Expand the data table and use its edit button with a keyboard.
 5. Expand weekly averages; check dates, counts, partial-week label, and gaps.
-6. Change/remove the goal in You and revisit Board → More; check distance/Set goal.
+6. Change/remove the goal in You and revisit Track → More; check distance/Set goal.
 
 
 The monthly review reuses this card with an explicit calendar window. Chart points are
 clipped to that window while rolling averages retain the prior six days. Summary averages
 are anchored to the selected end date and labeled accordingly; the displayed goal remains
-the current Settings goal. Range controls and 12-week bars stay on the Board More weight card.
+the current Settings goal. Range controls and 12-week bars stay on the Track More weight card.

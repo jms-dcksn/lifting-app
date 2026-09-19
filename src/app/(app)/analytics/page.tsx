@@ -26,6 +26,7 @@ import { loadWeekRecordChips } from "@/lib/week-records-data";
 import { PinEditorButton, type PinEditorItem } from "../pins/pin-editor";
 import { BoardGrid } from "./board-grid";
 import { TrackExploreMenu } from "./track-explore-menu";
+import { WeekPrList } from "./week-pr-list";
 
 type AnalyticsQueryRow = {
   id: string;
@@ -145,6 +146,7 @@ export default async function AnalyticsPage() {
         <h1 className="text-display">Track</h1>
         <div className="flex">
           <TrackExploreMenu
+            weekPrs={<WeekPrList sessions={week.sessions} />}
             allLifts={<ExerciseList items={listItems} />}
             volumeAndWeight={
               <>

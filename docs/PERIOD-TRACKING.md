@@ -367,7 +367,7 @@ progress.
 3. Period tracking section appears, toggle off → reads explanation → enables toggle.
 4. Consent modal → confirms → "Log period days" button appears.
 5. Opens calendar, marks days (e.g., March 5–9, April 2–6, May 10–14).
-6. Navigates to Board → Month review (April).
+6. Navigates to Track → Month review (April).
 7. Charts show shaded bands for April 2–6; toggle on/off to hide/show context.
 8. Weight and e1RM data unchanged; period days add visual reference only.
 

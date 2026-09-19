@@ -44,4 +44,40 @@ describe("LastSessionCard", () => {
     expect(workout?.textContent).toContain("View workout");
     expect(host.textContent).toContain("Push · 12 working sets");
   });
+
+  it("shows that session's record chips without nested links", () => {
+    act(() => {
+      root.render(
+        <LastSessionCard
+          sessionId="s1"
+          dayName="Push"
+          totalSets={12}
+          headline="2 PRs"
+          chips={[
+            { label: "Bench 225 × 8 +1" },
+            { label: "Bench 275 e1RM +5" },
+          ]}
+        />,
+      );
+    });
+
+    const recap = host.querySelector('a[href="/session/s1/recap"]');
+    const records = host.querySelector('[aria-label="Session personal records"]');
+    expect(records?.textContent).toContain("Bench 225 × 8 +1");
+    expect(records?.textContent).toContain("Bench 275 e1RM +5");
+    expect(recap?.contains(records)).toBe(true);
+    expect(records?.querySelector("a")).toBeNull();
+  });
+
+  it("hides chips when the last session earned no records", () => {
+    act(() => {
+      root.render(
+        <LastSessionCard sessionId="s1" dayName="Push" totalSets={12} headline={null} />,
+      );
+    });
+
+    expect(host.querySelector('[aria-label="Session personal records"]')).toBeNull();
+    expect(host.textContent).toContain("Push · 12 working sets");
+    expect(host.textContent).not.toContain("PR");
+  });
 });

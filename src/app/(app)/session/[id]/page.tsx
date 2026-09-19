@@ -74,7 +74,7 @@ export default async function SessionPage({
     await Promise.all([
       supabase
         .from("profile")
-        .select("default_rest_seconds, rest_tone_enabled")
+        .select("default_rest_seconds")
         .eq("id", userId)
         .maybeSingle(),
       getCurrentBodyweight(supabase, userId),
@@ -94,7 +94,13 @@ export default async function SessionPage({
   const pinRows = await loadUserPinRows(supabase, userId);
   const pinnedIds = pinnedExerciseIds(pinRows, defaultCompoundIds(catalog));
 
-  const { achievements } = await loadWorkoutRecords(supabase, userId, id, session.performed_at, catalog);
+  // Do not await record history here. The first saved set of an exercise is when
+  // loadWorkoutRecords starts paging prior sets for PR / e1RM chips; blocking the
+  // page on that work suspends session/[id]/loading.tsx and would remount the rest
+  // timer. Stream achievements into the client instead.
+  const recordsPromise = loadWorkoutRecords(supabase, userId, id, session.performed_at, catalog)
+    .then((result) => result.achievements)
+    .catch(() => null);
 
   // Hydrated to the client: targets (and swap re-derivation) compute client-side.
   const stats: ExerciseStat[] = (statRows ?? []).map((r) => ({
@@ -322,7 +328,6 @@ export default async function SessionPage({
       phase={activePhase}
       bodyweight={bodyweight}
       defaultRestSeconds={profile?.default_rest_seconds ?? 120}
-      restToneEnabled={profile?.rest_tone_enabled ?? true}
       alreadyFinished={!!session.finished_at}
       initialFeedback={{
         readiness: session.readiness,
@@ -334,7 +339,7 @@ export default async function SessionPage({
       slots={slots}
       progressionByExercise={progressionByExercise}
       catalog={catalog}
-      achievements={achievements}
+      recordsPromise={recordsPromise}
       pinnedIds={pinnedIds}
     />
   );

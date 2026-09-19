@@ -127,7 +127,9 @@ Adaptive plateau engine under §5.
 - **Workout records** — saved sets show exact-exercise rep/e1RM PRs; the finish recap
   replays the same records as a cinematic hero (`N PRs`, or the two-part count when mixing
   kinds) plus compact per-exercise lines and a 44px history `IconButton` to Exercise review
-  with that group's equipment, and updates after set edits/deletions. [Eligibility](DECISIONS.md#workout-records).
+  with that group's equipment, and updates after set edits/deletions. Live cards stream
+  those pills after the set persists, without resetting rest.
+  [Eligibility](DECISIONS.md#workout-records).
 - **Quick history** — a Sheet loads ten latest sets from previous workouts across explicitly
   linked exercise variants without resetting set entry or the rest timer.
 - **Finish session** — `finishSession` stamps `finished_at` and navigates to
@@ -145,6 +147,10 @@ Adaptive plateau engine under §5.
 ### Rest timer
 - **Auto-start on log** — logging a set starts a single session-wide rest countdown with
   duration `slot.restSeconds ?? profile.default_rest_seconds`.
+- **Survives set logging** — the countdown stays running while saved sets refresh gold
+  PR / e1RM chips. The first logged set of an exercise is the usual hitch: that is when
+  record history is paged. Timer state lives in the session layout (not the page), and
+  the end timestamp is stored in `sessionStorage`.
 - **Accurate across throttling** — tracks an absolute end timestamp (not a decrementing
   counter), tick every 250ms.
 - **Completion cues** — `navigator.vibrate` (always attempts), a system notification when
@@ -350,7 +356,8 @@ Coach contract.
   routes (active workout, recap, finished sets), next-workout planner, and program builder.
 - **Auth gate** — layout is a Server Component gating on `getClaims()`.
 - **Route-level loading skeletons** — `loading.tsx` fallbacks for home, session, recap,
-  history, and analytics so server navigations never flash a blank screen.
+  history, and analytics so server navigations never flash a blank screen. Session loading
+  and session error keep the rest bar from the session layout.
 
 ## 11. Design system & UI primitives (`src/components/ui/`)
 

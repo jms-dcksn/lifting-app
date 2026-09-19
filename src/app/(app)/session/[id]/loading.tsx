@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { SessionRestBar } from "./rest-timer";
 
 export default function Loading() {
   return (
@@ -10,6 +11,7 @@ export default function Loading() {
       {[0, 1, 2].map((i) => (
         <Skeleton key={i} className="h-40 w-full" />
       ))}
+      <SessionRestBar />
     </div>
   );
 }

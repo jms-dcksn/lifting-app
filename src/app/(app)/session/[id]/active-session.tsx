@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
+import { Suspense, use, useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
 import {
@@ -24,7 +24,7 @@ import { InfoButton } from "@/components/ui/info-button";
 import { Stepper } from "@/components/ui/stepper";
 import { PinButton } from "../../pins/pin-button";
 import { ExercisePicker } from "../../program/exercise-picker";
-import { RestBar, useRestTimer } from "./rest-timer";
+import { RestBar, useSessionRestTimer } from "./rest-timer";
 import { ExerciseHistory } from "./exercise-history";
 import {
   swapSessionExercise,
@@ -48,6 +48,20 @@ import { FinishedWorkoutNav } from "./session-nav";
 
 function generateIdempotencyKey(): string {
   return crypto.randomUUID();
+}
+
+function WorkoutRecordsSync({
+  recordsPromise,
+  onRecords,
+}: {
+  recordsPromise: Promise<ExerciseRecords[] | null>;
+  onRecords: (records: ExerciseRecords[]) => void;
+}) {
+  const records = use(recordsPromise);
+  useEffect(() => {
+    if (records) onRecords(records);
+  }, [onRecords, records]);
+  return null;
 }
 
 export interface LoggedSet {
@@ -79,7 +93,6 @@ export function ActiveSession({
   phase,
   bodyweight,
   defaultRestSeconds,
-  restToneEnabled,
   alreadyFinished,
   initialFeedback,
   stats,
@@ -87,7 +100,7 @@ export function ActiveSession({
   slots,
   progressionByExercise,
   catalog: initialCatalog,
-  achievements,
+  recordsPromise,
   pinnedIds,
 }: {
   sessionId: string;
@@ -97,7 +110,6 @@ export function ActiveSession({
   phase: ProgramPhase | null;
   bodyweight: number | null;
   defaultRestSeconds: number;
-  restToneEnabled: boolean;
   alreadyFinished: boolean;
   initialFeedback: SessionFeedback;
   stats: ExerciseStat[];
@@ -105,12 +117,16 @@ export function ActiveSession({
   slots: SlotView[];
   progressionByExercise: Record<string, ProgressionPerformance[]>;
   catalog: Record<string, ExerciseDef>;
-  achievements: ExerciseRecords[];
+  recordsPromise: Promise<ExerciseRecords[] | null>;
   pinnedIds: string[];
 }) {
   useScreenWakeLock(!alreadyFinished);
   const router = useRouter();
-  const rest = useRestTimer(restToneEnabled);
+  const rest = useSessionRestTimer();
+  const [achievements, setAchievements] = useState<ExerciseRecords[]>([]);
+  const onRecords = useCallback((records: ExerciseRecords[]) => {
+    setAchievements(records);
+  }, []);
   // Holds the merged catalog in state so a variant resolved in-session can be added and
   // immediately drive that slot's name/target without a round-trip.
   const [catalog, setCatalog] = useState(initialCatalog);
@@ -133,6 +149,7 @@ export function ActiveSession({
             () => finishSession(sessionId, nextFeedback),
             { onRetry: () => setSummaryError("Retrying…") }
           );
+          rest.skip();
           setFeedbackSheet(null);
           setSummaryError(null);
           router.replace(sessionRecapPath(sessionId));
@@ -160,6 +177,9 @@ export function ActiveSession({
 
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-4 py-5">
+      <Suspense fallback={null}>
+        <WorkoutRecordsSync recordsPromise={recordsPromise} onRecords={onRecords} />
+      </Suspense>
       <header>
         <h1 className="text-display">{dayName}</h1>
         <p className="text-body text-muted">

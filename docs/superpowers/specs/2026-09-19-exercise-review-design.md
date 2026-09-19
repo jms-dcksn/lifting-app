@@ -63,9 +63,19 @@ history control also use `/history/{exerciseId}` only.
 Each tile shows a short name, rounded current e1RM from `exerciseSummaries`, a signed
 delta versus the previous session, and a sparkline of `e1rmSeries.slice(-12)`.
 `exerciseSummaries` in `src/lib/analytics.ts` groups by `exerciseId` only.
+`AnalyticsSetRow` has no `equipment_instance_id`. Home reuses `BoardGrid` for recent-week
+compound tiles and those tiles also go to `/history/{id}`.
 
 Explore **All lifts** is a searchable list of logged exercises. **Keep that nav.** It is
 the primary entry. It is not the Month review disclosure that uses the same words.
+
+The in-session **title** is a link to this route. The slot **IconHistory** control is not.
+It opens the in-session Sheet (`exercise-history.tsx`, family ids, ten prior sets).
+Coach cards on You and Fluid plateau sheets do not link here. Month **Worth reviewing**
+links to `/session/{id}` and in-progress Coach, not history.
+
+The tab bar stays visible on `/history/...` (`hideAppChrome` is false) but no tab is
+`aria-current`. `AppShell` only matches `/`, `/analytics`, `/program`, and `/settings`.
 
 ### 2.2 Unfiltered history route
 
@@ -75,6 +85,10 @@ the primary entry. It is not the Month review disclosure that uses the same word
 - Does not filter `finished_at`. Unfinished sessions can appear.
 - Does not select `equipment_instance_id`. Instances blend.
 - Does not select `program_id`.
+- Does not check the query error. A failed read can look like empty history.
+- Dates use `toLocaleDateString("en-US")` (runtime locale), not Chicago `dateKey`.
+- e1RM display is `Math.round` integers. Monthly trends use 0.1 lb.
+- Session cards have **no** links to `/session/...`.
 - The header shows catalog name, `{n} sessions logged`, rounded current e1RM, and pin.
 - The overload badge is latest session-best stored e1RM versus the session before it.
 - The **e1RM over time** card is Recharts `E1rmChart` of every session with a stored
@@ -85,6 +99,9 @@ the primary entry. It is not the Month review disclosure that uses the same word
 
 There is no route-level test for this page. `src/lib/exercise-history.test.ts` covers
 in-session quick history (`loadExerciseHistory`, family ids), not this route.
+`error.tsx` re-exports the Month review error, so unfiltered history can show
+"Month review could not load". `logSet` does not `revalidatePath` this route. `editSet`,
+`deleteSet`, `finishSession`, and pin toggles do.
 
 ### 2.3 Month query replaces the page
 
@@ -120,9 +137,19 @@ It also inlines `LiftRow`, which renders `LiftTrend`, in three places.
 first month of Cable Curl prints as that em dash, then an arrow, then `75.3 lb`. Caption:
 `2 current / 0 prior exposures`.
 
+`report.lifts` includes identities with a non-warmup eligible set in **either** window.
+**All lifts** therefore lists lifts trained only in the prior window (`not_trained`,
+label **Not trained**, a value-to-em-dash line). That is inspection of lifts that did
+not happen this month. Improving rows appear twice (top five and again in All lifts).
+
+`docs/MONTHLY-PROGRESS.md` still specifies expandable all-lifts comparison and SVG
+trends on the month page (#31). Copy-density #82 moved legends into ⓘ. It did not
+remove this dump. Slice A rewrites that dashboard paragraph on purpose.
+
 `src/lib/monthly-review.test.ts` currently asserts the drill-down query
 (`month=2026-09&equipment=none`) and the `140.0 lb → 150.0 lb` trend line. Those
-assertions must move with the UI.
+assertions must move with the UI. It does not assert **All lifts**, **No prior
+comparison**, or the em-dash arrow.
 
 ---
 
@@ -151,12 +178,16 @@ Explore All lifts stays a Sheet panel, not a route.
 | Explore **All lifts** | `/history/{id}` | same as tiles |
 | Explore **This week's PRs** exercise name | `/history/{id}` | plus `equipment` from `ExerciseRecords.equipmentInstanceId` |
 | Recap / `achievements.tsx` | `/history/{id}` | plus equipment from the record group |
-| In-session history control | `/history/{id}` | plus the slot's current equipment |
+| In-session **title** | `/history/{id}` | plus the slot's current equipment |
+| In-session **IconHistory** | Sheet, not this route | unchanged. Family Sheet stays a different surface |
+| Home last-session card | recap / workout | unchanged. No new home shortcut |
+| Home Track preview tile | `/history/{id}` | same as Track tiles |
 | Month review lift name | `/history/{id}?month=&equipment=` | same URL shape, but the page is Exercise review with that month preselected |
-| Month review stall name | Coach settings only (in-progress) | add Exercise review link. Keep the in-progress Coach link. |
+| Month review stall name | session + in-progress Coach | add Exercise review link. Keep session evidence and the in-progress Coach link |
+| You Coach / Fluid plateau | none | still not an Exercise review entry |
 
-Home last-session opens recap, not history. Recap then uses the table above. No extra
-home shortcut.
+Home last-session chips are not nested links. Recap name and history icon use the recap
+row above.
 
 ### 3.3 Month review keeps versus removes
 
@@ -181,7 +212,8 @@ home shortcut.
 
 **Remove**
 
-- The **All lifts (N)** disclosure and its full `LiftRow` list.
+- The **All lifts (N)** disclosure and its full `LiftRow` list, including `not_trained`
+  and `unavailable` rows and duplicates of the top five.
 - `LiftTrend` (sparkline, prior-to-current, exposures, supporting workouts) from the
   month page.
 - Always-visible **No prior comparison** as a classification label on month rows.
@@ -212,8 +244,8 @@ No session-count essay in the header. That number lives in Today or behind ⓘ.
 One card. Live values, not a paragraph.
 
 - Last finished session date (local, America/Chicago like monthly).
-- Session-best stored e1RM, rounded the way the current history header rounds
-  (`Math.round`).
+- Session-best stored e1RM, shown at **0.1 lb** (Decision 11). Do not mix integer
+  history rounding with monthly tenths on one screen.
 - Signed delta versus the previous finished exposure of the **same** identity, or omit
   the delta when there is no previous exposure. Do not print "No prior comparison".
 - The working sets from that last session (weight × reps @ RIR), same line format as
@@ -301,9 +333,9 @@ Under the active chart window and under the month-to-month card, one muted capti
 ### 4.7 Session list
 
 After the widgets, the finished sessions for this identity, newest first, same set lines
-as today. This is the expand-the-workouts path. Do not paginate in v1 (single-user scans
-are the existing monthly/history pattern). If the list is long, the chart default of 8
-already did the glanceable job.
+as today. Each date links to `/session/{id}` (the workout, matching monthly supporting
+workouts). Do not paginate in v1. If the list is long, the chart default of 8 already
+did the glanceable job.
 
 ---
 
@@ -319,7 +351,7 @@ rebuildable.
 | Program names | `program.name` via `program_id` (Track already selects `program_id`; history does not yet) |
 | Exact identity | `exercise_id` + `equipment_instance_id`, same key as `MonthlyLift.key` and `ExerciseRecords.key` |
 | Session-best e1RM | stored `set_log.e1rm` max per session. Do not recompute with current bodyweight. Same rule as monthly trends (`docs/MONTHLY-PROGRESS.md`) |
-| Canonical PRs | `workoutRecords` / monthly `achievements` |
+| Canonical PRs | `workoutRecords` and monthly `achievements` |
 | Month windows and lift stats | `monthlyWindows`, `buildMonthlyReport`, `loadMonthlyReport` |
 | Track list and tiles | `exerciseSummaries` + `buildBoardLifts` for **entry**. Exercise review itself must not use the blended-by-exerciseId summary as the source of truth |
 | Volume | `effectiveLoad` from `src/lib/strength/recompute.ts`, same exclusions as `sessionTonnage` (bodyweight sets without a stored bodyweight count as excluded, not zero) |
@@ -327,10 +359,27 @@ rebuildable.
 | Period overlay | existing monthly overlay helpers, only on All history |
 | Catalog names | `getCatalogMap` |
 
+Do not read `user_exercise_stat` for review numbers. That table is a derived cache.
+Pins "trained" already uses it. Records and monthly strength must not.
+
 **Align filters with monthly and records, not with today's history page.** Exercise
 review includes only finished sessions (`finished_at` set, not in the future). It never
-blends equipment instances. The current unfiltered `HistoryPage` violates both. That is
-a bug to close in the unify slice, not a behavior to preserve.
+blends equipment instances. Dates use Chicago `dateKey`, same as monthly. The current
+unfiltered `HistoryPage` violates those rules. That is a bug to close in the unify slice,
+not a behavior to preserve. Check the `set_log` error instead of treating failure as empty.
+
+**Do not reuse `weeklyVolume` buckets for the month widget.** Those weeks are Monday to
+Sunday UTC. Month-to-month volume uses Chicago `monthlyWindows` dates, then the
+identity-filtered `effectiveLoad` sum. `SessionTonnagePoint.programId` is already on
+Track volume points and is unused by `weeklyVolume`. Exercise review reads `program_id`
+from the sessions in the slice.
+
+**Program-in-window is stamped sessions, not `program.is_active`.** There is no
+activation-history table. Distinct `workout_session.program_id` values in the slice,
+joined to `program.name`. Switching programs on a day with no session cannot be shown.
+Builder prescription as it existed at training time cannot be reconstructed
+(`docs/MONTHLY-PROGRESS.md`). Phase for a session can use `week_index` plus
+`program_phase` the way stalls already do. v1 shows names only.
 
 **Arbitrary two months.** `buildMonthlyReport` always compares a month to the previous
 calendar month. For a picker of any two months, call the pure helper twice (or slice one
@@ -427,7 +476,11 @@ rich.
 **Slice B. One destination.**
 Stop branching `HistoryPage` on `month`. `month` becomes a default for the month widget
 and a back link. Delete `monthly-history.tsx` once its bits live on the unified page.
-Require `finished_at` and exact equipment identity. Update monthly-history assertions.
+Require `finished_at` and exact equipment identity. Chicago dates. Check read errors.
+Give this route its own error copy (not "Month review could not load"). Revalidate on
+`logSet` as well as edit, delete, and finish. Mark the Track tab `aria-current` on
+`/history/...` (Decision 10). Update monthly-history assertions. Add a
+`renderToStaticMarkup` test for the unfiltered empty and Today states.
 
 **Slice C. Today and past three weeks.**
 Header, Today card, 21-day block. Extract a pure session-grouping helper the route and
@@ -439,7 +492,8 @@ on All history when tracking is enabled.
 
 **Slice E. Month to month plus program caption.**
 Two-month picker. PR, e1RM, volume, exposures. Program names from `program_id`. Pure
-volume-by-identity helper beside `sessionTonnage`.
+volume-by-identity helper beside `sessionTonnage`. Bucket by Chicago month windows, not
+`weeklyVolume` UTC weeks.
 
 **Slice F. Entry equipment query params.**
 Board, Explore All lifts, week PRs, recap, in-session history. Pass `equipment` when
@@ -447,8 +501,8 @@ known. Tiles that today blend instances must pick one identity (latest finished)
 than a blended series. If that changes tile numbers, say so in that PR. Do not silently
 keep blended tile e1RM while the review screen splits instances.
 
-**Docs in each slice.** `docs/FEATURES.md` §7, `docs/MONTHLY-PROGRESS.md` (dashboard
-paragraph that says every lift links into monthly history mode),
+**Docs in each slice.** `docs/FEATURES.md` section 7, `docs/MONTHLY-PROGRESS.md` (dashboard
+paragraph that still specifies SVG trends and all-lifts comparison),
 `docs/ARCHITECTURE.md` History, `docs/DECISIONS.md` Track-tiles funnel,
 `docs/README.md` index. `docs/UI.md` only if a new control appears (month pair, 8-versus-all
 toggle). Keep `CLAUDE.md` as `@AGENTS.md`.
@@ -473,7 +527,9 @@ recommendation.
 | 6 | Stalls on Month review | Keep the card. Add Exercise review link. Keep in-progress Coach link. |
 | 7 | Period bands | All history only, when tracking is on. Not on the 8-workout default. |
 | 8 | Track tiles and blended equipment | Slice F. Tile shows latest instance, not a blend. Call out number changes. |
-| 9 | Invalid `month` query | Ignore and show Exercise review. Do not bounce to Month review. |
+| 9 | Invalid `month` query | Ignore and show Exercise review. Do not bounce to Month review (today that redirect drops the exercise id). |
+| 10 | Which tab is current on Exercise review? | Track. The tab bar already shows. Mark `/history/...` as a Track match. |
+| 11 | e1RM display precision on this screen | 0.1 lb everywhere (monthly stored estimates). Do not mix integer Track rounding with tenths. Tiles may stay integer until Slice F. |
 
 ---
 

@@ -12,6 +12,7 @@ import {
 export type ReviewMonthSource = {
   userId: string;
   exerciseId: string;
+  equipmentInstanceId: string | null;
   catalog: Record<string, ExerciseDef>;
   sessions: MonthlySession[];
   sets: RecordSet[];
@@ -25,27 +26,37 @@ export function reviewMonthSide(
   timeZone = "America/Chicago",
 ): ReviewMonthSide {
   const { current } = monthlyWindows(month, now, timeZone);
+  const identitySets = source.sets.filter(
+    (set) => set.exercise_id === source.exerciseId
+      && set.equipment_instance_id === source.equipmentInstanceId,
+  );
   const report = buildMonthlyReport({
     userId: source.userId,
     month,
     sessions: source.sessions,
-    sets: source.sets,
+    sets: identitySets,
     catalog: source.catalog,
     now,
     timeZone,
   });
-  const lifts = report.lifts.filter((lift) => lift.exerciseId === source.exerciseId);
+  const lifts = report.lifts.filter((lift) =>
+    lift.exerciseId === source.exerciseId
+    && lift.equipmentInstanceId === source.equipmentInstanceId,
+  );
   const groups = report.achievements.flatMap((achievement) =>
-    achievement.records.filter((record) => record.exerciseId === source.exerciseId),
+    achievement.records.filter((record) =>
+      record.exerciseId === source.exerciseId
+      && record.equipmentInstanceId === source.equipmentInstanceId,
+    ),
   );
   const counts = recordCounts(groups);
   const sessionIds = new Set(
-    source.sessions
-      .filter((session) => {
-        const day = dateKey(new Date(session.performed_at), timeZone);
+    identitySets
+      .filter((set) => {
+        const day = dateKey(new Date(set.workout_session.performed_at), timeZone);
         return day >= current.start && day <= current.end;
       })
-      .map((session) => session.id),
+      .map((set) => set.session_id),
   );
   if (sessionIds.size === 0) return reviewEmptyMonthSide(month);
 
@@ -57,7 +68,7 @@ export function reviewMonthSide(
     repPrs: counts.reps,
     e1rmPrs: counts.e1rm,
     bestE1rm: bests.length === 0 ? null : Math.max(...bests),
-    volume: identityVolume(volumeRows(source.sets), current, source.catalog, source.bodyweight, timeZone),
+    volume: identityVolume(volumeRows(identitySets), current, source.catalog, source.bodyweight, timeZone),
     exposures: sessionIds.size,
   };
 }

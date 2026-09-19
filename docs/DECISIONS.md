@@ -261,10 +261,12 @@ excluded, not coerced to zero, and the UI names that exclusion beside the volume
 
 **Track tiles funnel into the existing per-exercise history route.** Track
 surfaces total volume, recent e1RM gainers, record events, and a searchable all-exercise
-list, but every lift row links to `history/[exerciseId]` rather than introducing another
-exercise chart surface. Month review uses the same route with `month` and `equipment`
-query params; those params do not swap the template. `month` also defaults the
-month-to-month compare on Exercise review. The Track tab is current on
+list, but every lift row links to `history/[exerciseId]` with an `equipment` query
+(`none` or the instance id) rather than introducing another exercise chart surface.
+Tile and All-lifts numbers use the latest finished equipment instance for that
+exercise, not a blended series. Month review uses the same route with `month` and
+`equipment` query params; those params do not swap the template. `month` also defaults
+the month-to-month compare on Exercise review. The Track tab is current on
 `/history/...`. The only new client code is the Recharts volume chart and the
 small searchable list component; data fetching and aggregation stay server-side.
 

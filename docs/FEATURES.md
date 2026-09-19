@@ -126,8 +126,8 @@ Adaptive plateau engine under §5.
   applies the change for this and future sessions; the card self-clears once accepted.
 - **Workout records** — saved sets show exact-exercise rep/e1RM PRs; the finish recap
   replays the same records as a cinematic hero (`N PRs`, or the two-part count when mixing
-  kinds) plus compact per-exercise lines and a 44px history `IconButton`, and updates after
-  edits/deletions. [Eligibility](DECISIONS.md#workout-records).
+  kinds) plus compact per-exercise lines and a 44px history `IconButton` to Exercise review
+  with that group's equipment, and updates after set edits/deletions. [Eligibility](DECISIONS.md#workout-records).
 - **Quick history** — a Sheet loads ten latest sets from previous workouts across explicitly
   linked exercise variants without resetting set entry or the rest timer.
 - **Finish session** — `finishSession` stamps `finished_at` and navigates to
@@ -249,12 +249,18 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 
 ## 7. Exercise review (`/history/[exerciseId]`)
 
-One screen for Track tiles, Explore All lifts, recap, in-session title links, and
-Month review lift names. Optional `equipment` and `month` query params stay on the URL.
+One screen for Track tiles, Explore All lifts, recap, in-session title links, week
+PRs, Month review lift names, and Month review stalls. Optional `equipment` and
+`month` query params stay on the URL. `equipment=<uuid>` is an exact instance;
+`equipment=none` is explicitly no instance. When the param is omitted, the page
+defaults to the latest finished identity and offers a switcher if several exist.
 `month=YYYY-MM` seeds a **Back to {month} month review** link and the default
 "this month" side of the month-to-month compare when the month is
 valid. It does not swap in a monthly-history page. Invalid months are ignored.
 
+- **Exact identity** — finished working sets for this exercise plus equipment
+  instance. Header shows a human instance label (or gym) when one exists. Multiple
+  instances get a text-link switcher; series never blend.
 - **Finished sessions** — working sets from sessions with `finished_at` (not in the
   future), grouped by `groupReviewSessions`. Dates use Chicago `dateKey`. Stored e1RM
   displays at 0.1 lb on this screen.
@@ -274,7 +280,7 @@ valid. It does not swap in a monthly-history page. Invalid months are ignored.
   (PRs, best stored e1RM at 0.1 lb, volume, exposures), not an empty-to-value arrow.
   An untrained month reads as `none`. Volume uses Chicago `monthlyWindows` dates and
   `identityVolume` (not UTC `weeklyVolume`). Canonical PRs reuse `workoutRecords` /
-  monthly achievements for this exercise.
+  monthly achievements for this exact exercise and equipment.
 - **Session list** — newest first; each date links to `/session/{id}`.
 - **Pin** — header `IconButton` writes `user_exercise_pin` (display preference only).
 - **Empty states** — missing catalog exercise vs no working sets. Load failures use
@@ -287,17 +293,22 @@ valid. It does not swap in a monthly-history page. Invalid months are ignored.
 press, vertical press, horizontal pull, vertical pull). Each tile shows the catalog reference
 lift when it has history (otherwise it stays hidden), current e1RM, signed delta or "held",
 a sparkline, and a `--record` flash when that lift earned a canonical record this week.
-Tap opens `/history/{id}`. Pins are owner-scoped display preferences (`user_exercise_pin`,
+Numbers and the tap target use the **latest finished equipment instance** for that
+exercise, not a blend of machines. Tap opens `/history/{id}?equipment=...`
+(`none` when there is no instance). Pins are owner-scoped display preferences (`user_exercise_pin`,
 cap 8 in the server action): unpinning a default hides it; pinning an extra adds a tile.
 
 Secondary, not equal cards, behind Explore:
 - This week's PRs — full canonical `workoutRecords` list over the last seven local days
   (every recap line, grouped by session); tap a date for recap or an exercise for history
-- All-lifts search (`ExerciseList`)
+  with that group's equipment
+- All-lifts search (`ExerciseList`) — one row per exercise, latest-instance numbers and
+  the same `equipment` query as tiles
 - Month review: summary cards, period × performance week overlay when tracking is enabled
   (observed period days, weekly weight change, and PR counts on one card), compact
   name-plus-percent improvements and rep-gain sentences (no all-lifts dump or SVG trends),
-  stalls, achievements, and the shared weight card
+  stalls (name links to Exercise review with `month` and `equipment`; session evidence and
+  in-progress Coach stay), achievements, and the shared weight card
 - Volume chart and weight trends
 
 Coach check-in and proposals live on You (`/settings`). The weekly API

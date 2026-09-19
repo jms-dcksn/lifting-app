@@ -21,6 +21,7 @@ export interface PinRow {
 
 export interface BoardLift {
   exerciseId: string;
+  equipmentInstanceId: string | null;
   name: string;
   shortName: string;
   isCompound: boolean;
@@ -169,6 +170,7 @@ export function buildBoardLifts({
   pins: PinRow[];
   summaries: Array<{
     exerciseId: string;
+    equipmentInstanceId?: string | null;
     currentE1rm: number | null;
     delta: number | null;
     e1rmSeries: number[];
@@ -188,6 +190,7 @@ export function buildBoardLifts({
     const summary = byId.get(exerciseId);
     return {
       exerciseId,
+      equipmentInstanceId: summary?.equipmentInstanceId ?? null,
       name: def?.name ?? exerciseId,
       shortName: boardShortName(def ?? { id: exerciseId, name: exerciseId }),
       isCompound: defaults.includes(exerciseId),

@@ -39,6 +39,7 @@ import {
 } from "../actions";
 import { AchievementPills } from "./achievements";
 import { recordsForSlot, type ExerciseRecords } from "@/lib/strength/records";
+import { exerciseReviewHref } from "@/lib/exercise-review-href";
 import { variantShortLabel } from "@/lib/exercise-id";
 import { ReadinessPrompt, SessionFeedbackDetails, SessionFeedbackSheet } from "./session-feedback";
 import { retryServerAction } from "@/lib/retry";
@@ -52,6 +53,7 @@ function generateIdempotencyKey(): string {
 export interface LoggedSet {
   id: string;
   exerciseId: string;
+  equipmentInstanceId: string | null;
   weight: number;
   reps: number;
   rir: number | null;
@@ -388,7 +390,7 @@ function SlotCard({
     startTransition(async () => {
       applyOptimistic({
         type: "add",
-        set: { id: `temp-${Date.now()}`, exerciseId, weight, reps, rir, setIndex: optimisticSets.length },
+        set: { id: `temp-${Date.now()}`, exerciseId, equipmentInstanceId: slot.sets.at(-1)?.equipmentInstanceId ?? null, weight, reps, rir, setIndex: optimisticSets.length },
       });
       try {
         const result = await retryServerAction(
@@ -478,7 +480,13 @@ function SlotCard({
     <Card tone={tone}>
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-heading">
-          <Link href={`/history/${exerciseId}`} className="underline-offset-2 hover:underline">
+          <Link
+            href={exerciseReviewHref({
+              exerciseId,
+              equipmentInstanceId: slot.sets.at(-1)?.equipmentInstanceId ?? null,
+            })}
+            className="underline-offset-2 hover:underline"
+          >
             {name}
           </Link>
         </h2>

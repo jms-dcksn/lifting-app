@@ -2,6 +2,7 @@ import Link from "next/link";
 import { recapLines } from "@/lib/strength/records";
 import { sessionRecordSummary } from "@/lib/board";
 import { sessionRecapPath } from "@/lib/session-paths";
+import { exerciseReviewHref } from "@/lib/exercise-review-href";
 import type { WeekRecordSession } from "@/lib/week-records-data";
 
 export function WeekPrList({ sessions }: { sessions: WeekRecordSession[] }) {
@@ -26,7 +27,10 @@ export function WeekPrList({ sessions }: { sessions: WeekRecordSession[] }) {
               {session.groups.map((group) => (
                 <li key={group.key} className="flex items-start justify-between gap-3 py-2">
                   <Link
-                    href={`/history/${group.exerciseId}`}
+                    href={exerciseReviewHref({
+                      exerciseId: group.exerciseId,
+                      equipmentInstanceId: group.equipmentInstanceId,
+                    })}
                     className="min-w-0 text-body font-medium underline-offset-2 hover:underline"
                   >
                     {group.name}

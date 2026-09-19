@@ -50,7 +50,7 @@ describe("AchievementRecap", () => {
     expect(host.querySelector("h1")?.textContent).toBe("1 rep PR · 1 e1RM record");
     expect(host.textContent).toContain("225 × 8 +1");
     expect(host.textContent).toContain("275 e1RM +5");
-    expect(host.querySelector("a")?.getAttribute("href")).toBe("/history/bb-bench");
+    expect(host.querySelector("a")?.getAttribute("href")).toBe("/history/bb-bench?equipment=none");
     expect(host.querySelector(".text-record")).toBeTruthy();
     expect(host.textContent).not.toContain("Push done");
   });
@@ -63,5 +63,18 @@ describe("AchievementRecap", () => {
     expect(host.querySelector("h1")?.textContent).toBe("Push done");
     expect(host.textContent).toContain("12 working sets");
     expect(host.querySelector(".text-record")).toBeNull();
+  });
+
+  it("passes equipment from the record group into Exercise review", () => {
+    render(
+      <AchievementRecap
+        groups={[{ ...group, exerciseId: "leg-press", equipmentInstanceId: "cybex", name: "Leg Press", key: '["leg-press","cybex"]' }]}
+        dayName="Push"
+        totalSets={12}
+        titleAs="h1"
+        empty="hero"
+      />,
+    );
+    expect(host.querySelector('a[href="/history/leg-press?equipment=cybex"]')?.textContent).toContain("Leg Press");
   });
 });

@@ -32,6 +32,7 @@ type AnalyticsQueryRow = {
   id: string;
   session_id: string;
   exercise_id: string;
+  equipment_instance_id: string | null;
   weight: number;
   reps: number;
   rir: number | null;
@@ -69,7 +70,7 @@ export default async function AnalyticsPage() {
     supabase
       .from("set_log")
       .select(
-        "id, session_id, program_slot_id, exercise_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at, finished_at, program_id)",
+        "id, session_id, program_slot_id, exercise_id, equipment_instance_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at, finished_at, program_id)",
       )
       .eq("user_id", userId)
       .eq("is_warmup", false)
@@ -103,6 +104,7 @@ export default async function AnalyticsPage() {
   }));
   const listItems: ExerciseListItem[] = summaries.map((summary) => ({
     exerciseId: summary.exerciseId,
+    equipmentInstanceId: summary.equipmentInstanceId,
     name: catalog[summary.exerciseId]?.name ?? summary.exerciseId,
     pattern: catalog[summary.exerciseId]?.pattern ?? "unknown",
     currentE1rm: summary.currentE1rm,
@@ -202,6 +204,7 @@ function normalizeRows(rows: AnalyticsQueryRow[]): AnalyticsSetRow[] {
         id: row.id,
         sessionId: row.session_id,
         exerciseId: row.exercise_id,
+        equipmentInstanceId: row.equipment_instance_id,
         weight: row.weight,
         reps: row.reps,
         rir: row.rir,

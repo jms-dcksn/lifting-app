@@ -84,7 +84,7 @@ export default async function SessionPage({
         .eq("user_id", userId),
       supabase
         .from("set_log")
-        .select("id, program_slot_id, exercise_id, weight, reps, rir, set_index, e1rm")
+        .select("id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, set_index, e1rm")
         .eq("session_id", id)
         .order("set_index", { ascending: true }),
       recentExerciseIds(supabase, userId),
@@ -174,7 +174,15 @@ export default async function SessionPage({
   for (const s of thisSessionSets ?? []) {
     if (!s.program_slot_id) continue;
     const list = setsBySlot.get(s.program_slot_id) ?? [];
-    list.push({ id: s.id, exerciseId: s.exercise_id, weight: s.weight, reps: s.reps, rir: s.rir, setIndex: s.set_index });
+    list.push({
+      id: s.id,
+      exerciseId: s.exercise_id,
+      equipmentInstanceId: s.equipment_instance_id,
+      weight: s.weight,
+      reps: s.reps,
+      rir: s.rir,
+      setIndex: s.set_index,
+    });
     setsBySlot.set(s.program_slot_id, list);
     sessionExercise.set(s.program_slot_id, s.exercise_id);
   }

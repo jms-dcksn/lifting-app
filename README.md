@@ -87,7 +87,8 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `docs/COACH-REPORT.md` — exact v1 windows, metrics, trend rules, privacy contract, and limitations
 - `src/lib/exercise-review-sessions.ts` — pure helper: groups finished sets by session, computes session-best e1RM, 21-day recent window, and chart point series
 - `src/lib/exercise-review-months.ts` / `exercise-review-month-stats.ts` — month-compare defaults, program captions, Chicago-window PRs/e1RM/volume/exposures
-- `src/app/(app)/history/[exerciseId]/` — Exercise review: Today card (last finished session + delta), past-21-day window, e1RM chart (last 8 / All history toggle, period overlay on All history only), month-to-month compare, and session list
+- `src/lib/exercise-review-href.ts` / `review-equipment.ts` — Exercise review URL (`equipment` / `month`) and latest-instance identity helpers
+- `src/app/(app)/history/[exerciseId]/` — Exercise review: Today card (last finished session + delta), past-21-day window, e1RM chart (last 8 / All history toggle, period overlay on All history only), month-to-month compare, equipment switcher, and session list
 - `supabase/migrations/` — database schema with row-level security; `supabase/tests/` holds ownership and atomic-write regression checks
 
 ### Quick lift history

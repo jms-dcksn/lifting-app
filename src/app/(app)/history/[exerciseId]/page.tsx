@@ -8,10 +8,19 @@ import { loadUserPinRows } from "@/lib/pins-data";
 import { isEligibleForPeriodTracking, loadPeriodObservationsInRange } from "@/lib/period-calendar";
 import { groupReviewSessions, withProgramNames } from "@/lib/exercise-review-sessions";
 import { reviewMonthParam } from "@/lib/review-month";
+import { exerciseReviewHref } from "@/lib/exercise-review-href";
+import {
+  resolveReviewEquipment,
+  reviewEquipmentChoiceLabel,
+  reviewEquipmentChoices,
+  reviewEquipmentLabel,
+  reviewEquipmentParam,
+  rowsForReviewEquipment,
+} from "@/lib/review-equipment";
 import type { ReviewMonthSource } from "@/lib/exercise-review-month-stats";
 import type { MonthlySession } from "@/lib/monthly-progress";
 import type { RecordSet } from "@/lib/strength/records";
-import { ExerciseReview } from "./exercise-review";
+import { ExerciseReview, type EquipmentChoice } from "./exercise-review";
 
 type SessionJoin = {
   performed_at: string;
@@ -35,6 +44,7 @@ export default async function HistoryPage({
   const catalog = await getCatalogMap(supabase, userId);
   const query = await searchParams;
   const reviewMonth = reviewMonthParam(query.month, now);
+  const requestedEquipment = reviewEquipmentParam(query.equipment);
   const pinRows = await loadUserPinRows(supabase, userId);
   const def = catalog[exerciseId];
   const name = def?.name ?? exerciseId;
@@ -74,7 +84,37 @@ export default async function HistoryPage({
     };
   });
 
-  const grouped = groupReviewSessions(history, now);
+  const identities = reviewEquipmentChoices(history, now);
+  const selectedEquipment = resolveReviewEquipment(requestedEquipment, history, now);
+  const selectedHistory = rowsForReviewEquipment(history, selectedEquipment);
+  const instanceIds = identities.filter((id): id is string => id != null);
+  const instanceLabels = new Map<string, { label: string | null; gym: string | null }>();
+  if (instanceIds.length > 0) {
+    const { data: instances, error: instanceError } = await supabase
+      .from("equipment_instance")
+      .select("id, label, gym")
+      .eq("user_id", userId)
+      .in("id", instanceIds);
+    if (instanceError) throw new Error(instanceError.message);
+    for (const instance of instances ?? []) {
+      instanceLabels.set(instance.id, { label: instance.label, gym: instance.gym });
+    }
+  }
+  const equipmentLabel = reviewEquipmentLabel(instanceLabels.get(selectedEquipment ?? ""), selectedEquipment);
+  const equipmentChoices: EquipmentChoice[] | undefined = identities.length > 1
+    ? identities.map((id) => ({
+        id,
+        label: reviewEquipmentChoiceLabel(instanceLabels.get(id ?? ""), id),
+        href: exerciseReviewHref({
+          exerciseId,
+          equipmentInstanceId: id,
+          month: reviewMonth,
+        }),
+        selected: id === selectedEquipment,
+      }))
+    : undefined;
+
+  const grouped = groupReviewSessions(selectedHistory, now);
   const programIds = [...new Set(grouped.map((session) => session.programId).filter((id): id is string => id != null))];
   const programNames = new Map<string, string>();
   if (programIds.length > 0) {
@@ -90,21 +130,31 @@ export default async function HistoryPage({
   }
   const sessions = withProgramNames(grouped, programNames);
 
-  if (!def && sessions.length === 0) {
+  if (!def && sessions.length === 0 && identities.length === 0) {
     return <ExerciseReview status="missing" reviewMonth={reviewMonth} />;
   }
   if (sessions.length === 0) {
-    return <ExerciseReview status="empty" name={name} reviewMonth={reviewMonth} pin={pin} />;
+    return (
+      <ExerciseReview
+        status="empty"
+        name={name}
+        reviewMonth={reviewMonth}
+        pin={pin}
+        equipmentLabel={equipmentLabel}
+        equipmentChoices={equipmentChoices}
+      />
+    );
   }
 
   const bodyweight = isBodyweight ? await getCurrentBodyweight(supabase, userId) : null;
-  const monthlySessions = monthlySessionsFrom(history, userId);
+  const monthlySessions = monthlySessionsFrom(selectedHistory, userId);
   const monthSource: ReviewMonthSource = {
     userId,
     exerciseId,
+    equipmentInstanceId: selectedEquipment,
     catalog: def ? { [exerciseId]: def } : {},
     sessions: monthlySessions,
-    sets: recordSetsFrom(history, userId),
+    sets: recordSetsFrom(selectedHistory, userId),
     bodyweight,
   };
 
@@ -130,6 +180,8 @@ export default async function HistoryPage({
       periodEligible={periodEligible}
       periodDates={periodDates}
       monthSource={monthSource}
+      equipmentLabel={equipmentLabel}
+      equipmentChoices={equipmentChoices}
     />
   );
 }

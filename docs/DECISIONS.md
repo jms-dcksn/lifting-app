@@ -406,10 +406,20 @@ A failed write surfaces its own error (existing per-card `error` state) but does
 roll back the clock — the rest period is real regardless of whether the log persisted, and
 gating the timer on a round-trip would make it feel laggy for no benefit.
 
-**One timer for the whole session, not one per slot.** `useRestTimer()` is instantiated once
-in `active-session.tsx` and shared; starting a new rest replaces whatever was running. A
-lifter only rests for one slot at a time in practice, so per-slot timers would just add state
-without adding capability.
+**One timer for the whole session, not one per slot.** `useRestTimer()` lives in
+`session/[id]/layout.tsx` (`RestTimerProvider`) and is shared by the page, the route
+loading fallback, and the session error view. Starting a new rest replaces whatever was
+running. A lifter only rests for one slot at a time in practice, so per-slot timers would
+just add state without adding capability.
+
+**Live-card refresh must not unmount rest.** Logging a set revalidates the workout so
+record pills can appear from persisted sets. That refetch can suspend
+`session/[id]/loading.tsx` — especially the first saved set of an exercise, which is when
+`loadWorkoutRecords` starts paging prior history. The timer therefore lives in the session
+layout (layouts are not replaced by `loading.tsx`), and the absolute end timestamp is also
+written to `sessionStorage` so a full remount can resume. Gold PR / e1RM chips still come
+from the canonical `workoutRecords` replay streamed into the live cards; optimistic rows
+still never earn records.
 
 **Absolute end-timestamp, not a decrementing counter.** The hook stores `Date.now() + seconds
 * 1000` and recomputes `remaining` from `endsAt - Date.now()` on each 250ms tick, so drift

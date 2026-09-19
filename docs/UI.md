@@ -67,7 +67,10 @@ chart control.
 
 The active workout owns one rest timer. It uses an absolute end timestamp to tolerate tab
 throttling, starts optimistically when logging, and uses per-slot rest or the profile default.
-Vibration, optional in-app Web Audio, a system notification when permitted, and wake lock
-are best-effort. Background and lock-screen delivery depend on the browser; iPhone needs
-the Home Screen app. See [rest timer rationale](DECISIONS.md#phase-b-decisions-rest-timer)
+Timer state lives in the `session/[id]` layout so a logged-set refresh (PR / e1RM chips)
+cannot clear it; the end timestamp is also stored in `sessionStorage` for a remount. The
+session `loading.tsx` and `error.tsx` render the same rest bar. Vibration, optional in-app
+Web Audio, a system notification when permitted, and wake lock are best-effort. Background
+and lock-screen delivery depend on the browser; iPhone needs the Home Screen app. See
+[rest timer rationale](DECISIONS.md#phase-b-decisions-rest-timer)
 and [rest completion notifications](DECISIONS.md#rest-completion-notifications-104).

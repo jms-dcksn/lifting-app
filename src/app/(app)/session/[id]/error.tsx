@@ -1,10 +1,11 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { SessionRestBar } from "./rest-timer";
 
 export default function SessionError({ reset }: { reset: () => void }) {
   return (
-    <div className="mx-auto w-full max-w-page px-4 py-6" role="alert">
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col px-4 py-6" role="alert">
       <h2 className="text-heading">Session error</h2>
       <p className="my-3 text-body text-muted">
         Check your connection. Logged sets may not be saved.
@@ -18,6 +19,7 @@ export default function SessionError({ reset }: { reset: () => void }) {
           Home
         </Link>
       </div>
+      <SessionRestBar />
     </div>
   );
 }

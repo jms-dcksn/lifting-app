@@ -268,8 +268,10 @@ Secondary, not equal cards, behind Explore:
 - This week's PRs — full canonical `workoutRecords` list over the last seven local days
   (every recap line, grouped by session); tap a date for recap or an exercise for history
 - All-lifts search (`ExerciseList`)
-- Month review, including a period × performance week overlay when tracking is enabled
-  (observed period days, weekly weight change, and PR counts on one card)
+- Month review: summary cards, period × performance week overlay when tracking is enabled
+  (observed period days, weekly weight change, and PR counts on one card), compact
+  name-plus-percent improvements and rep-gain sentences (no all-lifts dump or SVG trends),
+  stalls, achievements, and the shared weight card
 - Volume chart and weight trends
 
 Coach check-in and proposals live on You (`/settings`). The weekly API

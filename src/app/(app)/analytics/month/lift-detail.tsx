@@ -119,35 +119,3 @@ export function LiftTrend({
     </>
   );
 }
-
-export function LiftRow({
-  lift,
-  report,
-  eligible,
-  periodObservations,
-}: {
-  lift: MonthlyLift;
-  report: MonthlyReport;
-  eligible?: boolean;
-  periodObservations?: PeriodObservation[];
-}) {
-  return (
-    <li className="py-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <Link href={liftHref(lift, report.month)} className="min-h-11 py-2 font-medium underline">
-          {lift.name}
-        </Link>
-        <span
-          className={`text-caption ${lift.state === "improving" ? "text-overload-up" : "text-muted"}`}
-        >
-          {liftStates[lift.state]}
-          {lift.percent != null ? ` · ${lift.percent > 0 ? "+" : ""}${lift.percent}%` : ""}
-        </span>
-      </div>
-      {lift.equipmentInstanceId && (
-        <p className="break-all text-caption text-muted">Equipment {lift.equipmentInstanceId}</p>
-      )}
-      <LiftTrend lift={lift} report={report} periodObservations={eligible ? periodObservations : undefined} />
-    </li>
-  );
-}

@@ -1,4 +1,4 @@
-import { LiftRow } from "./lift-detail";
+import { liftHref } from "./lift-detail";
 import { PeriodPerformanceCard } from "./period-performance";
 import Link from "next/link";
 import { Card, CardLabel } from "@/components/ui/card";
@@ -99,12 +99,18 @@ export function MonthlyReview({
     {(improving.length > 0 || repOnly.length > 0) && <Card>
       <div className="flex items-center gap-1">
         <CardLabel>Where you improved</CardLabel>
-        <InfoButton title="Where you improved" label="Chart legend for improvements">
-          Ranked by monthly best e1RM change. Dashed trends: prior window; solid: selected month. Each machine is compared separately.
+        <InfoButton title="Where you improved" label="How improvements are ranked">
+          Ranked by monthly best e1RM change. Each machine is compared separately.
         </InfoButton>
       </div>
-      <ul className="divide-y divide-border">{improving.slice(0, 5).map(lift => <LiftRow key={lift.key} lift={lift} report={report} eligible={eligible} periodObservations={periodObservations} />)}</ul>
-      {repOnly.length > 0 && <details><summary className="min-h-11 cursor-pointer py-2 text-body">Rep gains without a higher monthly best ({repOnly.length})</summary><ul className="divide-y divide-border">{repOnly.map(lift => <LiftRow key={lift.key} lift={lift} report={report} eligible={eligible} periodObservations={periodObservations} />)}</ul></details>}
+      {improving.length > 0 && <ul className="divide-y divide-border">{improving.slice(0, 5).map(lift => <li key={lift.key} className="flex min-h-11 flex-wrap items-baseline justify-between gap-2 py-3">
+        <Link href={liftHref(lift, report.month)} className="min-h-11 py-2 font-medium underline">{lift.name}</Link>
+        {lift.percent != null && <span className="text-caption text-overload-up">{lift.percent > 0 ? "+" : ""}{lift.percent}%</span>}
+      </li>)}</ul>}
+      {repOnly.length > 0 && <details><summary className="min-h-11 cursor-pointer py-2 text-body">Rep gains without a higher monthly best ({repOnly.length})</summary><ul className="divide-y divide-border">{repOnly.map(lift => <li key={lift.key} className="py-3">
+        <Link href={liftHref(lift, report.month)} className="min-h-11 py-2 font-medium underline">{lift.name}</Link>
+        {lift.repGains.map(gain => <p key={gain.load} className="mt-1 text-caption text-overload-up">{gain.priorReps} → {gain.currentReps} reps at {gain.load} lb effective load</p>)}
+      </li>)}</ul></details>}
     </Card>}
     {stalls.length > 0 && <Card>
       <div className="flex items-center gap-1">
@@ -140,17 +146,6 @@ export function MonthlyReview({
         </li>)}</ul>
       </details>)}</div>}
     </Card>
-    {report.lifts.length > 0 && <Card>
-      <details>
-        <summary className="min-h-11 cursor-pointer py-2 text-body font-medium">All lifts ({report.lifts.length})</summary>
-        <div className="mt-2 flex items-center gap-1">
-          <InfoButton title="All lifts" label="How all lifts are classified">
-            Flat or lower monthly bests alone do not establish a stall. New and untrained lifts are kept separate from gains and declines. Trends: prior dashed, current solid.
-          </InfoButton>
-        </div>
-        <ul className="mt-2 divide-y divide-border">{report.lifts.map(lift => <LiftRow key={lift.key} lift={lift} report={report} />)}</ul>
-      </details>
-    </Card>}
     {(report.quality.excludedWorkingSets > 0 || report.quality.missingStoredEstimates > 0) && (
       <div className="flex items-center gap-1">
         <InfoButton title="Data coverage" label="About data coverage">

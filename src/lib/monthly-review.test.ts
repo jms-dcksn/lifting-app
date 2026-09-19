@@ -20,12 +20,40 @@ describe("monthly review presentation", () => {
     expect(html).toContain("In progress · month to date");
     expect(html).toContain("2026-08-14");
     expect(html).toContain("Where you improved");
-    expect(html).toContain("140.0 lb → 150.0 lb");
+    expect(html).toContain("Barbell Bench Press");
+    expect(html).toContain("+7.1%");
     expect(html).toContain("month=2026-09&amp;equipment=none");
     expect(html).toContain("/session/s1/recap");
-    expect(html).toContain("Prior period dashed");
+    expect(html).not.toContain("140.0 lb → 150.0 lb");
+    expect(html).not.toContain("Prior period dashed");
+    expect(html).not.toContain("All lifts");
+    expect(html).not.toContain("No prior comparison");
+    expect(html).not.toContain("current /");
+    expect(html).not.toContain("Supporting workouts");
     expect(html).not.toContain("Worth reviewing");
     expect(html).not.toContain("Period and performance");
+  });
+  it("does not dump first-month lifts as No prior comparison", () => {
+    const report = makeReport([
+      ...sets,
+      { ...sets[1], id: "curl", exercise_id: "cable-curl", e1rm: 75.3 },
+    ]);
+    const html = renderToStaticMarkup(createElement(MonthlyReview, { report }));
+    expect(html).toContain("Barbell Bench Press");
+    expect(html).not.toContain("Cable Curl");
+    expect(html).not.toContain("All lifts");
+    expect(html).not.toContain("No prior comparison");
+    expect(html).not.toContain("75.3");
+  });
+  it("lists rep-gain names and the gain sentence without a trend block", () => {
+    const report = makeReport(sets.map((row, i) => i === 1 ? { ...row, e1rm: 140 } : row));
+    const html = renderToStaticMarkup(createElement(MonthlyReview, { report }));
+    expect(html).toContain("Rep gains without a higher monthly best");
+    expect(html).toContain("Barbell Bench Press");
+    expect(html).toContain("8 → 10 reps at 100 lb effective load");
+    expect(html).toContain("month=2026-09&amp;equipment=none");
+    expect(html).not.toContain("140.0 lb → 140.0 lb");
+    expect(html).not.toContain("All lifts");
   });
   it("overlays period weeks with weight change and PR counts when tracking is enabled", () => {
     const report = makeReport();

@@ -103,25 +103,25 @@ Weekly response schema/version and record semantics remain unchanged.
 
 ## Monthly dashboard (#31)
 
-Month review shows four compact summary cards, the five largest percentage improvements,
-fixed-effective-load rep gains, supported stall evidence, expandable achievements grouped by
-exact exercise/equipment, and an expandable all-lifts comparison. Stable, lower-best, new,
-not-trained and missing-estimate states stay distinct. Only supported plateaus get a review
-card; current-month signals link to the existing Coach next steps filtered to that exercise.
-Historical monthly signals are not presented as current recommendations.
+Month review shows four compact summary cards, the five largest percentage improvements
+as name-plus-percent links, fixed-effective-load rep gains as name-plus-sentence links,
+supported stall evidence, and expandable achievements grouped by exact
+exercise/equipment. It does not list every lift or render SVG trends on the month page
+(Exercise review Slice A / #115). Report states (`improving`, `new`, `not_trained`,
+`unavailable`, and so on) remain internal classification for ranking and tests, not
+month-row labels. Only supported plateaus get a review card; current-month signals link
+to the existing Coach next steps filtered to that exercise. Historical monthly signals
+are not presented as current recommendations.
 
 Version 1.2 adds `repGains` to the canonical lift report: best eligible reps at the same
 normalized effective load in each comparison window. This reuses record eligibility and
 historical bodyweight rules. These monthly gains need not be all-time PRs and do not change
 record totals or e1RM classification. Editing/removing source sets rebuilds the result.
 
-Small server-rendered SVG trends show dated session points, prior dashed and current solid,
-with separate lines and no interpolated bridge across comparison windows. Exact values,
-period labels and workout recap links are in the keyboard-accessible disclosure. Every
-lift links into `/history/[exerciseId]?month=YYYY-MM&equipment=...`; `none` explicitly means
-no equipment instance. This mode consumes the same report and offers a selected-month return
-link. It never blends instances or borrows the older all-history route's aggregate. The
-unfiltered history route retains its existing behavior.
+Improved and rep-gain names link to `/history/[exerciseId]?month=YYYY-MM&equipment=...`;
+`none` explicitly means no equipment instance. That route still consumes the same report
+and offers a selected-month return link. It never blends instances or borrows the older
+all-history route's aggregate. The unfiltered history route retains its existing behavior.
 
 The shared weight card follows the selected month, including rolling lookback before the
 first day. Its summary is as of the selected end date; the goal is explicitly the current
@@ -164,8 +164,8 @@ part of the Vercel preview review; server-rendered tests do not replace browser 
 
 Preview checklist:
 1. Open Track → Month review; compare current and completed months and their dates.
-2. Open an improved lift, inspect supporting workouts, and return to the selected month.
-3. Expand achievements and All lifts; verify machine names and rep-only improvements.
+2. Open an improved lift from the compact name-plus-percent list and return to the selected month.
+3. Expand achievements; verify machine names and rep-only improvements. Month review has no All lifts dump.
 4. Follow a supported current stall to the filtered Coach next steps, then Show all.
 5. Review weight in the same month; edit a reading and verify its rolling average updates.
 6. Choose an empty month: weight access remains and unsupported insight cards stay absent.

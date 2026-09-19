@@ -58,6 +58,7 @@ put new detail in the relevant reference and add a trigger here only when needed
 | Track Explore destinations (Coach, Body, Volume) | [Track body and volume plan](docs/superpowers/plans/2026-09-19-track-body-volume.md); [Features](docs/FEATURES.md) |
 | Weight writes, date moves, or shared calendar | [Weight calendar](docs/WEIGHT-CALENDAR.md) |
 | Weight charts, history pagination, or goal distance | [Weight trends](docs/WEIGHT-TRENDS.md) |
+| Tape measurements, site chips, or Body inches chart | [Body measurements](docs/BODY-MEASUREMENTS.md) |
 | Monthly comparisons, PR totals, stall classification, or period × performance weeks | [Monthly progress](docs/MONTHLY-PROGRESS.md); Coach/Fluid/monthly share `stall-report.ts`; [period tracking](docs/PERIOD-TRACKING.md) |
 | Setup, environment variables, migrations, or deployment | [Deployment](DEPLOY.md) |
 | Feature scope or selecting planned work | [Features](docs/FEATURES.md) and [build plan](docs/PLAN.md); verify old checklist status against code |

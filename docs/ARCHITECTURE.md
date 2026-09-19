@@ -83,7 +83,8 @@ Program routes: `/program` is the summary gallery, `/program/[id]` the read-only
 ## Data and auth boundaries
 
 Migrations in `supabase/migrations/` and types in `src/lib/supabase/types.ts` describe the
-schema. New user-owned tables follow ownership RLS. The signup trigger creates a profile;
+schema. New user-owned tables follow ownership RLS. `body_measurement_log` is owner-scoped
+like `bodyweight_log`; a missing site is a missing row. The signup trigger creates a profile;
 profile/catalog read errors must surface instead of rendering invented empty state.
 
 `src/lib/supabase/client.ts` and `server.ts` use the public publishable key and cookie-based

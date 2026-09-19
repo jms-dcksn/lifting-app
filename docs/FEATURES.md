@@ -318,7 +318,7 @@ Secondary, not equal cards, behind Explore:
 - Coach (`/analytics/coach`) — check-in snapshot, ranked next-step proposals (Do first / Also),
   collapsed insufficient-data trends, a one-line hard-set shortfall flag, and clipboard export.
   Stall links use `?exercise=`. `/settings?coachExercise=` redirects here.
-- Body (`/analytics/body`) — weight trend chart and (later) tape measurements
+- Body (`/analytics/body`) — weight trend chart and tape measurements (waist, neck, arm, thigh, chest)
 - Volume (`/analytics/volume`) — weekly total tonnage
 
 Coach check-in and proposals live on Track Explore, not You. The weekly API

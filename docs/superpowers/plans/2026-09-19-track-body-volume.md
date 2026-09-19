@@ -139,20 +139,20 @@ Each live lane runs on its own cloud VM at the PR head. Drive through the browse
 
 **Files.**
 
-- [ ] Create `supabase/migrations/*_body_measurement_log.sql`.
-- [ ] Create `supabase/tests/body_measurement_rls.sql`.
-- [ ] Create `src/lib/body-measurements.ts`.
-- [ ] Create `src/lib/body-measurements.test.ts`.
-- [ ] Create `src/app/(app)/measurements/actions.ts`.
-- [ ] Create `src/lib/measurement-actions.test.ts`.
-- [ ] Edit `src/app/(app)/analytics/body/page.tsx`.
-- [ ] Create `src/app/(app)/analytics/body/measurement-trend-card.tsx`.
-- [ ] Edit generated Database types after the migration.
-- [ ] Edit `docs/FEATURES.md`.
-- [ ] Edit `docs/ARCHITECTURE.md`.
-- [ ] Create `docs/BODY-MEASUREMENTS.md`.
-- [ ] Edit `docs/README.md`.
-- [ ] Edit `AGENTS.md` read-before-changing table.
+- [x] Create `supabase/migrations/*_body_measurement_log.sql`.
+- [x] Create `supabase/tests/body_measurement_rls.sql`.
+- [x] Create `src/lib/body-measurements.ts`.
+- [x] Create `src/lib/body-measurements.test.ts`.
+- [x] Create `src/app/(app)/measurements/actions.ts`.
+- [x] Create `src/lib/measurement-actions.test.ts`.
+- [x] Edit `src/app/(app)/analytics/body/page.tsx`.
+- [x] Create `src/app/(app)/analytics/body/measurement-trend-card.tsx`.
+- [x] Edit generated Database types after the migration.
+- [x] Edit `docs/FEATURES.md`.
+- [x] Edit `docs/ARCHITECTURE.md`.
+- [x] Create `docs/BODY-MEASUREMENTS.md`.
+- [x] Edit `docs/README.md`.
+- [x] Edit `AGENTS.md` read-before-changing table.
 
 **Build.**
 

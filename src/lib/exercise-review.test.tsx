@@ -93,7 +93,7 @@ describe("exercise review", () => {
     expect(html).toContain("Barbell Bench Press");
     expect(html).toContain("No working sets logged yet.");
     expect(html).not.toContain("Exercise not found");
-    expect(html).not.toContain("Today");
+    expect(html).not.toContain(">Last</h2>");
     expect(html).not.toContain("e1RM chart");
     expect(html).not.toContain("Month to month");
     expect(html).not.toContain("No working sets for this exact exercise");
@@ -102,7 +102,7 @@ describe("exercise review", () => {
   it("keeps the unfiltered review when a month query is present", () => {
     const html = renderToStaticMarkup(ready(oneSession, { reviewMonth: "2026-09" }));
     expect(html).toContain("Barbell Bench Press");
-    expect(html).toContain("Today");
+    expect(html).toContain(">Last</h2>");
     expect(html).toContain("150.0 lb");
     expect(html).toContain("100 lb × 10 @ 1 RIR");
     expect(html).toContain("One session so far. Log another to see the trend.");
@@ -146,7 +146,7 @@ describe("exercise review", () => {
     expect(html).not.toContain("Month review could not load");
   });
 
-  it("answers Today, a 21-day block, and a last-8 chart toggle", () => {
+  it("answers Last, a 21-day block, and a last-8 chart toggle", () => {
     const sessions = sessionsFrom([
       {
         id: "old",
@@ -183,7 +183,7 @@ describe("exercise review", () => {
       periodEligible: true,
       periodDates: ["2026-09-02"],
     }));
-    expect(html).toContain("Today");
+    expect(html).toContain(">Last</h2>");
     expect(html).toContain("155.0 lb");
     expect(html).toContain("+15.0 lb");
     expect(html).toContain("Past three weeks");

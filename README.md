@@ -16,7 +16,7 @@ saves the replacement immediately. Program scope changes only that slot on that 
 workout scope leaves the next occurrence unchanged. Already logged sets retain their exercise,
 weight, reps, and RIR. See [exercise swap behavior](docs/EXERCISE-SWAPS.md).
 
-Tap **Today's work** on Lift (home) to open a full-page planner with sets, reps, RIR, rest,
+Tap **Upcoming workout** on Lift (home) to open a full-page planner with sets, reps, RIR, rest,
 and phase details. Choose specific machines or swap exercises before starting; selections
 apply to that workout and persist in the same browser. Start from either Home or the planner
 with those choices intact. See [workout planning](docs/WORKOUT-PLANNING.md).
@@ -88,7 +88,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/lib/exercise-review-sessions.ts` — pure helper: groups finished sets by session, computes session-best e1RM, 21-day recent window, and chart point series
 - `src/lib/exercise-review-months.ts` / `exercise-review-month-stats.ts` — month-compare defaults, program captions, Chicago-window PRs/e1RM/volume/exposures
 - `src/lib/exercise-review-href.ts` / `review-equipment.ts` — Exercise review URL (`equipment` / `month`) and latest-instance identity helpers
-- `src/app/(app)/history/[exerciseId]/` — Exercise review: Today card (last finished session + delta), past-21-day window, e1RM chart (last 8 / All history toggle, period overlay on All history only), month-to-month compare, equipment switcher, and session list
+- `src/app/(app)/history/[exerciseId]/` — Exercise review: Last card (last finished session + delta), past-21-day window, e1RM chart (last 8 / All history toggle, period overlay on All history only), month-to-month compare, equipment switcher, and session list
 - `supabase/migrations/` — database schema with row-level security; `supabase/tests/` holds ownership and atomic-write regression checks
 
 ### Quick lift history

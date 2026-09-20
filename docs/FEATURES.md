@@ -38,7 +38,7 @@ Adaptive plateau engine under §5.
   for the right program day. Auto-pending so a double-tap can't start two sessions.
 - **Resume workout** — if an unfinished session exists, the CTA becomes "Resume workout"
   linking back into it.
-- **Today's work** — day name, lift count, and set count; tap opens `/workout/next` (or the
+- **Upcoming workout** — day name, lift count, and set count; tap opens `/workout/next` (or the
   open session). The full slot list is not always-on.
 - **Track preview** — optional recent-PR compound tiles only; pin controls stay off home.
   Full Track stays on `/analytics`.
@@ -270,7 +270,7 @@ valid. It does not swap in a monthly-history page. Invalid months are ignored.
 - **Finished sessions** — working sets from sessions with `finished_at` (not in the
   future), grouped by `groupReviewSessions`. Dates use Chicago `dateKey`. Stored e1RM
   displays at 0.1 lb on this screen.
-- **Today** — last finished session date, session-best e1RM, signed delta vs the previous
+- **Last** — last finished session date, session-best e1RM, signed delta vs the previous
   session when both have estimates, and that session's working sets. No "No prior
   comparison" label. How-it-works copy is behind ⓘ.
 - **Past three weeks** — last 21 Chicago days: workout count, best e1RM, first-to-last

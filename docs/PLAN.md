@@ -86,11 +86,12 @@ See [Features](FEATURES.md). Migrations and generated types are committed; remot
 migration/Auth state needs a live check. The numbered phase sections below retain the
 original build sequence and historical checks.
 
-## AI Coach (next)
+## AI Coach
 
-Specified 2026-09-20. Not implemented. Build [AI Coach](AI-COACH.md) slices in order,
-starting at Slice 0 (grounded read-only chat). Do not start Slice 2 writes or Slice 5
-Deep Agents until the earlier slice’s done criteria pass.
+- [x] Slice 0 — grounded read-only chat (`#137`): schema, Gateway + LangSmith, four read
+      tools, last-N context, Sheet + `/coach`, evals, [ai-coach.html](ai-coach.html).
+- [ ] Slices 1–5 in [AI-COACH.md](AI-COACH.md) order. Do not start Slice 2 writes or
+      Slice 5 Deep Agents until the earlier slice’s done criteria pass.
 
 ## Original estimate
 

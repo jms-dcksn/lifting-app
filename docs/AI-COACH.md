@@ -5,8 +5,9 @@ replace it. Track Coach (`/analytics/coach`), `CoachCheckInReport`, and
 `GET /api/coach/v1/weekly` stay the factual check-in and private export. The agent is the
 language, intake, navigation, and draft layer on top of existing loaders and actions.
 
-**Status:** specified 2026-09-20. Slice 0 is the next build. No agent code yet.
-Rationale lives in [Decisions](DECISIONS.md#ai-coach-2026-09-20).
+**Status:** Slice 0 shipped 2026-09-20. Later slices are still specified, not built.
+Rationale lives in [Decisions](DECISIONS.md#ai-coach-2026-09-20). The teaching surface
+is [ai-coach.html](ai-coach.html) — update that HTML whenever agent behavior changes.
 
 Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/coach`,
 `/api/agent/chat`) so they do not collide with Track Coach.
@@ -55,25 +56,28 @@ allow-list, tool-call budget) lives in one module and is applied by the route.
 Streaming UI uses existing primitives (`Sheet`, `IconButton`, type scale, copy density).
 Take stream/message protocol from LangChain / agent-chat-ui; do not take that chrome.
 
-### Planned schema (Slice 0)
+### Schema (Slice 0)
 
 Owner-scoped `agent_thread` and `agent_message` with the same RLS pattern as other
 user tables. Slice 0 get-or-creates one thread per user and **persists every message**.
 Message `parts` are stored as JSON so tool calls survive a reload. The UI reads this
-full history. The model does not: the chat route loads last N messages (N is a named
-constant in agent policy). Add a pgTAP ownership test next to the migration.
+full history. The model does not: the chat route loads last N messages (`CONTEXT_MESSAGE_LIMIT`
+in `src/lib/agent/policy.ts`). pgTAP coverage is `supabase/tests/agent_thread_rls.sql`.
 
-### Planned env (Slice 0, server-only)
+### Env (Slice 0, server-only)
 
-Gateway and LangSmith keys. None may use a `NEXT_PUBLIC_` prefix. List them in
-`.env.local.example` and [DEPLOY.md](../DEPLOY.md) when the route lands. Local
-LangSmith project is dedicated to this agent (not shared with other apps).
+`AI_GATEWAY_API_KEY` (or Vercel OIDC `VERCEL_OIDC_TOKEN`), `LANGSMITH_API_KEY`,
+`LANGSMITH_TRACING`, and `LANGSMITH_PROJECT=lifting-app-agent`. Optional `AGENT_MODEL`.
+None may use a `NEXT_PUBLIC_` prefix. Listed in `.env.local.example` and
+[DEPLOY.md](../DEPLOY.md). Local LangSmith project is dedicated to this agent.
 
 ## Slices
 
 Build in order. A later slice may add tools; it may not weaken an invariant.
 
 ### Slice 0 — Talking to the ledger
+
+**Status.** Shipped. Teaching walkthrough: [ai-coach.html](ai-coach.html).
 
 **Intent.** Dogfoodable grounded chat. Prove streaming, RLS tools, cited numbers, traces.
 

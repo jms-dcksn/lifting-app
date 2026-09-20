@@ -359,6 +359,8 @@ Coach contract.
 - **Bottom tabs** — Lift (`/`), Track (`/analytics` and `/history/...`), Program (`/program`), You (`/settings`);
   icons plus labels, `aria-current` on the active tab (`app-shell.tsx`). Hidden on session
   routes (active workout, recap, finished sets), next-workout planner, and program builder.
+- **AI Coach entry** — persistent `IconButton` + `Sheet` wherever the tab bar shows, except
+  `/coach` (the full thread). Hidden with `hideAppChrome`. Not a fifth tab.
 - **Auth gate** — layout is a Server Component gating on `getClaims()`.
 - **Route-level loading skeletons** — `loading.tsx` fallbacks for home, session, recap,
   history, and analytics so server navigations never flash a blank screen. Session loading
@@ -394,3 +396,11 @@ Coach contract.
   RLS), deployed on Vercel.
 - **Online by design** — assumes connectivity during workouts; there is intentionally **no**
   offline/local-first layer (see `DECISIONS.md`).
+
+## 13. AI Coach (`/coach`, `/api/agent/chat`)
+
+Read-only grounded chat wrapping the deterministic Coach. Agent owns language; engine owns
+numbers. Persistent entry + `Sheet` where the tab bar shows; full thread at `/coach`.
+Four tools: `weeklyCoach`, `activeProgram`, `exerciseReview`, `nextWorkout`. One thread
+per user in `agent_thread` / `agent_message`. Model sees last N messages only. Teaching
+page: [ai-coach.html](ai-coach.html). Track Coach at `/analytics/coach` is unchanged.

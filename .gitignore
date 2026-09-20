@@ -58,6 +58,7 @@ next-env.d.ts
 
 # isolated feature worktrees
 .worktrees/
-# Local source material stays ignored; authored Markdown is versionable.
+# Local source material stays ignored; authored Markdown and teaching HTML are versionable.
 docs/*
 !docs/*.md
+!docs/*.html

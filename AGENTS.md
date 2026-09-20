@@ -25,6 +25,11 @@ TypeScript strength engine. Workouts require connectivity; there is no offline s
   identity and historical bodyweight when comparing records or editing saved sets.
 - Use existing UI primitives and semantic tokens. Keep strength/report calculations pure and
   share their canonical helpers across consumers.
+- AI Coach / agent work: every slice that ships code must update a self-contained HTML
+  explainer (`docs/ai-coach.html`) with visual diagrams (Mermaid and/or hand-built), real
+  reference code snippets from the landed code, and clear plain-language explanations of
+  how the system works. Markdown alone is not enough for the teaching surface. Keep
+  diagrams and snippets accurate to the code; update the HTML when behavior changes.
 
 ## Verification and continuity
 
@@ -56,7 +61,7 @@ put new detail in the relevant reference and add a trigger here only when needed
 | PR pills, completion recaps, or historical set edits | [Workout records](docs/DECISIONS.md#workout-records) |
 | Exercise review Last card, 21-day window, or e1RM chart | [Exercise review spec](docs/superpowers/specs/2026-09-19-exercise-review-design.md); [Features](docs/FEATURES.md) |
 | Coach report, proposals, Track Coach UI, or private weekly API | [Coach contract](docs/COACH-REPORT.md) and [architecture: strength](docs/ARCHITECTURE.md#strength-and-exercise-identity) |
-| Agent chat, LangChain tools, or AI Coach slices | [AI Coach](docs/AI-COACH.md) |
+| Agent chat, LangChain tools, or AI Coach slices | [AI Coach](docs/AI-COACH.md) and [AI Coach explainer](docs/ai-coach.html) |
 | Track Explore destinations (Coach, Body, Volume) | [Track body and volume plan](docs/superpowers/plans/2026-09-19-track-body-volume.md); [Features](docs/FEATURES.md) |
 | Weight writes, date moves, or shared calendar | [Weight calendar](docs/WEIGHT-CALENDAR.md) |
 | Weight charts, history pagination, or goal distance | [Weight trends](docs/WEIGHT-TRENDS.md) |

@@ -16,7 +16,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Shipped behavior | [Features](FEATURES.md) |
 | Rationale and record eligibility | [Decisions](DECISIONS.md) |
 | Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |
-| In-app agent, chat overlay, or AI Coach slices | [AI Coach](AI-COACH.md) |
+| In-app agent, chat overlay, or AI Coach slices | [AI Coach](AI-COACH.md), [explainer](ai-coach.html) |
 | Active substitutions / pre-workout choices | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
 | Weight observations, charts and goal distance | [Calendar](WEIGHT-CALENDAR.md), [trends](WEIGHT-TRENDS.md) |
 | Monthly comparisons, shared stall evidence, or period × performance weeks | [Monthly progress](MONTHLY-PROGRESS.md) |
@@ -36,8 +36,8 @@ exercise review Slices A–F (#115 dump removal, #116 one destination, #117 Toda
 and coach check-in QoL (#126: ranked proposals with Do first / Also tiers, collapsed insufficient-data trends, specialization hard-set shortfall flag)
 are implemented. See [Features](FEATURES.md) for current behavior. Issue numbers here identify
 planned slices, not a live GitHub status check. Historical verification counts describe their
-original runs. AI Coach slices are specified in [AI-COACH.md](AI-COACH.md) and are not
-shipped; Slice 0 is the next build.
+original runs. AI Coach Slice 0 (grounded read-only chat) is implemented; later slices
+are specified in [AI-COACH.md](AI-COACH.md). Teaching walkthrough: [ai-coach.html](ai-coach.html).
 
 Update the owning document when behavior changes. Keep root instructions short, link new
 contracts by task trigger, and avoid copying inventories or counts available in source.

@@ -105,6 +105,12 @@ Every query retains an explicit `COACH_API_USER_ID` predicate because the secret
 RLS. Preserve capability auth and no-store/noindex responses. Configuration, privacy,
 and rotation live in [Coach report](COACH-REPORT.md#weekly-coach-api) and [deployment](../DEPLOY.md).
 
+The in-app agent is a separate cookie-auth path: `POST /api/agent/chat` → LangChain loop →
+read tools wrapping `loadCoachUi`, `getActiveProgram`, Exercise review grouping, and
+`loadNextWorkout` + `sessionTarget()`. Tools use the user-scoped client only. Conversation
+rows live in `agent_thread` / `agent_message`. See [AI Coach](AI-COACH.md) and
+[ai-coach.html](ai-coach.html).
+
 ## History and reporting
 
 - In-session quick history uses `exerciseFamilyIds()` to include explicitly linked machine

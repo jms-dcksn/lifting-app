@@ -26,6 +26,7 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 | Data | Logged-in user client + RLS. Domain tools wrap existing loaders. Not the weekly Coach secret, not a generic SQL tool, not embeddings over `set_log`. |
 | Authority | Engine owns numbers and prescriptions. Agent owns language, intake, drafts, and navigation. |
 | Privacy | Period observations stay out unless a later, separate opt-in. Same default as Coach. |
+| Context | Full transcript in Postgres. Each model turn gets system prompt + last N messages. No summarization, compaction, or distilled user-memory in Slice 0. |
 
 ## Invariants
 
@@ -57,8 +58,10 @@ Take stream/message protocol from LangChain / agent-chat-ui; do not take that ch
 ### Planned schema (Slice 0)
 
 Owner-scoped `agent_thread` and `agent_message` with the same RLS pattern as other
-user tables. Slice 0 get-or-creates one thread per user. Message `parts` are stored as
-JSON so tool calls survive a reload. Add a pgTAP ownership test next to the migration.
+user tables. Slice 0 get-or-creates one thread per user and **persists every message**.
+Message `parts` are stored as JSON so tool calls survive a reload. The UI reads this
+full history. The model does not: the chat route loads last N messages (N is a named
+constant in agent policy). Add a pgTAP ownership test next to the migration.
 
 ### Planned env (Slice 0, server-only)
 
@@ -81,7 +84,10 @@ Build in order. A later slice may add tools; it may not weaken an invariant.
 - Persistent `IconButton` + `Sheet` on screens where the tab bar shows; `/coach` as the
   full thread. Hide both entry and Sheet chrome using `hideAppChrome` (session, recap,
   planner, program new/edit).
-- One persisted thread per user.
+- One persisted thread per user. Keep the full transcript in `agent_message`. On each
+  model turn, send system prompt plus the last N messages only. Prefer dropping old
+  tool results before user/assistant text if a token budget is also applied. Facts
+  still come from tools, not from earlier tool JSON in the window.
 - Four read tools, each wrapping an existing path:
   - `weeklyCoach` → `loadCoachUi` (report + proposals + formatted text).
   - `activeProgram` → `getActiveProgram`.
@@ -99,6 +105,8 @@ Build in order. A later slice may add tools; it may not weaken an invariant.
 
 - Writes, client navigation, screen-route context, Jev, web search, Deep Agents,
   onboarding, in-session presence, automatic weekly delivery, generic table access.
+- Rolling summaries, context compaction, embeddings, or a distilled `user_memory`
+  store. Those wait for a later slice after dogfood.
 
 **Done when** you can ask “how was this week?” and “why is my next squat target X?”
 while authenticated and the numbers match Track Coach and the next-workout / session
@@ -192,7 +200,8 @@ abandoned confirm leaves data unchanged.
 
 Only after Slice 0–4 dogfood. Candidates: Deep Agents / a program-design subagent,
 web search with a research-vs-prescribe split, onboarding that starts in the agent,
-in-session whispers. Each is its own Decision Card; none is implied by shipping 0–4.
+in-session whispers, rolling summaries / context compaction, distilled user memory
+beyond last-N. Each is its own Decision Card; none is implied by shipping 0–4.
 
 ## Evals
 

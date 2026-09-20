@@ -663,7 +663,10 @@ until Slice 5; LangChain TypeScript is enough for the loop.
 **User session + RLS, not the weekly secret.** The agent is an in-app user. The weekly API
 is a single-account capability URL with a service-role client. Domain tools wrap existing
 loaders so period data, slot identity, and owner scope cannot drift. Conversation memory
-is new `agent_thread` / `agent_message` rows, not embeddings over `set_log`.
+is new `agent_thread` / `agent_message` rows, not embeddings over `set_log`. Slice 0
+keeps the full transcript in those tables and sends only the last N messages to the
+model. Summarization and distilled memory are later slices; training facts stay in
+tools, not in the prompt window.
 
 **Engine owns numbers.** A second, LLM-shaped progression rule would desync Home, the
 session screen, and Coach. The agent may explain a target only by calling the same

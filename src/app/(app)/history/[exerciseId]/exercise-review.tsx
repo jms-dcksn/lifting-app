@@ -150,7 +150,7 @@ function ReadyBody({
   return (
     <>
       {today && (
-        <TodayCard
+        <LastCard
           session={today}
           previous={previous}
           isBodyweight={isBodyweight}
@@ -193,7 +193,7 @@ function ReadyBody({
   );
 }
 
-function TodayCard({
+function LastCard({
   session,
   previous,
   isBodyweight,
@@ -210,8 +210,8 @@ function TodayCard({
   return (
     <Card>
       <div className="mb-2 flex items-center gap-1">
-        <CardLabel>Today</CardLabel>
-        <InfoButton title="Today">
+        <CardLabel>Last</CardLabel>
+        <InfoButton title="Last">
           This is the last finished workout for this exact exercise and equipment. Estimated 1RM
           uses the stored value from that day, not today&apos;s bodyweight.
         </InfoButton>

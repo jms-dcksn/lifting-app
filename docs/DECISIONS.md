@@ -97,7 +97,7 @@ different rep targets.
 ## Phase 4 decisions
 
 **Overload delta is computed live, keyed on `exercise_id` (not `program_slot_id`).**
-Exercise review's Today card and the finish-session summary compare the latest
+Exercise review's Last card and the finish-session summary compare the latest
 session's best e1RM for an exercise against the best e1RM from that exercise's most
 recent *earlier* session, found via `set_log` joined to `workout_session.performed_at`
 and `finished_at`. Review grouping is `groupReviewSessions` (finished sessions only).

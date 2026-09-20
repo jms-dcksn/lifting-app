@@ -108,7 +108,7 @@ export default async function Home() {
         className="block rounded-card focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
       >
         <Card className="transition-colors hover:border-border-strong">
-          <CardLabel>Today&apos;s work</CardLabel>
+          <CardLabel>Upcoming workout</CardLabel>
           <p className="text-heading">{nextDay.name}</p>
           <p className="mt-1 text-caption tabular-nums text-muted">
             {next.slots.length} lift{next.slots.length === 1 ? "" : "s"} · {nextWorkingSets} set

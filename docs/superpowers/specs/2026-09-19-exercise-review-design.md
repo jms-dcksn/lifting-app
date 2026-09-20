@@ -431,9 +431,9 @@ Reuse `InfoButton` (`src/components/ui/info-button.tsx`) and `Sheet`. Body at mo
 
 Drafts for approval. Visible labels stay short. The Sheet is the only prose.
 
-**Today**
+**Last**
 
-- Title: `Today`
+- Title: `Last`
 - Body: `This is the last finished workout for this exact exercise and equipment. Estimated 1RM uses the stored value from that day, not today's bodyweight.`
 
 **Past three weeks**

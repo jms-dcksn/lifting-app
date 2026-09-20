@@ -96,7 +96,7 @@ describe("HistoryPage route", () => {
     expect(html).toContain("Back to 2026-09 month review");
   });
 
-  it("reads finished sessions only and renders Today without loading period data when ineligible", async () => {
+  it("reads finished sessions only and renders Last without loading period data when ineligible", async () => {
     setRows = [{
       id: "r1",
       weight: 100,
@@ -109,7 +109,7 @@ describe("HistoryPage route", () => {
     }];
     const html = renderToStaticMarkup(await render("bb-bench", {}));
     expect(query.not).toHaveBeenCalledWith("workout_session.finished_at", "is", null);
-    expect(html).toContain("Today");
+    expect(html).toContain(">Last</h2>");
     expect(html).toContain("150.0 lb");
     expect(html).toContain("Last 8 workouts");
     expect(html).toContain("Month to month");

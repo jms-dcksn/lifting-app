@@ -644,3 +644,44 @@ check at read time.
 claims, no automated correlation with performance. Separate table (`period_observation`),
 owner-scoped RLS, explicit consent version. Future additions (e.g., Coach sharing, symptom
 logs) require consent re-prompt and separate opt-in.
+
+## AI Coach (2026-09-20)
+
+The in-app agent is a new scope slice, not a rewrite of the Coach loop. The build contract
+is [AI-COACH.md](AI-COACH.md). Locks below are the hard-to-reverse calls; slice checklists
+live in that doc.
+
+**Wrap the deterministic Coach.** Track Coach, `CoachCheckInReport`, proposals, and the
+weekly API remain the source of weekly facts. The agent narrates and acts on that output.
+Replacing `/analytics/coach` would throw away a tested contract the private API also uses.
+
+**Stay in this TypeScript app.** Every tool worth calling is already a TS loader or action
+(`loadCoachUi`, `getActiveProgram`, `loadNextWorkout`, `sessionTarget()`, `saveProgram`,
+`startNextSession`). A Python sidecar would re-expose that surface. Deep Agents waits
+until Slice 5; LangChain TypeScript is enough for the loop.
+
+**User session + RLS, not the weekly secret.** The agent is an in-app user. The weekly API
+is a single-account capability URL with a service-role client. Domain tools wrap existing
+loaders so period data, slot identity, and owner scope cannot drift. Conversation memory
+is new `agent_thread` / `agent_message` rows, not embeddings over `set_log`.
+
+**Engine owns numbers.** A second, LLM-shaped progression rule would desync Home, the
+session screen, and Coach. The agent may explain a target only by calling the same
+`sessionTarget()` path the session already uses.
+
+**Writes are drafts, then confirms.** `saveProgram` activates on save and preserves slot
+IDs; an unattended upsert can smash history links. Slice 0 is read-only. Slice 2 persists
+inactive drafts and opens the builder. Slice 4 calls existing actions after an
+in-transcript confirm.
+
+**Jev classifies; code assembles.** Jev cannot emit a program. Slice 2 uses Choice / Noul /
+Score over a closed intake ontology, then a template assembler. Uncertain confidence asks
+the user.
+
+**Custom Sheet, not a fifth tab.** The four experiences stay Lift / Track / Program / You.
+Gym logging already hides chrome (`hideAppChrome`); the agent entry follows that hide so
+it does not fight set entry. Stream protocol may follow LangChain / agent-chat-ui; visual
+language stays this app’s primitives.
+
+**Period data stays off-limits** until a separate opt-in, matching the Coach V1 export
+exclusion and Settings consent copy.

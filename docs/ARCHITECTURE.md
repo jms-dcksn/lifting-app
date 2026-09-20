@@ -1,8 +1,10 @@
 # Architecture
 
-Read this when changing the engine, catalog, persistence, program loading, or auth.
-[Decisions](DECISIONS.md) records rationale; feature contracts linked from
-[AGENTS.md](../AGENTS.md) own detailed behavior. Versions and commands live in `package.json`.
+The high-level visual map of experiences, request path, data ownership, and performance
+choices is [architecture.html](architecture.html). Read the rest of this document when
+changing the engine, catalog, persistence, program loading, or auth. [Decisions](DECISIONS.md)
+records rationale; feature contracts linked from [AGENTS.md](../AGENTS.md) own detailed
+behavior. Versions and commands live in `package.json`.
 
 ## Strength and exercise identity
 

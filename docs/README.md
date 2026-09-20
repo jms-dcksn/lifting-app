@@ -8,6 +8,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | --- | --- |
 | Setup and product overview | [README](../README.md) |
 | Environment, migration and deployment operations | [DEPLOY](../DEPLOY.md) |
+| Visual map of experiences, request path, and why the system stays fast | [Architecture map](architecture.html) |
 | Current module boundaries and engine/data invariants | [Architecture](ARCHITECTURE.md) |
 | Shared components and UI gotchas | [UI conventions](UI.md) |
 | Copy density (proposed) | [2026-09-16 spec](superpowers/specs/2026-09-16-visual-copy-density-design.md) |
@@ -15,6 +16,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Shipped behavior | [Features](FEATURES.md) |
 | Rationale and record eligibility | [Decisions](DECISIONS.md) |
 | Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |
+| In-app agent, chat overlay, or AI Coach slices | [AI Coach](AI-COACH.md) |
 | Active substitutions / pre-workout choices | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
 | Weight observations, charts and goal distance | [Calendar](WEIGHT-CALENDAR.md), [trends](WEIGHT-TRENDS.md) |
 | Monthly comparisons, shared stall evidence, or period × performance weeks | [Monthly progress](MONTHLY-PROGRESS.md) |
@@ -34,7 +36,8 @@ exercise review Slices A–F (#115 dump removal, #116 one destination, #117 Toda
 and coach check-in QoL (#126: ranked proposals with Do first / Also tiers, collapsed insufficient-data trends, specialization hard-set shortfall flag)
 are implemented. See [Features](FEATURES.md) for current behavior. Issue numbers here identify
 planned slices, not a live GitHub status check. Historical verification counts describe their
-original runs.
+original runs. AI Coach slices are specified in [AI-COACH.md](AI-COACH.md) and are not
+shipped; Slice 0 is the next build.
 
 Update the owning document when behavior changes. Keep root instructions short, link new
 contracts by task trigger, and avoid copying inventories or counts available in source.

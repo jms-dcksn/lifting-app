@@ -86,6 +86,12 @@ See [Features](FEATURES.md). Migrations and generated types are committed; remot
 migration/Auth state needs a live check. The numbered phase sections below retain the
 original build sequence and historical checks.
 
+## AI Coach (next)
+
+Specified 2026-09-20. Not implemented. Build [AI Coach](AI-COACH.md) slices in order,
+starting at Slice 0 (grounded read-only chat). Do not start Slice 2 writes or Slice 5
+Deep Agents until the earlier slice’s done criteria pass.
+
 ## Original estimate
 
 ~32–38 hrs of focused work ≈ 3–4 weeks at 10 hrs/wk. First milestone to chase: log one real

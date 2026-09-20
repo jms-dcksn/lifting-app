@@ -45,7 +45,11 @@ export function isAgentPart(value: unknown): value is AgentPart {
 
 export function parseParts(value: Json): AgentPart[] {
   if (!Array.isArray(value)) return [];
-  return value.filter(isAgentPart);
+  const parts: AgentPart[] = [];
+  for (const item of value) {
+    if (isAgentPart(item)) parts.push(item);
+  }
+  return parts;
 }
 
 export function textFromParts(parts: AgentPart[]) {
@@ -91,19 +95,22 @@ export function trimToolResultsToBudget(
 }
 
 export function toLangChainMessages(messages: AgentMessage[]): BaseMessage[] {
-  return messages.flatMap((message) => {
+  const out: BaseMessage[] = [];
+  for (const message of messages) {
     if (message.role === "user") {
-      return [new HumanMessage(textFromParts(message.parts) || " ")];
+      out.push(new HumanMessage(textFromParts(message.parts) || " "));
+      continue;
     }
     if (message.role === "tool") {
-      return message.parts.flatMap((part) => {
-        if (part.type !== "tool-result") return [];
-        return [new ToolMessage({
+      for (const part of message.parts) {
+        if (part.type !== "tool-result") continue;
+        out.push(new ToolMessage({
           tool_call_id: part.id,
           content: part.omitted ? "[omitted]" : stringifyToolResult(part.result),
           name: part.name,
-        })];
-      });
+        }));
+      }
+      continue;
     }
     const text = textFromParts(message.parts);
     const toolCalls = message.parts.flatMap((part) => {
@@ -115,26 +122,30 @@ export function toLangChainMessages(messages: AgentMessage[]): BaseMessage[] {
         type: "tool_call" as const,
       }];
     });
-    return [new AIMessage({ content: text, tool_calls: toolCalls.length ? toolCalls : undefined })];
-  });
+    out.push(new AIMessage({ content: text, tool_calls: toolCalls.length ? toolCalls : undefined }));
+  }
+  return out;
 }
 
 export function fromLangChainMessages(messages: BaseMessage[]): Omit<AgentMessage, "id" | "createdAt">[] {
-  return messages.flatMap((message) => {
+  const out: Omit<AgentMessage, "id" | "createdAt">[] = [];
+  for (const message of messages) {
     if (HumanMessage.isInstance(message)) {
       const text = contentText(message.content);
-      return [{ role: "user" as const, parts: text ? [{ type: "text" as const, text }] : [] }];
+      out.push({ role: "user", parts: text ? [{ type: "text", text }] : [] });
+      continue;
     }
     if (ToolMessage.isInstance(message)) {
-      return [{
-        role: "tool" as const,
+      out.push({
+        role: "tool",
         parts: [{
-          type: "tool-result" as const,
+          type: "tool-result",
           id: message.tool_call_id,
           name: typeof message.name === "string" ? message.name : "tool",
           result: parseToolResult(message.content),
         }],
-      }];
+      });
+      continue;
     }
     if (AIMessage.isInstance(message)) {
       const parts: AgentPart[] = [];
@@ -148,10 +159,10 @@ export function fromLangChainMessages(messages: BaseMessage[]): Omit<AgentMessag
           args: call.args,
         });
       }
-      return [{ role: "assistant" as const, parts }];
+      out.push({ role: "assistant", parts });
     }
-    return [];
-  });
+  }
+  return out;
 }
 
 export function newMessagesAfter(

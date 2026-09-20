@@ -30,7 +30,7 @@ export async function exerciseReview(
 ) {
   const catalog = await getCatalogMap(supabase, userId);
   const resolved = resolveExerciseIdentity(catalog, input);
-  if ("matches" in resolved) return resolved;
+  if (!("exerciseId" in resolved)) return resolved;
   const exerciseId = resolved.exerciseId;
   const def = catalog[exerciseId];
 
@@ -80,7 +80,6 @@ export async function exerciseReview(
     }
   }
   const sessions = withProgramNames(grouped, programNames);
-  const instanceIds = identities.filter((id): id is string => id != null);
   let equipmentLabel: string | null = null;
   if (selectedEquipment) {
     const { data: instances, error: instanceError } = await supabase
@@ -134,12 +133,22 @@ export function summarizeExerciseReview(input: {
   };
 }
 
+export type ResolvedExerciseIdentity =
+  | { exerciseId: string }
+  | { source: "exerciseReview"; error: string }
+  | {
+      source: "exerciseReview";
+      needsDisambiguation: true;
+      matches: Array<{ id: string; name: string }>;
+    };
+
 export function resolveExerciseIdentity(
   catalog: Record<string, { id: string; name: string }>,
   input: { exerciseId?: string; name?: string },
-) {
-  if (input.exerciseId && catalog[input.exerciseId]) {
-    return { exerciseId: input.exerciseId };
+): ResolvedExerciseIdentity {
+  const knownId = input.exerciseId;
+  if (knownId && catalog[knownId]) {
+    return { exerciseId: knownId };
   }
   const needle = input.name?.trim().toLowerCase();
   if (!needle) {

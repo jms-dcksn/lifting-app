@@ -44,7 +44,7 @@ function ShellFrame({
       <main className="flex flex-1 flex-col">{children}</main>
       {!hide && (
         <>
-          {pathname !== "/coach" && !pathname.startsWith("/coach/") ? <AgentEntry /> : null}
+          {pathname && pathname !== "/coach" && !pathname.startsWith("/coach/") ? <AgentEntry /> : null}
           <TabBar pathname={pathname} />
         </>
       )}

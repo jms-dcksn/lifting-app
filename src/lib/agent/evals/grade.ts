@@ -1,5 +1,4 @@
 import { READ_TOOL_NAMES, WRITE_TOOL_NAMES } from "../policy";
-import { TOOL_FIXTURES } from "./fixtures";
 import type { EvalCase } from "./cases";
 
 export function gradeGrounding(input: {
@@ -32,7 +31,6 @@ export function gradeGrounding(input: {
 
 export function goldUsesFixtureNumbers(caseDef: EvalCase) {
   const used = caseDef.expectedTools;
-  const fixtures = used.map((name) => TOOL_FIXTURES[name]);
   return gradeGrounding({
     expectedTools: caseDef.expectedTools,
     usedTools: used,

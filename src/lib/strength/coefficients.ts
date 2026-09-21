@@ -13,10 +13,11 @@
 //     prediction, because brand/leverage/stack units are arbitrary.
 //
 // Machine movements are seeded as GENERIC templates (no brand baked in). Brand and
-// station tag (plate/stack, or later bench/rack/platform) live on user-created variants
-// in `exercise`, not on these templates — see src/lib/catalog.ts. `stationProfile`
+// station tag (plate/stack/bench/rack/platform) live on user-created variants in
+// `exercise`, not on these templates — see src/lib/catalog.ts. `stationProfile`
 // says whether the template must be instantiated before it has absolute load identity.
-// Slice 1 adds the field and ids; resolve still accepts machines only.
+// `resolveVariant` accepts every `needsStation` profile and inherits equipment +
+// needs_calibration from the template.
 
 export type Pattern =
   | "horizontal_press"
@@ -87,6 +88,45 @@ export interface ExerciseDef {
 
 export function needsStation(def: Pick<ExerciseDef, "stationProfile">): boolean {
   return (def.stationProfile ?? "none") !== "none";
+}
+
+export const STATION_TAGS_BY_PROFILE: Record<StationProfile, readonly StationTag[]> = {
+  machine: ["selectorized", "plate_loaded"],
+  cable: ["selectorized"],
+  bench: ["bench"],
+  rack: ["rack"],
+  platform: ["platform"],
+  none: [],
+};
+
+export function allowedStationTags(profile: StationProfile): readonly StationTag[] {
+  return STATION_TAGS_BY_PROFILE[profile];
+}
+
+function stationBrandRequired(profile: StationProfile): boolean {
+  return profile === "cable" || profile === "bench" || profile === "rack" || profile === "platform";
+}
+
+// Validate brand + tag against the template profile. Cable is locked to selectorized;
+// barbell stations store the profile as the machine_type sentinel. Brand stays optional
+// only for machines (the existing no-brand path).
+export function resolveStationFields(
+  base: Pick<ExerciseDef, "stationProfile">,
+  input: { brand?: string | null; machineType: StationTag },
+): { brand: string | null; machineType: StationTag } {
+  const profile = base.stationProfile ?? "none";
+  const allowed = allowedStationTags(profile);
+  if (allowed.length === 0) {
+    throw new Error("Template does not require a station");
+  }
+  if (!allowed.includes(input.machineType)) {
+    throw new Error("Station tag does not match template profile");
+  }
+  const brand = input.brand?.trim() || null;
+  if (!brand && stationBrandRequired(profile)) {
+    throw new Error("Brand required");
+  }
+  return { brand, machineType: input.machineType };
 }
 
 const SEEDS: ExerciseDef[] = [

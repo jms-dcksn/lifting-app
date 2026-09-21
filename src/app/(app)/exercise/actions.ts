@@ -4,10 +4,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   EXERCISE_BY_ID,
+  resolveStationFields,
   type Equipment,
   type ExerciseDef,
   type MachineType,
   type Pattern,
+  type StationTag,
 } from "@/lib/strength/coefficients";
 import { dbExerciseToDef, type DbExerciseRow } from "@/lib/catalog";
 import { variantId, variantName, ownedVariantId, slugifyCustom } from "@/lib/exercise-id";
@@ -30,7 +32,7 @@ async function requireUser() {
 export interface ResolveVariantInput {
   baseExerciseId: string;
   brand: string | null;
-  machineType: MachineType;
+  machineType: StationTag;
 }
 
 async function findOwnVariant(
@@ -38,7 +40,7 @@ async function findOwnVariant(
   userId: string,
   baseExerciseId: string,
   brand: string | null,
-  machineType: MachineType,
+  machineType: StationTag,
 ): Promise<DbExerciseRow | null> {
   const query = supabase
     .from("exercise")
@@ -60,47 +62,47 @@ async function insertVariant(
   return null;
 }
 
-// Find-or-create the variant for (template, brand, type). Dedup is the per-user unique
-// index, not the global id. A concurrent insert re-selects; a taken canonical slug
-// retries with an owned id so a second user can still instantiate the same machine.
+// Find-or-create the variant for (template, brand, station tag). Dedup is the per-user
+// unique index, not the global id. A concurrent insert re-selects; a taken canonical slug
+// retries with an owned id so a second user can still instantiate the same station.
 export async function resolveVariant(input: ResolveVariantInput): Promise<ExerciseDef> {
   const { supabase, userId } = await requireUser();
   const base = EXERCISE_BY_ID[input.baseExerciseId];
   if (!base) throw new Error(`Unknown template: ${input.baseExerciseId}`);
-  const brand = input.brand?.trim() || null;
+  const { brand, machineType } = resolveStationFields(base, input);
 
-  const existing = await findOwnVariant(supabase, userId, base.id, brand, input.machineType);
+  const existing = await findOwnVariant(supabase, userId, base.id, brand, machineType);
   if (existing) return dbExerciseToDef(existing);
 
   const row = {
-    id: variantId(base.id, brand, input.machineType),
+    id: variantId(base.id, brand, machineType),
     user_id: userId,
-    name: variantName(base.name, brand, input.machineType),
+    name: variantName(base.name, brand, machineType),
     pattern: base.pattern,
-    equipment: "machine",
+    equipment: base.equipment,
     brand,
-    machine_type: input.machineType,
+    machine_type: machineType,
     base_exercise_id: base.id,
     coefficient: base.coefficient,
     is_reference: false,
-    needs_calibration: true,
+    needs_calibration: !!base.needsCalibration,
     increment: base.increment,
   };
 
   const inserted = await insertVariant(supabase, row);
   if (inserted) return dbExerciseToDef(inserted);
 
-  const raced = await findOwnVariant(supabase, userId, base.id, brand, input.machineType);
+  const raced = await findOwnVariant(supabase, userId, base.id, brand, machineType);
   if (raced) return dbExerciseToDef(raced);
 
-  row.id = ownedVariantId(base.id, brand, input.machineType, userId);
+  row.id = ownedVariantId(base.id, brand, machineType, userId);
   const scoped = await insertVariant(supabase, row);
   if (scoped) return dbExerciseToDef(scoped);
 
-  const after = await findOwnVariant(supabase, userId, base.id, brand, input.machineType);
+  const after = await findOwnVariant(supabase, userId, base.id, brand, machineType);
   if (after) return dbExerciseToDef(after);
 
-  throw new Error("Could not select machine");
+  throw new Error("Could not select station");
 }
 
 export interface CreateCustomInput {

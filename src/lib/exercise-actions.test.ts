@@ -6,6 +6,7 @@ vi.mock("next/navigation", () => ({ redirect: () => { throw new Error("Unauthent
 
 import { resolveVariant } from "@/app/(app)/exercise/actions";
 import { ownedVariantId, variantId } from "./exercise-id";
+import { EXERCISE_BY_ID, type StationTag } from "./strength/coefficients";
 import type { DbExerciseRow } from "./catalog";
 
 const USER_A = "16103ecf-ac56-4897-bbfd-cd557fc4a8be";
@@ -153,5 +154,266 @@ describe("resolveVariant", () => {
     });
     expect(def.id).toBe("leg-extension____selectorized");
     expect(rows).toHaveLength(1);
+  });
+
+  it("inherits machine equipment and calibration", async () => {
+    const def = await resolveVariant({
+      baseExerciseId: "machine-chest-press",
+      brand: "Hammer Strength",
+      machineType: "plate_loaded",
+    });
+    const inserted = rows.find((row) => row.id === def.id)!;
+    expect(def.id).toBe(variantId("machine-chest-press", "Hammer Strength", "plate_loaded"));
+    expect(def.equipment).toBe("machine");
+    expect(def.needsCalibration).toBe(true);
+    expect(def.isReference).toBe(false);
+    expect(def.machineType).toBe("plate_loaded");
+    expect(def.increment).toBe(EXERCISE_BY_ID["machine-chest-press"].increment);
+    expect(inserted.equipment).toBe("machine");
+    expect(inserted.needs_calibration).toBe(true);
+    expect(inserted.is_reference).toBe(false);
+  });
+});
+
+const INHERIT_CASES: {
+  baseExerciseId: string;
+  brand: string;
+  machineType: StationTag;
+  equipment: "machine" | "cable" | "barbell";
+  needsCalibration: boolean;
+  tag: string;
+}[] = [
+  {
+    baseExerciseId: "lat-pulldown",
+    brand: "Nautilus",
+    machineType: "selectorized",
+    equipment: "cable",
+    needsCalibration: true,
+    tag: "stack",
+  },
+  {
+    baseExerciseId: "seated-cable-row",
+    brand: "Hoist",
+    machineType: "selectorized",
+    equipment: "cable",
+    needsCalibration: true,
+    tag: "stack",
+  },
+  {
+    baseExerciseId: "bb-incline-bench",
+    brand: "Flex Fitness",
+    machineType: "bench",
+    equipment: "barbell",
+    needsCalibration: false,
+    tag: "bench",
+  },
+  {
+    baseExerciseId: "bb-bench",
+    brand: "Nautilus",
+    machineType: "bench",
+    equipment: "barbell",
+    needsCalibration: false,
+    tag: "bench",
+  },
+  {
+    baseExerciseId: "bb-hip-thrust",
+    brand: "Rogue",
+    machineType: "bench",
+    equipment: "barbell",
+    needsCalibration: false,
+    tag: "bench",
+  },
+  {
+    baseExerciseId: "bb-back-squat",
+    brand: "Rogue",
+    machineType: "rack",
+    equipment: "barbell",
+    needsCalibration: false,
+    tag: "rack",
+  },
+  {
+    baseExerciseId: "bb-ohp",
+    brand: "Rogue",
+    machineType: "rack",
+    equipment: "barbell",
+    needsCalibration: false,
+    tag: "rack",
+  },
+  {
+    baseExerciseId: "bb-deadlift",
+    brand: "Eleiko",
+    machineType: "platform",
+    equipment: "barbell",
+    needsCalibration: false,
+    tag: "platform",
+  },
+  {
+    baseExerciseId: "bb-rdl",
+    brand: "Eleiko",
+    machineType: "platform",
+    equipment: "barbell",
+    needsCalibration: false,
+    tag: "platform",
+  },
+];
+
+describe("resolveVariant station profiles", () => {
+  it.each(INHERIT_CASES)(
+    "creates $baseExerciseId as $equipment / $machineType (calibrate=$needsCalibration)",
+    async ({ baseExerciseId, brand, machineType, equipment, needsCalibration, tag }) => {
+      const base = EXERCISE_BY_ID[baseExerciseId];
+      const def = await resolveVariant({ baseExerciseId, brand, machineType });
+      const inserted = rows.find((row) => row.id === def.id && row.user_id === USER_B)!;
+
+      expect(def.id).toBe(variantId(baseExerciseId, brand, machineType));
+      expect(def.name).toBe(`${base.name} — ${brand} (${tag})`);
+      expect(def.equipment).toBe(equipment);
+      expect(def.needsCalibration).toBe(needsCalibration);
+      expect(def.isReference).toBe(false);
+      expect(def.machineType).toBe(machineType);
+      expect(def.brand).toBe(brand);
+      expect(def.baseExerciseId).toBe(baseExerciseId);
+      expect(def.pattern).toBe(base.pattern);
+      expect(def.coefficient).toBe(base.coefficient);
+      expect(def.increment).toBe(base.increment);
+      expect(inserted.equipment).toBe(equipment);
+      expect(inserted.needs_calibration).toBe(needsCalibration);
+      expect(inserted.machine_type).toBe(machineType);
+      expect(inserted.is_reference).toBe(false);
+    },
+  );
+
+  it("reuses an existing cable variant without inserting", async () => {
+    const existing = {
+      id: variantId("lat-pulldown", "Nautilus", "selectorized"),
+      user_id: USER_B,
+      name: "Lat Pulldown (Cable) — Nautilus (stack)",
+      pattern: "vertical_pull",
+      equipment: "cable",
+      brand: "Nautilus",
+      machine_type: "selectorized",
+      base_exercise_id: "lat-pulldown",
+      coefficient: 1,
+      is_reference: false,
+      needs_calibration: true,
+      increment: 10,
+    } satisfies Row;
+    rows.push(existing);
+    const def = await resolveVariant({
+      baseExerciseId: "lat-pulldown",
+      brand: "Nautilus",
+      machineType: "selectorized",
+    });
+    expect(def.id).toBe(existing.id);
+    expect(rows.filter((row) => row.user_id === USER_B)).toHaveLength(1);
+  });
+
+  it("owns a cable slug when another user already holds the canonical id", async () => {
+    rows.push({
+      id: variantId("lat-pulldown", "Nautilus", "selectorized"),
+      user_id: USER_A,
+      name: "Lat Pulldown (Cable) — Nautilus (stack)",
+      pattern: "vertical_pull",
+      equipment: "cable",
+      brand: "Nautilus",
+      machine_type: "selectorized",
+      base_exercise_id: "lat-pulldown",
+      coefficient: 1,
+      is_reference: false,
+      needs_calibration: true,
+      increment: 10,
+    });
+    const def = await resolveVariant({
+      baseExerciseId: "lat-pulldown",
+      brand: "Nautilus",
+      machineType: "selectorized",
+    });
+    expect(def.id).toBe(ownedVariantId("lat-pulldown", "Nautilus", "selectorized", USER_B));
+    expect(def.equipment).toBe("cable");
+    expect(def.needsCalibration).toBe(true);
+    expect(rows.filter((row) => row.user_id === USER_B && row.base_exercise_id === "lat-pulldown")).toHaveLength(1);
+  });
+
+  it("recovers a same-user unique-index race for a bench station", async () => {
+    rows.push({
+      id: "already-owned-bench",
+      user_id: USER_B,
+      name: "Barbell Incline Bench — Flex Fitness (bench)",
+      pattern: "horizontal_press",
+      equipment: "barbell",
+      brand: "Flex Fitness",
+      machine_type: "bench",
+      base_exercise_id: "bb-incline-bench",
+      coefficient: 0.82,
+      is_reference: false,
+      needs_calibration: false,
+      increment: 5,
+    });
+    const def = await resolveVariant({
+      baseExerciseId: "bb-incline-bench",
+      brand: "Flex Fitness",
+      machineType: "bench",
+    });
+    expect(def.id).toBe("already-owned-bench");
+    expect(def.equipment).toBe("barbell");
+    expect(def.needsCalibration).toBe(false);
+    expect(rows.filter((row) => row.user_id === USER_B)).toHaveLength(1);
+  });
+
+  it.each([
+    { baseExerciseId: "lat-pulldown", machineType: "plate_loaded" as StationTag },
+    { baseExerciseId: "lat-pulldown", machineType: "bench" as StationTag },
+    { baseExerciseId: "bb-bench", machineType: "rack" as StationTag },
+    { baseExerciseId: "bb-bench", machineType: "selectorized" as StationTag },
+    { baseExerciseId: "bb-back-squat", machineType: "platform" as StationTag },
+    { baseExerciseId: "bb-deadlift", machineType: "rack" as StationTag },
+    { baseExerciseId: "machine-chest-press", machineType: "bench" as StationTag },
+  ])("rejects $baseExerciseId + $machineType", async ({ baseExerciseId, machineType }) => {
+    await expect(resolveVariant({
+      baseExerciseId,
+      brand: "Nautilus",
+      machineType,
+    })).rejects.toThrow("Station tag does not match template profile");
+    expect(rows.filter((row) => row.user_id === USER_B)).toHaveLength(0);
+  });
+
+  it.each(["bb-row", "db-bench", "weighted-dip"] as const)(
+    "rejects a none-profile template (%s)",
+    async (baseExerciseId) => {
+      await expect(resolveVariant({
+        baseExerciseId,
+        brand: "Rogue",
+        machineType: "selectorized",
+      })).rejects.toThrow("Template does not require a station");
+      expect(rows.filter((row) => row.user_id === USER_B)).toHaveLength(0);
+    },
+  );
+
+  it.each([
+    { baseExerciseId: "lat-pulldown", machineType: "selectorized" as const },
+    { baseExerciseId: "bb-incline-bench", machineType: "bench" as const },
+    { baseExerciseId: "bb-ohp", machineType: "rack" as const },
+    { baseExerciseId: "bb-rdl", machineType: "platform" as const },
+  ])("requires a brand for $baseExerciseId", async ({ baseExerciseId, machineType }) => {
+    await expect(resolveVariant({
+      baseExerciseId,
+      brand: null,
+      machineType,
+    })).rejects.toThrow("Brand required");
+    await expect(resolveVariant({
+      baseExerciseId,
+      brand: "   ",
+      machineType,
+    })).rejects.toThrow("Brand required");
+    expect(rows.filter((row) => row.user_id === USER_B)).toHaveLength(0);
+  });
+
+  it("rejects an unknown template before writing", async () => {
+    await expect(resolveVariant({
+      baseExerciseId: "not-a-real-lift",
+      brand: "Nautilus",
+      machineType: "selectorized",
+    })).rejects.toThrow("Unknown template: not-a-real-lift");
+    expect(rows.filter((row) => row.user_id === USER_B)).toHaveLength(0);
   });
 });

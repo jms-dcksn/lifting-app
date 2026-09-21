@@ -70,7 +70,7 @@ describe("station picker helpers", () => {
     expect(shouldResolveStation(EXERCISE_BY_ID["lat-pulldown"], false)).toBe(false);
     expect(isLoggableExercise(EXERCISE_BY_ID["lat-pulldown"])).toBe(false);
     expect(isLoggableExercise(EXERCISE_BY_ID["bb-row"])).toBe(true);
-    expect(isLoggableExercise({ id: "variant" })).toBe(true);
+    expect(isLoggableExercise({})).toBe(true);
     expect(isLoggableExercise(undefined)).toBe(false);
   });
 });

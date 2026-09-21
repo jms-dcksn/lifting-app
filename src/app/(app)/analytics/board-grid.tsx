@@ -19,7 +19,7 @@ export function BoardTile({ lift, pinned, showPin = true }: { lift: BoardLift; p
           <PinButton exerciseId={lift.exerciseId} pinned={pinned} name={lift.name} />
         </div>
       )}
-      <Link href={exerciseReviewHref({ exerciseId: lift.exerciseId, equipmentInstanceId: lift.equipmentInstanceId })} className={cx("flex min-h-11 flex-col gap-1", showPin && "pr-10")}>
+      <Link href={exerciseReviewHref({ exerciseId: lift.reviewExerciseId, equipmentInstanceId: lift.equipmentInstanceId })} className={cx("flex min-h-11 flex-col gap-1", showPin && "pr-10")}>
         <p className="text-caption font-medium text-muted">{lift.shortName}</p>
         <p className="text-heading tabular-nums">
           {lift.currentE1rm == null ? "—" : `${Math.round(lift.currentE1rm)}`}

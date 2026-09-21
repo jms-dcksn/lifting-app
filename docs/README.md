@@ -13,7 +13,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Shared components and UI gotchas | [UI conventions](UI.md) |
 | Copy density (proposed) | [2026-09-16 spec](superpowers/specs/2026-09-16-visual-copy-density-design.md) |
 | Exercise review (Slices A–F shipped) | [2026-09-19 spec](superpowers/specs/2026-09-19-exercise-review-design.md) |
-| Station composition (design, #146) | [2026-09-21 spec](superpowers/specs/2026-09-21-station-composition-design.md) |
+| Station composition (Slices 1–4 shipped) | [2026-09-21 spec](superpowers/specs/2026-09-21-station-composition-design.md) |
 | Shipped behavior | [Features](FEATURES.md) |
 | Rationale and record eligibility | [Decisions](DECISIONS.md) |
 | Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |

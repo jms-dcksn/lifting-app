@@ -25,6 +25,13 @@ function row(
 }
 
 describe("reviewEquipmentParam", () => {
+  it("treats the query as an equipment instance id, never a station tag", () => {
+    expect(reviewEquipmentParam("none")).toBeNull();
+    expect(reviewEquipmentParam("machine-1")).toBe("machine-1");
+    expect(reviewEquipmentParam("bench")).toBe("bench");
+    expect(reviewEquipmentParam("selectorized")).toBe("selectorized");
+  });
+
   it("treats none as an explicit null instance and ignores missing values", () => {
     expect(reviewEquipmentParam("none")).toBeNull();
     expect(reviewEquipmentParam("machine-1")).toBe("machine-1");

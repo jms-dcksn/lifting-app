@@ -118,8 +118,9 @@ and rotation live in [Coach report](COACH-REPORT.md#weekly-coach-api) and [deplo
 
 ## History and reporting
 
-- In-session quick history uses `exerciseFamilyIds()` to include explicitly linked machine
-  variants, returns ten latest sets from previous workouts, and loads only when opened.
+- In-session quick history uses `exerciseFamilyIds()` to include explicitly linked
+  variants (machine, cable, bench, rack, platform) via `baseExerciseId`, returns ten
+  latest sets from previous workouts, and loads only when opened.
   This family grouping is for browsing; progression and records use exact exercise identity.
 - Per-exercise `/history/[exerciseId]` is Exercise review for every entry point. A `month`
   query is return-link context, not a second page. The screen answers Last (last finished
@@ -130,9 +131,13 @@ and rotation live in [Coach report](COACH-REPORT.md#weekly-coach-api) and [deplo
   and `identityVolume` beside `sessionTonnage`; do not reuse UTC `weeklyVolume` weeks.
   Program captions read distinct `program.name` values from `workout_session.program_id`
   in the chart window and in the selected months. Entry points pass `equipment`
-  (`none` or the instance id) so the page never blends machines. Track
+  (`none` or the instance id) so the page never blends machines or stations.
+  `?equipment=` stays an instance id, not a station switcher. Track
   (`/analytics`) uses `analytics.ts` summaries plus `board.ts` for default compounds and
-  pin visibility; those summaries pick the latest finished instance per exercise.
+  pin visibility; those summaries pick the latest finished instance per exact exercise.
+  Default-compound tiles keep template ids (`bb-bench`, `lat-pulldown`, …) and short
+  names; numbers and the review href follow the latest finished family member.
+  Pins on a specific variant stay exact-id. Do not merge PR numbers across family members.
   Volume and this week's full PR list sit in Track Explore. Weight trends live on Body.
   Coach lives on Track (`/analytics/coach`). The Track tab stays current on `/history/...`.
   Pattern-strength replay does not replay historical personal machine coefficients.

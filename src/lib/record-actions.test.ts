@@ -73,7 +73,7 @@ function from(table: string) {
   return query;
 }
 const db = { from, auth: { getClaims: async () => ({ data: { claims: { sub: "user" } } }) } };
-const input = { sessionId: "active", programSlotId: "slot", exerciseId: "bb-bench", weight: 100, reps: 10, rir: 1 };
+const input = { sessionId: "active", programSlotId: "slot", exerciseId: "bb-row", weight: 100, reps: 10, rir: 1 };
 const records = () => loadWorkoutRecords(db as unknown as Parameters<typeof loadWorkoutRecords>[0], "user", "active", startedAt, EXERCISE_BY_ID);
 
 beforeEach(() => {
@@ -88,7 +88,7 @@ beforeEach(() => {
       { id: "previous", user_id: "user", performed_at: "2026-09-10T10:00:00Z", finished_at: "2026-09-10T11:00:00Z" },
       { id: "active", user_id: "user", performed_at: startedAt, finished_at: null, readiness: 4, joint_pain: null, notes: null },
     ],
-    set_log: [{ id: "prior", user_id: "user", session_id: "previous", program_slot_id: "old-slot", exercise_id: "bb-bench",
+    set_log: [{ id: "prior", user_id: "user", session_id: "previous", program_slot_id: "old-slot", exercise_id: "bb-row",
       equipment_instance_id: null, weight: 100, reps: 8, rir: 1, e1rm: computeE1rm(100, 8, 1), is_warmup: false,
       created_at: "2026-09-10T10:01:00Z" }],
     user_exercise_stat: [],
@@ -176,6 +176,14 @@ describe("persisted workout achievement flow", () => {
     await expect(finishSession("active")).rejects.toThrow("offline");
     expect(tables.workout_session[1].finished_at).toBeNull();
   });
+
+  it.each(["lat-pulldown", "bb-incline-bench", "machine-chest-press", "bb-bench"] as const)(
+    "rejects logging unresolved station template %s",
+    async (exerciseId) => {
+      await expect(logSet({ ...input, exerciseId })).rejects.toThrow("Choose a specific exercise or machine first.");
+      expect(tables.set_log).toHaveLength(1);
+    },
+  );
 
   it.each([NaN, Infinity, null, undefined])("rejects missing/invalid weight %s before saving", async (weight) => {
     await expect(logSet({ ...input, weight: weight as number })).rejects.toThrow("valid weight");

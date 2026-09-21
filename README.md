@@ -55,7 +55,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 
 - `src/lib/strength/` — the recommendation engine (framework-free, unit-testable)
   - `e1rm.ts` — RPE/RIR → estimated 1RM and its inverse
-  - `coefficients.ts` — seeded exercise catalog (generic machine *templates*) + population strength priors
+  - `coefficients.ts` — seeded exercise catalog (machine, cable, and barbell-station *templates* requiring picker resolve + `none`-profile exercises logged as-is) + population strength priors
   - `recommend.ts` — pattern-strength model + cross-exercise weight recommendation
   - `recompute.ts` — rebuild `user_exercise_stat` from `set_log` rows
   - `progression.ts` — double-progression session target using bounded best-recent exact-exercise history across repeated weekly slots
@@ -94,9 +94,10 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 ### Quick lift history
 
 During a workout, tap **History** on an exercise to open a scrollable sheet with its
-10 most recent logged sets from previous workouts. Machine exercises include all linked
-brands and machine types, with each machine named alongside the date, weight, reps,
-and RIR. Close the sheet to resume your workout without losing your set inputs.
+10 most recent logged sets from previous workouts. Station-profile exercises (machines,
+cables, and barbell stations) include sets from all linked brand variants, with each
+variant's name alongside the date, weight, reps, and RIR. Close the sheet to resume
+your workout without losing your set inputs.
 
 Weight history can be browsed and edited through a shared calendar on Home, Track,
 and You, including backdated entries and atomic date corrections. See

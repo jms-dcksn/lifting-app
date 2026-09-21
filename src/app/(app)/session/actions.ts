@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
 import { exerciseFamilyIds, loadExerciseHistory } from "@/lib/exercise-history";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
+import { isLoggableExercise } from "@/lib/station";
 import { loadWorkoutRecords } from "@/lib/workout-records";
 import { historicalBodyweight, validSetNumbers, type ExerciseRecords } from "@/lib/strength/records";
 import { computeE1rm } from "@/lib/strength/e1rm";
@@ -173,7 +174,10 @@ export async function logSet(input: LogSetInput) {
   const def = catalog[input.exerciseId];
   if (!def) throw new Error(`Unknown exercise: ${input.exerciseId}`);
 
-  if (!validSetNumbers(input) || input.rir == null || (def.equipment !== "bodyweight" && input.weight <= 0) || def.machineTemplate) {
+  if (!isLoggableExercise(def)) {
+    throw new Error("Choose a specific exercise or machine first.");
+  }
+  if (!validSetNumbers(input) || input.rir == null || (def.equipment !== "bodyweight" && input.weight <= 0)) {
     throw new Error("Enter a valid weight, whole-number reps, and RIR from 0 to 5.");
   }
 
@@ -576,7 +580,7 @@ export async function swapSessionExercise(input: {
   if (input.scope !== "workout" && input.scope !== "program") throw new Error("Invalid swap scope");
   const catalog = await getCatalogMap(supabase, userId);
   const exercise = catalog[input.exerciseId];
-  if (!exercise || exercise.machineTemplate) throw new Error("Choose a specific exercise or machine first.");
+  if (!isLoggableExercise(exercise)) throw new Error("Choose a specific exercise or machine first.");
   const { error } = await supabase.rpc("swap_session_exercise", {
     p_session_id: input.sessionId,
     p_slot_id: input.programSlotId,

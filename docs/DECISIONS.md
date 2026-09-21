@@ -495,11 +495,15 @@ added with `cable-crunch` as its reference anchor, so ab work has a home in the 
 model.
 
 **Builder picks templates; the session resolves them.** The program builder stays
-brand-agnostic (`resolveMachines={false}`): a slot stores the generic machine template. The
-active-session picker runs with `resolveMachines`, so the first time a lifter reaches a machine
-slot they pick brand + type and the template is instantiated to a concrete variant before any
-set is logged. A bare template renders a "Choose machine" prompt instead of set-entry. Custom
-exercises created from either picker are concrete and immediately loggable.
+brand-agnostic (`resolveStations={false}`): a slot stores the generic station template. The
+active-session picker runs with `resolveStations`, so the first time a lifter reaches a station
+slot they pick a brand (and type for machines) and the template is instantiated to a concrete
+variant before any set is logged. A bare station template renders a profile-specific choose
+prompt ("Choose machine" / "Choose cable" / "Choose bench" / "Choose rack" / "Choose platform")
+instead of set-entry. Custom exercises created from either picker are concrete and immediately
+loggable. `logSet`, swap, planner saves, and extra-pin writes reject unresolved station
+templates. (Station composition Slice 3 — previously this flag was `resolveMachines` and
+only machine templates were gated; Slices 1-3 generalized it to all `needsStation()` profiles.)
 
 **Migration 0008** adds `exercise.machine_type` and `exercise.base_exercise_id` plus a partial
 unique index (`exercise_variant_unique` on `user_id, base_exercise_id, coalesce(brand,''),
@@ -701,7 +705,8 @@ Design approved (James 2026-09-21). Open questions LOCKED. Source of truth:
 [station composition spec](superpowers/specs/2026-09-21-station-composition-design.md)
 ([#146](https://github.com/jms-dcksn/lifting-app/issues/146)). Slice 1 shipped
 `stationProfile` / `needsStation` / `StationTag`. Slice 2 shipped `resolveVariant`
-extended to cable and barbell-station templates.
+extended to cable and barbell-station templates. Slice 3 shipped the picker forms
+and session/planner/swap/pin gate.
 
 Phase C scoped brand/type to machines and left cables flat. That judgment is
 reversed for every cable and for the barbell stations below. Extend

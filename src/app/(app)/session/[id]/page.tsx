@@ -12,6 +12,7 @@ import type { JointPain } from "@/lib/session-feedback";
 import { loadWorkoutRecords } from "@/lib/workout-records";
 import { getCurrentBodyweight } from "@/lib/current-bodyweight";
 import { defaultCompoundIds, pinnedExerciseIds } from "@/lib/board";
+import { isLoggableExercise } from "@/lib/station";
 import { loadUserPinRows } from "@/lib/pins-data";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
 
@@ -243,7 +244,7 @@ export default async function SessionPage({
         .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
       if (lastSwap?.new_exercise_id) {
         const altDef = catalog[lastSwap.new_exercise_id];
-        if (altDef && altDef.pattern === slot.pattern && !altDef.machineTemplate) {
+        if (altDef && altDef.pattern === slot.pattern && isLoggableExercise(altDef)) {
           lastUsedBySlot.set(slot.id, lastSwap.new_exercise_id);
         }
       }

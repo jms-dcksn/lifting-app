@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getCatalogMap } from "@/lib/catalog";
 import { defaultCompoundIds, isExercisePinned } from "@/lib/board";
+import { isLoggableExercise } from "@/lib/station";
 import { dateKey } from "@/lib/bodyweight";
 import { getCurrentBodyweight } from "@/lib/current-bodyweight";
 import { loadUserPinRows } from "@/lib/pins-data";
@@ -49,7 +50,7 @@ export default async function HistoryPage({
   const def = catalog[exerciseId];
   const name = def?.name ?? exerciseId;
   const isBodyweight = def?.equipment === "bodyweight";
-  const pin = def && !def.machineTemplate
+  const pin = isLoggableExercise(def)
     ? { exerciseId, pinned: isExercisePinned(pinRows, defaultCompoundIds(catalog), exerciseId), name }
     : undefined;
 

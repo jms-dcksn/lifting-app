@@ -1,6 +1,7 @@
 # Exercise swap scope
 
-In an active workout, tap Swap (or Choose machine), select the replacement, then choose:
+In an active workout, tap Swap (or the profile-specific Choose machine / cable /
+bench / rack / platform control), select the replacement, then choose:
 
 - **This workout only:** use the replacement now; keep the program's exercise next time.
 - **Remainder of program:** use the replacement now and for the same slot each time this
@@ -22,7 +23,7 @@ The SECURITY INVOKER swap_session_exercise RPC uses the authenticated user's RLS
 checks the session is open and that slot/day/program belong together, locks the session and
 slot, and atomically updates the session choice and optional program-slot exercise/pattern.
 JSON updates preserve choices for other slots. The Server Action validates the replacement
-against the caller's merged catalog and rejects unresolved machine templates. No elevated
+against the caller's merged catalog and rejects unresolved station templates. No elevated
 credential is used. Program/home paths are revalidated after program-wide changes.
 
 For fluid programs, a manual_swap event supersedes earlier exercise adaptations while

@@ -15,6 +15,7 @@ import {
   pinnedExerciseIds,
 } from "@/lib/board";
 import { loadUserPinRows } from "@/lib/pins-data";
+import { isLoggableExercise } from "@/lib/station";
 import { loadWeekRecordChips } from "@/lib/week-records-data";
 import { PinEditorButton, type PinEditorItem } from "../pins/pin-editor";
 import { BoardGrid } from "./board-grid";
@@ -100,7 +101,7 @@ export default async function AnalyticsPage() {
     })),
     ...[
       ...extraPins(pinRows, defaults).map((pin) => pin.exerciseId),
-      ...[...historyIds].filter((id) => !defaults.includes(id) && !catalog[id]?.machineTemplate),
+      ...[...historyIds].filter((id) => !defaults.includes(id) && isLoggableExercise(catalog[id])),
     ]
       .filter((id, index, all) => all.indexOf(id) === index)
       .map((exerciseId) => ({

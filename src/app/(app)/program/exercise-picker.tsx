@@ -10,6 +10,11 @@ import {
   type MachineType,
   type Pattern,
 } from "@/lib/strength/coefficients";
+import {
+  shouldResolveStation,
+  stationPickerForm,
+  stationResolveInput,
+} from "@/lib/station";
 import { createCustomExercise, resolveVariant } from "../exercise/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,22 +23,23 @@ import { Sheet, useSheetDismiss } from "@/components/ui/sheet";
 const EQUIPMENTS: Equipment[] = ["barbell", "dumbbell", "cable", "machine", "bodyweight"];
 
 // Searchable exercise list, recent-first, in a bottom sheet. Reused by the builder
-// (add slot, templates kept as-is) and by swap (resolveMachines: a machine template is
-// instantiated to a brand/type variant before it is returned). "Add custom exercise"
-// creates a concrete exercise. onPick always receives a concrete, loggable def when
-// resolveMachines is set. Picking dismisses the sheet; parent unmounts via onClose.
+// (add slot, templates kept as-is) and by swap/planner (resolveStations: a station
+// template is instantiated to a brand / brand+type variant before it is returned).
+// "Add custom exercise" creates a concrete exercise. onPick always receives a
+// concrete, loggable def when resolveStations is set. Picking dismisses the sheet;
+// parent unmounts via onClose.
 export function ExercisePicker({
   catalog,
   recentIds = [],
   patternFilter,
-  resolveMachines = false,
+  resolveStations = false,
   onPick,
   onClose,
 }: {
   catalog: ExerciseDef[];
   recentIds?: string[];
   patternFilter?: Pattern;
-  resolveMachines?: boolean;
+  resolveStations?: boolean;
   onPick: (exercise: ExerciseDef) => void;
   onClose: () => void;
 }) {
@@ -43,7 +49,7 @@ export function ExercisePicker({
         catalog={catalog}
         recentIds={recentIds}
         patternFilter={patternFilter}
-        resolveMachines={resolveMachines}
+        resolveStations={resolveStations}
         onPick={onPick}
       />
     </Sheet>
@@ -52,28 +58,28 @@ export function ExercisePicker({
 
 type View =
   | { kind: "list" }
-  | { kind: "machine"; template: ExerciseDef }
+  | { kind: "station"; template: ExerciseDef }
   | { kind: "custom" };
 
 function PickerBody({
   catalog,
   recentIds,
   patternFilter,
-  resolveMachines,
+  resolveStations,
   onPick,
 }: {
   catalog: ExerciseDef[];
   recentIds: string[];
   patternFilter?: Pattern;
-  resolveMachines: boolean;
+  resolveStations: boolean;
   onPick: (exercise: ExerciseDef) => void;
 }) {
   const dismiss = useSheetDismiss();
   const [view, setView] = useState<View>({ kind: "list" });
 
-  if (view.kind === "machine") {
+  if (view.kind === "station") {
     return (
-      <MachineForm
+      <StationForm
         template={view.template}
         onBack={() => setView({ kind: "list" })}
         onResolved={(def) => {
@@ -101,8 +107,8 @@ function PickerBody({
       recentIds={recentIds}
       patternFilter={patternFilter}
       onRowPick={(e) => {
-        if (resolveMachines && e.machineTemplate) {
-          setView({ kind: "machine", template: e });
+        if (shouldResolveStation(e, resolveStations)) {
+          setView({ kind: "station", template: e });
         } else {
           onPick(e);
           dismiss();
@@ -201,8 +207,8 @@ function ListView({
   );
 }
 
-// Brand + type step for instantiating a machine template into a trackable variant.
-function MachineForm({
+// Brand (+ type for machines) step for instantiating a station template.
+function StationForm({
   template,
   onBack,
   onResolved,
@@ -211,38 +217,46 @@ function MachineForm({
   onBack: () => void;
   onResolved: (def: ExerciseDef) => void;
 }) {
+  const form = stationPickerForm(template);
   const [brand, setBrand] = useState("");
   const [machineType, setMachineType] = useState<MachineType>("selectorized");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const brandRequired = form.kind === "brand-only";
+  const showType = form.kind === "brand-and-type";
 
   const confirm = async () => {
     setPending(true);
     setError(null);
     try {
-      const def = await resolveVariant({
-        baseExerciseId: template.id,
+      const def = await resolveVariant(stationResolveInput(template, {
         brand: brand.trim() || null,
         machineType,
-      });
+      }));
       onResolved(def);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not select machine");
+      setError(e instanceof Error ? e.message : `Could not select ${template.stationProfile ?? "station"}`);
       setPending(false);
     }
   };
 
   return (
-    <FormShell title={template.name} subtitle="Choose brand & type" onBack={onBack}>
-      <MachineFields
+    <FormShell
+      title={template.name}
+      subtitle={showType ? "Choose brand & type" : "Choose brand"}
+      onBack={onBack}
+    >
+      <StationFields
         brand={brand}
         setBrand={setBrand}
         machineType={machineType}
         setMachineType={setMachineType}
+        brandRequired={brandRequired}
+        showType={showType}
       />
       {error && <p className="text-caption text-danger">{error}</p>}
       <Button type="button" className="w-full" pending={pending} onClick={confirm}>
-        Use this machine
+        Use this {template.stationProfile === "machine" || !template.stationProfile ? "machine" : template.stationProfile}
       </Button>
     </FormShell>
   );
@@ -263,6 +277,8 @@ function CustomForm({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isMachine = equipment === "machine";
+  const isCable = equipment === "cable";
+  const showStation = isMachine || isCable;
 
   const confirm = async () => {
     if (!name.trim()) {
@@ -276,8 +292,8 @@ function CustomForm({
         name,
         pattern,
         equipment,
-        brand: isMachine ? brand.trim() || null : null,
-        machineType: isMachine ? machineType : null,
+        brand: showStation ? brand.trim() || null : null,
+        machineType: isMachine ? machineType : isCable ? "selectorized" : null,
       });
       onCreated(def);
     } catch (e) {
@@ -315,12 +331,14 @@ function CustomForm({
           ))}
         </Select>
       </Field>
-      {isMachine && (
-        <MachineFields
+      {showStation && (
+        <StationFields
           brand={brand}
           setBrand={setBrand}
           machineType={machineType}
           setMachineType={setMachineType}
+          brandRequired={isCable}
+          showType={isMachine}
         />
       )}
       {error && <p className="text-caption text-danger">{error}</p>}
@@ -331,16 +349,20 @@ function CustomForm({
   );
 }
 
-function MachineFields({
+function StationFields({
   brand,
   setBrand,
   machineType,
   setMachineType,
+  brandRequired = false,
+  showType = true,
 }: {
   brand: string;
   setBrand: (v: string) => void;
   machineType: MachineType;
   setMachineType: (v: MachineType) => void;
+  brandRequired?: boolean;
+  showType?: boolean;
 }) {
   const isOther = brand !== "" && !KNOWN_BRANDS.includes(brand as (typeof KNOWN_BRANDS)[number]);
   const [other, setOther] = useState(isOther);
@@ -360,7 +382,8 @@ function MachineFields({
             }
           }}
         >
-          <option value="">Unbranded</option>
+          {!brandRequired && <option value="">Unbranded</option>}
+          {brandRequired && <option value="">Select brand</option>}
           {KNOWN_BRANDS.map((b) => (
             <option key={b} value={b}>
               {b}
@@ -377,15 +400,17 @@ function MachineFields({
           className="h-11 w-full"
         />
       )}
-      <Field label="Type">
-        <div className="flex gap-2">
-          {(Object.keys(MACHINE_TYPE_LABEL) as MachineType[]).map((t) => (
-            <Chip key={t} selected={machineType === t} onClick={() => setMachineType(t)}>
-              {MACHINE_TYPE_LABEL[t]}
-            </Chip>
-          ))}
-        </div>
-      </Field>
+      {showType && (
+        <Field label="Type">
+          <div className="flex gap-2">
+            {(Object.keys(MACHINE_TYPE_LABEL) as MachineType[]).map((t) => (
+              <Chip key={t} selected={machineType === t} onClick={() => setMachineType(t)}>
+                {MACHINE_TYPE_LABEL[t]}
+              </Chip>
+            ))}
+          </div>
+        </Field>
+      )}
     </>
   );
 }

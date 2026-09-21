@@ -4,7 +4,7 @@ const mocks = vi.hoisted(() => ({ client: vi.fn() }));
 vi.mock("./supabase/server", () => ({ createClient: mocks.client }));
 vi.mock("next/navigation", () => ({ redirect: () => { throw new Error("Unauthenticated"); } }));
 
-import { resolveVariant } from "@/app/(app)/exercise/actions";
+import { createCustomExercise, resolveVariant } from "@/app/(app)/exercise/actions";
 import { ownedVariantId, variantId } from "./exercise-id";
 import { EXERCISE_BY_ID, type StationTag } from "./strength/coefficients";
 import type { DbExerciseRow } from "./catalog";
@@ -406,6 +406,43 @@ describe("resolveVariant station profiles", () => {
       machineType,
     })).rejects.toThrow("Brand required");
     expect(rows.filter((row) => row.user_id === USER_B)).toHaveLength(0);
+  });
+
+  it("creates a custom cable with brand and locked selectorized type", async () => {
+    const def = await createCustomExercise({
+      name: "Bayesian Cable Fly",
+      pattern: "horizontal_press",
+      equipment: "cable",
+      brand: "Nautilus",
+    });
+    expect(def.equipment).toBe("cable");
+    expect(def.brand).toBe("Nautilus");
+    expect(def.machineType).toBe("selectorized");
+    expect(def.needsCalibration).toBe(true);
+    expect(rows.some((row) => row.id === def.id && row.user_id === USER_B)).toBe(true);
+  });
+
+  it("requires a brand for a custom cable", async () => {
+    await expect(createCustomExercise({
+      name: "No Brand Cable",
+      pattern: "horizontal_press",
+      equipment: "cable",
+    })).rejects.toThrow("Brand required");
+    expect(rows.filter((row) => row.user_id === USER_B)).toHaveLength(0);
+  });
+
+  it("keeps custom machines on the brand + type path", async () => {
+    const def = await createCustomExercise({
+      name: "Garage Chest Press",
+      pattern: "horizontal_press",
+      equipment: "machine",
+      brand: "Hammer Strength",
+      machineType: "plate_loaded",
+    });
+    expect(def.equipment).toBe("machine");
+    expect(def.brand).toBe("Hammer Strength");
+    expect(def.machineType).toBe("plate_loaded");
+    expect(def.needsCalibration).toBe(true);
   });
 
   it("rejects an unknown template before writing", async () => {

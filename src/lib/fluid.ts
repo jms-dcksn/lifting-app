@@ -6,7 +6,7 @@ import { buildStallAssessments } from "./stall-report";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
-import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
+import { needsStation, type ExerciseDef, type Pattern } from "@/lib/strength/coefficients";
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { startingWeight } from "@/lib/strength/progression";
 import {
@@ -110,7 +110,7 @@ export async function loadPendingSuggestions(
       }
 
       const pool: SwapCandidateInput[] = Object.values(catalog)
-        .filter((d) => d.pattern === slot.pattern && d.id !== folded.exerciseId)
+        .filter((d) => d.pattern === slot.pattern && d.id !== folded.exerciseId && !needsStation(d))
         .map((d) => ({
           exerciseId: d.id,
           name: d.name,

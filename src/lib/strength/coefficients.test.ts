@@ -4,8 +4,12 @@ import {
   EXERCISE_BY_ID,
   KNOWN_BRANDS,
   PATTERN_LABEL,
+  STATION_TAGS_BY_PROFILE,
+  allowedStationTags,
   needsStation,
+  resolveStationFields,
   type StationProfile,
+  type StationTag,
 } from "./coefficients";
 
 const STATION_PROFILE_BY_ID: Record<string, StationProfile> = {
@@ -85,6 +89,8 @@ describe("catalog templates", () => {
   it("treats a missing profile as already resolved", () => {
     expect(needsStation({})).toBe(false);
     expect(needsStation({ stationProfile: undefined })).toBe(false);
+    expect(() => resolveStationFields({}, { brand: "Hoist", machineType: "selectorized" }))
+      .toThrow("Template does not require a station");
   });
 
   it("flags every machine template and gives it no brand", () => {
@@ -113,5 +119,78 @@ describe("catalog templates", () => {
   it("lists the known brands", () => {
     expect(KNOWN_BRANDS).toContain("Hammer Strength");
     expect(KNOWN_BRANDS).toContain("Precor");
+  });
+});
+
+describe("resolveStationFields", () => {
+  it("locks each profile to its allowed tags", () => {
+    expect(allowedStationTags("machine")).toEqual(["selectorized", "plate_loaded"]);
+    expect(allowedStationTags("cable")).toEqual(["selectorized"]);
+    expect(allowedStationTags("bench")).toEqual(["bench"]);
+    expect(allowedStationTags("rack")).toEqual(["rack"]);
+    expect(allowedStationTags("platform")).toEqual(["platform"]);
+    expect(allowedStationTags("none")).toEqual([]);
+    expect(STATION_TAGS_BY_PROFILE.cable).toEqual(["selectorized"]);
+  });
+
+  it.each([
+    { id: "leg-extension", brand: "Hoist", machineType: "selectorized" as const },
+    { id: "machine-chest-press", brand: null, machineType: "plate_loaded" as const },
+    { id: "lat-pulldown", brand: "Nautilus", machineType: "selectorized" as const },
+    { id: "bb-incline-bench", brand: "Flex Fitness", machineType: "bench" as const },
+    { id: "bb-back-squat", brand: "Rogue", machineType: "rack" as const },
+    { id: "bb-deadlift", brand: "Eleiko", machineType: "platform" as const },
+  ])("accepts $id + $machineType", ({ id, brand, machineType }) => {
+    expect(resolveStationFields(EXERCISE_BY_ID[id], { brand, machineType })).toEqual({
+      brand,
+      machineType,
+    });
+  });
+
+  it("trims brand and keeps the machine no-brand path", () => {
+    expect(resolveStationFields(EXERCISE_BY_ID["leg-extension"], {
+      brand: "  Hoist  ",
+      machineType: "selectorized",
+    })).toEqual({ brand: "Hoist", machineType: "selectorized" });
+    expect(resolveStationFields(EXERCISE_BY_ID["leg-extension"], {
+      brand: "  ",
+      machineType: "selectorized",
+    })).toEqual({ brand: null, machineType: "selectorized" });
+  });
+
+  it.each([
+    { id: "lat-pulldown", machineType: "plate_loaded" as StationTag },
+    { id: "lat-pulldown", machineType: "bench" as StationTag },
+    { id: "bb-bench", machineType: "rack" as StationTag },
+    { id: "bb-bench", machineType: "selectorized" as StationTag },
+    { id: "bb-back-squat", machineType: "platform" as StationTag },
+    { id: "bb-deadlift", machineType: "rack" as StationTag },
+    { id: "machine-chest-press", machineType: "bench" as StationTag },
+    { id: "machine-chest-press", machineType: "platform" as StationTag },
+  ])("rejects $id + $machineType", ({ id, machineType }) => {
+    expect(() => resolveStationFields(EXERCISE_BY_ID[id], { brand: "Nautilus", machineType }))
+      .toThrow("Station tag does not match template profile");
+  });
+
+  it.each(["bb-row", "db-bench", "weighted-dip"] as const)(
+    "rejects a none-profile template (%s)",
+    (id) => {
+      expect(() => resolveStationFields(EXERCISE_BY_ID[id], {
+        brand: "Rogue",
+        machineType: "selectorized",
+      })).toThrow("Template does not require a station");
+    },
+  );
+
+  it.each([
+    { id: "lat-pulldown", machineType: "selectorized" as const },
+    { id: "bb-incline-bench", machineType: "bench" as const },
+    { id: "bb-ohp", machineType: "rack" as const },
+    { id: "bb-rdl", machineType: "platform" as const },
+  ])("requires a brand for $id", ({ id, machineType }) => {
+    expect(() => resolveStationFields(EXERCISE_BY_ID[id], { brand: null, machineType }))
+      .toThrow("Brand required");
+    expect(() => resolveStationFields(EXERCISE_BY_ID[id], { brand: "   ", machineType }))
+      .toThrow("Brand required");
   });
 });

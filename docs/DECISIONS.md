@@ -699,8 +699,9 @@ exclusion and Settings consent copy.
 
 Design approved (James 2026-09-21). Open questions LOCKED. Source of truth:
 [station composition spec](superpowers/specs/2026-09-21-station-composition-design.md)
-([#146](https://github.com/jms-dcksn/lifting-app/issues/146)). Implementation is
-a follow-up; the design PR stays unmerged.
+([#146](https://github.com/jms-dcksn/lifting-app/issues/146)). Slice 1 shipped
+`stationProfile` / `needsStation` / `StationTag`. Slice 2 extends `resolveVariant`
+to cable and barbell-station templates.
 
 Phase C scoped brand/type to machines and left cables flat. That judgment is
 reversed for every cable and for the barbell stations below. Extend

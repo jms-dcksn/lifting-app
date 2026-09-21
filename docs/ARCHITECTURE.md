@@ -22,16 +22,20 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
   for assistance, including dips/pull-ups). `effectiveLoad()` returns null for unknown
   bodyweight. Live loads use `getCurrentBodyweight()` (newest observation, then profile
   baseline); historical edits and records recover bodyweight from the saved set's e1RM.
-- A generic machine template has no absolute load identity. `resolveVariant` in
-  `src/app/(app)/exercise/actions.ts` find-or-creates a brand/type variant under the per-user
-  unique index; `createCustomExercise` creates custom definitions. Canonical variant ids are
-  `base__brand__machinetype`, but `exercise.id` is a global primary key, so a second owner of
-  the same brand/type gets an owned id rather than crashing the picker. Session/planner pickers
-  resolve machines before logging; the program builder can store generic templates.
+- A generic station template has no absolute load identity. `resolveVariant` in
+  `src/app/(app)/exercise/actions.ts` find-or-creates a brand × station-tag variant under the
+  per-user unique index; `createCustomExercise` creates custom definitions. Canonical variant
+  ids are `base__brand__tag`, but `exercise.id` is a global primary key, so a second owner of
+  the same brand/tag gets an owned id rather than crashing the picker. Session/planner pickers
+  still resolve machines before logging; the program builder can store generic templates.
   Seeded rows carry `stationProfile` (`machine | cable | bench | rack | platform | none`);
   `needsStation()` is `stationProfile !== "none"`. `StationTag` (`selectorized | plate_loaded |
-  bench | rack | platform`) is the variant-id third segment. Resolve still accepts machines
-  only; later slices extend the same path to cables and barbell stations. See
+  bench | rack | platform`) is the variant-id third segment. `resolveVariant` accepts every
+  `needsStation` profile, inherits `equipment` and `needs_calibration` from the template
+  (cables calibrate; barbell stations do not), locks cables to `selectorized`, stores
+  `bench`/`rack`/`platform` sentinels in `machine_type`, and rejects tag/profile mismatches.
+  Cable and barbell-station brands are required. Session gates for those profiles land in a
+  later slice. See
   [station composition](superpowers/specs/2026-09-21-station-composition-design.md).
 - Machines require calibration because stack/leverage units do not transfer from free
   weights. `recomputeAndUpsertStat` in `src/app/(app)/session/actions.ts` anchors the personal

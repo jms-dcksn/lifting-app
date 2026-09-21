@@ -5,8 +5,8 @@ import { historicalBodyweight, recapHeadline, recapLines, recordCounts, recordsF
 
 const start = "2026-09-12T10:00:00Z";
 const catalog = { ...EXERCISE_BY_ID,
-  hammer: { ...EXERCISE_BY_ID["machine-chest-press"], id: "hammer", name: "Hammer chest press", machineTemplate: false },
-  hoist: { ...EXERCISE_BY_ID["machine-chest-press"], id: "hoist", name: "Hoist chest press", machineTemplate: false },
+  hammer: { ...EXERCISE_BY_ID["machine-chest-press"], id: "hammer", name: "Hammer chest press", stationProfile: undefined, machineTemplate: false },
+  hoist: { ...EXERCISE_BY_ID["machine-chest-press"], id: "hoist", name: "Hoist chest press", stationProfile: undefined, machineTemplate: false },
 };
 function set(overrides: Partial<RecordSet> = {}): RecordSet {
   return { id: "prior", user_id: "user", session_id: "previous", exercise_id: "bb-bench", equipment_instance_id: null,

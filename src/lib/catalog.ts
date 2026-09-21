@@ -8,7 +8,7 @@ import {
   EXERCISES,
   type Equipment,
   type ExerciseDef,
-  type MachineType,
+  type StationTag,
   type Pattern,
 } from "@/lib/strength/coefficients";
 
@@ -36,7 +36,7 @@ export function dbExerciseToDef(row: DbExerciseRow): ExerciseDef {
     pattern: row.pattern as Pattern,
     equipment: row.equipment as Equipment,
     brand: row.brand ?? undefined,
-    machineType: (row.machine_type as MachineType | null) ?? undefined,
+    machineType: (row.machine_type as StationTag | null) ?? undefined,
     baseExerciseId: row.base_exercise_id ?? undefined,
     coefficient: Number(row.coefficient),
     isReference: row.is_reference,

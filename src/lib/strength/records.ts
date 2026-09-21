@@ -71,7 +71,7 @@ export function historicalBodyweight(set: Pick<RecordSet, "weight" | "reps" | "r
 }
 
 export function eligibleRecordSet(set: RecordSet, def: ExerciseDef | undefined) {
-  if (!def || def.machineTemplate || set.is_warmup || !validSetNumbers(set)) return null;
+  if (!def || def.stationProfile === "machine" || set.is_warmup || !validSetNumbers(set)) return null;
   const weight = set.weight!;
   const reps = set.reps!;
   const bodyweight = def.equipment === "bodyweight" ? historicalBodyweight(set) : null;

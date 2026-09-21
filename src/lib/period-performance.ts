@@ -1,6 +1,6 @@
 import type { BodyweightEntry } from "./bodyweight";
 import { bodyweightTrend } from "./bodyweight";
-import { recordCounts, type ExerciseRecords } from "./strength/records";
+import { recordCounts, recordTotal, type ExerciseRecords } from "./strength/records";
 import { shiftWeightDay } from "./weight-trends";
 
 export type PeriodPerformanceDay = {
@@ -73,7 +73,7 @@ export function buildPeriodPerformanceOverlay(input: {
   for (const achievement of input.achievements) {
     if (achievement.date < input.window.start || achievement.date > input.window.end) continue;
     const counts = recordCounts(achievement.records);
-    prsByDate.set(achievement.date, (prsByDate.get(achievement.date) ?? 0) + counts.reps + counts.e1rm);
+    prsByDate.set(achievement.date, (prsByDate.get(achievement.date) ?? 0) + recordTotal(counts));
   }
 
   const weeks: PeriodPerformanceWeek[] = [];

@@ -14,7 +14,8 @@ version 1.2 `buildMonthlyReport`. Track links to it. No migration or new secrets
 - `workoutRecords` replays each selected workout with the complete earlier baseline,
   preserving its finish-before-start rules and historical bodyweight reconstruction.
   Rep PRs are final distinct workout/exact-exercise/equipment/normalized-load records;
-  e1RM PRs are one best record per workout/exact identity. First observations and ties
+  e1RM PRs are one best record per workout/exact identity; top-weight PRs are one best
+  max effective load per workout/exact identity. First observations and ties
   do not earn records. Later improvement within that first workout follows the existing
   recap contract and may earn a record with no historical delta.
 - Monthly best estimated 1RM is the maximum **stored** eligible working-set estimate

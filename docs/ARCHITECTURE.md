@@ -135,6 +135,7 @@ rows live in `agent_thread` / `agent_message`. See [AI Coach](AI-COACH.md) and
   coefficients, swaps, or `workoutRecords` eligibility. Cap 8 is enforced in the action.
 - Live PR pills and completion recaps share `strength/records.ts` through the paginated
   `loadWorkoutRecords`. Compare against history finished before the session's start.
+  Record kinds are rep PRs, top-weight (max effective load), and e1RM.
   Read [workout records](DECISIONS.md#workout-records) before changing eligibility or precision.
 - Coach snapshot/export and weekly API share `coach-check-in.ts` plus deterministic proposals
   in `coach-recommendations.ts`. Accept/dismiss/defer persists review state, not prescriptions.

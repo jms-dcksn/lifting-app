@@ -28,7 +28,7 @@ describe("workout records", () => {
     const value = Math.round(computeE1rm(100, 10, 1) * 10) / 10;
     const baseline = Math.round(computeE1rm(100, 8, 1) * 10) / 10;
     expect(groups[0].e1rmRecord).toMatchObject({ value, improvement: Math.round((value - baseline) * 10) / 10 });
-    expect(recordCounts(groups)).toEqual({ reps: 1, e1rm: 1, exercises: 1 });
+    expect(recordCounts(groups)).toEqual({ reps: 1, e1rm: 1, topWeight: 0, exercises: 1 });
   });
 
   it.each([8, 7])("ignores tied/lower performance (%i reps)", (reps) => {
@@ -39,7 +39,7 @@ describe("workout records", () => {
     expect(detect([])).toEqual([]);
     expect(detect([current()])).toEqual([]);
     expect(detect([set(), current({ weight: 10 })])).toEqual([]);
-    expect(recordCounts([])).toEqual({ reps: 0, e1rm: 0, exercises: 0 });
+    expect(recordCounts([])).toEqual({ reps: 0, e1rm: 0, topWeight: 0, exercises: 0 });
   });
 
   it("consolidates repeated gains against pre-workout history, retaining distinct loads", () => {
@@ -48,14 +48,14 @@ describe("workout records", () => {
       current({ id: "heavier", weight: 110, reps: 9, created_at: "2026-09-12T10:15:00Z" })]);
     expect(groups[0].repRecords).toMatchObject([{ load: 110, reps: 9, improvement: 3 }, { load: 100, reps: 12, improvement: 4 }]);
     expect(groups[0].e1rmRecord?.setId).toBe("later");
-    expect(recordCounts(groups)).toEqual({ reps: 2, e1rm: 1, exercises: 1 });
+    expect(recordCounts(groups)).toEqual({ reps: 2, e1rm: 1, topWeight: 0, exercises: 1 });
   });
 
   it("allows within-workout improvements after a first observation without inventing historical deltas", () => {
     const groups = detect([current({ id: "first", reps: 8 }), current({ id: "next", created_at: "2026-09-12T10:10:00Z" })]);
     expect(groups[0].repRecords[0].improvement).toBeNull();
     expect(groups[0].e1rmRecord?.improvement).toBeNull();
-    expect(recordCounts(groups)).toEqual({ reps: 1, e1rm: 1, exercises: 1 });
+    expect(recordCounts(groups)).toEqual({ reps: 1, e1rm: 1, topWeight: 0, exercises: 1 });
   });
 
   it("uses all-time history across program slots, not just the most recent session", () => {
@@ -158,12 +158,19 @@ describe("workout records", () => {
     expect(detect(JSON.parse(JSON.stringify(rows)))).toEqual(detect(rows));
   });
 
-  it("writes a recap hero that does not mix rep and e1RM into one dishonest count", () => {
-    expect(recapHeadline({ reps: 0, e1rm: 0, exercises: 0 })).toBeNull();
-    expect(recapHeadline({ reps: 2, e1rm: 0, exercises: 1 })).toBe("2 PRs");
-    expect(recapHeadline({ reps: 0, e1rm: 1, exercises: 1 })).toBe("1 PR");
-    expect(recapHeadline({ reps: 1, e1rm: 1, exercises: 1 })).toBe("1 rep PR · 1 e1RM record");
-    expect(recapHeadline({ reps: 2, e1rm: 1, exercises: 1 })).toBe("2 rep PRs · 1 e1RM record");
+  it("writes a recap hero that does not mix kinds into one dishonest count", () => {
+    expect(recapHeadline({ reps: 0, e1rm: 0, topWeight: 0, exercises: 0 })).toBeNull();
+    expect(recapHeadline({ reps: 2, e1rm: 0, topWeight: 0, exercises: 1 })).toBe("2 PRs");
+    expect(recapHeadline({ reps: 0, e1rm: 1, topWeight: 0, exercises: 1 })).toBe("1 PR");
+    expect(recapHeadline({ reps: 0, e1rm: 0, topWeight: 1, exercises: 1 })).toBe("1 PR");
+    expect(recapHeadline({ reps: 1, e1rm: 1, topWeight: 0, exercises: 1 })).toBe("1 rep PR · 1 e1RM record");
+    expect(recapHeadline({ reps: 2, e1rm: 1, topWeight: 0, exercises: 1 })).toBe("2 rep PRs · 1 e1RM record");
+    expect(recapHeadline({ reps: 1, e1rm: 1, topWeight: 1, exercises: 1 })).toBe(
+      "1 rep PR · 1 e1RM record · 1 top-weight record",
+    );
+    expect(recapHeadline({ reps: 0, e1rm: 1, topWeight: 1, exercises: 1 })).toBe(
+      "1 e1RM record · 1 top-weight record",
+    );
   });
 
   it("formats compact recap lines without inventing deltas", () => {
@@ -177,14 +184,57 @@ describe("workout records", () => {
       "100 × 10",
       `${first.e1rmRecord!.value} e1RM`,
     ]);
+    const heavier = detect([set(), current({ weight: 110, reps: 5 })])[0];
+    expect(recapLines(heavier)).toContain("110 top +10");
   });
 
   it("keeps records attached to the winning slot across swaps and duplicated exercises", () => {
     const groups = detect([set(), current(), current({ id: "later", program_slot_id: "second", reps: 12, created_at: "2026-09-12T10:15:00Z" }),
       set({ id: "machine-prior", exercise_id: "hammer" }), current({ id: "machine-now", exercise_id: "hammer" })]);
-    expect(recordCounts(groups)).toEqual({ reps: 2, e1rm: 2, exercises: 2 });
+    expect(recordCounts(groups)).toEqual({ reps: 2, e1rm: 2, topWeight: 0, exercises: 2 });
     expect(recordsForSlot(groups, "slot").map((g) => g.exerciseId)).toEqual(["hammer"]);
     expect(recordsForSlot(groups, "second")[0].repRecords[0].reps).toBe(12);
+    expect(recordsForSlot(groups, "empty")).toEqual([]);
+  });
+
+  it("awards one top-weight record per scope when load beats finished history", () => {
+    const groups = detect([set(), current({ weight: 110, reps: 5 })]);
+    expect(groups[0].topWeightRecord).toMatchObject({ load: 110, weight: 110, improvement: 10 });
+    expect(groups[0].repRecords).toEqual([]);
+    expect(recordCounts(groups).topWeight).toBe(1);
+    expect(detect([set(), current({ weight: 100, reps: 8 })])).toEqual([]);
+    expect(detect([set(), current({ weight: 90, reps: 8 })])).toEqual([]);
+    expect(detect([current({ weight: 135 })])).toEqual([]);
+  });
+
+  it("establishes max load quietly, then chips a within-workout beat without a historical delta", () => {
+    const groups = detect([
+      current({ id: "first", weight: 100, reps: 5 }),
+      current({ id: "next", weight: 110, reps: 5, created_at: "2026-09-12T10:10:00Z" }),
+    ]);
+    expect(groups[0].topWeightRecord).toMatchObject({ load: 110, setId: "next", improvement: null });
+  });
+
+  it("keeps the best top-weight against pre-workout history across later sets", () => {
+    const groups = detect([
+      set(),
+      current({ id: "jump", weight: 110, reps: 5 }),
+      current({ id: "heavier", weight: 120, reps: 3, created_at: "2026-09-12T10:10:00Z" }),
+    ]);
+    expect(groups[0].topWeightRecord).toMatchObject({ load: 120, setId: "heavier", improvement: 20 });
+  });
+
+  it("scopes top-weight to exact exercise and equipment, including bodyweight total load", () => {
+    expect(detect([set({ exercise_id: "hammer" }), current({ exercise_id: "hoist", weight: 110 })])).toEqual([]);
+    expect(detect([set({ equipment_instance_id: "machine-1" }), current({ equipment_instance_id: "machine-2", weight: 110 })])).toEqual([]);
+    const previous = set({ exercise_id: "weighted-pullup", weight: 25, e1rm: computeE1rm(175, 8, 1) });
+    const next = current({ exercise_id: "weighted-pullup", weight: 35, reps: 8, e1rm: computeE1rm(185, 8, 1) });
+    expect(detect([previous, next])[0].topWeightRecord).toMatchObject({ load: 185, improvement: 10 });
+  });
+
+  it("attaches a top-weight record to the winning slot", () => {
+    const groups = detect([set(), current({ weight: 110, reps: 5 })]);
+    expect(recordsForSlot(groups, "slot")[0].topWeightRecord?.load).toBe(110);
     expect(recordsForSlot(groups, "empty")).toEqual([]);
   });
 });

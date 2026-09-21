@@ -19,6 +19,7 @@ const records = (reps: number, e1rm: boolean): ExerciseRecords => ({
     improvement: 1,
   })),
   e1rmRecord: e1rm ? { setId: "e", slotId: null, value: 140, improvement: 2 } : null,
+  topWeightRecord: null,
 });
 
 describe("period performance overlay", () => {
@@ -79,6 +80,23 @@ describe("period performance overlay", () => {
       period: false,
       inWindow: true,
     });
+  });
+
+  it("counts top-weight records in the weekly PR total", () => {
+    const overlay = buildPeriodPerformanceOverlay({
+      window: { start: "2026-09-01", end: "2026-09-07" },
+      periodDates: [],
+      entries: [],
+      workouts: [{ sessionId: "s1", date: "2026-09-01" }],
+      achievements: [{
+        date: "2026-09-01",
+        records: [{
+          ...records(0, false),
+          topWeightRecord: { setId: "t", slotId: null, load: 315, weight: 315, improvement: 10 },
+        }],
+      }],
+    });
+    expect(overlay.weeks[0].prs).toBe(1);
   });
 
   it("clips spilled week days to the month window and ignores outside marks", () => {

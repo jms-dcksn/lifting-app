@@ -1,5 +1,5 @@
 import type { ExerciseDef, Pattern } from "./strength/coefficients";
-import { recapLines, recordCounts, type ExerciseRecords } from "./strength/records";
+import { recapHeadline, recapLines, recordCounts, type ExerciseRecords } from "./strength/records";
 
 export const PIN_CAP = 8;
 
@@ -150,10 +150,7 @@ export function weekRecordChips(sessions: { sessionId: string; groups: ExerciseR
 }
 
 export function sessionRecordSummary(groups: ExerciseRecords[]) {
-  const { reps, e1rm } = recordCounts(groups);
-  const count = reps + e1rm;
-  if (count === 0) return null;
-  return `${count} PR${count === 1 ? "" : "s"}`;
+  return recapHeadline(recordCounts(groups));
 }
 
 export function recentRecordExerciseIds(chips: WeekRecordChip[]) {

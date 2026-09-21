@@ -82,6 +82,7 @@ describe("board copy", () => {
       isBodyweight: false,
       repRecords: [{ setId: "s1", slotId: "slot", load: 225, weight: 225, reps: 8, improvement: 1 }],
       e1rmRecord: { setId: "s1", slotId: "slot", value: 275, improvement: 5 },
+      topWeightRecord: { setId: "s1", slotId: "slot", load: 315, weight: 315, improvement: 10 },
     };
     expect(sessionRecordChips("w1", [group])).toEqual([
       {
@@ -94,13 +95,20 @@ describe("board copy", () => {
         sessionId: "w1",
         exerciseId: "bb-bench",
         name: "Barbell Bench Press",
+        label: "Bench 315 top +10",
+      },
+      {
+        sessionId: "w1",
+        exerciseId: "bb-bench",
+        name: "Barbell Bench Press",
         label: "Bench 275 e1RM +5",
       },
     ]);
     expect(weekRecordChips([{ sessionId: "w1", groups: [group] }])).toEqual(
       sessionRecordChips("w1", [group]),
     );
-    expect(sessionRecordSummary([group])).toBe("2 PRs");
+    expect(sessionRecordSummary([group])).toBe("1 rep PR · 1 e1RM record · 1 top-weight record");
+    expect(sessionRecordSummary([{ ...group, e1rmRecord: null, topWeightRecord: null }])).toBe("1 PR");
   });
 });
 

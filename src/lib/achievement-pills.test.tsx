@@ -14,6 +14,7 @@ const group: ExerciseRecords = {
   isBodyweight: false,
   repRecords: [{ setId: "s1", slotId: "slot", load: 225, weight: 225, reps: 8, improvement: 1 }],
   e1rmRecord: { setId: "s1", slotId: "slot", value: 275, improvement: 5 },
+  topWeightRecord: null,
 };
 
 let root: Root;
@@ -43,6 +44,7 @@ describe("AchievementPills", () => {
     render(<AchievementPills groups={[group]} />);
     expect(host.textContent).toContain("225 × 8 +1");
     expect(host.textContent).toContain("275 e1RM +5");
+    expect(host.textContent).not.toContain("top");
     expect(host.textContent).not.toContain("Rep PR");
     expect(host.querySelector(".text-record")).toBeTruthy();
     expect(host.querySelector(".text-overload-up")).toBeNull();
@@ -57,5 +59,20 @@ describe("AchievementPills", () => {
     expect(history?.className).toContain("size-11");
     expect(history?.querySelector("svg")).toBeTruthy();
     expect(host.textContent).toContain("1 rep PR · 1 e1RM record");
+  });
+
+  it("shows a compact top-weight chip in the same record-gold family", () => {
+    render(
+      <AchievementPills
+        groups={[{
+          ...group,
+          repRecords: [],
+          e1rmRecord: null,
+          topWeightRecord: { setId: "s1", slotId: "slot", load: 315, weight: 315, improvement: 10 },
+        }]}
+      />,
+    );
+    expect(host.textContent).toContain("315 top +10");
+    expect(host.querySelector(".text-record")).toBeTruthy();
   });
 });

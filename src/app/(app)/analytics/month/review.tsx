@@ -52,6 +52,7 @@ export function MonthlyReview({
     ["Workouts", report.current.workouts, report.prior.workouts],
     ["Rep PRs", report.current.repPrs, report.prior.repPrs],
     ["e1RM PRs", report.current.e1rmPrs, report.prior.e1rmPrs],
+    ["Top-weight PRs", report.current.topWeightPrs, report.prior.topWeightPrs],
   ] as const;
   return <>
     <header>
@@ -89,7 +90,7 @@ export function MonthlyReview({
     </div>
     <div className="flex items-center gap-1">
       <InfoButton title="How PRs are counted" label="How PRs are counted">
-        Rep PRs count improved reps at the same effective load. e1RM PRs count improved estimated strength. First marks and ties do not count; one workout can earn both.
+        Rep PRs count improved reps at the same effective load. e1RM PRs count improved estimated strength. Top-weight PRs count a new all-time max load. First marks and ties do not count; one workout can earn more than one kind.
       </InfoButton>
     </div>
     {report.current.workouts === 0 && <Card>
@@ -140,12 +141,13 @@ export function MonthlyReview({
     </Card>}
     <Card>
       <CardLabel>Achievements</CardLabel>
-      <p className="mt-1 text-caption text-muted">{report.current.repPrs} rep PRs · {report.current.e1rmPrs} e1RM PRs · {report.current.workoutsWithRecords} workouts with records</p>
+      <p className="mt-1 text-caption text-muted">{report.current.repPrs} rep PRs · {report.current.e1rmPrs} e1RM PRs · {report.current.topWeightPrs} top-weight PRs · {report.current.workoutsWithRecords} workouts with records</p>
       {recordGroups.size === 0 ? <p className="mt-3 text-body text-muted">No records this month.</p> : <div className="mt-3 divide-y divide-border">{[...recordGroups].map(([key, group]) => <details key={key}>
         <summary className="min-h-11 cursor-pointer break-words py-3 text-body">{group.name} · {group.records.length} record workouts{group.equipment ? ` · Equipment ${group.equipment}` : ""}</summary>
         <ul className="space-y-3 pb-3">{group.records.map(({ sessionId, date, record: r }) => <li key={sessionId} className="text-caption">
           <Link href={sessionRecapPath(sessionId)} className="inline-block min-h-11 py-2 underline">{date} · Workout recap</Link>
           {r.repRecords.map(rep => <p key={rep.load}>{rep.weight} lb {r.isBodyweight ? "added/assist" : ""} × {rep.reps} reps{rep.improvement != null ? ` · +${rep.improvement} reps` : " · improved within workout"}</p>)}
+          {r.topWeightRecord && <p>{r.topWeightRecord.load} lb top{r.topWeightRecord.improvement != null ? ` · +${r.topWeightRecord.improvement} lb` : " · improved within workout"}</p>}
           {r.e1rmRecord && <p>{amount(r.e1rmRecord.value)} e1RM{r.e1rmRecord.improvement != null ? ` · +${r.e1rmRecord.improvement.toFixed(1)} lb` : " · improved within workout"}</p>}
         </li>)}</ul>
       </details>)}</div>}

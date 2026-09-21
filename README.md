@@ -21,7 +21,7 @@ and phase details. Choose specific machines or swap exercises before starting; s
 apply to that workout and persist in the same browser. Start from either Home or the planner
 with those choices intact. See [workout planning](docs/WORKOUT-PLANNING.md).
 
-Saved sets highlight **rep PRs at a fixed load** and **estimated 1RM records** on the
+Saved sets highlight **rep PRs at a fixed load**, **top-weight (max effective load) records**, and **estimated 1RM records** on the
 exercise card. Finish opens a cinematic recap of those records (or `{day} done` when
 there are none). It remains above the cards when reopening the workout and updates
 after set edits/deletions. Records compare the same exercise and equipment across
@@ -59,7 +59,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
   - `recommend.ts` — pattern-strength model + cross-exercise weight recommendation
   - `recompute.ts` — rebuild `user_exercise_stat` from `set_log` rows
   - `progression.ts` — double-progression session target using bounded best-recent exact-exercise history across repeated weekly slots
-  - `records.ts` — shared rep/e1RM record replay with stable pre-workout comparisons
+  - `records.ts` — shared rep/top-weight/e1RM record replay with stable pre-workout comparisons
   - `plateau.ts` — fluid-program engine: per-movement e1RM plateau detection (hysteresis) and the laddered rep-range → swap intervention (unit-tested)
 - `src/lib/fluid.ts` — server loader that turns logged history into pending in-session adaptation suggestions
 - `src/lib/workout-records.ts` — user-scoped, paginated record history for live cards and completion recaps

@@ -42,8 +42,9 @@ Adaptive plateau engine under §5.
   open session). The full slot list is not always-on.
 - **Track preview** — optional recent-PR compound tiles only; pin controls stay off home.
   Full Track stays on `/analytics`.
-- **Last session** — `{n} PRs` when that workout earned records, else day name + set count,
-  plus gold chips for that session's canonical `workoutRecords`. The card opens that
+- **Last session** — `{n} PRs` when that workout earned one record kind, or the mixed
+  recap headline when kinds differ; otherwise day name + set count. Gold chips list that
+  session's canonical `workoutRecords` (rep, top-weight, e1RM). The card opens that
   workout's recap; **View workout** opens the editable sets. No top-e1RM paragraph.
   This week's full PR list lives on Track. Weight and Coach are not home jobs.
 - **Next workout planner** — `/workout/next` previews effective prescriptions and saves
@@ -124,11 +125,12 @@ Adaptive plateau engine under §5.
   shows a "Plateau detected" card before set entry: a rep-range change (with starting weight)
   or ranked swap candidates, each with **Accept / Keep going / Other options**. Accepting
   applies the change for this and future sessions; the card self-clears once accepted.
-- **Workout records** — saved sets show exact-exercise rep/e1RM PRs; the finish recap
-  replays the same records as a cinematic hero (`N PRs`, or the two-part count when mixing
-  kinds) plus compact per-exercise lines and a 44px history `IconButton` to Exercise review
-  with that group's equipment, and updates after set edits/deletions. Live cards stream
-  those pills after the set persists, without resetting rest.
+- **Workout records** — saved sets show exact-exercise rep, top-weight (max load), and e1RM
+  PRs. The finish recap replays the same records as a cinematic hero (`N PRs`, or joined
+  kind counts when mixing) plus compact per-exercise lines (`225 × 8 +1`, `315 top +10`,
+  `275 e1RM +5`) and a 44px history `IconButton` to Exercise review with that group's
+  equipment, and updates after set edits/deletions. Live cards stream those pills after
+  the set persists, without resetting rest.
   [Eligibility](DECISIONS.md#workout-records).
 - **Quick history** — a Sheet loads ten latest sets from previous workouts across explicitly
   linked exercise variants without resetting set entry or the rest timer.
@@ -283,7 +285,7 @@ valid. It does not swap in a monthly-history page. Invalid months are ignored.
   from `workout_session.program_id` appear as a muted caption under the visible window.
 - **Month to month** — two month pickers. Defaults: inbound `month` vs the previous
   calendar month, or the current Chicago month vs previous. Metrics are paired values
-  (PRs, best stored e1RM at 0.1 lb, volume, exposures), not an empty-to-value arrow.
+  (PRs as `N rep · N e1RM · N top`, best stored e1RM at 0.1 lb, volume, exposures), not an empty-to-value arrow.
   An untrained month reads as `none`. Volume uses Chicago `monthlyWindows` dates and
   `identityVolume` (not UTC `weeklyVolume`). Canonical PRs reuse `workoutRecords` /
   monthly achievements for this exact exercise and equipment.
@@ -306,7 +308,7 @@ cap 8 in the server action): unpinning a default hides it; pinning an extra adds
 
 Secondary, not equal cards, behind Explore:
 - This week's PRs — full canonical `workoutRecords` list over the last seven local days
-  (every recap line, grouped by session); tap a date for recap or an exercise for history
+  (every recap line, including top-weight, grouped by session); tap a date for recap or an exercise for history
   with that group's equipment
 - All-lifts search (`ExerciseList`) — one row per exercise, latest-instance numbers and
   the same `equipment` query as tiles
@@ -314,7 +316,7 @@ Secondary, not equal cards, behind Explore:
   (observed period days, weekly weight change, and PR counts on one card), compact
   name-plus-percent improvements and rep-gain sentences (no all-lifts dump or SVG trends),
   stalls (name links to Exercise review with `month` and `equipment`; session evidence and
-  in-progress Coach stay), achievements, and the shared weight card
+  in-progress Coach stay), achievements (rep, top-weight, and e1RM lines), and the shared weight card
 - Coach (`/analytics/coach`) — check-in snapshot, ranked next-step proposals (Do first / Also),
   collapsed insufficient-data trends, a one-line hard-set shortfall flag, and clipboard export.
   Stall links use `?exercise=`. `/settings?coachExercise=` redirects here.

@@ -1,11 +1,17 @@
-import type { MachineType } from "@/lib/strength/coefficients";
+import type { StationTag } from "@/lib/strength/coefficients";
 
 const slug = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
-const TYPE_TAG: Record<MachineType, string> = { plate_loaded: "plate", selectorized: "stack" };
+const TYPE_TAG: Record<StationTag, string> = {
+  plate_loaded: "plate",
+  selectorized: "stack",
+  bench: "bench",
+  rack: "rack",
+  platform: "platform",
+};
 
-export function variantId(baseId: string, brand: string | null, machineType: MachineType): string {
+export function variantId(baseId: string, brand: string | null, machineType: StationTag): string {
   return `${baseId}__${slug(brand ?? "")}__${machineType}`;
 }
 
@@ -14,7 +20,7 @@ export function variantId(baseId: string, brand: string | null, machineType: Mac
 export function ownedVariantId(
   baseId: string,
   brand: string | null,
-  machineType: MachineType,
+  machineType: StationTag,
   userId: string,
 ): string {
   return `${variantId(baseId, brand, machineType)}__${userId}`;
@@ -23,7 +29,7 @@ export function ownedVariantId(
 export function variantName(
   baseName: string,
   brand: string | null,
-  machineType: MachineType,
+  machineType: StationTag,
 ): string {
   const tag = TYPE_TAG[machineType];
   return brand ? `${baseName} — ${brand} (${tag})` : `${baseName} (${tag})`;
@@ -33,7 +39,7 @@ export function variantName(
 // swapping machines for the same movement. Null when the exercise carries no machine identity.
 export function variantShortLabel(
   brand: string | null | undefined,
-  machineType: MachineType | null | undefined,
+  machineType: StationTag | null | undefined,
 ): string | null {
   const tag = machineType ? TYPE_TAG[machineType] : null;
   if (brand && tag) return `${brand} (${tag})`;

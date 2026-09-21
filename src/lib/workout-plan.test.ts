@@ -4,8 +4,8 @@ import { EXERCISE_BY_ID } from "./strength/coefficients";
 
 const key = workoutPlanKey("user", "program", "day", 0);
 const slots = [{ id: "slot" }];
-const exercise = Object.values(EXERCISE_BY_ID).find((d) => !d.machineTemplate)!;
-const template = Object.values(EXERCISE_BY_ID).find((d) => d.machineTemplate)!;
+const exercise = Object.values(EXERCISE_BY_ID).find((d) => d.stationProfile !== "machine")!;
+const template = Object.values(EXERCISE_BY_ID).find((d) => d.stationProfile === "machine")!;
 const raw = (choices: unknown, draftKey = key) => JSON.stringify({ key: draftKey, choices });
 
 describe("next workout draft isolation", () => {

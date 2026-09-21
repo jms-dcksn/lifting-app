@@ -19,7 +19,7 @@ export function readWorkoutPlan(
     return Object.fromEntries(slots.flatMap(({ id }) => {
       const exerciseId = draft.choices[id];
       const def = typeof exerciseId === "string" ? catalog[exerciseId] : undefined;
-      return def && def.id === exerciseId && !def.machineTemplate ? [[id, def.id]] : [];
+      return def && def.id === exerciseId && def.stationProfile !== "machine" ? [[id, def.id]] : [];
     }));
   } catch {
     return {};

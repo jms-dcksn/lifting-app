@@ -51,7 +51,7 @@ export function isBoardCompound(def: ExerciseDef | undefined) {
 export function defaultCompoundIds(catalog: Record<string, ExerciseDef>) {
   return BOARD_PATTERNS.flatMap((pattern) => {
     const match = Object.values(catalog).find(
-      (def) => def.isReference && def.pattern === pattern && !def.machineTemplate,
+      (def) => def.isReference && def.pattern === pattern && def.stationProfile !== "machine",
     );
     return match ? [match.id] : [];
   });

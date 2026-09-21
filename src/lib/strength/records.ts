@@ -35,6 +35,12 @@ export interface E1rmRecord extends RecordSource {
   improvement: number | null;
 }
 
+export interface TopWeightRecord extends RecordSource {
+  load: number;
+  weight: number;
+  improvement: number | null;
+}
+
 export interface ExerciseRecords {
   key: string;
   exerciseId: string;
@@ -43,6 +49,7 @@ export interface ExerciseRecords {
   isBodyweight: boolean;
   repRecords: RepRecord[];
   e1rmRecord: E1rmRecord | null;
+  topWeightRecord: TopWeightRecord | null;
 }
 
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
@@ -101,6 +108,7 @@ export function workoutRecords(
 
   const priorReps = new Map<string, number>();
   const priorEstimates = new Map<string, number>();
+  const priorLoads = new Map<string, number>();
   for (const set of prior) {
     const values = eligibleRecordSet(set, catalog[set.exercise_id]);
     if (!values) continue;
@@ -108,9 +116,11 @@ export function workoutRecords(
     const loadKey = `${key}:${values.load}`;
     priorReps.set(loadKey, Math.max(priorReps.get(loadKey) ?? 0, values.reps));
     priorEstimates.set(key, Math.max(priorEstimates.get(key) ?? 0, values.estimate));
+    priorLoads.set(key, Math.max(priorLoads.get(key) ?? 0, values.load));
   }
   const bestReps = new Map(priorReps);
   const bestEstimates = new Map(priorEstimates);
+  const bestLoads = new Map(priorLoads);
   const groups = new Map<string, ExerciseRecords>();
   for (const set of current) {
     const def = catalog[set.exercise_id];
@@ -120,12 +130,15 @@ export function workoutRecords(
     const loadKey = `${key}:${values.load}`;
     const previousReps = bestReps.get(loadKey);
     const previousEstimate = bestEstimates.get(key);
+    const previousLoad = bestLoads.get(key);
     const repPr = previousReps != null && values.reps > previousReps;
     const estimatePr = previousEstimate != null && values.estimate > previousEstimate;
-    if (repPr || estimatePr) {
+    const loadPr = previousLoad != null && values.load > previousLoad;
+    if (repPr || estimatePr || loadPr) {
       const group = groups.get(key) ?? {
         key, exerciseId: set.exercise_id, equipmentInstanceId: set.equipment_instance_id,
-        name: def.name, isBodyweight: def.equipment === "bodyweight", repRecords: [], e1rmRecord: null,
+        name: def.name, isBodyweight: def.equipment === "bodyweight",
+        repRecords: [], e1rmRecord: null, topWeightRecord: null,
       };
       const source = { setId: set.id, slotId: set.program_slot_id };
       if (repPr) {
@@ -139,10 +152,16 @@ export function workoutRecords(
         group.e1rmRecord = { ...source, value: values.estimate,
           improvement: baseline == null ? null : estimatePrecision(values.estimate - baseline) };
       }
+      if (loadPr) {
+        const baseline = priorLoads.get(key);
+        group.topWeightRecord = { ...source, load: values.load, weight: values.weight,
+          improvement: baseline == null ? null : loadPrecision(values.load - baseline) };
+      }
       groups.set(key, group);
     }
     bestReps.set(loadKey, Math.max(previousReps ?? 0, values.reps));
     bestEstimates.set(key, Math.max(previousEstimate ?? 0, values.estimate));
+    bestLoads.set(key, Math.max(previousLoad ?? 0, values.load));
   }
   return [...groups.values()].map((g) => ({ ...g, repRecords: g.repRecords.sort((a, b) => b.load - a.load) }));
 }
@@ -151,23 +170,30 @@ export function recordCounts(groups: ExerciseRecords[]) {
   return {
     reps: groups.reduce((n, g) => n + g.repRecords.length, 0),
     e1rm: groups.filter((g) => g.e1rmRecord != null).length,
+    topWeight: groups.filter((g) => g.topWeightRecord != null).length,
     exercises: new Set(groups.map((g) => g.exerciseId)).size,
   };
 }
 
 export type RecordCounts = ReturnType<typeof recordCounts>;
 
+export function recordTotal(counts: RecordCounts) {
+  return counts.reps + counts.e1rm + counts.topWeight;
+}
+
 /** Finish-recap hero. A single "N PRs" number is only honest when every record is the same kind. */
 export function recapHeadline(counts: RecordCounts) {
-  if (counts.reps === 0 && counts.e1rm === 0) return null;
-  if (counts.reps > 0 && counts.e1rm > 0) {
-    return [
-      `${counts.reps} rep ${counts.reps === 1 ? "PR" : "PRs"}`,
-      `${counts.e1rm} e1RM ${counts.e1rm === 1 ? "record" : "records"}`,
-    ].join(" · ");
+  const parts = [
+    counts.reps > 0 ? `${counts.reps} rep ${counts.reps === 1 ? "PR" : "PRs"}` : null,
+    counts.e1rm > 0 ? `${counts.e1rm} e1RM ${counts.e1rm === 1 ? "record" : "records"}` : null,
+    counts.topWeight > 0 ? `${counts.topWeight} top-weight ${counts.topWeight === 1 ? "record" : "records"}` : null,
+  ].filter((part): part is string => part != null);
+  if (parts.length === 0) return null;
+  if (parts.length === 1) {
+    const n = counts.reps || counts.e1rm || counts.topWeight;
+    return `${n} ${n === 1 ? "PR" : "PRs"}`;
   }
-  const n = counts.reps || counts.e1rm;
-  return `${n} ${n === 1 ? "PR" : "PRs"}`;
+  return parts.join(" · ");
 }
 
 function compactDelta(improvement: number | null) {
@@ -179,6 +205,9 @@ export function recapLines(group: ExerciseRecords) {
   const lines = group.repRecords.map((record) =>
     `${record.load} × ${record.reps}${compactDelta(record.improvement)}`,
   );
+  if (group.topWeightRecord) {
+    lines.push(`${group.topWeightRecord.load} top${compactDelta(group.topWeightRecord.improvement)}`);
+  }
   if (group.e1rmRecord) {
     lines.push(`${group.e1rmRecord.value} e1RM${compactDelta(group.e1rmRecord.improvement)}`);
   }
@@ -190,5 +219,6 @@ export function recordsForSlot(groups: ExerciseRecords[], slotId: string) {
     ...group,
     repRecords: group.repRecords.filter((r) => r.slotId === slotId),
     e1rmRecord: group.e1rmRecord?.slotId === slotId ? group.e1rmRecord : null,
-  })).filter((g) => g.repRecords.length > 0 || g.e1rmRecord != null);
+    topWeightRecord: group.topWeightRecord?.slotId === slotId ? group.topWeightRecord : null,
+  })).filter((g) => g.repRecords.length > 0 || g.e1rmRecord != null || g.topWeightRecord != null);
 }

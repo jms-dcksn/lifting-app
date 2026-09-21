@@ -48,7 +48,14 @@ export interface MonthlyReport {
   lifts: MonthlyLift[];
   quality: { excludedWorkingSets: number; missingStoredEstimates: number };
 }
-export interface MonthlyTotals { workouts: number; repPrs: number; e1rmPrs: number; exercisesWithRecords: number; workoutsWithRecords: number }
+export interface MonthlyTotals {
+  workouts: number;
+  repPrs: number;
+  e1rmPrs: number;
+  topWeightPrs: number;
+  exercisesWithRecords: number;
+  workoutsWithRecords: number;
+}
 
 export function monthlyWindows(month: string, now = new Date(), timeZone = "America/Chicago") {
   const today = dateKey(now, timeZone);
@@ -91,8 +98,14 @@ export function buildMonthlyReport(input: {
     const selected = windowSessions(w);
     const groups = selected.flatMap(s => recaps.get(s.id) ?? []);
     const counts = recordCounts(groups);
-    return { workouts: selected.length, repPrs: counts.reps, e1rmPrs: counts.e1rm,
-      exercisesWithRecords: counts.exercises, workoutsWithRecords: selected.filter(s => (recaps.get(s.id)?.length ?? 0) > 0).length };
+    return {
+      workouts: selected.length,
+      repPrs: counts.reps,
+      e1rmPrs: counts.e1rm,
+      topWeightPrs: counts.topWeight,
+      exercisesWithRecords: counts.exercises,
+      workoutsWithRecords: selected.filter(s => (recaps.get(s.id)?.length ?? 0) > 0).length,
+    };
   }
   const quality = { excludedWorkingSets: 0, missingStoredEstimates: 0 };
   const groups = new Map<string, { row: RecordSet; current: Map<string, MonthlyPoint>; prior: Map<string, MonthlyPoint>; currentIds: Set<string>; priorIds: Set<string>; currentReps: Map<number, number>; priorReps: Map<number, number> }>();

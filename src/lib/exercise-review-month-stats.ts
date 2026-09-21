@@ -67,6 +67,7 @@ export function reviewMonthSide(
     trained: true,
     repPrs: counts.reps,
     e1rmPrs: counts.e1rm,
+    topWeightPrs: counts.topWeight,
     bestE1rm: bests.length === 0 ? null : Math.max(...bests),
     volume: identityVolume(volumeRows(identitySets), current, source.catalog, source.bodyweight, timeZone),
     exposures: sessionIds.size,

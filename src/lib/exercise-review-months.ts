@@ -7,6 +7,7 @@ export type ReviewMonthSide = {
   trained: boolean;
   repPrs: number | null;
   e1rmPrs: number | null;
+  topWeightPrs: number | null;
   bestE1rm: number | null;
   volume: number | null;
   exposures: number | null;
@@ -36,6 +37,7 @@ export function reviewEmptyMonthSide(month: string): ReviewMonthSide {
     trained: false,
     repPrs: null,
     e1rmPrs: null,
+    topWeightPrs: null,
     bestE1rm: null,
     volume: null,
     exposures: null,

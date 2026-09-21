@@ -20,6 +20,7 @@ const group: ExerciseRecords = {
   isBodyweight: false,
   repRecords: [{ setId: "s1", slotId: "slot", load: 225, weight: 225, reps: 8, improvement: 1 }],
   e1rmRecord: { setId: "s1", slotId: "slot", value: 275, improvement: 5 },
+  topWeightRecord: null,
 };
 
 let root: Root;

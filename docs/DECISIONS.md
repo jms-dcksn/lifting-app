@@ -526,15 +526,16 @@ authenticated `loadWorkoutRecords` read path. No schema migration is required.
 ### What the lifter sees
 
 - Successfully saved working sets earn persistent compact **record** pills
-  on their exercise card (`225 × 8 +1`, `275 e1RM +5`) in `--record` gold.
-- Both types can appear together. Records from an exercise swapped out mid-workout
+  on their exercise card (`225 × 8 +1`, `315 top +10`, `275 e1RM +5`) in `--record` gold.
+- All three kinds can appear together. Records from an exercise swapped out mid-workout
   retain their original exercise name. Completed cards with records remain readable.
 - Finish recap is the payoff: a `--text-recap`-size hero for records earned this workout
-  (`2 PRs`, or the two-part count when a single number would mix rep and e1RM),
-  then one row per exercise/equipment scope with compact lines (`225 × 8 +1`,
-  `275 e1RM +5`) in record gold. History links stay on the exercise name.
+  (`2 PRs`, or the joined kind counts when a single number would mix rep, e1RM, and/or
+  top-weight), then one row per exercise/equipment scope with compact lines (`225 × 8 +1`,
+  `315 top +10`, `275 e1RM +5`) in record gold. History links stay on the exercise name.
   Several improvements at one load collapse to the best reps; distinct loads remain.
-  One best e1RM is included per scope. The top-e1RM table is not on this screen.
+  One best e1RM and one best top-weight (max effective load) are included per scope.
+  The top-e1RM table is not on this screen.
 - A workout with no records still finishes: `{dayName} done` plus working-set count,
   with no gold and no invented records. Joint pain and the session note sit behind
   a details control, not in the hero.
@@ -556,6 +557,9 @@ Working sets require finite load, positive whole-number reps, and valid RIR (0�
 Legacy null RIR uses the canonical default of 2; missing load/reps is never zero-filled.
 Warmups, invalid sets, and nonpositive effective loads are excluded. Calibration working
 sets are eligible observations; being the first observation alone is never a PR.
+A new all-time max effective load in the same scope is a **top-weight** record, using the
+same establish-then-beat rule as e1RM (first exposure is quiet; later beats chip, with a
+load delta only when pre-workout history exists).
 
 Barbell/machine/cable loads use recorded total load; dumbbells use one dumbbell's load.
 Bodyweight exercises use **historical total effective load** (bodyweight plus added
@@ -602,7 +606,7 @@ do not add achievement counts. Set IDs identify the winning slot for card placem
 
 - `strength/records.test.ts`: mixed/consolidated records, scope, numeric eligibility,
   precision, bodyweight/assistance, first observations, edits, deletes, replay stability,
-  recap headline mixing, and compact recap lines.
+  recap headline mixing (including top-weight), compact recap lines, and max-load records.
 - `achievement-recap.test.tsx`: finish hero copy, gold compact lines, history links,
   hidden resume recap when empty, and no-record finish without gold.
 - `workout-records.test.ts`: authenticated query scoping, time boundary, pagination past

@@ -20,6 +20,7 @@ const group: ExerciseRecords = {
   isBodyweight: false,
   repRecords: [{ setId: "s1", slotId: "slot", load: 225, weight: 225, reps: 8, improvement: 1 }],
   e1rmRecord: { setId: "s1", slotId: "slot", value: 275, improvement: 5 },
+  topWeightRecord: null,
 };
 
 let root: Root;
@@ -53,6 +54,23 @@ describe("AchievementRecap", () => {
     expect(host.querySelector("a")?.getAttribute("href")).toBe("/history/bb-bench?equipment=none");
     expect(host.querySelector(".text-record")).toBeTruthy();
     expect(host.textContent).not.toContain("Push done");
+  });
+
+  it("includes a top-weight line and a three-part hero when kinds mix", () => {
+    render(
+      <AchievementRecap
+        groups={[{
+          ...group,
+          topWeightRecord: { setId: "s1", slotId: "slot", load: 315, weight: 315, improvement: 10 },
+        }]}
+        dayName="Push"
+        totalSets={12}
+        titleAs="h1"
+        empty="hero"
+      />,
+    );
+    expect(host.querySelector("h1")?.textContent).toBe("1 rep PR · 1 e1RM record · 1 top-weight record");
+    expect(host.textContent).toContain("315 top +10");
   });
 
   it("hides on resume when there are no records, and finishes cleanly without gold", () => {

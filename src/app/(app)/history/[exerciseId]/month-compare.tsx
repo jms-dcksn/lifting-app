@@ -111,8 +111,10 @@ function MetricRow({ label, a, b }: { label: string; a: string; b: string }) {
 }
 
 function prText(side: ReviewMonthSide) {
-  if (!side.trained || side.repPrs == null || side.e1rmPrs == null) return "none";
-  return `${side.repPrs} rep · ${side.e1rmPrs} e1RM`;
+  if (!side.trained || side.repPrs == null || side.e1rmPrs == null || side.topWeightPrs == null) {
+    return "none";
+  }
+  return `${side.repPrs} rep · ${side.e1rmPrs} e1RM · ${side.topWeightPrs} top`;
 }
 
 function e1rmText(side: ReviewMonthSide) {

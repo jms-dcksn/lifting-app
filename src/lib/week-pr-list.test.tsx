@@ -20,6 +20,7 @@ const group: ExerciseRecords = {
   isBodyweight: false,
   repRecords: [{ setId: "s1", slotId: "slot", load: 225, weight: 225, reps: 8, improvement: 1 }],
   e1rmRecord: { setId: "s1", slotId: "slot", value: 275, improvement: 5 },
+  topWeightRecord: null,
 };
 
 let root: Root;
@@ -54,7 +55,7 @@ describe("WeekPrList", () => {
       );
     });
 
-    expect(host.querySelector('a[href="/session/s1/recap"]')?.textContent).toContain("2 PRs");
+    expect(host.querySelector('a[href="/session/s1/recap"]')?.textContent).toContain("1 rep PR · 1 e1RM record");
     expect(host.querySelector('a[href="/history/bb-bench?equipment=none"]')?.textContent).toContain("Barbell Bench Press");
     expect(host.textContent).toContain("225 × 8 +1");
     expect(host.textContent).toContain("275 e1RM +5");

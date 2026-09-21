@@ -97,6 +97,7 @@ describe("reviewMonthSide", () => {
     expect(sep.volume).toBe(100 * 10 + 110 * 8);
     expect(sep.repPrs).toBeGreaterThanOrEqual(0);
     expect(sep.e1rmPrs).toBeGreaterThanOrEqual(0);
+    expect(sep.topWeightPrs).toBe(1);
     expect(aug).toMatchObject({
       month: "2026-08",
       label: "Aug",

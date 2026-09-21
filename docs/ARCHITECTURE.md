@@ -28,6 +28,9 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
   `base__brand__machinetype`, but `exercise.id` is a global primary key, so a second owner of
   the same brand/type gets an owned id rather than crashing the picker. Session/planner pickers
   resolve machines before logging; the program builder can store generic templates.
+  **Next (design, not shipped):** station composition extends that same template → variant
+  path to all cables and to barbell bench / rack / platform movements. See
+  [station composition](superpowers/specs/2026-09-21-station-composition-design.md).
 - Machines require calibration because stack/leverage units do not transfer from free
   weights. `recomputeAndUpsertStat` in `src/app/(app)/session/actions.ts` anchors the personal
   coefficient against other variants' pattern strength during the first session, then

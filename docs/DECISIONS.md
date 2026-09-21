@@ -697,9 +697,10 @@ exclusion and Settings consent copy.
 
 ## Station composition (2026-09-21, design)
 
-Draft. James reviews before any implementation slice. Source of truth:
+Design approved (James 2026-09-21). Open questions LOCKED. Source of truth:
 [station composition spec](superpowers/specs/2026-09-21-station-composition-design.md)
-([#146](https://github.com/jms-dcksn/lifting-app/issues/146)).
+([#146](https://github.com/jms-dcksn/lifting-app/issues/146)). Implementation is
+a follow-up; the design PR stays unmerged.
 
 Phase C scoped brand/type to machines and left cables flat. That judgment is
 reversed for every cable and for the barbell stations below. Extend
@@ -718,9 +719,11 @@ included). No barbell-station calibration — bar loads stay ordinary lb.
 same as `selectorized` / `plate_loaded`). Do not add `station_kind`. Expand
 `variantId` / `variantName` tags: `stack`, `plate`, `bench`, `rack`, `platform`.
 
-**History (recommend; James review).** Do not rewrite flat cable/barbell
-`set_log` rows. Family browse groups template + later variants. The next log
-picks a station and creates the variant. Split PR chains are accepted.
+**History, Track tiles, copy (LOCKED James 2026-09-21).** No rewrite of flat
+cable/barbell `set_log` rows — family browse groups template + later variants;
+the next log creates a variant; split PR chains are accepted. Track default
+compounds use family-latest numbers and href. Session/planner copy is
+profile-specific (**Choose bench** / Choose cable / etc.), not “Choose station”.
 
 Builder may keep storing templates; session/planner resolve before set-entry.
 Records, progression, and review stay exact `exercise_id`. AI Coach, bodyweight

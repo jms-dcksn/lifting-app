@@ -1,6 +1,6 @@
 # Station composition for non-dumbbell exercises
 
-**Status:** Design (James review). Do not implement from this document until approved.
+**Status:** Design approved (James 2026-09-21). Open questions LOCKED. Implementation slices follow; this PR stays design-only and unmerged.
 **Issue:** [#146](https://github.com/jms-dcksn/lifting-app/issues/146)
 **Date:** 2026-09-21
 **Companion:** Phase C machine variants — [2026-06-21 spec](2026-06-21-machine-brands-types-custom-exercises-design.md); shipped behavior in [Features §6](../../FEATURES.md) and [Decisions: Phase C](../../DECISIONS.md#phase-c-decisions-machine-brands-types-custom-exercises).
@@ -336,16 +336,12 @@ pass `equipment` keep doing so. Do not invent a second query param.
 ids become station templates: `bb-bench`, `bb-deadlift`, `bb-back-squat`,
 `bb-ohp`, `lat-pulldown` (`bb-row` stays `none`).
 
-**Recommendation:** keep those template ids as the default tile keys and short
-names so Bench / Squat / Deadlift / OHP / Pulldown do not vanish. For a default
-compound whose profile is not `none`, resolve the tile's **numbers and review
-href** to the latest finished set among `exerciseFamilyIds(templateId)` (variant
-or leftover flat row). Pins on a specific variant stay exact-id.
-
-**James review:** if default tiles must stay exact-id on the template, Bench
-goes quiet the first time the user logs a bench brand (flat history stays on
-`bb-bench`; new work lives on the variant). Family-latest avoids that cliff.
-Either way, do not merge PR numbers across family members.
+**Locked (James 2026-09-21):** keep those template ids as the default tile keys
+and short names so Bench / Squat / Deadlift / OHP / Pulldown do not vanish. For
+a default compound whose profile is not `none`, resolve the tile's **numbers
+and review href** to the latest finished set among
+`exerciseFamilyIds(templateId)` (variant or leftover flat row). Pins on a
+specific variant stay exact-id. Do not merge PR numbers across family members.
 
 ### Calibration
 
@@ -386,31 +382,31 @@ so a leftover template id is never overwritten by a variant row.
 
 ## History policy (no rewrite)
 
-**Recommendation, flagged for James review.**
+**Locked (James 2026-09-21).** No rewrite of flat cable/barbell `set_log` rows.
 
-Existing `set_log` rows that point at flat cable or barbell template ids are
-left alone. No backfill, no `UPDATE` to a synthetic variant, no invented brand.
+Existing rows that point at those template ids are left alone. No backfill, no
+`UPDATE` to a synthetic variant, no invented brand.
 
 Family browse groups the template with later variants. The next time the user
 logs that movement in a resolving context, they pick a station and
 `resolveVariant` creates the row. From that set forward, identity is the variant.
 
-Consequences to accept:
+Consequences:
 
 - Old PRs and progression stay on the template id.
 - New PRs and progression live on the variant. They do not "continue" the old
   chain. The first variant session is a first exposure (quiet for records;
   cables calibrate).
-- Track / review of the template id shows only leftover flat rows unless the
-  default-compound tile uses family-latest (above).
+- Default-compound tiles use family-latest numbers and href (above). Direct
+  review of the template id still shows only leftover flat rows.
 
 Rewriting would require guessing a brand for every historical cable and bench
 set. That guess is worse than a split chain.
 
 ## Implementation slices
 
-Small, ordered, each green on its own. Product code starts only after James
-approves this spec.
+Small, ordered, each green on its own. Product code is a follow-up PR, not this
+design branch.
 
 1. **Domain + ids.** Add `stationProfile` to all 48 seeds. `needsStation()`.
    Expand `StationTag` / `TYPE_TAG`. Table-driven tests for the inventory and for
@@ -424,8 +420,8 @@ approves this spec.
    `needsStation` template. Dogfood: cable brand and incline-bench brand are
    unavoidable before the first set.
 4. **Family, Track, review hrefs.** Confirm `exerciseFamilyIds` includes new
-   variants. Implement the approved default-compound rule from James's review
-   of this spec. Review `equipment` query stays instance-scoped.
+   variants. Default compounds use family-latest numbers and href. Review
+   `equipment` query stays instance-scoped.
 5. **Calibration + records verification.** Cable variant first session
    calibrates; barbell station does not. Records remain exact-id. Tests cover
    family browse of leftover template + new variant without merging PRs.
@@ -445,14 +441,16 @@ approves this spec.
 - A second brand list, or distinguishing two same-brand benches.
 - Pre-instantiating stations in program templates.
 
-## Open questions for James
+## Open questions — LOCKED (James 2026-09-21)
 
-1. **History (recommended lock):** no rewrite of flat cable/barbell `set_log`
-   rows. Confirm or name a rewrite rule.
-2. **Track default compounds:** family-latest numbers/href vs exact-id on the
-   template (Bench goes quiet after the first branded log).
-3. **Choose-copy:** profile-specific (**Choose bench**) vs one word
-   (**Choose station**). Spec uses profile-specific.
+1. **History:** no rewrite of flat cable/barbell `set_log` rows. Family browse
+   groups template + later variants; the next log creates a variant. Split PR
+   chains are accepted.
+2. **Track default compounds:** family-latest numbers and review href among
+   `exerciseFamilyIds(templateId)`. Pins on a specific variant stay exact-id.
+3. **Copy:** profile-specific — **Choose bench** / **Choose cable** /
+   **Choose rack** / **Choose platform** / **Choose machine**. Not generic
+   “Choose station”.
 
 ## Template → variant → set_log
 

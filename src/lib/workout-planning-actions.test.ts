@@ -17,7 +17,13 @@ const insert = vi.fn();
 const from = vi.fn();
 const next = () => ({ key: "current", choices: { first: "a" }, open: null, week: 2,
   day: { id: "day", slots: [{ id: "first" }, { id: "second" }] },
-  catalog: { a: { id: "a" }, b: { id: "b" }, template: { id: "template", machineTemplate: true } },
+  catalog: {
+    a: { id: "a" },
+    b: { id: "b" },
+    template: { id: "template", stationProfile: "machine" },
+    "lat-pulldown": { id: "lat-pulldown", stationProfile: "cable" },
+    "bb-incline-bench": { id: "bb-incline-bench", stationProfile: "bench" },
+  },
 });
 beforeEach(() => {
   vi.clearAllMocks();
@@ -39,7 +45,14 @@ describe("planning and starting boundary", () => {
     await saveWorkoutChoice("current", "first", null);
     expect(JSON.parse(mocks.set.mock.calls[0][1]).choices).toEqual({});
   });
-  it.each([["stale", "first", "b"], ["current", "foreign", "b"], ["current", "first", "missing"], ["current", "first", "template"]])(
+  it.each([
+    ["stale", "first", "b"],
+    ["current", "foreign", "b"],
+    ["current", "first", "missing"],
+    ["current", "first", "template"],
+    ["current", "first", "lat-pulldown"],
+    ["current", "first", "bb-incline-bench"],
+  ])(
     "rejects stale or invalid choices %s/%s/%s", async (key, slot, exercise) => {
       await expect(saveWorkoutChoice(key, slot, exercise)).rejects.toThrow();
       expect(mocks.set).not.toHaveBeenCalled();

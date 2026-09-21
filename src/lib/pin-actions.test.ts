@@ -65,17 +65,26 @@ describe("toggleExercisePin", () => {
       { exercise_id: "bb-row" },
       { exercise_id: "lat-pulldown" },
     );
-    const first = await toggleExercisePin("bb-hip-thrust");
+    const first = await toggleExercisePin("db-bench");
     expect(first).toEqual({ ok: true, pinned: true });
     expect(writes[0]).toMatchObject({ type: "insert" });
 
-    pins.push({ exercise_id: "bb-hip-thrust", position: 1 });
+    pins.push({ exercise_id: "db-bench", position: 1 });
     pins.push({ exercise_id: "db-split-squat", position: 2 });
     writes.length = 0;
     const blocked = await toggleExercisePin("bb-curl");
     expect(blocked).toEqual({ ok: false, error: "Pin cap is 8. Unpin something first." });
     expect(writes).toEqual([]);
   });
+
+  it.each(["seated-cable-row", "bb-incline-bench", "bb-hip-thrust", "machine-chest-press"] as const)(
+    "refuses to pin unresolved station template %s as an extra",
+    async (id) => {
+      const result = await toggleExercisePin(id);
+      expect(result).toEqual({ ok: false, error: "Choose a loggable exercise." });
+      expect(writes).toEqual([]);
+    },
+  );
 
   it("hides a default compound by writing a pin row", async () => {
     stats.push({ exercise_id: "bb-bench" });

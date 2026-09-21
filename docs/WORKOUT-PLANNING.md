@@ -2,20 +2,20 @@
 
 Home's Upcoming workout card links to `/workout/next`. The full-page planner shows every
 exercise with the effective week-specific sets, reps, RIR, rest, and phase description.
-It shares the machine-resolving ExercisePicker with the active workout. Reset removes
+It shares the station-resolving ExercisePicker (`resolveStations`) with the active workout. Reset removes
 only that slot's planned choice. An open workout redirects to its active session.
 
 ## Persistence and start boundary
 
 Planning choices apply to the upcoming workout only. They are stored for up to 30 days
 in a same-site, HTTP-only cookie in the current browser; they do not sync across devices.
-The UI states this limitation. Creating a new machine still persists its catalog variant
+The UI states this limitation. Creating a new station variant still persists its catalog row
 through the existing authenticated picker action. Planning never creates a session or
 logs a set, so it contributes no duration, adherence, or training-history data.
 
 The cookie identity contains the authenticated user, active program, next day, and completed
 session count. Reads reject other identities and filter deleted slots, unknown exercises,
-and unresolved machine templates. Saves authenticate, reload the active program and current
+and unresolved station templates. Saves authenticate, reload the active program and current
 position, validate the slot/exercise, and reject stale pages or already-open workouts.
 Cookie size is checked before writing; errors are visible instead of reporting success.
 
@@ -33,7 +33,7 @@ currently saves workout-only choices and leaves program defaults/adaptation hist
 ## Verification
 
 `workout-plan.test.ts` covers user/program/day/exposure isolation, malformed cookies, removed
-slots, unknown exercises, and machine-template rejection. `workout-planning-actions.test.ts`
+slots, unknown exercises, and station-template rejection. `workout-planning-actions.test.ts`
 checks the authenticated action boundary with mocked database/cookie adapters: saving without
 session creation, preserving other choices, reset, stale/invalid rejection, resume behavior,
 atomic insert payload, and draft retention on failure. These do not replace an authenticated

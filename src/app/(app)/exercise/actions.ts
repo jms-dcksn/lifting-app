@@ -9,6 +9,7 @@ import {
   type ExerciseDef,
   type MachineType,
   type Pattern,
+  type StationProfile,
   type StationTag,
 } from "@/lib/strength/coefficients";
 import { dbExerciseToDef, type DbExerciseRow } from "@/lib/catalog";
@@ -113,11 +114,23 @@ export interface CreateCustomInput {
   machineType?: MachineType | null;
 }
 
+function customStationProfile(equipment: Equipment): StationProfile {
+  if (equipment === "machine") return "machine";
+  if (equipment === "cable") return "cable";
+  return "none";
+}
+
 export async function createCustomExercise(input: CreateCustomInput): Promise<ExerciseDef> {
   const { supabase, userId } = await requireUser();
   const name = input.name.trim();
   if (!name) throw new Error("Name required");
-  const isMachine = input.equipment === "machine";
+  const profile = customStationProfile(input.equipment);
+  const station = profile === "none"
+    ? { brand: null, machineType: null as StationTag | null }
+    : resolveStationFields({ stationProfile: profile }, {
+      brand: input.brand,
+      machineType: profile === "cable" ? "selectorized" : (input.machineType ?? "selectorized"),
+    });
 
   const { data, error } = await supabase
     .from("exercise")
@@ -127,12 +140,12 @@ export async function createCustomExercise(input: CreateCustomInput): Promise<Ex
       name,
       pattern: input.pattern,
       equipment: input.equipment,
-      brand: isMachine ? (input.brand ?? null) : null,
-      machine_type: isMachine ? (input.machineType ?? null) : null,
+      brand: station.brand,
+      machine_type: station.machineType,
       base_exercise_id: null,
       coefficient: 1.0,
       is_reference: false,
-      needs_calibration: isMachine,
+      needs_calibration: profile === "machine" || profile === "cable",
       increment: input.equipment === "barbell" ? 5 : 10,
     })
     .select(SELECT)

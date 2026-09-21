@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, use, useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
+import { chooseStationCopy, isLoggableExercise } from "@/lib/station";
 import {
   selectProgressionReference,
   sessionTarget,
@@ -345,8 +346,9 @@ function SlotCard({
   const name = def?.name ?? exerciseId;
   const equipment = def?.equipment ?? "barbell";
   const increment = def?.increment ?? 5;
-  // A bare machine template isn't loggable — it must be instantiated to a brand/type variant.
-  const isTemplate = !!def?.machineTemplate;
+  // A station template isn't loggable — it must resolve to a brand / brand+type variant.
+  const isTemplate = !!def && !isLoggableExercise(def);
+  const chooseCopy = chooseStationCopy(def?.stationProfile) ?? "Choose machine";
 
   // Quick swap to the alternate last used for this slot. The button names the alternate by its
   // brand/type (never a sliced display name) so two variants of one movement stay distinct; the
@@ -529,7 +531,7 @@ function SlotCard({
             variant="ghost"
             onClick={() => setSwapping(true)}
             disabled={alreadyFinished || savingSwap}
-            aria-label={isTemplate ? `Choose machine for ${name}` : `Swap ${name} for another exercise`}
+            aria-label={isTemplate ? `${chooseCopy} for ${name}` : `Swap ${name} for another exercise`}
           >
             <IconSwap />
           </IconButton>
@@ -685,7 +687,7 @@ function SlotCard({
           catalog={Object.values(catalog)}
           recentIds={recentIds}
           patternFilter={slot.pattern}
-          resolveMachines
+          resolveStations
           onPick={(picked) => {
             setSwapError(null);
             setPickedSwap(picked);
@@ -783,7 +785,7 @@ function SlotCard({
       {isTemplate ? (
         <div className="mt-3">
           <Button type="button" className="w-full" disabled={alreadyFinished || savingSwap} onClick={() => setSwapping(true)}>
-            Choose machine
+            {chooseCopy}
           </Button>
         </div>
       ) : editingId === null ? (

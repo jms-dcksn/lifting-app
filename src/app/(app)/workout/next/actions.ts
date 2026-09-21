@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveProgram } from "@/lib/program";
 import { loadNextWorkout } from "@/lib/next-workout";
 import { WORKOUT_PLAN_COOKIE } from "@/lib/workout-plan";
+import { isLoggableExercise } from "@/lib/station";
 
 export async function saveWorkoutChoice(key: string, slotId: string, exerciseId: string | null) {
   const supabase = await createClient();
@@ -17,7 +18,7 @@ export async function saveWorkoutChoice(key: string, slotId: string, exerciseId:
   const next = await loadNextWorkout(supabase, userId, program);
   if (next.open || next.key !== key) throw new Error("Your next workout changed. Return home and reopen it.");
   if (!next.day.slots.some((slot) => slot.id === slotId)) throw new Error("Exercise slot no longer exists.");
-  if (exerciseId !== null && (!next.catalog[exerciseId] || next.catalog[exerciseId].machineTemplate)) {
+  if (exerciseId !== null && !isLoggableExercise(next.catalog[exerciseId])) {
     throw new Error("Choose a specific exercise or machine first.");
   }
   const choices = { ...next.choices };

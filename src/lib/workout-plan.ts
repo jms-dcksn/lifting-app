@@ -1,3 +1,4 @@
+import { isLoggableExercise } from "./station";
 import type { ExerciseDef } from "./strength/coefficients";
 
 export const WORKOUT_PLAN_COOKIE = "next-workout-plan";
@@ -19,7 +20,7 @@ export function readWorkoutPlan(
     return Object.fromEntries(slots.flatMap(({ id }) => {
       const exerciseId = draft.choices[id];
       const def = typeof exerciseId === "string" ? catalog[exerciseId] : undefined;
-      return def && def.id === exerciseId && def.stationProfile !== "machine" ? [[id, def.id]] : [];
+      return def && def.id === exerciseId && isLoggableExercise(def) ? [[id, def.id]] : [];
     }));
   } catch {
     return {};

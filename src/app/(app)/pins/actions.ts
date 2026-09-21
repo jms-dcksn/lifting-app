@@ -9,6 +9,7 @@ import {
   isExercisePinned,
   nextExtraPosition,
 } from "@/lib/board";
+import { needsStation } from "@/lib/strength/coefficients";
 import { loadTrainedExerciseIds, loadUserPinRows } from "@/lib/pins-data";
 
 const EXERCISE_ID = /^[a-z0-9][a-z0-9_-]{0,79}$/i;
@@ -40,11 +41,14 @@ export async function toggleExercisePin(exerciseId: string): Promise<
     loadUserPinRows(supabase, userId),
     loadTrainedExerciseIds(supabase, userId),
   ]);
-  if (!catalog[exerciseId] || catalog[exerciseId].machineTemplate) {
+  const def = catalog[exerciseId];
+  if (!def) return { ok: false, error: "Choose a loggable exercise." };
+  const defaults = defaultCompoundIds(catalog);
+  // Default-compound tiles keep template ids (Slice 4 family-latest). Hide/unhide
+  // those keys; extra pins still require a resolved, loggable identity.
+  if (needsStation(def) && !defaults.includes(exerciseId)) {
     return { ok: false, error: "Choose a loggable exercise." };
   }
-
-  const defaults = defaultCompoundIds(catalog);
   const pinned = isExercisePinned(pins, defaults, exerciseId);
   const isDefault = defaults.includes(exerciseId);
 

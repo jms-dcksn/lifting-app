@@ -475,16 +475,16 @@ increment), working sets only, bodyweight included, just-me-first.
 
 ## Workout achievements (#24–#26)
 
-- [x] Detect fixed-load rep PRs and canonical e1RM records with exact exercise/equipment scope.
+- [x] Detect fixed-load rep PRs, top-weight (max effective load) records, and canonical e1RM records with exact exercise/equipment scope.
 - [x] Show persistent, compact pills after successful saves and on resume.
-- [x] Consolidate both types in a completion recap with pre-workout deltas and quiet first entries.
+- [x] Consolidate all three kinds in a completion recap with pre-workout deltas and quiet first entries.
 - [x] Preserve historical comparisons after later workouts and recalculate edits/deletions.
 - [x] Verify eligibility, bodyweight/assistance, precision, pagination, save failures, and summary reuse.
 
 ## Cinematic workout recap (#94)
 
-- [x] Finish recap uses a record-count hero (`N PRs`, or the two-part count when mixing
-      rep and e1RM) and compact per-exercise lines in `--record` gold.
+- [x] Finish recap uses a record-count hero (`N PRs`, or joined kind counts when mixing
+      rep, e1RM, and/or top-weight) and compact per-exercise lines in `--record` gold.
 - [x] A workout with no records still completes with `{dayName} done` plus working-set
       count, without gold or invented records.
 - [x] Drop the top-e1RM table from the recap hero; keep history links on record rows.

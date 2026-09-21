@@ -495,11 +495,15 @@ added with `cable-crunch` as its reference anchor, so ab work has a home in the 
 model.
 
 **Builder picks templates; the session resolves them.** The program builder stays
-brand-agnostic (`resolveMachines={false}`): a slot stores the generic machine template. The
-active-session picker runs with `resolveMachines`, so the first time a lifter reaches a machine
-slot they pick brand + type and the template is instantiated to a concrete variant before any
-set is logged. A bare template renders a "Choose machine" prompt instead of set-entry. Custom
-exercises created from either picker are concrete and immediately loggable.
+brand-agnostic (`resolveStations={false}`): a slot stores the generic station template. The
+active-session picker runs with `resolveStations`, so the first time a lifter reaches a station
+slot they pick a brand (and type for machines) and the template is instantiated to a concrete
+variant before any set is logged. A bare station template renders a profile-specific choose
+prompt ("Choose machine" / "Choose cable" / "Choose bench" / "Choose rack" / "Choose platform")
+instead of set-entry. Custom exercises created from either picker are concrete and immediately
+loggable. `logSet`, swap, planner saves, and extra-pin writes reject unresolved station
+templates. (Station composition Slice 3 — previously this flag was `resolveMachines` and
+only machine templates were gated; Slices 1-3 generalized it to all `needsStation()` profiles.)
 
 **Migration 0008** adds `exercise.machine_type` and `exercise.base_exercise_id` plus a partial
 unique index (`exercise_variant_unique` on `user_id, base_exercise_id, coalesce(brand,''),

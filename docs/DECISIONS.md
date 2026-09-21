@@ -487,10 +487,12 @@ machine from another. Cross-machine recommendation falls out for free: a brand-n
 predicts from `pattern_strength × template coefficient`, and per-machine progression is just its
 own `exercise_id`.
 
-**Two judgment calls.** (1) Brand/type are scoped to `machine` equipment only — cables stay
-single exercises (one cable column behaves the same across brands), so the picker shows the
-brand/type step only for machines. (2) A `core` movement pattern was added with `cable-crunch`
-as its reference anchor, so ab work has a home in the pattern model.
+**Two judgment calls.** (1) Brand/type were scoped to `machine` equipment only — cables
+stayed single exercises (one cable column behaves the same across brands), so the picker
+showed the brand/type step only for machines. Revisit: [station composition](superpowers/specs/2026-09-21-station-composition-design.md)
+extends variants to cables and some barbell stations. (2) A `core` movement pattern was
+added with `cable-crunch` as its reference anchor, so ab work has a home in the pattern
+model.
 
 **Builder picks templates; the session resolves them.** The program builder stays
 brand-agnostic (`resolveMachines={false}`): a slot stores the generic machine template. The
@@ -692,3 +694,37 @@ language stays this app’s primitives.
 
 **Period data stays off-limits** until a separate opt-in, matching the Coach V1 export
 exclusion and Settings consent copy.
+
+## Station composition (2026-09-21, design)
+
+Design approved (James 2026-09-21). Open questions LOCKED. Source of truth:
+[station composition spec](superpowers/specs/2026-09-21-station-composition-design.md)
+([#146](https://github.com/jms-dcksn/lifting-app/issues/146)). Implementation is
+a follow-up; the design PR stays unmerged.
+
+Phase C scoped brand/type to machines and left cables flat. That judgment is
+reversed for every cable and for the barbell stations below. Extend
+`resolveVariant`; do not add a parallel identity system.
+
+**Locked (James 2026-09-21).** Machine: brand + plate/selectorized. Cable (all 8):
+brand only, `machine_type` locked `selectorized`, calibrate the brand variant.
+Barbell `bench`: `bb-bench`, `bb-incline-bench`, `bb-hip-thrust`. Barbell `rack`:
+`bb-back-squat`, `bb-front-squat`, `bb-ohp`. Barbell `platform`: `bb-deadlift`,
+`bb-rdl`. Barbell `none`: `bb-row`, `bb-reverse-lunge`, `bb-shrug`, `bb-curl`.
+All nine dumbbells and the three bodyweight seeds stay `none` (incline DB bench
+included). No barbell-station calibration — bar loads stay ordinary lb.
+
+**Schema pick.** Reuse `exercise` and `exercise_variant_unique`. Store
+`bench` / `rack` / `platform` in the existing `machine_type` column (identity tag,
+same as `selectorized` / `plate_loaded`). Do not add `station_kind`. Expand
+`variantId` / `variantName` tags: `stack`, `plate`, `bench`, `rack`, `platform`.
+
+**History, Track tiles, copy (LOCKED James 2026-09-21).** No rewrite of flat
+cable/barbell `set_log` rows — family browse groups template + later variants;
+the next log creates a variant; split PR chains are accepted. Track default
+compounds use family-latest numbers and href. Session/planner copy is
+profile-specific (**Choose bench** / Choose cable / etc.), not “Choose station”.
+
+Builder may keep storing templates; session/planner resolve before set-entry.
+Records, progression, and review stay exact `exercise_id`. AI Coach, bodyweight
+stations, and progression-math rewrites are out of scope.

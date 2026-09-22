@@ -57,19 +57,24 @@ Adaptive plateau engine under §5.
 ### Program grid and detail
 - **Responsive program grid** — header is Programs + primary **New program**; owned tiles
   sit under **My programs** (active first, then newest). Tiles show days, weeks, exercise
-  count, style, and primary tag.
+  count, style, and primary tag, plus a Remove control that confirms in a Sheet.
 - **Single-select tag filter** — Filter opens a Sheet of All + the union of owned-program
   tags. Hidden when no program has tags. An active tag shows `Filtered · {tag}` with Clear
   (`tag-filter.tsx`, `program-tags.ts`). Chips are not always-on.
 - **Dedicated detail screen** — `/program/[id]` shows description, tags, and a responsive
-  day grid with Edit, Make active, and Clone actions.
+  day grid with Edit, Make active, Clone, and Remove actions.
 - **Templates** — compact Add rows stay below a divider (muted heading + "Start from a
   built-in split"). Never mixed into the My programs grid. Empty accounts still use the
   template-forward first-run screen on `page.tsx`.
-- **Make active** — `setActiveProgram`; a partial unique index enforces exactly one active
+- **Make active** — `setActiveProgram`; a partial unique index enforces at most one active
   program per user.
 - **Clone program** — `cloneProgram` deep-copies a program (days, slots, per-slot rest
   overrides) into a new editable copy.
+- **Remove program** — a tile control on My programs (and Remove on detail) opens a
+  confirm Sheet (`Remove` / `Cancel`) then `deleteProgram`. Owner-scoped; days, slots,
+  and phases cascade; session program FKs set null; `set_log` is kept. Deleting the
+  active program is allowed and may leave none active. Zero programs returns the
+  first-run template screen.
 - **First-run template offer** — when a user has no programs, offers the built-in
   Push/Pull/Legs template via `createFromTemplate`.
 

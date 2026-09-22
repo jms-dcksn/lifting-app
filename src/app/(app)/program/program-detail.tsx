@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button-styles";
 import { Card } from "@/components/ui/card";
 import { cloneProgram, setActiveProgram } from "./actions";
+import { RemoveProgramButton } from "./remove-program-button";
 
 export function ProgramDetail({
   program,
@@ -162,6 +163,7 @@ export function ProgramDetail({
         >
           Clone
         </Button>
+        <RemoveProgramButton programId={program.id} name={title} variant="label" />
       </div>
     </div>
   );

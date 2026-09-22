@@ -83,6 +83,7 @@ re-derived from array order on save.
 **Single active program enforced by a partial unique index.** `program_one_active_per_user`
 is a partial unique index on `(user_id) WHERE is_active`. Saving any program unconditionally
 activates it (clears the old active flag first). `cloneProgram` creates an inactive draft.
+`deleteProgram` may leave zero active programs; the index still allows at most one.
 
 **Seed data moved into shared templates.** `session/seed.ts` was subsequently deleted;
 `createFromTemplate` reads `src/lib/program-templates.ts`, including Push/Pull/Legs.
@@ -385,8 +386,13 @@ is sufficient.
 **Dedicated summary and detail paths supersede inline expansion.** `/program` now loads
 batched summaries and renders linked tiles; `/program/[id]` loads one full program. This
 reverses the earlier full-gallery assembly decision because inline expansion created large
-cards and avoidable scroll friction. Actions live on detail, edit remains explicit, and no
-schema change is required.
+cards and avoidable scroll friction. Edit, activate, and clone live on detail; edit remains
+explicit, and no schema change is required.
+
+**Remove is on My programs tiles (2026-09-22).** A confirm Sheet (Remove / Cancel) calls
+owner-scoped `deleteProgram` from the gallery so deletion is not buried on detail. Detail
+exposes the same action. Days/slots/phases cascade; session program FKs set null; `set_log`
+is kept. Deleting the active program does not auto-activate another.
 
 **`HARD_RIR = 2` is a module-level constant, not a user setting.** Sets with `rir ≤ 2` are
 classified as hard (stimulating) sets. The constant is unexported (private to `analytics.ts`)

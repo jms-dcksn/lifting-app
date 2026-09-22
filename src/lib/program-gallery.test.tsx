@@ -23,10 +23,17 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/app/(app)/program/actions", () => ({
-  createFromTemplate: vi.fn(),
+const nav = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn(), push: vi.fn() }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => nav,
 }));
 
+vi.mock("@/app/(app)/program/actions", () => ({
+  createFromTemplate: vi.fn(),
+  deleteProgram: vi.fn(),
+}));
+
+import { deleteProgram } from "@/app/(app)/program/actions";
 import { ProgramGallery } from "@/app/(app)/program/program-gallery";
 
 const programs: ProgramSummary[] = [
@@ -72,6 +79,9 @@ beforeEach(() => {
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
+  nav.replace.mockReset();
+  vi.mocked(deleteProgram).mockReset();
+  vi.mocked(deleteProgram).mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -95,6 +105,14 @@ function render(props?: { programs?: ProgramSummary[]; templates?: TemplateSumma
 
 function click(label: string) {
   const button = [...host.querySelectorAll("button")].find((el) => el.textContent === label);
+  if (!button) throw new Error(`missing button ${label}`);
+  act(() => {
+    button.click();
+  });
+}
+
+function clickAria(label: string) {
+  const button = host.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`);
   if (!button) throw new Error(`missing button ${label}`);
   act(() => {
     button.click();
@@ -167,5 +185,34 @@ describe("ProgramGallery", () => {
       false,
     );
     expect(host.querySelector("h2")?.textContent).toBe("My programs");
+  });
+
+  it("confirms Remove on a My programs tile before deleting", async () => {
+    vi.useFakeTimers();
+    render();
+
+    clickAria("Remove Home PPL");
+    const dialog = host.querySelector("dialog");
+    expect(dialog?.getAttribute("aria-label")).toBe("Remove program");
+    expect(dialog?.textContent).toContain("Remove Home PPL?");
+    expect(dialog?.textContent).toContain("Logged workouts stay.");
+    expect(deleteProgram).not.toHaveBeenCalled();
+    expect(programNames()).toEqual(["/program/ppl", "/program/upper"]);
+
+    click("Cancel");
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+    expect(host.querySelector("dialog")).toBeNull();
+    expect(deleteProgram).not.toHaveBeenCalled();
+
+    clickAria("Remove Home PPL");
+    await act(async () => {
+      const confirm = [...host.querySelectorAll("button")].find((el) => el.textContent === "Remove");
+      if (!confirm) throw new Error("missing button Remove");
+      confirm.click();
+    });
+    expect(deleteProgram).toHaveBeenCalledWith("ppl");
+    expect(nav.replace).toHaveBeenCalledWith("/program");
   });
 });

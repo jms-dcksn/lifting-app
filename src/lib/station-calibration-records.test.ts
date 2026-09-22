@@ -19,7 +19,10 @@ import {
 
 function variant(baseId: string, id: string, extra: Partial<ExerciseDef> = {}): ExerciseDef {
   const base = EXERCISE_BY_ID[baseId];
-  const { stationProfile: _profile, machineTemplate: _template, isReference: _ref, ...rest } = base;
+  const rest = { ...base };
+  delete rest.stationProfile;
+  delete rest.machineTemplate;
+  delete rest.isReference;
   return {
     ...rest,
     id,

@@ -8,7 +8,10 @@ vi.mock("next/navigation", () => ({ redirect: () => { throw new Error("Unauthent
 vi.mock("./catalog", async () => {
   const { EXERCISE_BY_ID } = await import("./strength/coefficients");
   const variant = (baseId: string, id: string, extra: Record<string, unknown>) => {
-    const { stationProfile: _p, machineTemplate: _m, isReference: _r, ...rest } = EXERCISE_BY_ID[baseId];
+    const rest = { ...EXERCISE_BY_ID[baseId] };
+    delete rest.stationProfile;
+    delete rest.machineTemplate;
+    delete rest.isReference;
     return { ...rest, id, baseExerciseId: baseId, isReference: false, ...extra };
   };
   return {

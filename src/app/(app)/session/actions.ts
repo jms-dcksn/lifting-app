@@ -50,13 +50,12 @@ export async function getExerciseHistory(exerciseId: string, sessionId: string) 
 // Rebuild user_exercise_stat.current_e1rm for one exercise from its set_log rows.
 // set_log is the source of truth; this keeps the cache from drifting.
 //
-// Machine calibration: exercises with arbitrary load units (needsCalibration) get a
-// personal coefficient = observed e1RM / pattern strength estimated from the OTHER
-// logged variants. It anchors on the first calibration session (re-anchored while only
-// one session exists, so edits/deletes of that session stay consistent) and is then held
-// fixed — later machine progress moves pattern strength, not the coefficient.
-// coeff_confidence_n tracks distinct sessions, growing trust in the personal coefficient
-// over the population prior (shrinkage in recommend.ts) and graduating confidence.
+// Calibration (needsCalibration): arbitrary load units — machines and cable brand
+// variants. personal_coefficient = observed e1RM / pattern strength from OTHER
+// exact-id stats. Anchors on the first session (re-anchored while only one session
+// exists) and then holds. Barbell bench/rack/platform variants are ordinary lb and
+// skip this branch. Leftover flat template rows are a different exercise_id, so a
+// new cable variant still calibrates. No rewrite of those leftover set_log rows.
 async function recomputeAndUpsertStat(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
@@ -202,7 +201,7 @@ export async function logSet(input: LogSetInput) {
         .maybeSingle(),
       getCurrentBodyweight(supabase, userId),
       setIndexQuery,
-      // First-ever set on a machine that needs calibration is a calibration set (P5 uses this).
+      // First exact-id set on a needsCalibration exercise (machine or cable variant).
       supabase
         .from("set_log")
         .select("id", { count: "exact", head: true })

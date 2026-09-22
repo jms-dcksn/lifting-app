@@ -1,6 +1,6 @@
 # Station composition for non-dumbbell exercises
 
-**Status:** Design approved (James 2026-09-21). Open questions LOCKED. Slices 1–4 shipped (domain+ids, resolveVariant, picker+session gate, family-latest Track tiles). Slices 5–6 pending.
+**Status:** Design approved (James 2026-09-21). Open questions LOCKED. Slices 1–5 shipped (domain+ids, resolveVariant, picker+session gate, family-latest Track tiles, calibration+records verification). Slice 6 pending.
 **Issue:** [#146](https://github.com/jms-dcksn/lifting-app/issues/146)
 **Date:** 2026-09-21
 **Companion:** Phase C machine variants — [2026-06-21 spec](2026-06-21-machine-brands-types-custom-exercises-design.md); shipped behavior in [Features §6](../../FEATURES.md) and [Decisions: Phase C](../../DECISIONS.md#phase-c-decisions-machine-brands-types-custom-exercises).

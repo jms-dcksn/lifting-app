@@ -39,11 +39,14 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
   writes reject unresolved station templates. Picker copy is profile-specific
   (**Choose bench** / Choose cable / Choose rack / Choose platform / Choose machine).
   See [station composition](superpowers/specs/2026-09-21-station-composition-design.md).
-- Machines require calibration because stack/leverage units do not transfer from free
-  weights. `recomputeAndUpsertStat` in `src/app/(app)/session/actions.ts` anchors the personal
-  coefficient against other variants' pattern strength during the first session, then
-  holds it fixed. Distinct working-set sessions supply `coeff_confidence_n`. Later progress
-  moves pattern strength rather than continuously re-calibrating the coefficient.
+- Machines and cable brand variants require calibration because stack/leverage units do
+  not transfer from free weights. `recomputeAndUpsertStat` in
+  `src/app/(app)/session/actions.ts` anchors the personal coefficient against other
+  exact-id stats' pattern strength during the first session, then holds it fixed.
+  Barbell bench/rack/platform variants skip that branch (ordinary lb). Distinct
+  working-set sessions supply `coeff_confidence_n`. Later progress moves pattern
+  strength rather than continuously re-calibrating the coefficient. Leftover flat
+  template `set_log` rows are not rewritten; a new cable variant still calibrates.
 - `recompute.ts` rebuilds demonstrated strength from working sets; `user_exercise_stat`
   remains a derived cache. Record baselines use saved sets, not this mutable cache.
 

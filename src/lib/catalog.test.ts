@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { dbExerciseToDef, mergeCatalog, type DbExerciseRow } from "./catalog";
+import { isLoggableExercise } from "./station";
 import { EXERCISE_BY_ID } from "./strength/coefficients";
 
 const row = (over: Partial<DbExerciseRow> = {}): DbExerciseRow => ({
@@ -55,5 +56,66 @@ describe("mergeCatalog", () => {
   it("lets seeded templates win an id collision", () => {
     const map = mergeCatalog([row({ id: "machine-chest-press", brand: "Hacked" })]);
     expect(map["machine-chest-press"].brand).toBeUndefined();
+  });
+
+  // History policy: leftover flat cable/barbell set_log rows keep the seeded
+  // template id. Catalog merge must never replace that seed with a variant row.
+  it("leaves leftover cable and barbell template ids as the seeded row", () => {
+    const map = mergeCatalog([
+      row({
+        id: "lat-pulldown",
+        name: "Hacked pulldown",
+        pattern: "vertical_pull",
+        equipment: "cable",
+        brand: "Nautilus",
+        machine_type: "selectorized",
+        base_exercise_id: "lat-pulldown",
+        needs_calibration: false,
+      }),
+      row({
+        id: "bb-incline-bench",
+        name: "Hacked incline",
+        pattern: "horizontal_press",
+        equipment: "barbell",
+        brand: "Flex Fitness",
+        machine_type: "bench",
+        base_exercise_id: "bb-incline-bench",
+        needs_calibration: true,
+      }),
+    ]);
+    expect(map["lat-pulldown"]).toEqual(EXERCISE_BY_ID["lat-pulldown"]);
+    expect(map["bb-incline-bench"]).toEqual(EXERCISE_BY_ID["bb-incline-bench"]);
+  });
+
+  it("does not put stationProfile on a DB variant, so the variant stays loggable", () => {
+    const cable = dbExerciseToDef(row({
+      id: "lat-pulldown__nautilus__selectorized",
+      name: "Lat Pulldown (Cable) — Nautilus (stack)",
+      pattern: "vertical_pull",
+      equipment: "cable",
+      brand: "Nautilus",
+      machine_type: "selectorized",
+      base_exercise_id: "lat-pulldown",
+      coefficient: 1,
+      needs_calibration: true,
+      increment: 10,
+    }));
+    expect(cable.stationProfile).toBeUndefined();
+    expect(cable.needsCalibration).toBe(true);
+    expect(isLoggableExercise(cable)).toBe(true);
+    const bench = dbExerciseToDef(row({
+      id: "bb-incline-bench__flex-fitness__bench",
+      name: "Barbell Incline Bench — Flex Fitness (bench)",
+      equipment: "barbell",
+      brand: "Flex Fitness",
+      machine_type: "bench",
+      base_exercise_id: "bb-incline-bench",
+      coefficient: 0.82,
+      needs_calibration: false,
+      increment: 5,
+    }));
+    expect(bench.stationProfile).toBeUndefined();
+    expect(bench.needsCalibration).toBe(false);
+    expect(isLoggableExercise(bench)).toBe(true);
   });
 });

@@ -81,7 +81,9 @@ beat last time. Done = I use it for a real block.
 
 Program building, classic phases, Fluid adaptations, scoped swaps, pre-workout planning,
 workout records, Coach reports/API/proposals, weight calendar/trends, monthly review, the
-Lift/Track/Program/You tab shell, cinematic recap, and Track compounds/pins are implemented.
+Lift/Track/Program/You tab shell, cinematic recap, Track compounds/pins, and station
+composition (cables and locked barbell stations compose like machines; dumbbells and
+bodyweight stay flat) are implemented.
 See [Features](FEATURES.md). Migrations and generated types are committed; remote
 migration/Auth state needs a live check. The numbered phase sections below retain the
 original build sequence and historical checks.

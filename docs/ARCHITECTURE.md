@@ -15,7 +15,7 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
   loads. Preserve this model rather than replacing it with a bare Epley/Brzycki formula.
 - `coefficients.ts` owns seeded exercises and population coefficients. `recommend.ts` pools
   reference-lift strength by movement pattern and uses Bayesian shrinkage (`PRIOR_WEIGHT`).
-- `catalog.ts` merges seeds with the owner's machine variants and custom exercises; seeds
+- `catalog.ts` merges seeds with the owner's station variants and custom exercises; seeds
   win ID collisions. Use the merged catalog in screens and stat rebuilds. `exercise_id` is
   a text slug, intentionally not a foreign key. `exercise-id.ts` owns variant/custom IDs.
 - Log barbell/machine total load, one dumbbell's load, and bodyweight added load (negative

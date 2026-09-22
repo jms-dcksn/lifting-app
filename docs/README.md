@@ -13,7 +13,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Shared components and UI gotchas | [UI conventions](UI.md) |
 | Copy density (proposed) | [2026-09-16 spec](superpowers/specs/2026-09-16-visual-copy-density-design.md) |
 | Exercise review (Slices A–F shipped) | [2026-09-19 spec](superpowers/specs/2026-09-19-exercise-review-design.md) |
-| Station composition (Slices 1–5 shipped) | [2026-09-21 spec](superpowers/specs/2026-09-21-station-composition-design.md) |
+| Station composition (Approved / shipped) | [2026-09-21 spec](superpowers/specs/2026-09-21-station-composition-design.md); [Features §6](FEATURES.md) |
 | Shipped behavior | [Features](FEATURES.md) |
 | Rationale and record eligibility | [Decisions](DECISIONS.md) |
 | Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |
@@ -35,7 +35,9 @@ As of 2026-09-19: the Lift/Track/Program/You tab shell (epic #93), cinematic rec
 compounds/pins, the monthly dashboard (#31), the period × performance week overlay (#105),
 exercise review Slices A–F (#115 dump removal, #116 one destination, #117 Today / 21-day / chart, #118 month-to-month, #119 entry equipment params),
 and coach check-in QoL (#126: ranked proposals with Do first / Also tiers, collapsed insufficient-data trends, specialization hard-set shortfall flag)
-are implemented. See [Features](FEATURES.md) for current behavior. Issue numbers here identify
+are implemented. Station composition (cables and locked barbell stations compose
+like machines; dumbbells and bodyweight stay flat) shipped as Slices 1–6
+(#154–#158, #153). See [Features](FEATURES.md) for current behavior. Issue numbers here identify
 planned slices, not a live GitHub status check. Historical verification counts describe their
 original runs. AI Coach slices are specified in [AI-COACH.md](AI-COACH.md) and are not
 shipped; Slice 0 is the next build.

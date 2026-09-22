@@ -76,6 +76,9 @@ batched program/day/slot queries; `program-summary.ts` sorts active first, then 
 The builder preserves day/slot IDs with upsert/delete-missing, maintaining set-history links.
 Saving activates the program; the partial unique index allows at most one active program.
 Clones are inactive drafts. Template creation activates only for an account without programs.
+`deleteProgram` removes an owned program row; schema cascades days/slots/phases and sets
+session program FKs null. `set_log` stays. Deleting the active program does not auto-activate
+another.
 
 `program-templates.ts` owns shared templates; adding one needs no seed or migration.
 Use its descriptions for transcription approximations (percentage work, reverse pyramids,

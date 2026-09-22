@@ -280,3 +280,25 @@ export async function cloneProgram(id: string): Promise<string> {
   revalidatePath("/program");
   return newProgramId;
 }
+
+// Hard-delete an owned program. Days, slots, phases, and slot-scoped adaptations
+// cascade in the schema; session program FKs set null. set_log is not touched.
+// Deleting the active program is allowed and may leave the account with none.
+export async function deleteProgram(id: string) {
+  const { supabase, userId } = await requireUser();
+
+  const { data, error } = await supabase
+    .from("program")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error("Unable to remove this program.");
+  if (!data) throw new Error("Program not found");
+
+  revalidatePath("/");
+  revalidatePath("/program");
+  revalidatePath("/workout/next");
+  revalidatePath(programDetailHref(id));
+}

@@ -129,6 +129,20 @@ export function IconMore({ size }: IconProps) {
   );
 }
 
+export function IconTrash({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path
+        d="M5 7h14M10 7V5h4v2M8 7l1 12h6l1-12"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 export function Sparkline({ values }: { values: number[] }) {
   if (values.length < 2) return null;
   const min = Math.min(...values);

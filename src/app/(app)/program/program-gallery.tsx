@@ -35,28 +35,33 @@ export function ProgramGallery({
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-display">Programs</h1>
-        <Link href={programNewHref()} className={buttonClasses("secondary", "sm")}>
-          + New
+        <Link href={programNewHref()} className={buttonClasses("primary", "md")}>
+          New program
         </Link>
       </div>
 
-      <TagFilter tags={tags} active={tag} onSelect={setTag} />
+      <section className="flex flex-col gap-3">
+        <TagFilter tags={tags} active={tag} onSelect={setTag} />
 
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {visible.map((program) => (
-          <li key={program.id}>
-            <ProgramTile program={program} />
-          </li>
-        ))}
-      </ul>
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {visible.map((program) => (
+            <li key={program.id}>
+              <ProgramTile program={program} />
+            </li>
+          ))}
+        </ul>
 
-      {visible.length === 0 && (
-        <p className="text-body text-muted">No programs match this tag.</p>
-      )}
+        {visible.length === 0 && (
+          <p className="text-body text-muted">No programs match this tag.</p>
+        )}
+      </section>
 
       {templates.length > 0 && (
-        <div className="mt-4 flex w-full max-w-page flex-col gap-2">
-          <h2 className="text-heading">Templates</h2>
+        <section className="mt-2 flex w-full max-w-page flex-col gap-2 border-t border-border pt-6">
+          <div>
+            <h2 className="text-heading text-muted">Templates</h2>
+            <p className="text-caption text-muted">Start from a built-in split</p>
+          </div>
           <ul className="flex flex-col divide-y divide-border">
             {templates.map((t) => (
               <li key={t.id} className="flex items-center justify-between gap-3 py-3">
@@ -74,7 +79,7 @@ export function ProgramGallery({
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       )}
     </div>
   );

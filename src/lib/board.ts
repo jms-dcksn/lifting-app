@@ -1,3 +1,4 @@
+import { exerciseFamilyIds, latestFamilyMember } from "./exercise-history";
 import type { ExerciseDef, Pattern } from "./strength/coefficients";
 import { recapHeadline, recapLines, recordCounts, type ExerciseRecords } from "./strength/records";
 
@@ -21,6 +22,7 @@ export interface PinRow {
 
 export interface BoardLift {
   exerciseId: string;
+  reviewExerciseId: string;
   equipmentInstanceId: string | null;
   name: string;
   shortName: string;
@@ -80,8 +82,9 @@ export function visibleBoardIds(
   pins: PinRow[],
   defaults: string[],
   historyIds: Iterable<string>,
+  catalog: Record<string, ExerciseDef> = {},
 ) {
-  const trained = new Set(historyIds);
+  const trained = trainedTileIds(historyIds, defaults, catalog);
   const hidden = hiddenDefaultIds(pins, defaults);
   const compounds = defaults.filter((id) => !hidden.has(id) && trained.has(id));
   return [...compounds, ...extraPins(pins, defaults).map((pin) => pin.exerciseId)];
@@ -92,8 +95,9 @@ export function canPinExercise(
   defaults: string[],
   historyIds: Iterable<string>,
   exerciseId: string,
+  catalog: Record<string, ExerciseDef> = {},
 ) {
-  const visible = new Set(visibleBoardIds(pins, defaults, historyIds));
+  const visible = new Set(visibleBoardIds(pins, defaults, historyIds, catalog));
   if (visible.has(exerciseId)) return { ok: true as const };
   if (visible.size >= PIN_CAP) {
     return { ok: false as const, error: `Pin cap is ${PIN_CAP}. Unpin something first.` };
@@ -167,6 +171,7 @@ export function buildBoardLifts({
   pins: PinRow[];
   summaries: Array<{
     exerciseId: string;
+    lastPerformedAt?: string;
     equipmentInstanceId?: string | null;
     currentE1rm: number | null;
     delta: number | null;
@@ -175,26 +180,48 @@ export function buildBoardLifts({
   weekExerciseIds: Iterable<string>;
 }): BoardLift[] {
   const defaults = defaultCompoundIds(catalog);
+  const defaultSet = new Set(defaults);
   const visible = visibleBoardIds(
     pins,
     defaults,
     summaries.map((summary) => summary.exerciseId),
+    catalog,
   );
   const byId = new Map(summaries.map((summary) => [summary.exerciseId, summary]));
   const recent = new Set(weekExerciseIds);
   return visible.map((exerciseId) => {
     const def = catalog[exerciseId];
-    const summary = byId.get(exerciseId);
+    const summary = defaultSet.has(exerciseId)
+      ? latestFamilyMember(exerciseId, catalog, summaries)
+      : byId.get(exerciseId);
+    const reviewExerciseId = summary?.exerciseId ?? exerciseId;
     return {
       exerciseId,
+      reviewExerciseId,
       equipmentInstanceId: summary?.equipmentInstanceId ?? null,
       name: def?.name ?? exerciseId,
       shortName: boardShortName(def ?? { id: exerciseId, name: exerciseId }),
-      isCompound: defaults.includes(exerciseId),
+      isCompound: defaultSet.has(exerciseId),
       currentE1rm: summary?.currentE1rm ?? null,
       delta: summary?.delta ?? null,
       e1rmSeries: summary?.e1rmSeries ?? [],
-      recentRecord: recent.has(exerciseId),
+      recentRecord: recent.has(reviewExerciseId),
     };
   });
+}
+
+function trainedTileIds(
+  historyIds: Iterable<string>,
+  defaults: string[],
+  catalog: Record<string, ExerciseDef>,
+) {
+  const trained = new Set<string>();
+  const defaultSet = new Set(defaults);
+  for (const id of historyIds) {
+    trained.add(id);
+    for (const familyId of exerciseFamilyIds(id, catalog)) {
+      if (defaultSet.has(familyId)) trained.add(familyId);
+    }
+  }
+  return trained;
 }

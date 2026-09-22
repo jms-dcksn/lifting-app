@@ -73,7 +73,7 @@ export async function toggleExercisePin(exerciseId: string): Promise<
     return { ok: true, pinned: false };
   }
 
-  const allowed = canPinExercise(pins, defaults, historyIds, exerciseId);
+  const allowed = canPinExercise(pins, defaults, historyIds, exerciseId, catalog);
   if (!allowed.ok) return allowed;
 
   if (isDefault) {

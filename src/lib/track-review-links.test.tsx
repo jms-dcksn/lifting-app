@@ -54,6 +54,7 @@ describe("Track exercise review links", () => {
   it("sends tiles through the latest-instance equipment query", () => {
     const lift: BoardLift = {
       exerciseId: "leg-press",
+      reviewExerciseId: "leg-press",
       equipmentInstanceId: "cybex",
       name: "Leg Press",
       shortName: "Leg Press",
@@ -88,5 +89,25 @@ describe("Track exercise review links", () => {
       );
     });
     expect(host.querySelector('a[href="/history/bb-bench?equipment=none"]')?.textContent).toContain("Barbell Bench Press");
+  });
+
+  it("sends default-compound tiles to the family-latest review identity", () => {
+    const lift: BoardLift = {
+      exerciseId: "bb-bench",
+      reviewExerciseId: "bb-bench__flex-fitness__bench",
+      equipmentInstanceId: null,
+      name: "Barbell Bench Press",
+      shortName: "Bench",
+      isCompound: true,
+      currentE1rm: 185,
+      delta: -8,
+      e1rmSeries: [193, 185],
+      recentRecord: false,
+    };
+    act(() => {
+      root.render(<BoardGrid lifts={[lift]} pinnedIds={["bb-bench"]} showPin={false} />);
+    });
+    expect(host.querySelector('a[href="/history/bb-bench__flex-fitness__bench?equipment=none"]')?.textContent)
+      .toContain("Bench");
   });
 });

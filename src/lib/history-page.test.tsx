@@ -117,6 +117,12 @@ describe("HistoryPage route", () => {
     expect(mocks.periodRows).not.toHaveBeenCalled();
   });
 
+  it("scopes the set query to the path exercise id, not a station family", async () => {
+    await render("bb-bench__flex-fitness__bench", { equipment: "none" });
+    expect(query.eq).toHaveBeenCalledWith("exercise_id", "bb-bench__flex-fitness__bench");
+    expect(query.eq).not.toHaveBeenCalledWith("exercise_id", "bb-bench");
+  });
+
   it("filters to the requested equipment instance instead of blending", async () => {
     setRows = [
       {

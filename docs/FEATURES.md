@@ -55,13 +55,17 @@ Adaptive plateau engine under §5.
 ## 3. Programs (`/program`)
 
 ### Program grid and detail
-- **Responsive program grid** — active program first, then newest first; tiles show days,
-  weeks, exercise count, style, and primary tag.
-- **Single-select tag filter** — chip row over the union of all program tags (plus "All");
-  hidden entirely when no program has tags (`tag-filter.tsx`, `program-tags.ts`).
+- **Responsive program grid** — header is Programs + primary **New program**; owned tiles
+  sit under **My programs** (active first, then newest). Tiles show days, weeks, exercise
+  count, style, and primary tag.
+- **Single-select tag filter** — Filter opens a Sheet of All + the union of owned-program
+  tags. Hidden when no program has tags. An active tag shows `Filtered · {tag}` with Clear
+  (`tag-filter.tsx`, `program-tags.ts`). Chips are not always-on.
 - **Dedicated detail screen** — `/program/[id]` shows description, tags, and a responsive
   day grid with Edit, Make active, and Clone actions.
-- **Templates** — creation shortcuts remain separate below owned programs.
+- **Templates** — compact Add rows stay below a divider (muted heading + "Start from a
+  built-in split"). Never mixed into the My programs grid. Empty accounts still use the
+  template-forward first-run screen on `page.tsx`.
 - **Make active** — `setActiveProgram`; a partial unique index enforces exactly one active
   program per user.
 - **Clone program** — `cloneProgram` deep-copies a program (days, slots, per-slot rest

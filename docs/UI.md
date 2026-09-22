@@ -10,6 +10,7 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
 - `Sheet` is the native-dialog overlay with focus trapping, Escape/scrim/handle dismissal,
   and animated exit. `useSheetDismiss()` gives inner controls the same close behavior.
   Keep its JS exit delay aligned with CSS; unmount through `onClose` after exit completes.
+  Program gallery tags use that Sheet behind a Filter control, not an always-on chip row.
 - `InfoButton` is a 44px circle-i control that opens a read-only `Sheet` (`title` as h2,
   short body, Done). Helper copy lives behind it, not as a caption under the control.
 - `Button` supplies pending state (`pending` or form status). `buttonClasses` lives in the

@@ -102,6 +102,17 @@ describe("catalog templates", () => {
     }
   });
 
+  it("inherits calibration on cables and never flags barbell stations", () => {
+    for (const e of EXERCISES.filter((e) => e.stationProfile === "cable")) {
+      expect(e.needsCalibration, e.id).toBe(true);
+    }
+    for (const e of EXERCISES.filter((e) =>
+      e.stationProfile === "bench" || e.stationProfile === "rack" || e.stationProfile === "platform",
+    )) {
+      expect(e.needsCalibration, e.id).toBeFalsy();
+    }
+  });
+
   it("exposes the generic chest-press template", () => {
     const def = EXERCISE_BY_ID["machine-chest-press"];
     expect(def).toBeDefined();

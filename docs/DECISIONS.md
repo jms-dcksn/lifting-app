@@ -707,7 +707,9 @@ Design approved (James 2026-09-21). Open questions LOCKED. Source of truth:
 `stationProfile` / `needsStation` / `StationTag`. Slice 2 shipped `resolveVariant`
 extended to cable and barbell-station templates. Slice 3 shipped the picker forms
 and session/planner/swap/pin gate. Slice 4 shipped family-latest Track
-default-compound numbers and review hrefs.
+default-compound numbers and review hrefs. Slice 5 verified cable-variant first
+sessions calibrate, barbell stations do not, and records stay exact-id across
+leftover template + variant families.
 
 Phase C scoped brand/type to machines and left cables flat. That judgment is
 reversed for every cable and for the barbell stations below. Extend

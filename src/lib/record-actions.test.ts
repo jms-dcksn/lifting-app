@@ -7,7 +7,26 @@ vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
 vi.mock("next/navigation", () => ({ redirect: () => { throw new Error("Unauthenticated"); } }));
 vi.mock("./catalog", async () => {
   const { EXERCISE_BY_ID } = await import("./strength/coefficients");
-  return { getCatalogMap: async () => EXERCISE_BY_ID };
+  const variant = (baseId: string, id: string, extra: Record<string, unknown>) => {
+    const rest = { ...EXERCISE_BY_ID[baseId] };
+    delete rest.stationProfile;
+    delete rest.machineTemplate;
+    delete rest.isReference;
+    return { ...rest, id, baseExerciseId: baseId, isReference: false, ...extra };
+  };
+  return {
+    getCatalogMap: async () => ({
+      ...EXERCISE_BY_ID,
+      "lat-pulldown__nautilus__selectorized": variant("lat-pulldown", "lat-pulldown__nautilus__selectorized", {
+        brand: "Nautilus", machineType: "selectorized", needsCalibration: true,
+        name: "Lat Pulldown (Cable) — Nautilus (stack)",
+      }),
+      "bb-incline-bench__flex-fitness__bench": variant("bb-incline-bench", "bb-incline-bench__flex-fitness__bench", {
+        brand: "Flex Fitness", machineType: "bench", needsCalibration: false,
+        name: "Barbell Incline Bench — Flex Fitness (bench)",
+      }),
+    }),
+  };
 });
 
 import { deleteSet, editSet, finishSession, logSet } from "@/app/(app)/session/actions";
@@ -184,6 +203,58 @@ describe("persisted workout achievement flow", () => {
       expect(tables.set_log).toHaveLength(1);
     },
   );
+
+  it("calibrates the first cable-variant set and leaves leftover template rows untouched", async () => {
+    const leftover = {
+      id: "flat-pulldown",
+      user_id: "user",
+      session_id: "previous",
+      program_slot_id: "old-slot",
+      exercise_id: "lat-pulldown",
+      equipment_instance_id: null,
+      weight: 140,
+      reps: 10,
+      rir: 1,
+      e1rm: computeE1rm(140, 10, 1),
+      is_warmup: false,
+      created_at: "2026-08-01T10:01:00Z",
+    };
+    tables.set_log.push(leftover);
+    const before = { ...tables.set_log.find((s) => s.id === "flat-pulldown") };
+    await logSet({ ...input, exerciseId: "lat-pulldown__nautilus__selectorized", weight: 110, reps: 8 });
+    expect(tables.set_log.find((s) => s.id === "flat-pulldown")).toEqual(before);
+    const logged = tables.set_log.find((s) => s.exercise_id === "lat-pulldown__nautilus__selectorized");
+    expect(logged?.is_calibration).toBe(true);
+    expect(logged?.exercise_id).toBe("lat-pulldown__nautilus__selectorized");
+    await logSet({ ...input, exerciseId: "lat-pulldown__nautilus__selectorized", weight: 110, reps: 8 });
+    const working = tables.set_log.filter((s) => s.exercise_id === "lat-pulldown__nautilus__selectorized");
+    expect(working[1]?.is_calibration).toBe(false);
+    expect(tables.set_log.find((s) => s.id === "flat-pulldown")).toEqual(before);
+  });
+
+  it("does not calibrate a barbell-station variant and does not rewrite leftover rows", async () => {
+    const leftover = {
+      id: "flat-incline",
+      user_id: "user",
+      session_id: "previous",
+      program_slot_id: "old-slot",
+      exercise_id: "bb-incline-bench",
+      equipment_instance_id: null,
+      weight: 185,
+      reps: 8,
+      rir: 1,
+      e1rm: computeE1rm(185, 8, 1),
+      is_warmup: false,
+      created_at: "2026-08-01T10:01:00Z",
+    };
+    tables.set_log.push(leftover);
+    const before = { ...tables.set_log.find((s) => s.id === "flat-incline") };
+    await logSet({ ...input, exerciseId: "bb-incline-bench__flex-fitness__bench", weight: 185, reps: 8 });
+    expect(tables.set_log.find((s) => s.id === "flat-incline")).toEqual(before);
+    const logged = tables.set_log.find((s) => s.exercise_id === "bb-incline-bench__flex-fitness__bench");
+    expect(logged?.is_calibration).toBe(false);
+    expect(logged?.exercise_id).toBe("bb-incline-bench__flex-fitness__bench");
+  });
 
   it.each([NaN, Infinity, null, undefined])("rejects missing/invalid weight %s before saving", async (weight) => {
     await expect(logSet({ ...input, weight: weight as number })).rejects.toThrow("valid weight");

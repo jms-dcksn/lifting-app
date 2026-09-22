@@ -70,6 +70,9 @@ export function historicalBodyweight(set: Pick<RecordSet, "weight" | "reps" | "r
   return bodyweight > 0 ? bodyweight : null;
 }
 
+// Machine templates were never loggable, so they cannot earn records. Leftover
+// cable / barbell-station *template* rows stay eligible on that exact id — history
+// policy does not rewrite them onto a variant, and needsStation is not a PR merge.
 export function eligibleRecordSet(set: RecordSet, def: ExerciseDef | undefined) {
   if (!def || def.stationProfile === "machine" || set.is_warmup || !validSetNumbers(set)) return null;
   const weight = set.weight!;

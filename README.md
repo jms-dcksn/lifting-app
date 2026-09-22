@@ -17,7 +17,7 @@ workout scope leaves the next occurrence unchanged. Already logged sets retain t
 weight, reps, and RIR. See [exercise swap behavior](docs/EXERCISE-SWAPS.md).
 
 Tap **Upcoming workout** on Lift (home) to open a full-page planner with sets, reps, RIR, rest,
-and phase details. Choose specific machines or swap exercises before starting; selections
+and phase details. Choose specific stations or swap exercises before starting; selections
 apply to that workout and persist in the same browser. Start from either Home or the planner
 with those choices intact. See [workout planning](docs/WORKOUT-PLANNING.md).
 

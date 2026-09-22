@@ -90,7 +90,7 @@ Adaptive plateau engine under §5.
 - **Exercise picker** — `Sheet`-based picker filtered to the slot's pattern, with a "show all
   patterns" escape hatch (`exercise-picker.tsx`).
 - **Add custom exercise from picker** — name + pattern + equipment (plus brand/type when
-  equipment is machine).
+  equipment is machine; brand only, type locked `selectorized`, when cable).
 - **Save** — `saveProgram` does an id-preserving upsert + delete-missing (not full replace),
   so `set_log.program_slot_id` continuity survives edits; saving always activates the program.
 
@@ -102,7 +102,9 @@ Adaptive plateau engine under §5.
   edits re-derive instantly with no server round-trip. For exercises performed on multiple
   weekly days, the target advances from the strongest first set since this slot's last exposure.
 - **Set entry** — log weight × reps × RIR per set using large-hit-area steppers
-  (press-and-hold auto-repeat, tick animation, select-all on focus).
+  (press-and-hold auto-repeat, tick animation, select-all on focus). A slot still
+  on a station template hides the steppers and shows the profile-specific choose
+  control until resolved (see §6).
 - **Edit / delete sets** — inline; deletes play an exit animation before the optimistic
   removal commits. Failed writes surface a per-card error instead of silently reverting.
 - **Progress dots** — filled-vs-target set count next to the prescription.
@@ -193,16 +195,19 @@ The heart of the app (`src/lib/strength/`), pure TypeScript, runs client-side.
 - **Derived-cache integrity** — `set_log` is the source of truth; `user_exercise_stat`
   (current e1RM + personal coefficient) is fully rebuildable from it.
 
-### Machines (special handling)
-- **Machines don't predict like free weights** — arbitrary leverage/pin/stack units, so they
-  can't be predicted from free-weight loads.
-- **Calibrate confidence** — machine movements start at `calibrate` with a deliberately
-  conservative number.
-- **First-set anchoring** — the first logged set anchors that machine's personal coefficient
-  (`currentE1rm / pattern strength from other variants`), re-anchored while only one session
-  exists, then held fixed; later progress moves pattern strength, not the coefficient.
+### Machines and cables (special handling)
+- **Machines and cable stacks don't predict like free weights** — arbitrary
+  leverage/pin/stack units, so they can't be predicted from free-weight loads.
+  Cable brand variants share this path. Barbell bench/rack/platform variants are
+  ordinary lb and skip it.
+- **Calibrate confidence** — machine and cable-variant movements start at
+  `calibrate` with a deliberately conservative number.
+- **First-set anchoring** — the first logged set anchors that exercise's personal
+  coefficient (`currentE1rm / pattern strength from other variants`), re-anchored
+  while only one session exists, then held fixed; later progress moves pattern
+  strength, not the coefficient.
 - **Graduation** — `coeff_confidence_n` (distinct sessions with working sets) feeds shrinkage
-  and graduates the machine out of `calibrate` once it has its own e1RM history.
+  and graduates the movement out of `calibrate` once it has its own e1RM history.
 
 ### Adaptive plateau engine (fluid programs)
 
@@ -234,26 +239,48 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 - **Composition** — double-progression still drives session-to-session targets *within* the
   active rep range; the plateau engine only governs when to change the range or the movement.
 
-## 6. Exercise catalog: machines, brands, types, custom exercises
+## 6. Exercise catalog: station composition, brands, types, custom exercises
 
 - **Seeded catalog** — exercises seeded in `coefficients.ts` with pattern, equipment
-  (`barbell | dumbbell | cable | machine | bodyweight`), and a coefficient relative to the
-  pattern's reference lift.
-- **Generic machine templates** — machine movements seed as brand-agnostic templates
-  (`machineTemplate: true`, no brand) carrying no absolute load identity until instantiated.
-- **Machine variants** — a template × brand × machine type (`selectorized | plate_loaded`)
-  becomes a concrete `exercise` row, ids `base__brand__machinetype` (or that slug plus the
-  owner when another user already holds the global id). Find-or-created by `resolveVariant`,
-  deduped by a partial unique index.
-- **In-session machine instantiation** — picking a bare machine template opens a brand/type
-  sub-step; a slot still on a template shows "Choose machine (brand & type)" instead of
-  set-entry until resolved.
-- **Custom exercises** — fully user-defined exercises (name + pattern + equipment, plus
-  brand/type for machines) via `createCustomExercise`; ids `custom-<slug>-<rand>`.
-- **Merged catalog** — `catalog.ts` merges seeded templates with the user's `exercise` rows
-  (seeded ids win collisions); threaded through every screen via `getCatalogMap`, including
-  the calibration-critical session actions.
-- **Known brands & type labels** — `KNOWN_BRANDS`, `MACHINE_TYPE_LABEL` exported for the UI.
+  (`barbell | dumbbell | cable | machine | bodyweight`), `stationProfile`
+  (`machine | cable | bench | rack | platform | none`), and a coefficient relative
+  to the pattern's reference lift.
+- **Station templates** — `needsStation()` is `stationProfile !== "none"`. Those
+  templates have no absolute load identity until instantiated. Machines (all 16):
+  brand + `plate_loaded` | `selectorized`. Cables (all 8): brand only, type locked
+  `selectorized`. Barbell `bench` (`bb-bench`, `bb-incline-bench`, `bb-hip-thrust`),
+  `rack` (`bb-back-squat`, `bb-front-squat`, `bb-ohp`), and `platform`
+  (`bb-deadlift`, `bb-rdl`): brand only. All nine dumbbells, the three bodyweight
+  seeds, and barbell `bb-row` / `bb-reverse-lunge` / `bb-shrug` / `bb-curl` stay
+  `none` and log the template id (incline DB bench included).
+- **Station variants** — template × brand × stored `machine_type`
+  (`selectorized | plate_loaded | bench | rack | platform`) becomes a concrete
+  `exercise` row, ids `base__brand__machine_type` (or that slug plus the owner
+  when another user already holds the global id). Display tags: `stack` /
+  `plate` / `bench` / `rack` / `platform`. Find-or-created by `resolveVariant`,
+  which inherits `equipment` and `needs_calibration` (cables yes; barbell
+  stations no) and rejects tag/profile mismatches. Deduped by
+  `exercise_variant_unique` on
+  `(user_id, base_exercise_id, coalesce(brand,''), coalesce(machine_type,''))`.
+- **In-session instantiation** — session and planner pickers pass
+  `resolveStations`. A slot still on a template hides set-entry and shows
+  profile-specific copy (**Choose machine** / **Choose cable** / **Choose bench** /
+  **Choose rack** / **Choose platform**). The program builder stores templates
+  (`resolveStations={false}`). `logSet`, swap, planner saves, and extra-pin writes
+  reject unresolved station templates.
+- **History policy** — leftover flat cable/barbell `set_log` rows are not
+  rewritten. Family browse groups the template with later variants; records,
+  progression, and calibration stay exact `exercise_id`. The first variant
+  session is a first exposure (cables calibrate; barbell stations ordinary lb).
+- **Custom exercises** — fully user-defined exercises (name + pattern + equipment)
+  via `createCustomExercise`; ids `custom-<slug>-<rand>`. Custom machine: brand +
+  type. Custom cable: brand, type locked `selectorized`, `needs_calibration`.
+  Custom barbell / dumbbell / bodyweight: flat (no bench/rack/platform picker).
+- **Merged catalog** — `catalog.ts` merges seeded templates with the user's
+  `exercise` rows (seeded ids win collisions); threaded through every screen via
+  `getCatalogMap`, including the calibration-critical session actions.
+- **Known brands & type labels** — `KNOWN_BRANDS`, `MACHINE_TYPE_LABEL`, and
+  `STATION_TAGS_BY_PROFILE` exported for the UI.
 
 ## 7. Exercise review (`/history/[exerciseId]`)
 
@@ -301,10 +328,15 @@ valid. It does not swap in a monthly-history page. Invalid months are ignored.
 press, vertical press, horizontal pull, vertical pull). Each tile shows the catalog reference
 lift when it has history (otherwise it stays hidden), current e1RM, signed delta or "held",
 a sparkline, and a `--record` flash when that lift earned a canonical record this week.
-Numbers and the tap target use the **latest finished equipment instance** for that
-exercise, not a blend of machines. Tap opens `/history/{id}?equipment=...`
-(`none` when there is no instance). Pins are owner-scoped display preferences (`user_exercise_pin`,
-cap 8 in the server action): unpinning a default hides it; pinning an extra adds a tile.
+Default-compound tiles keep the template ids and short names (`bb-bench`,
+`lat-pulldown`, …). Numbers and the review href follow the **latest finished
+family member** (`exerciseFamilyIds`) — a brand variant or leftover flat row —
+plus that member's equipment instance, not a blend of PRs. Pins on a specific
+variant stay exact-id. Extra pins and All-lifts rows still use the latest
+finished equipment instance for that exact exercise. Tap opens
+`/history/{id}?equipment=...` (`none` when there is no instance). Pins are
+owner-scoped display preferences (`user_exercise_pin`, cap 8 in the server
+action): unpinning a default hides it; pinning an extra adds a tile.
 
 Secondary, not equal cards, behind Explore:
 - This week's PRs — full canonical `workoutRecords` list over the last seven local days

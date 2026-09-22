@@ -487,12 +487,16 @@ machine from another. Cross-machine recommendation falls out for free: a brand-n
 predicts from `pattern_strength × template coefficient`, and per-machine progression is just its
 own `exercise_id`.
 
-**Two judgment calls.** (1) Brand/type were scoped to `machine` equipment only — cables
-stayed single exercises (one cable column behaves the same across brands), so the picker
-showed the brand/type step only for machines. Revisit: [station composition](superpowers/specs/2026-09-21-station-composition-design.md)
-extends variants to cables and some barbell stations. (2) A `core` movement pattern was
-added with `cable-crunch` as its reference anchor, so ab work has a home in the pattern
-model.
+**Two judgment calls.** (1) Brand/type were originally scoped to `machine` only —
+cables stayed single exercises (one cable column behaves the same across brands).
+**Shipped reversal (station composition):** cables and the locked barbell stations
+now compose like machines. Dumbbells and bodyweight stay flat (incline DB bench
+included). Locks: family-latest Track default-compound numbers/href; profile-specific
+**Choose bench** / Choose cable / Choose rack / Choose platform / Choose machine
+copy; no rewrite of flat history rows; no barbell-station calibration. See
+[Station composition](#station-composition-2026-09-21-shipped). (2) A `core`
+movement pattern was added with `cable-crunch` as its reference anchor, so ab work
+has a home in the pattern model.
 
 **Builder picks templates; the session resolves them.** The program builder stays
 brand-agnostic (`resolveStations={false}`): a slot stores the generic station template. The
@@ -555,9 +559,11 @@ authenticated `loadWorkoutRecords` read path. No schema migration is required.
 ### Comparability and eligibility
 
 The identity is `(user_id, exercise_id, equipment_instance_id)`, across programs and
-slots. Machine variant slugs already distinguish brands and selectorized/plate-loaded
-equipment. Broad movement patterns and the history sheet's exercise families are not
-record comparison scopes. Unresolved machine templates cannot earn records.
+slots. Variant slugs distinguish brand and station tag (`stack` / `plate` / `bench` /
+`rack` / `platform`). Broad movement patterns and the history sheet's exercise
+families are not record comparison scopes. Unresolved machine templates cannot earn
+records. Leftover flat cable/barbell template rows stay eligible on that exact id;
+they do not merge with later variants.
 
 Working sets require finite load, positive whole-number reps, and valid RIR (0–5).
 Legacy null RIR uses the canonical default of 2; missing load/reps is never zero-filled.
@@ -699,21 +705,22 @@ language stays this app’s primitives.
 **Period data stays off-limits** until a separate opt-in, matching the Coach V1 export
 exclusion and Settings consent copy.
 
-## Station composition (2026-09-21, design)
+## Station composition (2026-09-21, shipped)
 
-Design approved (James 2026-09-21). Open questions LOCKED. Source of truth:
+Approved / shipped. Open questions LOCKED. Source of truth:
 [station composition spec](superpowers/specs/2026-09-21-station-composition-design.md)
-([#146](https://github.com/jms-dcksn/lifting-app/issues/146)). Slice 1 shipped
-`stationProfile` / `needsStation` / `StationTag`. Slice 2 shipped `resolveVariant`
-extended to cable and barbell-station templates. Slice 3 shipped the picker forms
-and session/planner/swap/pin gate. Slice 4 shipped family-latest Track
-default-compound numbers and review hrefs. Slice 5 verified cable-variant first
-sessions calibrate, barbell stations do not, and records stay exact-id across
-leftover template + variant families.
+([#146](https://github.com/jms-dcksn/lifting-app/issues/146)). Slices 1–6 shipped
+(#154–#158 product; #153 this refresh): `stationProfile` / `needsStation` /
+`StationTag`; `resolveVariant` for cable and barbell-station templates; picker
+forms and session/planner/swap/pin gate; family-latest Track default-compound
+numbers and review hrefs; cable-variant first sessions calibrate, barbell
+stations do not, records stay exact-id across leftover template + variant
+families.
 
 Phase C scoped brand/type to machines and left cables flat. That judgment is
-reversed for every cable and for the barbell stations below. Extend
-`resolveVariant`; do not add a parallel identity system.
+reversed for every cable and for the barbell stations below. Dumbbells and
+bodyweight stay flat. Extend `resolveVariant`; do not add a parallel identity
+system.
 
 **Locked (James 2026-09-21).** Machine: brand + plate/selectorized. Cable (all 8):
 brand only, `machine_type` locked `selectorized`, calibrate the brand variant.

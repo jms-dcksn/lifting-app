@@ -1,9 +1,9 @@
 # Station composition for non-dumbbell exercises
 
-**Status:** Design approved (James 2026-09-21). Open questions LOCKED. Slices 1–5 shipped (domain+ids, resolveVariant, picker+session gate, family-latest Track tiles, calibration+records verification). Slice 6 pending.
-**Issue:** [#146](https://github.com/jms-dcksn/lifting-app/issues/146)
+**Status:** Approved / shipped (James 2026-09-21). Open questions LOCKED. Slices 1–6 shipped.
+**Issue:** [#146](https://github.com/jms-dcksn/lifting-app/issues/146) · shipped-doc refresh [#153](https://github.com/jms-dcksn/lifting-app/issues/153)
 **Date:** 2026-09-21
-**Companion:** Phase C machine variants — [2026-06-21 spec](2026-06-21-machine-brands-types-custom-exercises-design.md); shipped behavior in [Features §6](../../FEATURES.md) and [Decisions: Phase C](../../DECISIONS.md#phase-c-decisions-machine-brands-types-custom-exercises).
+**Companion:** Phase C machine variants — [2026-06-21 spec](2026-06-21-machine-brands-types-custom-exercises-design.md); shipped behavior in [Features §6](../../FEATURES.md) and [Decisions: station composition](../../DECISIONS.md#station-composition-2026-09-21-shipped).
 
 ## Problem
 
@@ -405,8 +405,8 @@ set. That guess is worse than a split chain.
 
 ## Implementation slices
 
-Small, ordered, each green on its own. Product code is a follow-up PR, not this
-design branch.
+Small, ordered, each green on its own. Product code shipped in #154–#158; this
+refresh is Slice 6.
 
 1. **Domain + ids.** Add `stationProfile` to all 48 seeds. `needsStation()`.
    Expand `StationTag` / `TYPE_TAG`. Table-driven tests for the inventory and for
@@ -426,7 +426,7 @@ design branch.
    calibrates; barbell station does not. Records remain exact-id. Tests cover
    family browse of leftover template + new variant without merging PRs.
 6. **Shipped-doc refresh.** [Features §6](../../FEATURES.md), Phase C judgment
-   note, this spec's status → Approved / shipped. Not part of the design PR.
+   note, this spec's status → Approved / shipped. Shipped (#153).
 
 ## Out of scope
 

@@ -16,7 +16,7 @@ import {
   buildCoachRecommendations,
   formatCoachRecommendations,
 } from "@/lib/coach-recommendations";
-import type { RecommendationDecision } from "@/app/(app)/analytics/coach-recommendation-list";
+import type { RecommendationDecision } from "@/lib/coach-recommendation-decisions";
 
 type CoachQueryRow = {
   session_id: string;

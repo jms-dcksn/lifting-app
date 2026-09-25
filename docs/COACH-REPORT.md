@@ -128,7 +128,9 @@ A deferred proposal is hidden for seven days, while a new exposure produces a ne
 
 The Proposed next steps UI shows only actionable proposals awaiting review. Accepted and
 dismissed items disappear after a successful save and stay hidden across reloads; active
-deferrals stay hidden until their deadline. Insufficient-data kinds or confidence never render
+deferrals stay hidden until their deadline. The list applies a decision immediately so Accept,
+Later, Dismiss, and Accept all do not stay pending on the Coach page refresh; a failed save
+restores the proposal and shows an error. Insufficient-data kinds or confidence never render
 as next-step cards. The remaining section is collapsible (initially open), with an actionable
 count and rationale/evidence collapsed per suggestion. If nothing needs review, one compact
 empty-state line replaces the list. The API and coaching export retain the full diagnostic

@@ -1,0 +1,304 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:2d522de0914ebac112ec97248fe1cd8481f6f52e45842023034c5ca633068e44",
+  "claims": [
+    {
+      "id": "claim_7824eb1df3b146bfabf48e35ac0a8a0f",
+      "statement": "The exercise catalog is built by mergeCatalog, which starts from the seeded EXERCISES array and adds owner exercise DB rows, letting a seeded id win any collision with a same-id DB row.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/catalog.ts#L48-L57",
+          "version": "repo-lines-v1:sha256:333cd5cf2aff793fad2045c97d1733e0b4f00b7897326d7d1eb644246b69b116:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwY2YxMGM4OTI4ODg3MmUwZDc4N2RkODVmMGJiNGI4MTg2OWE4Y2MzYmIxZDk4NzM4OWY5NTNmMmIzOGZjZTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzNDBkNjJmNGE1MTQwYTEzMGUzODQ3NDRmMjg4NzQ5MDUzYzZiOTQ2ZThhMmFlZmI2MWRlZjU2ZjllYTk4MzIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2ae4b23f7d2743c0a2c8f74a6619d71f",
+      "statement": "getCatalogMap wraps the Supabase read in React cache() so a single request loads and shares the merged catalog once across layout/page/action calls for that user.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L111-L114",
+          "version": "repo-lines-v1:sha256:dc6b29903b6117b1af5533ac86736b96b8c8a9ad123ecf97373ffa394c2e74fa:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGQ0NzgwMzllNjIyNzE4MDBhOTNjMGNjOWI3ODM1MzhkNWRiZDkxNWZjOGRjNTc3ZmZiMWQ2YzJjNDE3ODhiMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWFmMDI3YjYxNjEwYjI5ZjVjODgwNDNjZmM5OTFjYTI3NTk4ZTFmM2Y1OWZjMmNjMmZiYzE5YjkyMTNiNWQxNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODNhZTgwZjkwZTNhZGE0MGVlNWIyNjFhMDExYTlmMTc3MWVhOTM0OTMyYTVjMzdjYzQ2N2FiZTc3Y2RiMWQ2YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWRmNzY3NDU0MzJkNjBjMjg0YzdkNjQwZWZhYzU1ZjA5YWY2MjU0NGQ0YzRkNWNkZTZjZjVhYTM2YTRhOGYzMiJ9"
+        },
+        {
+          "resource": "repo://src/lib/catalog.ts#L59-L66",
+          "version": "repo-lines-v1:sha256:57a2136ba9c5324af664c7c5d6d481cc5cbcfad4aed034f9ca12e7b4c79b2959:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmUyNDlkMDA2MjY4OWQzYTFlYjlkYjM0ZmI0NGNmMDBmNjg2MjE1MzdlNzdiYTE3NWEyMWIxNThkZGJkZTVlZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjZmNWI0MGIxNTg0NTdkMTc4NjRmMjE3OTA3ODZkZDVhMmVjZGI2NGI2NmE2NTFmNzg4ZDRlMjVjZDMzMDNkMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzIzZDhmMTFhYTNmZDUxZWE2NmMwYWE4NjU2M2I5Yjc4MjkyZTQ0MGIxOTE4ZWMyZmIwMjY2N2RkNTI0NDQ1YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDlmZTY0NGU2NDdiZGIzZmRjM2Y4OGIyZTBmM2Q4MDI0MzYxYTdkMmI1ZGNhZmQ4YTQ4NGMzNDhkNzQ2OGI4NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_53f687d28c2c4fee8a4d3f725f87a17f",
+      "statement": "exercise_id is a text slug and intentionally not a foreign key, since it may reference either a seeded template with no DB row or a DB exercise row.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L18-L20",
+          "version": "repo-lines-v1:sha256:22f73226851c9c7ee14669170f15952aa995add3c8ac7a89865adf12382cc644:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTIyZWIzYzEyODMzZWQxZWVjM2YyZmU5YjUwYWI3MjRiZDkwNTUwN2NlOWFmNTU0Y2M2Yzk2ZTNiZjFmYmZhOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDlhNWIyMjdlMmYyNWVjOTBmMDdmMjAxNjk0YmZkNWIwZTA2MGU4N2I3NGRkZDU1ZmU0ODM2NGExOWQ1ZTJhNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTlhOGQ5NmQ4ZDQxMjU1MmY2NmUxZDc3Y2MyNjk4NjdjNDQ3MmE1ZTcxNjAyNjRkOWYyYjYzYzA2OTc0Zjk1OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmU2NzI5ZjUyYWY0YTgzZTUwNTI3NjZkM2YwNTliZDM2NDM5YzNjZjY5NTM2YTU5YjIxNWJjYzQ2NzY2YmFkMSJ9"
+        },
+        {
+          "resource": "repo://src/lib/catalog.ts#L1-L3",
+          "version": "repo-lines-v1:sha256:8a4abdeecc1a07fde4083c3001b42252474022d219afa4802c693679cd9d791d:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2E3M2E3ZjZhZGMyZWIzNTFlM2Y1ZWY0ZjBlZDIwNjA1ZTY3MjM3OWUzNWFmOWI4NTA0ZjM1MDczNGNkNWFkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmIzNDEyZTI2YmY2YzYxZDlmYTE4ZGM5YjZhMjgwZTM1ODlkYTg5ZjIyNmZlYTZlMjFjNWNmZDdmNDAxN2U4MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjFjNzVjOTkzYThjOWI2NjQzNjgxYjA2YTdmODZjMDc1MzY2NTg4MWE4YjI0ZWI5NWZkNmZhZTA0MDc4NWU2MiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_81cb0864129b437797dfaca1b93581fc",
+      "statement": "Every seeded ExerciseDef carries a stationProfile (machine|cable|bench|rack|platform|none); needsStation(def) is stationProfile !== 'none' and means the template has no absolute load identity until instantiated into a DB exercise row.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/coefficients.ts#L50-L52",
+          "version": "repo-lines-v1:sha256:2260b3c7edfa1e1423fa16200fba6ac3139360f54f3ce16cc44787b615393ea7:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDcwOThmOGVmMzQ4YTIyMjRhYWNlZjhjYTRmOWU0M2MyOGRiMDk0YzFkYWQxYmJkYTMyMzRlMjMwZWQxOTYwNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTQxNGNkNGQyOWMyNmE3M2YwN2JjNDNlMTU2ZGQ1OTcyMTAyNTRmOTc1MDRjZTEyNDllNTlkYmRhNjhlMGUzMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMThkMjFlNTVlYWRhYjU1Y2FiMDJmYjcwYWJlNGNiNGJkZjZkNTc5Njg5ZjdlMTM4M2VhYTJlYTcyNWRhODlhMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODk1ZTAxZGJiNjY2ZDAxY2MxMDdlZjQzMGExNGYzOTY4OTkxMDJiMGRmZTExODk5MGY4OGJlZGM1NzdlNzA1ZiJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/coefficients.ts#L89-L91",
+          "version": "repo-lines-v1:sha256:55da5d6232bc83ce92bea85296ac095ac693b18a21e4c2eab37b9bfbbfa39773:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzkxMzNjYjY3YWRiMjVjZjFlZmRhOWMwOWQ2NDZlNGJjZjM5Mzk2NGRmYjBlYzE3ZGI4ZDY0YjFiMWRmMzQ0OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmI0MzdhNjNlOTBlNzgyYWEzN2ZkMjc0MjM1ODhlOGM0NGI3NTEwZjk4OWY5YjFhY2E4MmFkNDhlOTY5NzVjYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTU5MTBjMDc1ZDQ1Njc0OTZkMDI4Y2Y5NDIxZGI4NmMxYjA5ZjQyZDEyZjM5YjQ3NGFkZWY5NWE5ZWIwMWE3MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_c578f5ffb9144adfa177f6461160a789",
+      "statement": "STATION_TAGS_BY_PROFILE fixes which StationTag values each stationProfile accepts: machine allows selectorized or plate_loaded, cable is locked to selectorized, bench/rack/platform are each locked to their own single tag, and none allows nothing.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/coefficients.ts#L93-L100",
+          "version": "repo-lines-v1:sha256:c86bc6247391011653e41f49d252ea246f19a5055e1255e62ddf9eafdcf7eca7:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjJlMzQ1N2M1NGNlYmQyMjYyNmI4NGRlYTlmMDUyNDM4ZmM2ZjkzZjdmNDVlNWE4YWY5MGRiNTA4MTZlNjVjMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWExZDFhNjMzOTAyMjljNzk4MzQ3ZTgzYTA0MDU0NDFjOTQwMDAzNTI4NGFkMTY4YzFiZjZjZGYxZDcwYTM3MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGU1YTU3MTE3OGIxNjhmMmQ3MzgxNjk2ZjJkZDY3MWEyNDRkNTU4NGIxYzQ2YTgzMzk5ZmRlMTM5NmI3M2MzOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2FkYmNjNjg1Y2VhYjY3ZDZmMTA2YWE2Nzk0ZTM0NTYxNmY1ODE2ZDI1NDY1YTAxM2M0ODNhNzQ2OGQ2ZmFmYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_6ae5d88009e047c59126cb7f3933ead2",
+      "statement": "resolveStationFields validates that a requested machineType is allowed for the template's stationProfile and that a brand is present for every profile except machine, rejecting mismatches before any database write.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/coefficients.ts#L106-L130",
+          "version": "repo-lines-v1:sha256:87ee6afd088d023e7573d2c7a26981f886ceaddc9cb048b1a05b1fe87f2b29d5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEyNjQzYjliMTVhNTVkNGYzNGQyMWNhNDRiMjBiNDhmOTZhMDUzYjM4NWFiZDlhNWJjZmJmYTFlMDdkMTc5NGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUxMTE3ZWE5Y2M4ZGI3ZWVmZDI1NDlhYWE4OWM0MWY5ZmZmOWIxYTAyODJjMDAxMzUxMjYyMGRlNjJhZTg4Y2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ0MjgzYTViNGQ3NDYxYWYyNTA1NjljNGFkZWRhZjk2OWY2OTQ3ODkwYTc5NmVlNmU1YzQ3MDc0MzIzYWNjNGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c5fac5b29d8942a2b5a980563fb32fbe",
+      "statement": "Barbell station tags (bench, rack, platform) are stored as sentinel values in the same exercise.machine_type column used for selectorized/plate_loaded rather than a separate station_kind column, because the variant id's third segment, the unique index, and TYPE_TAG already encode the station tag.",
+      "evidence": [
+        {
+          "resource": "repo://docs/superpowers/specs/2026-09-21-station-composition-design.md#L207-L241",
+          "version": "repo-lines-v1:sha256:5d36bc07ce5a98e060f451baa604eb25b218a5305aca94f56ee15f37d9a89077:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjMjFiYjkwMmI5YzQ5MzYyODU2ODM1ODc5OTUxN2YwZDI2YmI1ZTlkODczZWU3N2IyYzU3NDQwMDg2ZTdiY2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmMWExZjdjODMwYWM2OGY2ZDQ0ZGIxODk3NDFiOGE3ZmMyMmM0MWE1ZDcyOTMxMjA3NmVmYWVhNTI1YjFiOWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ5NDNlNGIzNTY0OWQwOTExYjQ4MDkxOTk5NmNlMTVmNmE0NzQ1ZTdmNTI4MjFiNzQzYjJhNjI0NzliZDI4OTgifQ"
+        },
+        {
+          "resource": "repo://src/lib/exercise-id.ts#L6-L16",
+          "version": "repo-lines-v1:sha256:7eefbbe32cb6fab7d3ddcf19652c0a57eae16f6a6a66e9f2d3811044f360a0fa:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiZTc2N2MwMzc0ODE1OTQzY2VjMmVmOTJjM2M2YzJiZjcxODU3NTNmZjdmN2EzOTc4NTQ2ZjRmNmI4ZTUyNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJiMjQzZmQwNzY5MGIzOGMwNzI5MGQ2MjcyNzBhNjgxNGY2YzU2YzFmMDU4MTdhOWM0ZGU2YWQ3YmU4MDE3N2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5ZWRmMzY2YTMyZmU0ODFkNmNkNGU4ZDE4YjdhYWIzYzQ2YTkwZGUxZjEzZjNmMTNiYmQ0N2U0MTFkMjc1OGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cb221553b1894d118af602582274753d",
+      "statement": "Dumbbell exercises, including dumbbell incline bench, are an explicit product exception that never require a station even though the equivalent barbell movement does.",
+      "evidence": [
+        {
+          "resource": "repo://docs/superpowers/specs/2026-09-21-station-composition-design.md#L64-L67",
+          "version": "repo-lines-v1:sha256:935d47df4dfa1ebee4db9f8751a148f832fc0bc68469f16797be97c8fe5ccbc4:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjk1MDQwZGM5OTFkZjZjNDIwNGM4YjdiM2U1MTJlMmFhNTJlMDFmYmMwNDhiMzBlYmM5MmZhZGJkZmU2OTQ5MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDJhYjY3YTVlZGQ5MGFlODJjZDE5MTIyZDE4ZDUzZTRmMWM2YTI0MzRhODdmYWE0MDkxMzg5MTU4MmRhYmJiOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTkyMTg1MmQxNGU4ZmI3NzMxNTZiZGMxYTM4OTQ4YzA3ZTVlNDczMGE3NzMxOTJjZTUyYzU1YjIzM2NhOTVhNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzhiMDYzMDNmMWVlOWYyZmRlNmU2MTlkYTRiNGVhMWNiMmI3ZDFhNTI5NDE0MTVkNWJhZmQxYmRmZmZkZjYwZSJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/coefficients.ts#L135-L137",
+          "version": "repo-lines-v1:sha256:9c649b61987cbd0a6c0c819d2869b9f90e481e7bc818efa215734046bcfdd1c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiM2JlY2Y2OTk2NzBhYjJjOGRjNTZmYTkxMzM2NDY2YWQ4NWQ0ZGEzODM3ZDY4YmZiODg3Mjg1MmQxNjRmYTA0OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWYxOTdhMjQzNmQ4MTdjMDk1MjViODEwZDU0MWY4ZjNkNGI0NGRiOTAwOGUyMWQ2ZDUzNWFkZGJmZjU0MTkyNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2IwMDk2Mzc1N2ZlMzA5YTJmYWZjNTY4NTc5NDE0OWRiMWI1ZmIwNTQwNDZhOGM1MmI3MTY1ZTdhZWRmZjdmMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjc4M2I5ODNhYWEwNTVmNGEyYTBlM2I4Y2E0NDg0Nzc5ZGNjMjJjMjEwNGZiNWJiYjA1MDk3YmJmYjJjMTEzMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d3cc8cd87ddf44a18f4c025cbaba14b0",
+      "statement": "src/lib/station.ts provides UI-facing helpers built on stationProfile: isLoggableExercise, stationPickerForm (brand-and-type for machine, brand-only with a locked tag for cable/bench/rack/platform), profile-specific chooseStationCopy strings, shouldResolveStation, and stationResolveInput.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/station.ts#L23-L67",
+          "version": "repo-lines-v1:sha256:1de6de53297341938d0b97b5a4461e2ac57d213dcbbd98c8a65f1d330620b5eb:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmNjk0ZTZmNzY2M2NiMzcyODU4ZWJhNmIzOGYzYzc5ZDg2ZjEwNGMzM2RjMjRjNDIyNzE5ZGFlNmU5YmIwMmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNjYWQ1M2M1YjAzZWQ5MDMwNDU1MTI4OTgzZGRjY2I4ZmJmMGE1ZjQ2ZjVmYjk4ZTViMTQwNjY1YTJlM2NmNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_60bdb5f864d14790b32baddfff323a74",
+      "statement": "Session and planner pickers pass resolveStations=true so every needsStation template opens a station form before logging, while the program builder passes resolveStations=false and can keep storing the generic template id in a slot, with resolution happening lazily the first time that slot is logged or swapped.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L29-L31",
+          "version": "repo-lines-v1:sha256:9215b4183120f211a62d547448b3c1c7dd2ad7792bd2df4c3e9fbf2019b6c763:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTFjOTMyZjg3Zjg4NGI2MjFjYjk3ZGM5YWY1MGVkMGRmYzZkNmJiYjFiYzBiMjVjYjI2MTVlNDQzMjljNTY1MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNThhYzM4NjdlNDRhZjE1YzZkZmJjZDIxNDAxY2E0Nzk3OGFlYWVjNzI2MjgxOWRmZjFlYzE0ODM0NTcyNDBiMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWQxOGM2N2IxOTlhZGEwMDgzNzYxZmIwZDk3ZjZmMTc1YjQ5YWViMDYzNmQ4NGRmZmY4NzdhMGJiM2QwYmMxNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDU1ZmYzNWNmMGI2NzliNWNlN2I2ZmU4ODJhYjUwMDMzOTYwOGNmM2I5YTkxMWE3NzkwZDRjNWZlOTliMTM3NyJ9"
+        },
+        {
+          "resource": "repo://docs/superpowers/specs/2026-09-21-station-composition-design.md#L293-L298",
+          "version": "repo-lines-v1:sha256:44f526c8b9eade488a59440b972cc644e064ad748dd8d4c0750844ac92d8ae22:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGE2NWFlMGFjMjllYTg2MzQ2NWM2MGEyYTcxNGExOTJhNGEzZDA5MDkzMjUzMGRlNDEzNTg5YzdhYzBjNGE5YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWRhOTQ4YzZhZWM1Mjc1NGJlMTAzN2VjNzI5YjMyOGY2NTdlYTE4YzU2ZmRiMDk0Nzc1ODJhNzllYTk1ODE3YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTE5MzA3NTk5ZThkODNiOWUzZTQyYmY5ZDlhNzk0Y2NiMDg2NWQ1YjhkOGUzMGUyN2NlZmUzOWRmMzRhZWIwMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTdiOGE4MjEwZmFlMTQ3ZDViZDkzYzg1MThmNTdhNzYyM2JiMGNiMDMyMmU0OGNjMDhmOWFjN2RlZmI5YzEwMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_04593d30d2a8441db23efda6f7914049",
+      "statement": "resolveVariant is the sole find-or-create write path that instantiates a station template into a trackable exercise row: it looks up the template by id, validates the tag/profile via resolveStationFields, dedups against the caller's own row via the per-user unique index, and inherits pattern, coefficient, increment, equipment, and needs_calibration from the template while always setting is_reference false on the variant.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/exercise/actions.ts#L69-L107",
+          "version": "repo-lines-v1:sha256:51c751b7d290568f070d7c0b8e7364d39219cd0c80adfe02f0c6e3d8b9a7eee5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4ZGI3MmFmNjg3MmY2MGIwY2NlNzdiM2FiNjdmZTIyNGEzZDgxMDhiNTBhNjkzZmQ5NThhY2EyYWJiOGE1YTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhZGRiYWZhZGNlMTdjMGE1YTQxMmRmMDBlODRkYzJiNjkzMGRkNmFjYjM4YTQ3MjRkYzA3NmRhOTlhMDk5N2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyYTMxZDZlMTMwZmQzZThiNTc3YzRlMTJiNTE4ZTJjZmYzMmE2ZmVjNzlkNmM0MjlhNTAwMjBiYTIyNDIyMTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_960d7858d60548d9a8ea692bbf4ea7f8",
+      "statement": "exercise.id is a global primary key while content uniqueness is enforced per-user by the exercise_variant_unique index on (user_id, base_exercise_id, brand, machine_type); if another owner already holds the canonical variant slug, resolveVariant falls back to an owned id of the form base__brand__tag__userId instead of failing.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/exercise/actions.ts#L93-L106",
+          "version": "repo-lines-v1:sha256:fb5a1d283dd4dbe46cf24482cdd1b661656219ae5edae6c7add56bff79d7523f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViYTgzYTA3ZTg2MDc5NjFmMDgzMTdiYWE2NDY3MGViNzIyNGM3Y2Y3MjBiZWIxMzE1Mjc1MzM4OWZjMTYzZDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5NjhmM2I4NTZiZDc0ZWRhNzM4ZDUwZDhmODExOWM2MzNlNGFmZWM2M2Y0YmI5ODJkY2U1NzFkNWZmNzExZDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImViYTBmNjNiNTE3OGMxZjY3NmM3NTI3N2I2OTgwYzE2NzgyMDAwNzFlNjJiNzRmYWViZTcwZDk4YmExM2FiMDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYxZmQ5ZTgwZmQwNTMzYzMwYTI1NGVkNWU5MThlNmI0ODRjZDM3MTQ2ZDMwYTc0MmQxZjliMmI4YmFiYmJjZTkifQ"
+        },
+        {
+          "resource": "repo://src/lib/exercise-id.ts#L18-L27",
+          "version": "repo-lines-v1:sha256:297ab92d946ad2b5537efc6c6cea738c7e9189a403cb49a607817474f3e34673:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyZTI2YTVjYmI3NWM0YjQzMTNkMWVlZjFiY2Q5MTRhMzAxODQ5M2RkZmFhMzY2YjRhYWRkNTExNWFjNGFmOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlZjY5MjFiMDE4Y2Q0YjY5OGMwNTNjMjFjNWQ3YjU5NzExNzNjZjdmYTExMzE4YmNjNzEwZjU0MWEyOWQ0ZDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA3YjljZWU4NTcxMmE5ZWU2MGJmZDdkMDk0Y2FlMzliNzBjNGY5Y2RjMTg0ZDMzN2ZiMDVjN2FlYWRjNWQ5ZmQifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/0008_machine_variants.sql#L8-L12",
+          "version": "repo-lines-v1:sha256:ef85195f602f2b8ec5c8f7efa27dcca321e5ba7a11912f278daef5f9e8b6facc:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODVmMGRmYjljNzc4NGE2Yjg0MTQyMGIxMGM1M2Y0ZDJkYTk1YTRhOTlmZDcxZmYwMjdiMDljNTE1MmQxMmVmNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzkxYTQzOTU1NzdmYjk1MDk0NDAxYThjOGVjZGI1OWI4YzFlY2NkNzkzNjRjMjRjZjAwZWE4NzVjYjg2MDc2MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTRjODk2OGNlMzA2OGU1MDQ5ZjVjZDA4ZDI1OGNhMmM0MTU2ZWE0OWQzNDcyNTUyYjRhNTYyOGQ4YzBkNzE5MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWNhNzlmMDZhNzYzYTRlZDIxOGYxNGY4OTIyZTYzMjlkMzQzNmIyNDNiZGMwODAwZGMxMGU5Y2I1ZjkxMmU2NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_f09ad4888abf4d6a8eec9c7e936d6870",
+      "statement": "resolveVariant recovers from a 23505 unique-violation, whether caused by a concurrent insert from the same user or a canonical slug already owned by a different user, by re-selecting or retrying with an owned id rather than surfacing an error.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/exercise/actions.ts#L56-L106",
+          "version": "repo-lines-v1:sha256:31a34154a6fd4b7b4efa974d76624941745791efee418f0e64657ac4954339d8:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3MzIxZDc0MDc3ZWJkOTBhN2EzNmI3NDA2ZTc5ZGM3OWJhYWU0OWE5YWIwNTY2OTU0ODhlOGQ2MWQ0NWZhNjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5NjhmM2I4NTZiZDc0ZWRhNzM4ZDUwZDhmODExOWM2MzNlNGFmZWM2M2Y0YmI5ODJkY2U1NzFkNWZmNzExZDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM1NGE5ZTI2YWY3NTMwMDFiMjUxOWRiZjlhOWQ2NzExMmM1NTk5Y2IwNWM2NGZiODU3ZTNiMjA1NTc0MDliMjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYxZmQ5ZTgwZmQwNTMzYzMwYTI1NGVkNWU5MThlNmI0ODRjZDM3MTQ2ZDMwYTc0MmQxZjliMmI4YmFiYmJjZTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_85b38749ba2a43429d2597be5d9b42a7",
+      "statement": "createCustomExercise derives a StationProfile from the chosen equipment (machine or cable only; everything else is 'none'), reuses resolveStationFields to validate brand/type for machine and cable, locks cable to selectorized, sets needs_calibration true only for machine or cable, and always seeds coefficient 1.0 since population priors do not apply to invented exercises.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/exercise/actions.ts#L117-L156",
+          "version": "repo-lines-v1:sha256:8293987f270e96d6c353d8489afcd5fa4d5dc28b3147513ec8cf715b181c4c51:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM1ODAzM2JmNzNiM2Q1NjU5NzA4NjVlZTZiOTdlOWY5MDk1NWZmNWMzMmNhMDNkMDBkN2Q5MzcxY2Q1NmMxZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2YjA2YjVjNzkzNjgxYWZmNjU4YjI2YWFiZTY1ZGE2ZmIxZjhkMzBlZDE5Njc5ZjhhNzkyMWZjM2IxMDIzODAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1c778ee647b44916b5f3071aa38d716e",
+      "statement": "exerciseFamilyIds groups a template with every variant derived from it via baseExerciseId for in-session quick-history browsing and Track default-compound tile numbers only; progression, records, and calibration always key on the exact exercise_id and never merge across family members or brands.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L127-L130",
+          "version": "repo-lines-v1:sha256:7af67f3d0fa7d07510131abc08daf2cbc04cd1451e69d11d8582f874d107cd1f:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWNiNDU3YTIxNzIyNmU1MDY3NDgxNTFhYTdmM2IyNWYzZmYwN2YxMjk4ZWQwNDNiZjE1ZGMwM2YyOGJiMzk2NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmY0NTE0ZDhiMDc0Njc5MmE0ZmM3YjkzOWQ4ZTJjODI1YWQ4NzAwYTNjN2QxNzZkMmY2NjIwZWUzZTRlY2E4MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTE2ZDQwZjM3MTY4OTFjMzZmNDIwOTk2MjMxOWY5NTFjZDM4MWI5YmVhY2Q1Mjk3NjNlM2JjODhkNjhlNGI0YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzY0N2VjY2JjOWJlYzM0NmExYjFhNmNjM2IwNWRhY2NiNzE0Mjc3NzI5Nzc0YzhmZWYzYjhjMDM1Mzc3ZjNiMiJ9"
+        },
+        {
+          "resource": "repo://src/lib/exercise-history.ts#L4-L11",
+          "version": "repo-lines-v1:sha256:889e8b963f45af6b7fd99252e6bc8c81c3d542180e8097e40d40c71c006f86ca:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODdiOWNkNTEzOTZlZDlhNjdjODNjMjMzZGJlNjkxODE2MTE1ZDNhOGRkODk2MDE5NWFhYjcwZTE3M2JmZjZlYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGM0MmI0MjE3YWNhNjNjODg3ZTE0NTYwN2UwODU3NWU3MDk2ODNmODM2M2YxMWEwZTlkN2UyYzU3ZTU3ZWM4OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzYzZWFhODFjZTVkNDA4NTBjZDljOTI2YjRiZDNlZjY1NzRhZWU5YWFiMjMxYWUwZTdiY2M3OTU5Mzk0ODYwYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_f4af56b804a54c56b2c7afd04c9b300e",
+      "statement": "Existing set_log rows logged against flat template ids before the station model shipped are never rewritten onto a variant; old PRs/progression stay on the template id and new PRs/progression after resolving a station start fresh on the variant id as a quiet first exposure.",
+      "evidence": [
+        {
+          "resource": "repo://docs/superpowers/specs/2026-09-21-station-composition-design.md#L383-L404",
+          "version": "repo-lines-v1:sha256:811e0baad71d4157d5ea0b36d62e12fd2446d4bde530f06744834133efc18d17:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2NGYzMzk2NmY0YjA4YmM0MDAzOTQyOWU2NmRkMDJiN2JiYmQ0MGM4YjcxYmNkOTAxMjc0NjUyYjIwZTQxZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlhNzY1M2Q3ZGU0OTJiOTc0YWQ4ZjdlZTBkMGVkZDgwYWY3ODgwZjg2MTgwZTMxMzNmYWZjNzJmOThiNjllYWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY3Y2E1ZjM4YTIyMDc0NWMzYTkwMzNmZmM2YTJmNDcyOTJhMjg2M2YyZjljZWUxOTg5ZjUzMzc1ZjI2NWFkZGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIyNmFmMzk0MjIxYTI3ZGFiNWQzZmYzOGZkYWI5NTFjNGM5YzM1NjcxNGRjZGIzZWY3NzI0NDNmOWJhOWNlZTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/records.ts#L73-L75",
+          "version": "repo-lines-v1:sha256:b8449253d51d0ef44d8838ec5859d554705b0b095b6d9cef5e2bc857807d3732:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODMzMzdlMDk2Njc0NzE0M2U3Njg1OTg2ZDNlYmExZTI1MDBhYWUxZTM4YjE4MmMzMGI4OGYxNzNkNGFhY2U0ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDgyMmY1NjAzMTNhOGRjMGFlODNhNjBiNTVlNGMxNGJmYjBmYmIzOTk1ZGExNmRiMmZjMDQ1NDQ0MzllNmVjNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDljMWVhOGViODk5N2ZlYTA5MTk5N2U2YTcxNWM1ZTFmY2VlZTFjMDAzNGU0MGMwN2E0MTZmYzNkYzRmZTIyMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTcyNzVhMWMwMmYyN2QxOGZkOTZiMDQ5OGQ2NTBiZmIxOWQ3Yjg5ZjY4ZDFiN2I3NGJiN2RjMmY0NWFmMDlmNSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_586e068dede744fba1b763c5a9892774",
+      "statement": "eligibleRecordSet excludes only bare stationProfile === 'machine' templates from earning records; leftover flat cable and barbell-station template rows remain record-eligible on their template id because they were valid directly-loggable identities before the station model shipped.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/station-calibration-records.test.ts#L171-L182",
+          "version": "repo-lines-v1:sha256:cd50968d348b1adae847c9701b1dce3f7185c39bd0154310e7c070527eb27887:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0NzdhZjdmZGM5MjNhOTcxMzE3NjZhZmY5YWYyN2EyYjJmZWJkZmU2ODMwYjZlZDUwZjc4YmMzZmNkOWY3YjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI3NzlkMTE4ZDZlM2NiZjQ1MDUzOTc0OGRlZTdhNDMwN2FjYmU2NDQ2Y2JhMjk3ZjI3NjBmYTVkMGJiYTFiYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdkZGI0M2NkMTc1YTE1MjI4MGNiM2M0MWVjMWJlYjY4Mjk0YjFjODMyYzMwMTNmMGNmNjdmYmE2YmQyMGQ5YWUifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/records.ts#L76-L84",
+          "version": "repo-lines-v1:sha256:4d7221aec3efaf20c8e4495bfba911f4542b193737e3a125e80225878286ce94:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGM4ZjFiYjA3YTRmNjQyODU3NzU2NGRlMjgxZWZkNjBhNDRjYWMyNTRiMzVmZTU4OWY1YThlZDE4MjQyZjhjZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiN2I3MWQxOWZiMTdiNDVlNzExZDJiNmQxMjcyZWEzZDFlNGZlNzllNGM0MDA4NGFhYTE0YTk2NjllNmRlM2Q3OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjg0NDkyNTNkNTFkMGVmNDRkODgzOGVjNTg1OWQ1NTQ3MDViMGIwOTViNmQ5Y2VmNWUyYmM4NTc4MDdkMzczMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzkzMTEwZjdjYzYzMjcyNTc2ZTYxZjcwNzgxZTNiYjNiYmJkOGQ4ZWM1N2FjOTYyZmZkZWViOGE2MDhmMjdjMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ee7ab41089434082ab8a7e5035880730",
+      "statement": "mergeCatalog guarantees a leftover flat template id's definition always resolves to the original seeded template, never an accidentally-matching DB row, because seeded ids always win merge collisions.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/catalog.test.ts#L61-L88",
+          "version": "repo-lines-v1:sha256:5b4dedf5512e71ec4ffe1e35de57f01debc50cc0c6adf6a2cf89a292d5ee8990:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3ZjVhZWNhYjFhZTI1YjgxMWE3NzUyMWYwMmRlMDgwNjk3Y2U1MWZjOWRlNWRiMmNkOThiOWVmMjUwYTY1NjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNlZmU3OGZlNDZiYWY1YzM5NWU0N2ZkZDhmNmVjMzhkMjlhN2RjNmI1NDVkZmQ0OTk4MWUyODk1NWY2NDdjYmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVjZTk5OTkxZjI5MTA3NzA5MDI2YTVjYzNmNmExOTMyYzJlMzY4MDgyOTg3YmUxNWJhNzE1OWZmMTJhODI5MWEifQ"
+        },
+        {
+          "resource": "repo://src/lib/catalog.ts#L49-L57",
+          "version": "repo-lines-v1:sha256:bd8c6530db1e7962907269d2472aedf3a77af6a0f460ace45bb051973d1ae68c:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjBlYWEwMzQxYTFmNzg0ZWVkYTA5YTBkZjFlYTlmYWM3OGUxMmI5MDk5ZTJhMzZmZDc1OWJlNmQ4MThjNzJmMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWVlYzcxYWYwZDFjYjRmNzhkOTYwZjM2ODhlNTczMTBiYmZkOTQwMDQxZDZkYTgyZTVkNmFiYmY2OTU2Y2VkZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTM0MGQ2MmY0YTUxNDBhMTMwZTM4NDc0NGYyODg3NDkwNTNjNmI5NDZlOGEyYWVmYjYxZGVmNTZmOWVhOTgzMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e3af4a93f996429f9f5864b06560ae19",
+      "statement": "Machine and cable variants inherit needs_calibration true from their template while barbell station (bench/rack/platform) variants inherit needs_calibration false, because stack/leverage units in machines and cables do not transfer from free weights but barbell load is ordinary comparable lb regardless of brand.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L42-L49",
+          "version": "repo-lines-v1:sha256:00a137bfab714fcbb0fac6dfd781aa8503527c1c72e9e6fafc023ba321be02fe:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDdmZGQ2MWMyYWRlMzYwODNjYmMwZTkyZDNiODY0N2RjMDBjMTg4YTY1NDNiMzlhNWQ4YjJjYzQ3NmRkMmI1ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODM1NmIyOGZhODk2Y2E3M2ZkMzY5M2Q3ZTI4NmU5YWMyOWI4MDAyYmYzN2QyZWZhNDNlNDhhYmQ2YTQyZGJlYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjBkM2NlMjE5M2Q5MWIwZTU3YjU4NjJjOGQ4ZDZjNTVjYjYzM2QwNDliZjJmOWQwYTIwOWNkMDc1YjVhOTlhMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzllNTgzNTJmOGJlOTVlM2NjYjUxZWYwNzQyZTQwNDUzMzMxNTViYmZiNGQxNWQ3OTg0YmM4N2I3NTFkYjZmNiJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/exercise/actions.ts#L78-L91",
+          "version": "repo-lines-v1:sha256:36715da45b769bffa64f91accf6fc5d844f1c96ca94d15a2db2944a05578f978:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiYTRjZTkwYWNhMTc0NzQwZDk4OWM0NmZlYmRhYzlkM2ViODk2YmQ2MjFkMmQ2ZWQ4ZWFhN2Y3YmVmZTRiYjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYTJjYjI1YTEyMmI0NDIyMWE2MjM0ZWM2NjBhN2I1ZmI3ZjliZGU3YjNiOWUyYjNjNTU5YTBkOTZmYWM3MzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNjNTM2ZDI5MTAyZGJlN2QyNTJkMjhiOTdlZTc0MDViYWJkY2YyNTQ2ZWM0ZTgyYTU1M2Y4YzhiMjdmODkwYWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM5NThiYTQ2NGMwNGRjNzc5YWMwNGExNTIwZTcyNmE4MjY0MjBjYmRmZjM1OTg3NzNlZjA4MTYzNDQzYWY5ZDIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_91cb20381c0345ba830cb5a37637167b",
+      "statement": "recomputeAndUpsertStat anchors personal_coefficient as observed e1RM divided by pattern strength estimated from the owner's other exact-id stats only on the first calibrating session (or while no anchor exists yet), then holds that coefficient fixed on later sessions while current_e1rm keeps tracking demonstrated strength; deleting all sets for an exercise clears personal_coefficient so the next first set recalibrates.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L50-L118",
+          "version": "repo-lines-v1:sha256:2cd67a1dd964c8acd6b83f50af4bf927358a3119fc3bbb013bd2e15d1226f5c0:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzZjdhZmY5MTFmYTdlMmM0MTljMzU4YjM3ZmVmZGVlMGQxMjYxYzM3YzI5NGU5ZDg5NGU0NzFiZWJiNDkyMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYzZDExOWRkOWQyYzAwY2ExYWY2N2RjYWJjNDAxMzkwYzJmOGYwMzM5MzEzMWIzZWY0ZDk4ODkwMzM0MDkxODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5YTQ1Y2VhMDdlZTA0MDNjY2FhZGI1N2Y1NGQwODNkOWM5YWRiNTU0ZGQ0YTQ0NGMwOTAzNGFlNmE3ZDFlYTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_15f04dd4b2a0471b93102d1863e69fc0",
+      "statement": "A brand-new barbell station variant with no history skips the calibration branch entirely and falls through to the ordinary pattern-strength times template-coefficient recommendation for its first target, then proceeds with normal double-progression on its own subsequent sessions.",
+      "evidence": [
+        {
+          "resource": "repo://docs/superpowers/specs/2026-09-21-station-composition-design.md#L346-L360",
+          "version": "repo-lines-v1:sha256:d48a8e7ba1df27c8ac4ef9ab0938630b0e14674d91241829e6bd3449d7fbf693:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzNTQ0ZWRiZTg2NDZkNzYyNjUyM2ZhZGM0NTU4NjQ5ZTNlZGM1YTMyY2ViN2I5NDdmZDUzYjdjZGQ2MTQ3NzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2MWY0MmU2MjcxYTk1ZWNlYmMwYjgyMDc0ZmNlZTEwNGIyOGEyZTQxOGRmN2FiMGIyNTBiNjYwYWQxNTE2NTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5MTEzNjVmYmFlNDBkOGE5YjFmMTA4YzMyNDZhOTMzMTM0ZTEyYmY0YTA3ZjQ0YTg5MGI1ZDE3MjhlMjk5YTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjNDRiYjc5MDU1MWI0MzBhMTc4YzYwNmYzN2MxMjNkMzRkYTExY2NkZDg3NjY5ZjQ4OWFkMWE2N2IxMzZhODAifQ"
+        },
+        {
+          "resource": "repo://src/lib/station-calibration-records.test.ts#L157-L168",
+          "version": "repo-lines-v1:sha256:f3b1b84c31dff3038ea1028ed593671464f80165173b388a363aede0d871faef:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVjNDRmOWU1NmNmOTFiMDdmZmNlZjg3YmVhZDFlMDg5MzM3Yjc2MDFhNDlkZDgwNzE5NGI0NzU3NTNjYjI3YzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI5NjY4ZmRlMzVlNTA5OTk3MDg0NTllMWMxNTJmMjE5MjRiMjhjMjJkOGNmYzI3ODMzNTliNTgzNDQxMzlkNjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZjNDg0NjVkYzFlZTU1ZDc0Y2UxYjA4ZDk3YzEyZDM4NmVmMTU3OTBjYzA0M2ZiMTcyZDdhZGY5OGZjNTlkOGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f5ecedfaf24849c7868a9848eb3af116",
+      "statement": "A new cable or machine variant calibrates from zero even if the owner has extensive history on the original flat template id, because it is a distinct exercise_id with no prior user_exercise_stat row and leftover flat template rows are never rewritten to feed it.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L47-L49",
+          "version": "repo-lines-v1:sha256:76586c85378cefd753d54fc5a982659b048a6e51e80ec7e24deb625a68ea2c9e:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmNjODk5YWIyNjk4NDE1MDdjNDY4ODMwYjg2ODFhMmU5ZTAwZjI0MTQ4NmE2YWNmODZmYjYwYjNmNjc1YWFiMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODM1NmIyOGZhODk2Y2E3M2ZkMzY5M2Q3ZTI4NmU5YWMyOWI4MDAyYmYzN2QyZWZhNDNlNDhhYmQ2YTQyZGJlYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWFmMjllZDM0OGE0MDg3ZWRjYzAxNjI0MjU3MmU3ZWFjMTBkOGEwNjg3YWEyNGZjZmE1MDI1YjI0YzY5MmI1MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzllNTgzNTJmOGJlOTVlM2NjYjUxZWYwNzQyZTQwNDUzMzMxNTViYmZiNGQxNWQ3OTg0YmM4N2I3NTFkYjZmNiJ9"
+        },
+        {
+          "resource": "repo://src/lib/station-calibration-records.test.ts#L212-L215",
+          "version": "repo-lines-v1:sha256:7f873906a4d273f0311268cc7d4122eb2892f809b0e061c421ba2ba519673156:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTMzNjU4M2MyZTI3ZGM0YTJiYTU3MTZhNDUzYTkxMmVhOTQ5YTNiNjA5NDQ0NmNjNjE5MDA3YWMyOGIzZjVlNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2EzZTQ2Zjk0Mjc2YjZmNmY0ZWQxZjAyYWY3OGJlZjZhMmVlMWM0MzlkZDU1ODRiOTczOTQ4MzEzMjE0ZDJiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzEyNjMyMDdkMDc1NzExYzljYTQ0NGMwOWRmMzhlYTFhMzZkMTVhZjE0MjUxMjljYzM2MTdkNzE1ZDRjNWRjZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGQ0MWYzOTAzMDBlZDAyMTc3ZDg4NDQ3ZmZmMzkyZmE1ZjhlODhkNmM5NWJkOWFmOTQ2OWQ0YTE3MzdkMTMzNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_87645dd6514e4c75ba353613e7b24aec",
+      "statement": "Session, planner, swap, and extra-pin write paths reject unresolved needsStation templates before persisting, with default-compound tiles as a deliberate exception that keep template ids pinnable because Track resolves their displayed numbers and href to family-latest data instead of the template id directly.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L38-L39",
+          "version": "repo-lines-v1:sha256:de7cb9529345200156dde23ac7fa09f44e29590a33ddf9745d602604eeb9187f:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmUzN2Q0MTUwYjQ3ZDEzNmE4MTNhZTgxMDQ3ZDQ0MzQ4OGE4YmZhMGU3MDU3MWUwY2E0NTZmMzhhMWRmZDJhOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjM4ZTUyNzE4ZTUwYjJhZTYzZmJhOGU3NTgxNTQyMzMyZTAwYjg4NTE5Yjg0MjA4NTJlMWJmNGYxYWY2M2QxNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzRmMzA5MTI4YTVkNzk3NTgxZGRjYjBkZGViM2VmMWNiNzY3MWJjODlmM2JiNTY1ZGI3MzNlOGE0N2ExZWM1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTIxYzc3Y2I1OTE1ZjIxMjJhNjQ2NDExMDVmMGQ4ZDk3Mzk3MTgwNDIyMjNjYWJmMjgxMWFjYTk1ZTIzZTNmOCJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/pins/actions.ts#L46-L51",
+          "version": "repo-lines-v1:sha256:b7bd12bf12e157b1ab54923a3f2df1881acdc3ede4d9870ccdc777e81ff4b825:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjVlNjM1ZmExOGUxN2YyMmRmN2QyYjZmMDFiMDI2Mzk1ZDcyMDljZjcxYmMyZmJiODliMmExN2NiNDBlNjEyYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWViNWZlMWExOTgzNTc2ZTc5MTllZDJkNjhkYTExYTVlODZiNzA4YmUzZmJjNTFiMmYxNGQ0N2UwMzFkNGRjNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjE3NTU1Y2U0N2ZmNDY2ZTg1YWYyNjY2ODJhZWU1N2IwNmZkYmUwMjY5NGNjMmVhNmZhODc3Mzc5ZWMwODE1ZSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

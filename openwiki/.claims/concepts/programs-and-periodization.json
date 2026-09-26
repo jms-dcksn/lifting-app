@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:765eb635d27fc03b042e8be90cf36a44fe16dfc4401d616fe40489d1ed60b15f",
+  "claims": [
+    {
+      "id": "claim_da3efe5e69114b86bce0d91385bd00c9",
+      "statement": "program.ts's assemble() loads a program's days, phases, and slots via parallel queries and normalizes each day's stored name through workoutIdentity(), which strips a legacy weekday prefix so a delayed workout still displays as the workout identity rather than the day it was originally authored for.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/program-day.ts#L1-L11",
+          "version": "repo-lines-v1:sha256:71a30c17bae20b94478eeef100e3c5fdb615bc307a774bcbf2eb8e7b0cc2137d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiM2Q4NjZlMTk5MjU1NzFjNzMwNWQ5Y2U4MTU2ZGI0YjFjNjM5Y2UyNzAxNzVmNjQ3ZDE2OTFhMDJmNGQxMjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/program.ts#L48-L124",
+          "version": "repo-lines-v1:sha256:8fa928d9f9f80b6bfca0af66d62ca2e8707858113f4c4ca89b0f9ac6d62ca910:eyJzZWxlY3RlZExpbmVDb3VudCI6NzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiYzUxYzU5ZjlmNjgzNGM3NzRhN2NiOTIwNzJiY2FkZDY5ZjM4ZmEzMjVjMWFiYTM2NDlkY2E1MWE4MTZiYWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhZGRmZjgzZGQ0ZDYxZWI1OTAxZDFkMmRkNmJiZGNmYzJlZDk1OGI1YTc3Yzc3OWJmYzkxYTY4NWQyMWI2ZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyMWFmMjFjZjRkMTgwOWJiY2Q0Y2MyNzc1MzQzYTYxN2U3ODg5M2UwYzEyNDM0NWFiNTQ4N2ZiZGJmOTQ5NjQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b09925ca8c744674a05a2bc64be74ed7",
+      "statement": "listProgramSummaries loads program/program_day/program_slot once each and aggregates counts in memory via the pure buildProgramSummaries helper, which sorts active-first then newest-created-first, instead of issuing a nested per-program query like getProgram/getActiveProgram do.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/program-summary.ts#L31-L66",
+          "version": "repo-lines-v1:sha256:3f3f6274c96bfd90413929a689f181782df706973eca35e085f07d3543db5488:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmNTA2OGRiODYyZWUwYmUyMDU3NmIxOGMyZTdkYzBjNmFhNDg4YTgzMmEyODc1MGZiYmFjMzVhMGEwZGJmY2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3YzM3NGQwM2RiZTc1OWUwYmIyYjY5MDA5MTAyMTlmYjE2Nzk1ZTJmZGQwZWI5YTVmZDM3NTVmOWRiZjU4ZjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/program.ts#L157-L187",
+          "version": "repo-lines-v1:sha256:072f076d09f02701511428f77aea8f4a526599e23a334d7df22add457cf9c525:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmYTQ5NjUxMTM1MmRkZjRjZDc1MWU4NDFmMGNkY2NhMWRhZDVjMTFjNTdmNTQ2NDZlZTc5MGZhMGFjOWE2MDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk4YzA4NDk1YzBjMDM4ZGVkYWFmMDNlZDdjZGQwNGYzNjFhZWQ5ZDhiMTA1ZjVjOWQyOGM4YzY5NmRjMzdkMmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0MzFhZmExMjBkMTMzMGM2NTQ1N2M5N2ZiNzY3MzBhM2IzNGM3MzdhZThkZGYwOGYyMzFhNjdkYTczZmQ3OTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a653cd03c1764926b297475c45003e98",
+      "statement": "Program block position (current week/day) is never stored; loadNextWorkout derives it from the count of finished workout_session rows for the active program (week = floor(completed / dayCount) + 1, day = days[completed % dayCount]).",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/next-workout.ts#L9-L28",
+          "version": "repo-lines-v1:sha256:49eb5d55def03040e68d947ac91de944ca52999b05e9cd1976ec08cce8d2a05d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyMjhiMjRjZDgyN2Q1M2VmMmExMGNlYjIyNjM0YmVhNGM1YTlkOWFkYTdmN2I4YmQ3YTYxNWY1MjlkNzZiYzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzYjNkZjA3NzJiNDA5OWM5MzMxYjY1Y2U5OGQ1MWM4ZGNiYzNlMzUwZjMwMTgwMzExZDNmNTAwZTdlZDQ2MWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhODc5Y2Q0MThlMDQ4ZjU4ZjEyN2Q2ODVkNzdmMzM4MjgyNWZjY2FkYWY2YmRkMDcxOWU1MTgwYmRkYjRkMjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRhYTQxYjIwZjg3OTc4ZDA4OGVkZGM5ZWU4OWFlNjZlMWI3NTg5M2E5NGNkNTVlOTg3MGRiNTAyN2I1MWMzNWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_527492b772304536a484b5e42d12d8ce",
+      "statement": "ProgramBuilder is one client component reused by /program/new (blank draft), /program/[id]?mode=edit (edit in place with a Cancel button), generating all program/day/phase/slot ids client-side via crypto.randomUUID() at creation time and never regenerating them on edit.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/program/%5Bid%5D/page.tsx#L25-L41",
+          "version": "repo-lines-v1:sha256:039c36d279a3dc2939634b284e7fb425667ec7d2f91c382abe22808d6607799e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwYzFmMDY4MDk5MWU0OGU5MWRlOTY2MDVmNGE2MWI4YzNiOGRkNDUyOWQxNmRmZWI5MTI0NWM1MTg5NDI5ZGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0ZTQyMDhjZDZmZmI4YzRhMzU0N2IyZjU0YWRhMTk5NzhjM2YzNjVlNzhmOTUwMmVmNTE0NWNkZDJhYTg1NDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3NjE3YWE3ZGU1Y2I1YmI1OGFkYzA4NzEyMzE4Zjg1YTE4YWJmOGExZDA1MDhiMWI3YjAyYTIyMmY2YzY5OTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJmYzc1NWNkODU4YjhhOWM5YWJlYmI2YTBhY2I3YjMzMTEzMDJjMDYyMTJkZWU4MDUzOGRjN2M1OWM5OWIzMzIifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/program/new/page.tsx#L19-L29",
+          "version": "repo-lines-v1:sha256:41f5d0a4e18e1a50f6eb6022a72f3d680369cc49ceca1da6708870f9238afc5a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3MjE2ZThlOWMwYTFhNjhkMDZjMmZiYWE1ZmQyMTM5NDgyYjhlZmQwYTE5MzE1YjkxNWU2Y2NlODQ5ZDg5ZGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiNjQ0MGMyYzk5NmVhNWZmMDJmYjhjM2RkODA5NmViMmQxNDY4YjQ2NzM5MWUwYWJmMTBhNGE2NzNjMDVjNWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/program/program-builder.tsx#L18-L59",
+          "version": "repo-lines-v1:sha256:924d8b17c4abc61766137eb8667441e5326032cefd5ac56c9dab2bac50d9db2d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3YzQ0ZmYzZTQ1ZTQ0ZGE2NmM4M2U0NTRkOWJjMDU5MzJmMmQ2NWMzYzE2YWIyMjNjM2FhNzMyNzRhZThjODgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU1YzBkZTY0NDAxNjEzNWIzMTllZjQwM2FkNWExMDllZjM0Zjk2OGUzNTFhMTY3ZmUxYTFhMjIwZThkNTcxYjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4MGQwZjliNGU0YTE5MDYyZTQ3YjU4N2MzNDk2MTk2MTZmMmIxYTE1ZTNjZDEzMDcxOGE0OGEwYjNhZWNlZDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9635b607848948599142e43346965636",
+      "statement": "The builder's progression-style toggle sets draft.style to classic or fluid, conditionally rendering the weeks/phases UI for classic or a per-slot plateauPatience selector for fluid, without clearing the other style's fields client-side; saveProgram strips phases server-side for fluid saves regardless of what the client sends.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/program/actions.ts#L62-L77",
+          "version": "repo-lines-v1:sha256:0fa19c076cc6a92326f646e3db664ceca9ba3119f54f68ba391b70f4f448a0af:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0NmY4MTMxMDNiNmM3NDkzNjE1MGY4NTc2YWUzYTNmNWIyYTFmMzRjMTA1MDYzZDVhZjY0MDM5YThiMzhkZDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3ZjhjZTI5Mzg2ZmJlYzkxODVjYmJlOGYxMDY5NjU5NjM1ZDA3ZGU1NTFiZGEwY2YxMDBiZDRmMmE0MjFlOGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjNmZhNWY0NzBkMzUwYzA0ZDRjMzQ5YzM5MWViMWJmOWMxZDc4ZWM5OTYwMjNkMDE3NDY2ODMwZjYwOGIzYTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhMjZiMTI0ZmVjMWZjNmE0ZTgxMGNmNDViYzYwM2NlOTUzZGViODQ2YWM0MTViMzdiYjZlM2JmOTE2ZjE0YzgifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/program/program-builder.tsx#L260-L376",
+          "version": "repo-lines-v1:sha256:ccd0ef58b6b3745b7694f753369edfa534e851a1d0637405f7ef6910c7d973d2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJhODhiN2Q2ZDdmZjU0NTk4MWQxMWQwMmJiMDA0MDc2NzUyZWU4OTk3YWU1NTk2MTgxNGQ3NTZkMzFhZjVkNGY5IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0N2I4YzEwODVmOTVhMWFmYWJlNWQxNTJhZDU4ZGI5ZGMyNjMzNmMxMjE4ZTJiODQwYWU3YWQ4MjZhMGQ1NzQ4IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3MzU2ZDZlYzk4YmIyNDhmOWJkMjQxNzU4MzMxOGUyOGQ1NmNhNmE4ZjZjOGRlYTE2ZDkzYTA1MjIxMGQ2Njc3IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJmNjFkMDI0NmM2NTRjMGE4Yzc0ZmMwNWExYzBiOTA5N2I2ZjM4MjMyMGU2NmNhODgzZTdkMjk0NzUxNTNhYzRjIn0"
+        },
+        {
+          "resource": "repo://src/app/(app)/program/program-builder.tsx#L439-L465",
+          "version": "repo-lines-v1:sha256:15a9fea5adef04562b98ffbd43525444e5923c364420ffe26f3a3b1e0959d17f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4ZmYzMDc3ZTllNDNmNDMyMDBkMDc4MDBhZGVlMDU0MjFjOTJmZjVlMDAzOWRkYjJjN2ZmYjExZWE2N2MxZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5YzFhNjg0ZGQ1NzM3ZGRhOTc5ZmY3ZmVkMzQ4ZWM5Mzg3NTMxZTc3ZjBlMDU5YmNhNGVjZjE4NmJhNjEwMWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlN2UwYjU0ODQzZDdhZTYzMWFmZGY4MWZkYjc5N2NiZjBkNDEzZDBhZjRhYzQ4YjllOWQ5NDZkMzAwOGZjMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzNzQ5N2Q1MGI5NDE2NGRmY2YxMmViYTcwNmViOWM3OTg3NzM3NzI5MjhmMmFlMTAxOTY5YzFlZTMxZTY4YWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8a802dce1faa4d83ba7671136ed46b34",
+      "statement": "saveProgram re-validates on the server (rejects zero days, clamps weeks to 4-12, drops phases for fluid style, validates phase week ranges via validateProgramPhases) before assembling a single JSONB tree and calling one save_program RPC, replacing what was previously a multi-statement non-atomic sequence.",
+      "evidence": [
+        {
+          "resource": "repo://docs/PROGRAM-TRANSACTIONS.md#L8-L20",
+          "version": "repo-lines-v1:sha256:28021e12b303be68c068adb073b43e83b51da49ec6d8eb4045be7ca7756f7820:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3ZmFmN2UxOTFmZTdiNmFhMmI5YzFjMGRkNzdiOTEyZTFiNjIyZWZjYzhjMTRkN2IyNWY4NzA4N2E0MGMyZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4YzNkYTQ1OGMyMWI2NjEwYzg4MWE5ZWY2MGIxMjgwNDUxZWY4Mzc2MDZjNWEwZmE0MmQzN2RiYmZmZDZlYzMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyODRiZjk2ZWMwZGFiMWJmODlhNWJkYmU2NmMyNWY1NzdhNTYxZWFmYTkzMTllZTEwNjFmZjRjMWViZjA1YTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRlMjJiMTM5ZDhhZjA2ZTdlYmMwZDJkMzFlZDFlN2Y3NjIzZTY0MGUyZTNkZWZmNTNlMGU2M2Y3NThkOTNmNjgifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/program/actions.ts#L62-L122",
+          "version": "repo-lines-v1:sha256:824b04e4353044a7cfacbbf7903064328035d0a1481f2940906b74a8254dc831:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0NmY4MTMxMDNiNmM3NDkzNjE1MGY4NTc2YWUzYTNmNWIyYTFmMzRjMTA1MDYzZDVhZjY0MDM5YThiMzhkZDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjNmZhNWY0NzBkMzUwYzA0ZDRjMzQ5YzM5MWViMWJmOWMxZDc4ZWM5OTYwMjNkMDE3NDY2ODMwZjYwOGIzYTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY4Y2YxNWFhNzkyOWYxMWFlYzE4ZDcyNWJkZjU3YjNkMzZiY2E0ZGQyMWZjNDM3MWNjMjA0YWQ0ZjRmYjM3MGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cd5096431ffc47de91ca0df00c2b38cd",
+      "statement": "save_program(p_tree jsonb) is a SECURITY INVOKER RPC that, in one transaction, atomically flips is_active for all of the user's programs with a single conditional UPDATE, upserts phase/day/slot rows with ON CONFLICT (id) DO UPDATE, and deletes rows whose id is absent from the input tree (upsert-then-delete-missing), preserving row ids across an edit so set_log.program_slot_id continuity survives a builder save.",
+      "evidence": [
+        {
+          "resource": "repo://docs/PROGRAM-TRANSACTIONS.md#L142-L186",
+          "version": "repo-lines-v1:sha256:15dfeb85c9640a4a9dd9152f1573df47c25eb883b4e6991c24c45c108fc32131:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwNGM1MDJjNWY1YjZiZmE5ZjdlMWIyN2QyZTRlMGMwNWQwNmI2MGZjYjU3MzlhMzM3Y2Q4NGE3MWE2NDU4ODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0NjFlYTE2MWNiNTBmYWFjYzkwYjczYjk4N2Q5ZGIzMDM1NWRmMmE2MzUwMGNjNTJiYjdiNDkzODlmOTdiNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlY2ViNGJlZjBjNDM3YzIzMjE4OGMyNzA4M2YwNjY0ZTMyNjRlNzMwODU0MjJhMmYyOTA0NjgxYjYwZjJlYzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwZjFkYmYwYjliZmY5NmQ3OTZlNTQ1OGJiM2U5MWRiMTIzMWIwOTJlNTZmODk2ZDI1MzQ2ZjRjMjRkNzAyZjkifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/program/actions.ts#L79-L122",
+          "version": "repo-lines-v1:sha256:55e58cf5518df6dbdbbdb7148058163c2bd314435afa883c689796d933e7b6d8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzYjlmYjBkZGQ1ZTYyOTNkMjkxM2MwNGZmYTI3NWZlYmIyNmNmM2ExZDUwZGM3ZWVlOWU4MDY0OWQxY2Y2ZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc3MmNmMmZkOTgyYmNhY2U4YzA2ZTE4Y2UyYzY0MzMxZTRjOGVlMzYzNzFhYWM5MWY0YWQ2N2Y0YzA3ODg4OWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY4Y2YxNWFhNzkyOWYxMWFlYzE4ZDcyNWJkZjU3YjNkMzZiY2E0ZGQyMWZjNDM3MWNjMjA0YWQ0ZjRmYjM3MGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3c08511de5614bdf93400923fc0adfdc",
+      "statement": "createFromTemplate, cloneProgram, and setActiveProgram all reuse the atomic RPC pattern: the first two assemble a fresh-UUID program tree and call save_program (activating only on a true first-run / never activating a clone), while setActiveProgram calls a separate minimal set_active_program RPC that performs a single conditional UPDATE across all of the user's programs.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/program/actions.ts#L127-L196",
+          "version": "repo-lines-v1:sha256:2b54c559bc7d8b2ae4c8bc47706bf0c1e830d4c916691bd160a79e63271640a4:eyJzZWxlY3RlZExpbmVDb3VudCI6NzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyYTBjYTFlZTJmMDA2OGU1ZDkwMDhjMjE0Nzc2NWI2OGQxYWUyNGVhZDIxMTgyYTUyOGZmZTNmNmUxNGRlY2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM0ZTc0ZjBjMjAyZTFmN2E3ZDQ5NmJmZjZlOTliYjI2OTk2NzNiZDE4Y2JjZGM3YjA5YTNmY2QxOGQxZTNkYWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ2Y2Y3YmI3YzUzZDlkNDQ0ZjZiMTkxNjNlYjU1ZDExZmRkNmZkNDdjNDE3NjRjYzA2Y2RiYTBkYTJlY2Q0MTgifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/program/actions.ts#L199-L282",
+          "version": "repo-lines-v1:sha256:0d4188e43b54b64323cb6dfa84d4e4fa2c640692b6d46670d3457051bd7531b1:eyJzZWxlY3RlZExpbmVDb3VudCI6ODQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2NmZlOTJjODBkNDE5NmRhNDliYjNmMGU4OTViYTQwOTJmMzE4MzYxM2FiMzM4ZGFlZDZkZTRhMThhMjEyOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0NDI0NWYxMTg3Zjk2MDhhZjZhN2M3NTUzNTU5ZGM2NWM0YzIzMjQ3M2Y4YjdkOWNkZDhlYTMyNTEyN2RjM2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJjMmQwN2MwMTY4ZWYxNzgxYjA2NTU3NWI3NTU5YjM4Y2UxYjZjMzI2ZDNlMzZhYjVkNDNjODEzZDBjODc4YzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e401ca49615d47c79ba08080b1ead532",
+      "statement": "deleteProgram is a plain single-statement DELETE scoped to id and user_id (no RPC needed); days/slots/phases and slot-scoped movement_adaptation rows cascade via foreign keys while workout_session.program_id is nulled rather than cascaded, and deleting the active program is allowed and can leave the account with none active.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/program/actions.ts#L284-L304",
+          "version": "repo-lines-v1:sha256:5eada763ee730bc27776bc82608dddfe0d97da5563c086172cc212adb186187a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzMjdiNmEzMDVjZmEwOTZiYmNjZDA2ZGYyY2RlYzFkYmViMWIzOWVlZDdmNzMwOTlkNmY1YzljY2FhMTJiZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlkOTgwNDcwOGNkZmY1MzU3YjNmODczZDc0MTFmZWFiYTMzMzFiYjM2NzJkZTk1ODM4ZWE0MTM1NDgzOGMyOGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f27f359d72d84d52a615ed1d6329e041",
+      "statement": "PROGRAM_TEMPLATES is a pure, framework-free catalog with no backing database row; TEMPLATE_BY_ID is a lookup map used by createFromTemplate, and program-templates.test.ts enforces that every template slot references a seeded exercise with a matching pattern, stays within the 4-12 week clamp, has at least one day/slot each, and that any phases pass validateProgramPhases with zero errors.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/program-templates.test.ts#L6-L63",
+          "version": "repo-lines-v1:sha256:e35e8790c3ef644ef2f7136c8e5cd70bb23cd2fcebed317c42e7359966555466:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY4NzI3MjVmYmZkY2Q1ODk3NzZkZjAwMGIxY2MyZWNjZTE3MzllNmMwZDA5OWVhYmM0OGM5MGUwZmJmNzhhZDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIzNDg4MTIyNDgwMThkZWI4NzVlMTQxMTBmMjJiODEzZDNhODczZjAyNDQ3ZWU5YTJlZjI2YzcyYTIxMGVhY2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBhMzVmYmVhZTI5NjgyNGU1YmMyMDk3Yzg3MmIzY2Y3MmFjN2ViODYxOTJkOTMxNTc4ZTAyOWRlMTgyNjA4ZWEifQ"
+        },
+        {
+          "resource": "repo://src/lib/program-templates.ts#L1-L52",
+          "version": "repo-lines-v1:sha256:2797bc26f6e7d4dba3c134a918289a463ebbf777651070c8cb458c8c0a0f5161:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyOGRjNDQ1ZGRmZDA0ODExMmZjYTkxNTcyNGM0NTIwNTA3MDRiOTU5YmQyMGUwNDdlOTk4MzZhY2I2OTBmMzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI0MDcxNmU0ZjNiYzk4MTA2MjYwYTYzMWUxZmM5ZjEzOWQ3ZTBiNGU5YThjZDNjNDRkMTJmOWU5YTE5MzQ3YTkifQ"
+        },
+        {
+          "resource": "repo://src/lib/program-templates.ts#L1004-L1006",
+          "version": "repo-lines-v1:sha256:3501c8d48f9a27fa5639e654b33fd4619d865d0ad441e412c145b1fed9a8cd3b:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmEwZDc0OWRmZDdjNTgzNWYxNGFjYjc2ZDllYWM3MDFmNTliMGE5MTgyOTAxYzU1YWVhY2YwNjRiZTZhMjNiNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDk5NjdlYzFlZDM4MzZmOGViMTdhZmYxNzJiNWJmZWY3ZGU2MDQ4NWE0MzljNmNhMTFjNTkxZTE3NTU3MzlhZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMThhOTE3NTk3MmZlMTVlMmE5NjQxYWIxMzFmNTcxZTZjN2NhYmNhMDY4Mzc2MmViYTVmMjM1M2U0ODNjM2Q1NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1cb1f51a06124ab69f3f23396735ba91",
+      "statement": "Six built-in templates ship, each mapping a well-known external program onto this app's rep-range/RIR prescription model; linear-progression main lifts are encoded as repMin === repMax so hitting the rep max on the first working set triggers the load-increase suggestion, and percent-based/wave programs are approximated with fixed RIR targets rather than modeled as percentages.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/program-templates.ts#L1-L13",
+          "version": "repo-lines-v1:sha256:994127e9a6006f04b9e9bbdba80603b8876acfd6c077c7ed63f80669310c972b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyOGRjNDQ1ZGRmZDA0ODExMmZjYTkxNTcyNGM0NTIwNTA3MDRiOTU5YmQyMGUwNDdlOTk4MzZhY2I2OTBmMzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExY2QyYjY0NjE0ZTkyYWFmNTlkYjAyMDY0ZDBjOGY0MjdlNDNhYjNiNDI0ZGQ2YTE0MDc0MWFhOTUyMTZlNjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5NDBiYTg3N2NiOGFiNzE3ZTM5YjhmMzFkNDk1ZmY0ZGE1NjgzMGQ5MGFmYTg4Njk4MzlkYmUyMTZkYTQ2ZjIifQ"
+        },
+        {
+          "resource": "repo://src/lib/program-templates.ts#L282-L357",
+          "version": "repo-lines-v1:sha256:badc221be0cacc7407ff477d98f762663f95c8f03969912095f9372b7972a462:eyJzZWxlY3RlZExpbmVDb3VudCI6NzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MGNkMTgxZWFjZjEwOWVlMzg0MmQ3NWMxNGUwZTNmMTVhZTRhNmQ0MjA4MzY4NTVkYzBkNmMzMDgxOWFkMjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkNWNkMmZiNGYzZGY4ODQ1MTUyNTViMzk1MjNmMmY4YjU0NzJiZWVhOWY1NjZmZmNhMjA0ZGI4MDI1NjEwNDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyZjQ1NzY1OTFmMWY1ZDRkZTI3NTZmNGE4OGNjOGUxNGZlMThjNzI5NmYxYjZjMDRlNzYwYmM3M2QyYzg3ZTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlYTdiNTQwMWM4M2M3YmRjMjMwZDIwZDA4MjI5OTU0YjIxNjEwZDQ2M2ZmZmFmMjJmZjc5OTVkNWE3MGE5YWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a62ef50cb7a348deb59fc674aa6962b7",
+      "statement": "resolvePrescription resolves a slot's effective prescription for a given week by looking up phaseForWeek (deterministic first-match by sorted position over historical or malformed overlapping data), applying effectiveSetCount for any setMultiplier, taking targetRirMin/Max from the phase when present else both falling back to base.targetRir, and always setting the single scalar targetRir to targetRirMax (the conservative/upper edge of the range).",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/periodization.test.ts#L25-L53",
+          "version": "repo-lines-v1:sha256:607a22124c8355eee5191cd98b7e82f87ddd3de0925da1216e77bf0d2514fe91:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2Yjc4MmQ2MWJjMGYxZjY1ZmEwMTFhMGE0NWJjZDI1MzA5OTY0NmU5YjYxZWVmNjlmZjA2NjkwMGFmZWY5ODgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQyMTBjZmI2MWExMjkwZWU0YmJiYjI0MmI5YmYxOGZiODcyMzFlZjBiNTQ3MzU1ZGFiNzMyZTJjYWQwZmUzODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAxNThlODc3ZDJkOTcwYTZhYTQ0NGZhN2RkOTc5NzdjOGZhN2FiNzc4OTZkNDFkOTIzN2Y4ZmM5MGNhYTFmNzMifQ"
+        },
+        {
+          "resource": "repo://src/lib/periodization.ts#L26-L63",
+          "version": "repo-lines-v1:sha256:c84681f31ed357435b3da8c185b01ef0347709b47ce6a8b5b3fc08bfe3615425:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViOTE0ODQyNjI5MzNmMjU3MjliMGM2NjVmNmYwMzFkODkxMTU3ZWU0MGNhNzE3MTc0NTBkOGRhNTYyNDZmYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY0ZDFkNTc2NTM2NDBjMTM1OWNiYTEyMWE1ODNkN2VlNzU4NjhmODUwNmIxZTQwZDNhYWZkOGYyMjQ2MjE4NGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUxZmU2NGYyZDU4NWI1ZjA4OTc4OTZhZDE2YjMxODJiMDY1MTJlNWJlOTkwZjRkOGM4N2I0YTYxZDBmNWIzY2MifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ca1732734ce54bb6947529bb93e1e353",
+      "statement": "effectiveSetCount rounds a multiplied set count up (Math.ceil) and floors it at a minimum of 1, so an odd deload set count rounds up rather than down and every prescribed movement retains at least one working set.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/periodization.test.ts#L56-L61",
+          "version": "repo-lines-v1:sha256:8005aa9d06198ce064046ee56aeaebff2eea3fce989c1dc8fd6b2dbe9a5e4fc0:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzIyMzg3ZjkwYmNiY2EzNmM4MTBjMTE0NTE3MTM3MDhiZmNmODBiMWI3OWVjZmMyYjY5MWRiZjkyZmI4NmEwOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2EzZTQ2Zjk0Mjc2YjZmNmY0ZWQxZjAyYWY3OGJlZjZhMmVlMWM0MzlkZDU1ODRiOTczOTQ4MzEzMjE0ZDJiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjc3OWQxMThkNmUzY2JmNDUwNTM5NzQ4ZGVlN2E0MzA3YWNiZTY0NDZjYmEyOTdmMjc2MGZhNWQwYmJhMWJjMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjJhZDgwNmIxN2I0NjJmYWVlM2U5Mzk3MWRmYzgzZGVjNzU5YWIyM2Q0ZWRkOTJlMjc0N2Q1NTgwOWEyNjYzNiJ9"
+        },
+        {
+          "resource": "repo://src/lib/periodization.ts#L26-L30",
+          "version": "repo-lines-v1:sha256:f9379d634109c656ae02aec37ea58b70e0d5762df38cf71f9660a2c9dc38df8d:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWI5MTQ4NDI2MjkzM2YyNTcyOWIwYzY2NWY2ZjAzMWQ4OTExNTdlZTQwY2E3MTcxNzQ1MGQ4ZGE1NjI0NmZiZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjRkMWQ1NzY1MzY0MGMxMzU5Y2JhMTIxYTU4M2Q3ZWU3NTg2OGY4NTA2YjFlNDBkM2FhZmQ4ZjIyNDYyMTg0YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODU0ZTY4ODQzYjI0ZDQwNDIwODFlN2ZmOTVlMmU2YzRmZjc4ODZkOGQwNzA4YWVjZTc4M2YzY2Y3MjUxMTdmZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d1c277de24374199bdbd6c4400f279a0",
+      "statement": "validateProgramPhases is the single shared authoring-time validator called by both the builder's client-side check and the saveProgram server action (and exercised by the templates test suite); it rejects out-of-block or inverted week ranges, partial RIR pairs, out-of-0..10 or inverted RIR ranges, a phase with neither an RIR nor a set-multiplier override, and any two phases whose week ranges overlap, returning human-readable error strings rather than throwing.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/program/actions.ts#L72-L77",
+          "version": "repo-lines-v1:sha256:1503738e509c09eff8bac4567ed97917ccbab042bd00cde00f1cfd7cddf79d94:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjE5NmZhNjk0MjQ5OWVkYTBjZjkyODQzZTgxMmMyN2QzNjA1MjY2ZDBkMWNjNmY0Mjc4MDViYTg1YjNmOTFmNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzdmOGNlMjkzODZmYmVjOTE4NWNiYmU4ZjEwNjk2NTk2MzVkMDdkZTU1MWJkYTBjZjEwMGJkNGYyYTQyMWU4ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGMwZjU3ZTA4YjFkZWNkNGVkMmYyZTY4YTQ2MDlkNTI5N2IzZDZmMjliM2M4MjJhNzA4MjY1YjY4ZTYzNzVkZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWEyNmIxMjRmZWMxZmM2YTRlODEwY2Y0NWJjNjAzY2U5NTNkZWI4NDZhYzQxNWIzN2JiNmUzYmY5MTZmMTRjOCJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/program/program-builder.tsx#L179-L186",
+          "version": "repo-lines-v1:sha256:e8d084720259c31565153023083967a86021c9dfad7aacb0beef0a73e0fc0ad3:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGEzZmRmYmRkYzFmYTRiZDdlMWRhYzRhNGRmNWZmNmU2MjUwZjI3NDIwYTVmMmM3N2YzZGQ1MDNhMWQyMjVmYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODliYjQ4YjQ4YmM5NTc3NzA5YWRlYmQ5NmZhMTY1NzdhZWNmNjE1ZWE5MmU2NjA1ZjI4M2Y2MGNjM2Q1ZjZhMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDBiNzA1MDVkMzhjNGFkNWFkNjNlYmQyYTc4ZmJmOTdhOTBmNzliMDlkNDYwZjliNDA0ZWU5NzNjYjZhZTFkYiJ9"
+        },
+        {
+          "resource": "repo://src/lib/periodization.ts#L65-L95",
+          "version": "repo-lines-v1:sha256:d68fa178381802030a314e8e6e607cb9e9fdfffff153670a1fc04d61aa68a9b3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhODFkOGUxM2E2ZGM0NzQyYmNmNTVkYmVhMTI0OTA2MjY3NTZmODk1ZWJhNjI0OTc1MmY4M2EwNzdjMGNlM2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ4ZDY2MDRiNjExZWU5NWY0ZTRmYzhiOGM4YTI4NzBjYTUwOGYxNGJiYmM4NDAwZGYwZWQ5NWM1ZGEyNDdmZWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b8c7624c945f4979ab8aaf0d3196ef8e",
+      "statement": "resolvePrescription is called identically from the live session/next-workout flow with an empty phases array whenever the program style is fluid, since Fluid programs have no phases and no fixed week length, so the function degenerates to returning the base prescription unchanged for that style.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/next-workout.ts#L38-L47",
+          "version": "repo-lines-v1:sha256:7aeb6cae034e4ce439e5474fe4fcb0d41a208dcc8a374d0cc0d9eaf982148e2a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmN2I1ZDQyNGMzOGJhOTczM2YzOWJmODUxMzg5OWI3NTM4NGJmYWYxZWIxNTM4ZDQxZjFhMDQ4Njk2YzY1MzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwY2E3YjYyN2JhN2JkNmQyYWFhNDY1NWM4NTUzZGRjYTAzOTkxYmUxNWEzZTBjN2Q2ZWI1OTk4MTVkOWRkNGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY4YjcyZmRkYTJiNTRiMmNkYzFmZDBhN2E2OTZlNWUyNDRhN2I4YTdmOWI0MWQ5OWVmNjgxOTAyMDJjNGI2ZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiZDQ5ZGQxZjIzNzg5MmI3MGQzYTFjODdiZDEwNjFiYTYxZTc3NjM4ZmE1NDk4OWUyYmI4MWU4NzUxMTVkZmUifQ"
+        },
+        {
+          "resource": "repo://src/lib/periodization.ts#L40-L63",
+          "version": "repo-lines-v1:sha256:5b7ba383b720bd4e4a957ae0516944c444bbcb7b9c94b462d061d8b145d5c01e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiYThiYmU0YmNkOTIyOTMxOTgxMTBhODZhN2I5OWZjNjA5NWEzZDEyNjJhN2RhOTIzZjg5NDAwYTA1ZGRhYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2M2M5YmE0MGNjN2RmOWUzZmFmNGYzMWY4NmM0NWViYzMzODAyYjUzMjc4ZDM5ZTAxNzExOTEwYmFhM2FlNzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUxZmU2NGYyZDU4NWI1ZjA4OTc4OTZhZDE2YjMxODJiMDY1MTJlNWJlOTkwZjRkOGM4N2I0YTYxZDBmNWIzY2MifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4c4a6aac627244f38d18a5c3b402be7a",
+      "statement": "Exactly one program per user can be active, enforced at the database level by a partial unique index in addition to save_program and set_active_program's single-statement conditional UPDATEs, so the invariant can never be observed mid-transition with zero or two active programs.",
+      "evidence": [
+        {
+          "resource": "repo://docs/PROGRAM-TRANSACTIONS.md#L184-L187",
+          "version": "repo-lines-v1:sha256:c3f94d91b38bfd837374c4a9dd60eeb3c7107d32ad838ee8b7d0ded0bee6b334:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGFlZWEzMjk1NWRjZGYxMDg4MDU4MjBjNGZhMTk5ZGVjMGUzNmQ0MDgwNWE5YWEwN2Q1OTZhNWEwMjU3ZDc4NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjU0MjJlMDgxZWZkMTU0MDEzMWU3MDg2MWUzOGIwOTQ0NmM2ZGMzNTRiNjRlN2Y2OTlmNTVmN2M2MjRjZTRiYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGFmMmUzZjQxMTk2NzdlNzBkNzhkOTYyZjg0ZDYxZTBmODU0YWJlMTllMWQzNDQ1NDVjNTRhNTljNWY3NzM0YyJ9"
+        },
+        {
+          "resource": "repo://docs/PROGRAM-TRANSACTIONS.md#L57-L67",
+          "version": "repo-lines-v1:sha256:c37a01ed52b3a0fbe5addfa260caf610ffb03ae9a64e860457275892fa7b6368:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlkNjE1OGIyZTQyMmRlMjc0YzU0ODg1Yjg2MTY3YzE2YWVmZTNjY2YwZGMwYTIzMDkxYTdlZTc3ZTI1YmNmOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0Njg2ODlhNDNhNmE0ZmVhNGZhZmNhZmRmMzIyNGYyNWYyMWRmZWMzNzE3M2ZhMmM4OWI4MjczZTUwMTUzMmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5OTBlODk2NTJhYjdiOGQ2OTM3NzIyMGVjNmYwYjczN2FkMWY0NjVjZWQxNTI0NTI2NDAzNmFkYzY1NTMwMjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1ZTM5ZTU2ZmVmNjA4MDQwOTMxMDdjNzg0Zjk2YTdjMTZhNDg0MWI3MmI1OWE1MDAyZmYxMzIwYzdmYjYyOWIifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

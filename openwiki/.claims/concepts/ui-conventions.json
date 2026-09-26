@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:94caf0ca83bd1f5de93d1b878962f8d37d7bf009b370277b520532b24e24f898",
+  "claims": [
+    {
+      "id": "claim_80e3c8b4e96a40d493c3ea02a601e3cf",
+      "statement": "src/app/globals.css defines a near-monochrome design-token palette (--background, --foreground, --surface, --border, --border-strong, --muted, --faint, --accent, --accent-foreground) with light and prefers-color-scheme:dark variants, reserving color for semantic meaning only via --overload-up, --overload-down, --calibrate, and --record tokens.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/globals.css#L10-L43",
+          "version": "repo-lines-v1:sha256:795a7029a09c2c4ca58c692f202d16d159e7d5a484a23427a38b3ab15821f07a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlZWE1MDRiZjIwYjQxYzQ3MjlkM2NjZTQwYzIzODUxZDNhZTk1YjUwMTdlNmIwYTFhOGNhMzg1ZWIzMzU3YzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmMWE2MTViODg2NWJiZmEwNDMwNTE2MDljYzIzN2IxZmVkOGZlNzc5N2I1ZmM1YWRjYWZmYTJmMmM1NjA5ZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmNzgwNGE5MWQ0NTM1Nzg2Zjc1MDQ3ZGYxOTBiZTUwOWYyYjkxNjI3YzViYjg3ZTAyM2VkYjYwMDcwMmNjYTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a21deecf24374c63b11503fa6964902e",
+      "statement": "Tailwind's @theme inline block in globals.css re-exports the raw CSS variables as --color-* tokens consumed by utility classes, aliasing --color-danger to --overload-down.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/globals.css#L45-L62",
+          "version": "repo-lines-v1:sha256:5197dad529071ef289bfe358dbda7667224c2220d64f66f3466a508b50c5918e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlMTU1YjVjMjJkYWUwMWI2NmRiYzRhYTE5ODcwMjdkNzI1NmExOGVjNDViNWNkOGE0YWY3MWNmZDU5NTZkYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlYTEzM2IwY2NjNWJiMGMzZTBmMGJiZWRkNTg3MThlMzU2Yjk1ZTJjZjM0MGViMDgxZWJlNWYwMzQ0ZjBmYTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcwMzA5NzVkNmI0OWU4MGU5NTIwMmFjYWYzYmNlMjA1YTM2ZGIxZmVlZjFmMGQ5OTA2YzE5NzY1ODRhZGNhYWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3cf7c7fd4b9045d1a38737af8104c19d",
+      "statement": "The type scale is fixed to four steps (--text-display, --text-heading, --text-body, --text-caption) plus one named exception, --text-recap, which is reserved for the finish-recap hero only and is not a fifth general scale step.",
+      "evidence": [
+        {
+          "resource": "repo://docs/UI.md#L7-L8",
+          "version": "repo-lines-v1:sha256:890d8ef9c459bc9bbcdeee891e40fa8deaa1f65c41fedf0d1857b1a2d8fb3aad:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWZiM2E0ZjViMWMwZTExZDlhODg5M2ZlOGIxNWQwOTQ1N2Y4N2NmNjhlNDNkMmE2ZmNmZGNhNDAxOGU2NTUwYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDIxMGJhMDQwOGQzMTM2ZmRlNDU0YjdiNzFhOTUxN2VlNjU4Nzc0YjljYzAxMWU5N2NlNTc5YThhZDMxOGJlMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2QzM2EzOWUxNDY3ZmU4YTgyZDRhZDU0NGQ4YzU2MGNmMjU2ZTU1ZTBhNTgzMjNlMmU3Nzc5NTA5OTU3YzA4OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDc2Yzc1ODk3MWQ3YTU0MjUwMTk0YmYxNGQxNDVkZjgwYTZjZWJjODgwZjIzYmM0ZjFiMDZiMTgyYmZmM2RkOCJ9"
+        },
+        {
+          "resource": "repo://src/app/globals.css#L64-L82",
+          "version": "repo-lines-v1:sha256:46d195305a26b96ea74e374c22e11f75f8237ab10fdd85b64fe1b2d82b367e2f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmNzY5NWFiYzIyZWYxNzFhMmIyNDQ3MDk3NzdiZmQyZTE1YmE0YzdhYjk1YjFjOWZjMTA1MjY1M2MwNjk1YzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI0ZDBhY2I5YTcxY2EyMTZiOWQzNGMxZmEzMDQxNTdmYjY2NzY5NGI3MjJhNzM0ZDIwMzcxNzRmMzk5MjRlMTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ5YmRkYmM5YTFkNjBmNDkwY2E4MzBmM2M3MjI0N2E1YzAwYmQ1ZTlmMjhiOTIyMTIxMGQ2NjIzOTM2Nzk3ZGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a540fbf700fa481e906be87ec820a3eb",
+      "statement": "The app uses exactly two border radii across the whole UI: --radius-card and --radius-control, applied via Card and control classes respectively, and a single capped content column via --container-page (max-w-page).",
+      "evidence": [
+        {
+          "resource": "repo://src/app/globals.css#L83-L89",
+          "version": "repo-lines-v1:sha256:a3a64374ecc1bc624489ee4b7111da891844f5634d8f7dc1e777ae11911c8c63:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTU0MzNiYzdiYTRhZWI0NzA4M2E3MTc3YzYxNzdkMWEwODg4ZDQzZThkZDI2OWIwZTZiNTk4MDlmOWQ3ZGIzOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTM5ZjM4YzIwODBmZTU0NmFlOWU5ZGIyYzQ3ODE3ZjA1YjZmYjRkMDE5MmVkZjQ0MDgyOGY2Y2RkNzVmZDFkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTgyNTVjNTA2ZmJjMWUzZjljZTQxODJkOWNlZWMzYWVkOWY3ZWNhNDQ3YTNjZjM3NzczNTZmZmI5YmNhNjQ5NyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_df2105a168ea425e9418dfb0a501aff1",
+      "statement": "All motion tokens (animate-tick, animate-row-in, animate-rise, the sheet transition, the skeleton pulse) animate only transform/opacity in the 150-320ms range using one easing curve (--ease-snap), and a global prefers-reduced-motion:reduce rule collapses all animation/transition durations app-wide.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/globals.css#L218-L226",
+          "version": "repo-lines-v1:sha256:6c3307112e730c938ed3ddd5bc7489d98261205f1e5dbb7f1d9de53812dc883c:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTNhNjk3NDE3MjlhZGU2ODVmODY3YmFkZjk5ZTY5NzI3ZmQ2NjA5YzhkY2UxOTdlMjA2OTEwNzEzNjU0YzY0NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDI3ZGJkZjE4ZTk0OWE4NDAwYTExMDEwNmIzZWQ0MmQyNzQ2ZGFkNTg3ZWNlNTRiYTg2MmU2MGIyMTA5MmQ1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://src/app/globals.css#L90-L129",
+          "version": "repo-lines-v1:sha256:e73889ca212a80896960d573ca87b4688870e841639dc258480a21406a45d92f:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmZDUxODY4YzRmMGI2ZTcxM2QwMDQzNGFmNDYyNzllNTQ2ZDVjMmYxNzEzMDg2ZGJkNzkxOTBhNTRkY2ZkN2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiM2M1MjcxNDY2ZDUzZTE2OWNlYjg4ZmYzNWIyZTAxOTZlNjIyMGM2OGQxNzM5YjRmM2M0NWUyN2I2OTYzM2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwOGEyYjU2YzZjYWExNDUxZDAyMmJiMTJiNmZlOTRhOWI3ZWJmN2RiMWFmOWM5YWU2NjE2ZWVhMzNkZWVjNTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_67e16595493e4efda82573bf20e22f39",
+      "statement": "Sheet is the app's single overlay primitive: it drives a native <dialog> with showModal() for a built-in focus trap, and unifies Escape (dialog cancel event), scrim-tap, and a swipe-down-past-90px drag gesture into one dismiss() function that sets data-closing, waits EXIT_MS (250ms) to match the CSS transition duration, then calls dialog.close() and the caller's onClose.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/globals.css#L162-L184",
+          "version": "repo-lines-v1:sha256:766316ed120ebe5585da7032d6f4bd0fff61f5625959518f8e070d86b9c77a03:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViNTU2YWNiZjVlNzAyMWUxZThmYTNiOWI1MThmZGQ2ZDZmMjk5NDliMjIxZjA4NDdlMzg1ODQ2YmRjZTM2MzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiYjljOGU2MDQxZjllMjNmZWY1Yjk5MWVjYTkyYWI5MGNiYTdmZDEwNDMzOWQ1M2FlZGI2YzVmZmZkY2IxNDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE3YzBkYTVlZTgzYWUyZTE3MzgwZTUwMDdjMjVkM2YzNGZhYTQzMGEwN2EzMGRlYmMwN2I4OTZhYzEzMmZlZDEifQ"
+        },
+        {
+          "resource": "repo://src/components/ui/sheet.tsx#L1-L108",
+          "version": "repo-lines-v1:sha256:4b3bf44bf1e24a902b75372a10a8cf951c2e7dc419390338d2d4602a8becc3e6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0NWZmM2U4NWQ2NzE1YTdhOWQwZjZjMWIzMmYzMGNkOGNiMTQ0Y2M3OWM4YWJhZTk1M2VhMTM3ODg5ZmFlMmRlIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_7617495dbe82428d8a14e039c4698c01",
+      "statement": "Sheet exposes its dismiss handler to descendants via useSheetDismiss()/DismissContext so inner controls (e.g. a Done or Cancel button) trigger the identical animated close as Escape or scrim-tap; callers must render Sheet conditionally and unmount only after onClose fires, since unmounting immediately would skip the exit animation.",
+      "evidence": [
+        {
+          "resource": "repo://src/components/ui/info-button.tsx#L33-L59",
+          "version": "repo-lines-v1:sha256:11218182c1a767664aaaccef85d658d8afcecb2f2f142cf3682f370e1a195456:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzMjE3ZmVkNjljZWZlNDA1ZGIxZTY1ZGJkMzk0YmRmMzQ2MTg0YTNjMTRjZGZjNmQ2YzA4ZDllODhiOGRiNGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQyNjUxOTgxNzRhMWMzYWJkMzQ3Y2EwM2MxNDMwOTI0MGEzMTdkMjk3YmMyZWU2NDA3NDM1NTYwN2JhMjAxMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4NjBhMzM2NmM3ZDM2ZGVkZGU0NDNlNWEyOGZmZTQ3MDIxZDQyMTMzN2RlZTZiZTg2ZmVmN2Y5Mjc1MjY3OTkifQ"
+        },
+        {
+          "resource": "repo://src/components/ui/sheet.tsx#L15-L55",
+          "version": "repo-lines-v1:sha256:b9fcc9625f36e4a7334af74c97bf62805dce247283489a4159e108b274bf9b76:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmZWIyZTllYjQ5NTQyMGI1ZDk4OWRjNjlhYmJmMDY5M2NkZDg2NDEwOGViZmM0YWJiYzM1NjcwYWZiOGIzMTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0MWQ2NDZjMWYwNDI5YmRjM2UwODBiMTk3ZDk1NjNlYWI3MDlmZGI4NDkyY2QyNmE0MGNiNzNiNzQyNGYwZjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3MDY2MjQ5Y2RjMTgwZTQ5NGMyNTIyNjAzYjk4ZTViNjc3MmY2M2NiOWZlOGQ4YTgxZmMyYjg2NTYzNWI3NWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5ZGMwNWI0NTBkMjkxZTUyOWZhNWE1OTAxNTQwYTYwZTQ1ZTRmN2U5Y2VmNGYxYzU2YjA3NDIwOTQyMzFhZDIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e26069654b2b46d0a645b0c3ca431b87",
+      "statement": "InfoButton is the app's single ⓘ pattern for helper prose: a 44px circle-i control that opens a read-only Sheet rendering the title as an h2, short body text, and a ghost Done button; info Sheets never carry destructive or save actions, which stay on the originating control's own dedicated confirmation Sheet.",
+      "evidence": [
+        {
+          "resource": "repo://docs/superpowers/specs/2026-09-16-visual-copy-density-design.md#L46-L82",
+          "version": "repo-lines-v1:sha256:825738f85c80ebe0f1f91261f577485cdb8cbcaecd768b1d1fce7ef8feb2f43f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1MzJmMjhhYmVkYzFkNjFmYTZiM2E3MDk1NDllMWFlODcyOGY3ODRhYzNiMTA3NDgxYjZhMDJlNjM4NGIyNjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzYTE5ZDRiNzI5NTgzZDg1ZWY5ZjRlMDhiYzdhZjJhNzRjZjIxZTFjMTAyMTFlMTExZTQwZDc0MGVlYzY1ZDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwMWYyZWMxNzU5M2MxMDU0ZWI0NjM2N2Q4NDUzZWYyNGExNzNjZTk2YjcxMTdkOTFmOWE2OGQ0NGZlZjhiMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEzZjgzZTdkYzE2MzZiMmVmMjI5YjIyYmI5MDFjY2Q1ODJhOTdmNDQxODk4MDE5OGJkNmIxNDQxZDRkYzdmMWMifQ"
+        },
+        {
+          "resource": "repo://src/components/ui/info-button.tsx#L1-L82",
+          "version": "repo-lines-v1:sha256:70d6d5c3d6af107e387920786f7be01c1ccaf87fea2c2282eb4251d179e8047e:eyJzZWxlY3RlZExpbmVDb3VudCI6ODIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d3c51ee545f64d3fb5109363923198ed",
+      "statement": "Button/IconButton styling is split into plain (non-\"use client\") modules (button-styles.ts, icon-button-styles.ts) that export pure class-builder functions, separate from the \"use client\" components (button.tsx, icon-button.tsx), specifically so Server Components can style <Link> elements as buttons without becoming Client Components; calling a helper exported from a \"use client\" module from a Server Component can fail at runtime even though the build succeeds.",
+      "evidence": [
+        {
+          "resource": "repo://docs/UI.md#L16-L21",
+          "version": "repo-lines-v1:sha256:e8c9c2a19f39d0f8864fd0728b7040749621183cd4dc39035ceced86d23aa97b:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGQ5ODM3ZTRhNWFkYzMzZjFmZGRmMWZkYjNmMDE2NmY1NjVhZDA1NGNjYzBkODcxYTQzOWFlOGJmY2M2ZjEyYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjlkMjEwOWIyNThlOWFmZTY1ZjI5OGY2ZGY0OGU5OTU0YTg5MTQzNjEwMGEzNzQwZGYzMzliNDVlZmNmYjA2YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTkxOTYzZmQzZjM4YzQyZjQzNWViMWY3YTJkYTE4NTU4NThjNmRlOWM3Njc3NzBhZDcxNzBlOThhMTc3ZmFmOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmMzMzEwNjYwMWE3ZGZmZWZiNWVmZTkyNWQzZWVlYTgxMWFkYTZlZjAyOWFlNWNhZjI0YTQxOTZlYTNlMWI3MyJ9"
+        },
+        {
+          "resource": "repo://src/components/ui/button-styles.ts#L1-L29",
+          "version": "repo-lines-v1:sha256:4e6f020b122dab1887ee0011a3ed6bbbf3cb961d7521e5c1e0a788a0d0aed4ec:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3ODNkYTdkNmNjODg2MDc4Mjc2Yzc4YzA5ZDA4MGYwNTNmZDc4Njk4YjI3NTFmYjM1NjNjNjQyYzI1MmEwNTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/components/ui/button.tsx#L1-L46",
+          "version": "repo-lines-v1:sha256:190cb4e56a364e19c326138d15351a0340464f7f40b5e8af53c501b29eeb6ce1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/components/ui/icon-button-styles.ts#L1-L19",
+          "version": "repo-lines-v1:sha256:c54d84ee4ab7864d27e1a4ea68b935d46cfbfac0186f186966dbc981bf8d93c5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3ODNkYTdkNmNjODg2MDc4Mjc2Yzc4YzA5ZDA4MGYwNTNmZDc4Njk4YjI3NTFmYjM1NjNjNjQyYzI1MmEwNTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_70f18df16c5c4f2695f1c0e1bb081e3b",
+      "statement": "Button derives its pending/busy state either from an explicit pending prop or from useFormStatus() when the button is a submit inside a <form action>, so server-action submissions show a spinner without requiring local state management at each call site; IconButton mirrors this same pending logic and requires an aria-label prop.",
+      "evidence": [
+        {
+          "resource": "repo://src/components/ui/button.tsx#L14-L46",
+          "version": "repo-lines-v1:sha256:8c05c1dfe63ff3a86ce3f4313da6e516bf552320a65f8b2b219ae4cd71b17ba9:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiYjQzMjZiZmQ4YWY2YTE0ZGI1YWEzYzhlNTk2ZTI0YTBlYzI4OWUwY2Y0MjNiZmQ5ZTIzN2M1NDM2ZDM3Y2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIwNWJiODkwMGM4Nzk5NGI5ZjJjMTU0YmI3MGNiMWJkM2U1YjQ2NDdmZmNmNjY3Mjg0M2NjMTQwYzI5ZjA4MjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/components/ui/icon-button.tsx#L11-L44",
+          "version": "repo-lines-v1:sha256:4a99c55e186a943baebbbd77dfce7d63e48d5ea28e0a35bff3f9145dd619480f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5MmFkNDQ3ZGIzOTU4OWExN2JkZWZkOGU2N2RmYWQ0ZDI2ZTdkYmViYWNjMWI2NTBjMTJlODA2YzcxZmZiNjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmYTYwZjlmZTRkM2UyYmZjYjUyMjFkYWM3ODM3MGMyNTc3YThmOTI0NTBmMWQwNGUwMGQ2ZGQxZGZmNDY4YWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ef6587d12d7a4a9983cc617e338e2a05",
+      "statement": "Stepper implements press-and-hold auto-repeat and value-tick animation by reading the latest value through a ref (valueRef) inside events/effects rather than in render, avoiding stale closures during a hold, and uses a local text draft state to allow transient mid-edit values (e.g. \"52.\" or \"-\") that only commit to a clamped numeric value on blur.",
+      "evidence": [
+        {
+          "resource": "repo://src/components/ui/stepper.tsx#L1-L92",
+          "version": "repo-lines-v1:sha256:e989e59920115684273b6932ac5350524adeea8378f0987f71b5337795d526da:eyJzZWxlY3RlZExpbmVDb3VudCI6OTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE5ZmI4NDg4OGRlY2YwMWE5ZWY3MjkxNDVjYWQzMWJhNmJlZjM3NGJhZDZlZTdmN2Q3NDRlYTY3YzUyMDUyYzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_adeff25b5d5a4ac1aa82a6001edee108",
+      "statement": "Card exposes exactly one shared surface (one radius, one border, one padding) with hierarchy expressed only through a tone prop (default/active/done) using border and opacity, never a second radius or shadow; callers derive tone from saved-set counts and the currently effective phase prescription rather than storing tone as separate data.",
+      "evidence": [
+        {
+          "resource": "repo://docs/UI.md#L25-L26",
+          "version": "repo-lines-v1:sha256:07c51c611f2b30e0d638083c1b6add760568207d9eec81ba9f88e5c62d6e7ad1:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTU4NGMyNGNhODlhODg2NzY0MzE0ODFkMDEyMzQwNzZlOWNlY2I3MzY0NjIyNTRjYzJkZmI3YzRlZjQ5ZjNiYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGJhMzE1NzIwZWIyZGM2OGEzOTEzMzUyMWUzZmVkYmIyYTA4NDhjZmFkNDgxMzhjZjY0Y2MwNzBmMTAwNjFlMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmMzMzEwNjYwMWE3ZGZmZWZiNWVmZTkyNWQzZWVlYTgxMWFkYTZlZjAyOWFlNWNhZjI0YTQxOTZlYTNlMWI3MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2Y4Mjg2MWJmODZmMjcyNzQwMWJmNmM4ODZhYWE3N2I1NDA1MTcwMjVkZDc0YzVhZGE5Njg0ZTc4YjRjMjhiYyJ9"
+        },
+        {
+          "resource": "repo://src/components/ui/card.tsx#L1-L49",
+          "version": "repo-lines-v1:sha256:a78283a3317eea5d8812ff4adb859c3556eb1cb1b91c132cff6419390b9acc32:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3ODNkYTdkNmNjODg2MDc4Mjc2Yzc4YzA5ZDA4MGYwNTNmZDc4Njk4YjI3NTFmYjM1NjNjNjQyYzI1MmEwNTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a8cb4767d4094b87abf1db06745fb035",
+      "statement": "withViewTransition wraps a state update in document.startViewTransition (used for program-builder reorder) so elements with a matching viewTransitionName animate positionally between layout states, and falls back to a synchronous plain update when startViewTransition is unsupported or prefers-reduced-motion:reduce is set.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/program/program-builder.tsx",
+          "version": "repo-file-v1:sha256:b27bf213ac387807213c11485f51ec9ed955fe4cead0943f35aded36086022f9"
+        },
+        {
+          "resource": "repo://src/components/ui/view-transition.ts#L1-L16",
+          "version": "repo-lines-v1:sha256:d68cee945b01c82fb6bae0b8355563b4ea4c844b8cb0ff298a2a66bcb3f70554:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhYTc2ODNmN2IzNzU4MTFjNzM1NjM4MTFhYzY0MmMyZTJmNzQzNTRjYzIxOGE1YWViYTBmNzEzM2MyNjQ1MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8d54ada596c549a0910691e2ce2348df",
+      "statement": "Calendar is a shared, generic month-grid client component providing keyboard navigation (arrow keys, Home/End, PageUp/PageDown) and grid/gridcell ARIA semantics with a markers map for day dots; it deliberately does not own mutation, replacement-conflict, or error handling, which are left to specific callers such as the weight calendar.",
+      "evidence": [
+        {
+          "resource": "repo://src/components/ui/calendar.tsx#L1-L102",
+          "version": "repo-lines-v1:sha256:7a94894ab805c5fdb1b69be5dfbe29e3c5b196973986c24111d5a526f938152a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0NWZmM2U4NWQ2NzE1YTdhOWQwZjZjMWIzMmYzMGNkOGNiMTQ0Y2M3OWM4YWJhZTk1M2VhMTM3ODg5ZmFlMmRlIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_fb43d3983e194f91934ba2c4869facb7",
+      "statement": "src/app/(app)/layout.tsx is a Server Component that performs the app's auth gate (Supabase getClaims(), redirecting to /login if unauthenticated) and wraps the client-side AppShell, embodying the app's server/client boundary: data loading and auth stay server-side while pathname-aware chrome, charts, clipboard, and search are client components.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/app-shell.tsx#L1-L24",
+          "version": "repo-lines-v1:sha256:8cbe9f6fc585fdd8c15ac8dca5676bcd419a4dd0ffe9f9a72b935efbec2c766f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM0MWQ4ODdmNTk4MjE1MmM2MDc3NTkwYjhiODJiNDU4ZWM1NDk3NTU5N2RjY2UzYzczOThjODdlZjJkMDUyZTEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/layout.tsx#L1-L16",
+          "version": "repo-lines-v1:sha256:8c9fdc7f2bbf3716fbeb0117d75144276ce157cb536aedc8e9e7fb365ff53743:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE0NDA0M2YyMTRlODc3MDg1Y2MyNzViYjQ3ODY1YzViY2ZlMDg5ZmQ3YzA2N2E1ZWNiN2MwZTQ1Yzc3MWViYTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_befeac44722f4caab0cd4bd83a7bbd21",
+      "statement": "AppShell renders a four-destination bottom TabBar (Lift, Track, Program, You) using per-tab match(pathname) predicates and aria-current; isTrackPath in src/lib/app-chrome.ts makes Track match /analytics, /analytics/*, and /history/... so Exercise review pages read as part of Track despite their /history URL segment.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/app-shell.tsx#L10-L15",
+          "version": "repo-lines-v1:sha256:0a2193e85f718ec2c9e5054de5fa337a722121924080e6d5fb700505cb0fe576:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODVhMmVhMGI4ODRlYmNkOGI5MGVhYTc1MzcxNDIxMzgzZmJjNzc2MDE4ZTQyYjAwMzQyNDk0ZGE1ZTEyNGFlZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjAyZDJjMGQ2ZGM1ZTc0ZDkyZmExNGI5MWRiZWEyNjQwOTBiZWIzNWZkYjkxODhkOWIzNDExODFkY2U5ZjRjZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjNjYjBhYmU2ZGFmZWExNTk0OTc4YjQ3OTRkMjk5YjI2NWE1ZDVmMjdiMjA3NWRiZDc3MGYwYjEzMTJhODYwNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2QwYjY4MjVlYmFiYzM5MTZiYzNkOTQxMzk3NjgwMTk1ZjEwMzNjZjVhNWY2Y2MzOGNmNjc2MjJjN2E0NmMyNSJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/app-shell.tsx#L49-L78",
+          "version": "repo-lines-v1:sha256:4f02acae7c790361810746082e4f7d88910ce5abd5824c604f4258aa4cae161d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4YWJmMDU3ZjY0YTNmZjVmYmY4NzU4NmEyMWE4MjFjZmQwZmNkMWE2NzgwYjBjZjc0YmE4NTc4ZDk0NGMxOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5NGZjMGMxNzNkMWVjM2ZjNTAxZDdkZmE5Mjg1NTAxYzUyN2NmYjQ3MTI1ODNkYTNjYzM2MTgwNTY2YjRiZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/app-chrome.test.ts#L28-L43",
+          "version": "repo-lines-v1:sha256:28f613527b5b4b43ebea6ddfaffb083b5c70b5c0fd44872c52cf06244a9c9af9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwNzExNDM4MWFhYmU2MTQ4ZDY3Y2ZiOGJkNDA3ZDhmNWE0MmY4NTUyMzZkNWZhYjE4MWEyNmY4MzIzYzI2MGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI3NzlkMTE4ZDZlM2NiZjQ1MDUzOTc0OGRlZTdhNDMwN2FjYmU2NDQ2Y2JhMjk3ZjI3NjBmYTVkMGJiYTFiYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI0Nzc3ZGMxYzQ1M2RlNzJmZDg5MjNhOTg4MTFiMWE2MmFkOTFiNDBkZDJlNTAwZGFlMjlkMTY3NWU1OTk0OTgifQ"
+        },
+        {
+          "resource": "repo://src/lib/app-chrome.ts#L3-L6",
+          "version": "repo-lines-v1:sha256:3641e6a904b7444df978cc0de837121ecf26c64db5c56ea6d0cf6dbe5f1eec1a:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTBjYzgwYjE5YTRlZDg5NzNhYTVlNDU4NDU0ZjM2MDBjYmM1ODFhMzhjYzU5ZjJiMWFkMzNhOTU5MzhlN2E2ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjIsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2IzZWM4MDMzYzNiMDFlNjI3NWFiYzA0YWM0NTIxZTFiZGQ3MTY0Yzk0M2Y3MWRmODNiYjNlZDQ0NmU2YzgwMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTM2ZDQ2ODEwNWExZGEzMmY4NzE0ZTc0MWFlOWNmY2RmMjY4YThjY2ZiMGFiNzAwNGI2YmNkNDM1NTI1ODdjMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_8cf4c715dc0b4879a40acb480f398645",
+      "statement": "hideAppChrome(pathname, search) hides the bottom tab bar on /session/[id] (including its /session/[id]/recap finish recap), /workout/next, /program/new, and /program/[id] when the mode=edit search param is set, because each of these routes owns Home (and, for recap, View recap/View workout) as its own sticky exit instead of the tab bar.",
+      "evidence": [
+        {
+          "resource": "repo://docs/UI.md#L50-L56",
+          "version": "repo-lines-v1:sha256:4689162a26a338fe9482680939cb37d4ea05afc959752221920856728ab1dde6:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWE3ODUyOGFiYWNiYmJiMTFmZTE3ZWJlYWQwZWY5NDk2NTc0YTY1YzQ1MWMzZDI2ZjFhN2ZkZWFkMjdkMjA3YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDM1NTc0YjE1N2I3NDQ4ZDIyYjI4OTk5NmUwYTQxMDM1NzcxNmRkNWM5MmY4OTdlZWZmMTAxNjJhZGY2OTEwOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDU4YTBlYzdlNmJkNGQ0MjA2MzRjZGFjZWMyZjY4ZDQ5ZTUyYmJkN2E4ZWM2ZmIwYzA5MWQ3ODNjMjkzZjE2ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjBjODA4ZDcyYWFmMGU2ODc3NzIxYzZmNzM1ZWQzMGJiNmNhMTdlMGUwYTU2YTE2MTczNTQzYTMyNjRjNzE3MiJ9"
+        },
+        {
+          "resource": "repo://src/lib/app-chrome.test.ts#L4-L12",
+          "version": "repo-lines-v1:sha256:f77fcf73f453d2c4057da32f34e1af908e26aa07b69a84105edc9eeb51b2bcd7:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTE0NmRkOTE3MzM2MmVkZDQzMjMwMzE1YjI0ZjFmYzNlMTM2MzVjM2E4MGM0YjE3ZWEzYTEwZTcxMmQ0MTY0NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2EzZTQ2Zjk0Mjc2YjZmNmY0ZWQxZjAyYWY3OGJlZjZhMmVlMWM0MzlkZDU1ODRiOTczOTQ4MzEzMjE0ZDJiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDVlZDBjZTE1YjVkNzZlZWU5ZThhYWEwYTQ0NjE3NDk4NDdjOGFkMjVmYmEwYjFjNmNhMzUxODg4NTRhYzk4NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTM4NjgxZWVlNjcyZWJlMDk0MDY5MjRmZDVkZGFlY2MxYzA0MjYxYTZjODYzMDVmOGUxYzdkNjcxNmYyNzhkYyJ9"
+        },
+        {
+          "resource": "repo://src/lib/app-chrome.ts#L8-L17",
+          "version": "repo-lines-v1:sha256:d3d52787e90bcf6f888f411c1c51904f6027b161e6c2cf9e87ca18ef61dd91e8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlMTQ0ZGM4ODUzZTllODJlOTFiY2Y3YzkzMmJiZWU3YTc1YzMzYTg1YTY2N2Q2YmRjM2QyYTU2NzUzOGU0ODEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA1ZGFhMjkxNzkzZDczYWRkZjRjZDM1NWU3OTMwMmM0OGRjNGQ5MzEzMjQzNDE3NjdmNDcwYTdiOWY3NjM5M2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE2NDcxM2NmZTlkZDJjNzI1M2JjOTQ5OWZkMTFiZTFlM2I4ZjMyM2E1MGZiZTJlZWQ3Y2UzZjM5OTU2MDY2MDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5b08aa7093604964b6950da2effe7b68",
+      "statement": "AppShell evaluates hideAppChrome with only the pathname (inside a Suspense fallback) before useSearchParams() resolves, and only re-evaluates with the search string once search params are available; this means /session/*, /workout/next, and /program/new are hidden immediately on navigation and never flash the tab bar, while the mode=edit branch (the only one needing search) can only apply once search params resolve.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/app-shell.tsx#L17-L30",
+          "version": "repo-lines-v1:sha256:53fd17e9570938d710305c14a78afbf4405aaf8da3f94c234c706f8b7ab64fde:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3OTAyODY4YzI4ZTZjZDMwNzdlMGRkMDg4MjgyZDI2Yjg3NGZkMWIzMGYzZDZjMGY0YzgzNWE0MjQ0ODkwNjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI0OGYzZWE5ZWFiODk0M2M2MjE1NjFhODdjNDdiMmVkN2Y4ZDQ5ZmRjMGNkMDc2YzM2MDJiNTU2MGVhODk1NmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ2MjQxNGNlYmEzMjA1NjNjZWE4YjJmODUyN2RlMzg5NDRlNGJiYzMyZWU2Mjg0NTY0Y2I0Y2Y0MDhhZDc1M2EifQ"
+        },
+        {
+          "resource": "repo://src/lib/app-chrome.ts#L8-L17",
+          "version": "repo-lines-v1:sha256:d3d52787e90bcf6f888f411c1c51904f6027b161e6c2cf9e87ca18ef61dd91e8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlMTQ0ZGM4ODUzZTllODJlOTFiY2Y3YzkzMmJiZWU3YTc1YzMzYTg1YTY2N2Q2YmRjM2QyYTU2NzUzOGU0ODEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA1ZGFhMjkxNzkzZDczYWRkZjRjZDM1NWU3OTMwMmM0OGRjNGQ5MzEzMjQzNDE3NjdmNDcwYTdiOWY3NjM5M2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE2NDcxM2NmZTlkZDJjNzI1M2JjOTQ5OWZkMTFiZTFlM2I4ZjMyM2E1MGZiZTJlZWQ3Y2UzZjM5OTU2MDY2MDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2efca0c9c49846ec807215728a507fad",
+      "statement": "Pins are a per-user display preference layered on IconButton and Sheet rather than a core data concept: PinButton is an optimistic, useTransition-driven ghost IconButton with aria-pressed calling the toggleExercisePin server action, and PinEditorButton opens an edit-pins Sheet listing compound/extra exercises with search filtering; unpinning a default compound hides its tile while pinning an extra adds one, and a cap of 8 pinned tiles is enforced server-side inside the toggle action.",
+      "evidence": [
+        {
+          "resource": "repo://docs/UI.md#L56-L59",
+          "version": "repo-lines-v1:sha256:f40d2dd8aac0a10f65fd1b45f61269dda83b5d2e74caf5618c80d4ab191f3ff2:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDM1NTc0YjE1N2I3NDQ4ZDIyYjI4OTk5NmUwYTQxMDM1NzcxNmRkNWM5MmY4OTdlZWZmMTAxNjJhZGY2OTEwOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBhNTJlNDA2NmFmMmQ2OWZiM2RhYmRlZTgyYTJlZjZkNjU4NThhN2U5NjEwNDY5MGQ4NTY1N2QxOWI0YTViMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmFiNzliYjZmZWQxMWU3MzUxNmI1YzU0NTQ4MzQxYjMyY2UwY2UzZDk1YzE5ZWZmYTBmNDQyNDM5OWY4OTI4NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjkyZmFkZDc4OTBlZjViMmE4NjUwMDVlZTU0MTNmNDg4MmNjZTQyNTkzODNlYTk3YjcxMDRlOTQ3YjczMzVmYyJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/pins/pin-button.tsx#L1-L45",
+          "version": "repo-lines-v1:sha256:82b324a0ecbba005e3251a85097ad0ad8a098315d8c7842bde0073b6e1d4308d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/pins/pin-editor.tsx#L1-L60",
+          "version": "repo-lines-v1:sha256:e2b45de324c1927f4a9a5c5c84d4577c4c642b769c97eb6257675dbaf0d9bedd:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ4NzY0OWJkMTBmNGEwMDY2MmM2MTg4MDg0NjQ1MDVjYTdlNTNkNjZjY2QzYTgwMTMxMTVjYzZkNWQyOGRmMjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlMTJiNjExODk0M2UzMGMwMDY4MzNlNzgxNjMwYTUzYjMyZjQxN2VmNWY5Nzk1YzNmMTJmMzMwODAyNGM1ZDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1ff10f9b3c93455b8c5ff584de4e7355",
+      "statement": "The active workout's rest timer state lives in the session/[id] layout (not a leaf page) and is driven by an absolute end timestamp mirrored into sessionStorage, so a logged-set data refresh (e.g. PR/e1RM chip updates) cannot clear it and a hard remount can resume the same countdown; the session route's loading.tsx and error.tsx both render the same rest bar so navigation or error states never visually drop the timer.",
+      "evidence": [
+        {
+          "resource": "repo://docs/UI.md#L69-L76",
+          "version": "repo-lines-v1:sha256:e6b18362935290841340c4748789cb176d4d69ace1007bce6d07c5aa38585a24:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWQwOTY2YmU1NjYzM2U1ZTU4MTMxMTQyNDNkMmJkYzRjYzBjOTU4ZGVhN2E1OGU5YzE3NjE5NGE1OGIyOTQ0ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzIyOGE2NGRhYjZjYzA2ZGUwMWY0YTlmZjAzMDA1NTgyMTNhMTY2NzEzNWM1ZTc5MGEyZTdiMmZhOTdlN2NkZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTI4ZjE3NzU3ZTBjOGY4ZWU2ZGU1MDkyOWVkOTg2MmJmYTllNTczYzhlYjAxNWM1ZDBhMTEyYThkZGJhYTljZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGRjY2U2ODFhMmMyODc4Y2MzZmU1MGI3MTc5YWE2MDBlNzJmNDU1NTgyNTliZTQwY2Q3MjU1NGVmOWU3NzlkNCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_6dcc8d40b96848c08700ea1d71ef1f7b",
+      "statement": "Copy-density rules require: fixing unclear labels before adding captions, deleting developer/implementation notes (Web Audio, Notification API, Coach internals) outright rather than relocating them, moving how-it-works/legend/rationale prose behind the single InfoButton-to-Sheet pattern, keeping privacy/consent copy in dedicated confirmation Sheets rather than the Settings card surface or an InfoButton, and capping any other visible helper text at roughly six words or removing it.",
+      "evidence": [
+        {
+          "resource": "repo://docs/UI.md#L34-L48",
+          "version": "repo-lines-v1:sha256:761f131854b4a0784a137da7d869c5ffde8d359b39f1f16a6e623b6a1603ed73:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjZjQ4NTYyZjg5ODVlZWJmYmYwYzlmZjdkNTk5YWEzYjZlYjQ0N2YyNGE4NzQwOGZjOTFjZjc1YzU0NzhjYmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3ZGVlZDA4ZDBlN2IxY2ZhYTQxYWI0ZThiNjVjZjUxODBmMTM5ZjQ5ODU0MjNkMDJkZmRkMjUzYzFhMzIxOWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImViYTcwMDgyNTRlOTU2YzdmOTc2NzMxNzg1MzRjMTllOTAxNTEzMWJlNmQxMGY4OWI4NzA3NDFiZjhhYjE5M2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI5NjlkN2VlOTQ4MTc3YzkwNDNlY2QyOTY5MTQ5ODgxZTYxMjhiMDJiOTY4NDdlYzM4NTZiZjZjMzljZTIyMjYifQ"
+        },
+        {
+          "resource": "repo://docs/superpowers/specs/2026-09-16-visual-copy-density-design.md#L16-L43",
+          "version": "repo-lines-v1:sha256:52ed511534c0089919fe1c8823894c7bba946f27ae278838b90fcacaa24f9ea7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1YjIxZDRkMzQ4NWE4ZTMxZDVjNTM3ZTE4ZGI2OGNkNzdhOWI4Yjc2YWNlOTllZDA0M2IxMTk4YTdiNjZlZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwMWYyZWMxNzU5M2MxMDU0ZWI0NjM2N2Q4NDUzZWYyNGExNzNjZTk2YjcxMTdkOTFmOWE2OGQ0NGZlZjhiMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE0OTExN2Y1ZDMwYzgxOTc1ZmI5OTVkZTM2YWVjMzNiZGU3NDE4MWU2Y2UzZDYyZTQwNGYyMjA3ZmI4YTQxY2MifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_898bd8d05fb240c4b975e37ac04435a9",
+      "statement": "The rest-complete-tone Settings checkbox is the canonical worked example of the copy-density rules: its caption explaining Web Audio, notification permission, and vibration behavior was deleted from the visible UI, and only the short why (two beeps in this tab; vibration is separate) survives, moved into an InfoButton Sheet next to the checkbox label.",
+      "evidence": [
+        {
+          "resource": "repo://docs/superpowers/specs/2026-09-16-visual-copy-density-design.md#L108-L141",
+          "version": "repo-lines-v1:sha256:58e717b08dfb88620823ac681d8b516d9f6126d0d4729093bf3488b3b1b120ca:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzMjE0OGEwMTc0ZTgwMDFhMmU5MTYyZTY4OTZhNTIxOWQ4YTc4ODFiNTE4MDA0YzQ4ZDFmNzYzMDA5MzE5YTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmOTEyNWZjOThjZjQzZTRkN2YwZTdjOTkwZGY1MmY0MjBkOTE2MmM4Mzk0NjE4ZDRjMzhjZDdiMWViYTNmY2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwMWYyZWMxNzU5M2MxMDU0ZWI0NjM2N2Q4NDUzZWYyNGExNzNjZTk2YjcxMTdkOTFmOWE2OGQ0NGZlZjhiMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3ZDkxMGE5OGU4NWNkMGVlMzYxZDE5MGU4ODczNDQzMTQ2Y2ZkODdhNGE4MjA2NjdjODA5ZGFhZGFjZjNiNTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_464598d3ba5242c8837d281902332557",
+      "statement": "The finish-recap screen reuses the animate-rise motion token for its hero number and record rows with staggered ~70ms delays, and record-gold styling (--record) is applied only to rows corresponding to an actual entry in workoutRecords, never to a no-record finish.",
+      "evidence": [
+        {
+          "resource": "repo://docs/UI.md#L31-L33",
+          "version": "repo-lines-v1:sha256:eba7008254e956c7f97673178534c19e9015131be6d10f89b870741bf8ab193f:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDU1NThhNzdlMDZhZGM3ZDc3OGNjMGUwOTE3MWMxMGIzZmRmYTU4ZDVlZDI5NDE4M2I5NmQxZGMyYmQ1MzBiOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGYxODE1ZDI4MDdiNzA1MmNlYTU3NmM5MjIwOTQ1ODU5ZjljZjA3ZTU0NmQwYTk1Mzg0MjZlN2ZiNjcwNjA2YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTJkY2Q5MGIyMmY0Njc1YTc2Y2ZhMjQ1ZjNiN2E5NmZlMmU1OTAyNDUyOWExM2VjZGI2N2JiZjBlN2JkMzJiYyJ9"
+        },
+        {
+          "resource": "repo://src/app/globals.css#L118-L129",
+          "version": "repo-lines-v1:sha256:e643f4561c84088aa7bddbf6a4b6e62bc32664a067ef7638b8dd53be17519866:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1ZThjMjcwYTA5YmY4NTMwNzM3ZTAyNjg3ZjliMDA3NzZlMzZmNTNhM2IyODVjYzQ2OTAxZDFkMTc1MjhkZmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk3ZDg2MzJlNTRlOTI5OGFiYjk1ODcyN2UyZDUxNDA4YWJhZjEzNjYwMzUzNzkxMDE0MGFiZjY1YjMwYWI2MTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwOGEyYjU2YzZjYWExNDUxZDAyMmJiMTJiNmZlOTRhOWI3ZWJmN2RiMWFmOWM5YWU2NjE2ZWVhMzNkZWVjNTQifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

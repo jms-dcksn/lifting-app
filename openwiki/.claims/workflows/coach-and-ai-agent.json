@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:9aa64852620fac0dd8ad6ac66dd34430a0254d02035924c0d83fbdcaa76eada2",
+  "claims": [
+    {
+      "id": "claim_3cddfa2821bf4377a14849eaf501f453",
+      "statement": "buildCoachCheckInReport() in src/lib/coach-check-in.ts is a pure function: given sessions, working sets, program days/slots/phases, the exercise catalog, and bodyweight context, it returns only facts and classifications, never programming recommendations, and never mutates training data.",
+      "evidence": [
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L1-L9",
+          "version": "repo-lines-v1:sha256:510c46f27e7099c8103389654d1951ad36feffadc3e4f320c02e2063084db490:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjMyZWU4ZWIzYjc1MmRlYTQ4NjZkMTBlMWU0MzBkMTc2NWUyOWJiOGRkM2UzNTM2NmE3ODMwZDA1ZGUxMTE1OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjRjYzQ3MWUxZTE0YTU5NjNjZDBmODIzMWUxZDAzYmRiOGQwNGYxMjkwN2E5NzE5YmMzYzUyZTJiODIxYjhkYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWYxNWQ4YjYzZjc4OTJkZmQwNTFlMTkwMzAwZjk2NjVmYjRjODgzODg2MmI5NWNkNjg0ZmU1YmQxY2ZkNmU2OCJ9"
+        },
+        {
+          "resource": "repo://src/lib/coach-check-in.ts#L250-L301",
+          "version": "repo-lines-v1:sha256:3d1b2ab67f8cc413f9afda8036ea62a5108cd91f3075311b4ae5e7c69930e4cf:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMyMDg5ZmUxYjQ5YmY5ODMzNWJhMTYzNTBiMjdjOTZmMjAxNGM1OTUxNzgzYTI4ZjliMDFiMWJjNzE2M2NlMzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY2YThhY2U1MGIxNzM0MzY4NDM4NTQ2NWQxYjNhMjI0NTE3N2IwNDAxMmY4MzRlZDY3YjMyZDU5Mjg3MTExYTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMxNDI0YWFlMzFlYTFjZjFjZmVlYzhmYzA5MzRiZmU5MWQ5ZTA5OTFhNGY1M2U0MWIzYmE1MDk5MTZiYjFjNTMifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-check-in.ts#L93-L105",
+          "version": "repo-lines-v1:sha256:df329ee2b1a930733913ebc55fd824b3d7801d381d0eb08c3d706ee04ed8f872:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3ZmVhMDc0Yjc1ZjA3NjhhODg3MTgzZGRiYTgwNDcxZjRlZTFhNDA4MGRiODhkNDdjOGRjMTM0NDA2YjhiODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3MGJlYTVjNDcwNjZhMDNmZTQxY2FiNTcxMjc4MjE5ZTlmMzZkMGU4YzQwYzZkYzEwYjZiZDA2N2E1ZWYwOGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4YjM0MWQ0MjI1ODFiZjYyOWUyM2UwNTcxNzVhZjIwZjk1ZmQ2OTZmNWU5NmQ2MmI0ZGVlYTU3ZGI4ZWIyMGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6614eb787fe543cc9586e18e92039833",
+      "statement": "The CoachCheckInReport uses America/Chicago as the default reporting timezone; the current window is the seven calendar dates ending on generatedAt, the prior window is the immediately preceding seven dates, the two never overlap, sessions are windowed by performed_at excluding future sessions, and only sessions with finished_at contribute to execution metrics (open sessions become a data-quality warning).",
+      "evidence": [
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L11-L19",
+          "version": "repo-lines-v1:sha256:60ec8ce20b8bd4bceed3162e0027e6b48e1ab06a946d42bf573d7ef1dbd5e150:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWIxY2VkYjU4OGM4ZTVhMjNjNzM3Y2Q4OWRiN2IyMTAyN2M3NDI2ZWEyMTVkMTExMTM0ZGNkMDM1NzY0OTkwNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmNiYTZiNGJmMTc4ZDRiMGY3Y2RkMDBhZjc5NGNkNWFlZGUwZDY4YWIxM2NhMDVjYzFkYWM2ZjA3NWQwYzBhNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDljNzYzMGMxMTM4MjBkOWFlOGIwZjM1NWVjMjQwZWM0YzBmMmY0MzkxNjZjNWFiYzkxMDViOTk1ZDRmOTIwYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmY5YzdlY2ZlODg4NzI1Y2ZmNGU3ZWNjN2NjODA4ZDBjNjk1YzRhMDE5ZWNkNjMxMWU2OGM0OTVmMjk3NzVhZiJ9"
+        },
+        {
+          "resource": "repo://src/lib/coach-check-in.ts#L253-L263",
+          "version": "repo-lines-v1:sha256:4332514a18acad270b4399e80bb4a1791474a17d6bff32daf36598c09e1ad9cc:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcwNWQ3ODlkOTRjMGMzMTdlYTM4Y2VhYzU4MDNmNDQxYjZlNTFkMmU0M2M2NmVkZmRjYTA0YjhiNjU1M2E2Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYTJjYjI1YTEyMmI0NDIyMWE2MjM0ZWM2NjBhN2I1ZmI3ZjliZGU3YjNiOWUyYjNjNTU5YTBkOTZmYWM3MzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjZDY1ZTFiZjNjN2E2NWMxM2FkOTZjNDAxZDgwNjIwODkxYzg2NmNhMjc4MTlkMjIyYmVjYWQ2NWVjMWYwMzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJkYmE1MjlkZTVlMDYzMmY2YjAxM2IyYTY4ZmYyZjRlYTA1NDc2OTRiMTBhNGNhZjU0MzVlZjUzZWIyY2E2MjIifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-check-in.ts#L9-L14",
+          "version": "repo-lines-v1:sha256:88210ba02ef6760ef4aa9a93748ac686e0e7f2eadbcaf948f889bbfbb46f727f:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYwNzZkMDhiOGZkZTczZDI4MTE2MThiNTBlNmY0MjdmZTU4MGNhOTI5Y2RiZDM3NzU5YTBiZjY1ODFjYmNiYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmQ2Y2Q0OGEzZjcwMGU1N2RhYTNhNmFlYzJlMmVlNzg4NjYyZjIwNjFjNTg0YWIyYmZlNDA2ZTg0YWM0MDU2NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2VjNGFkNjNiY2VkODAyODZiMjg0NGRmNWNlMzY1ZjRmN2EwM2UxNjZkNzcxZTNmMzE0NjhkYmIwOTE0NmZiNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWI4YmJhMWY4ZjI1YTY0ZGJjNmZmYWQ2ZmEzMGZjOTQwYWMyZmU0MTJhYzk1YzA0ODc4NzJkOWNiMTgzZWE0ZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_8e6d0385c7f843bdad4d6b7e0583f313",
+      "statement": "Duration, set-execution, RIR-execution, and hard-set/specialization metrics in CoachWindowReport are computed against the historical session's stored week_index (so deload set multipliers and RIR ranges apply to that exposure), with duration excluded/flagged outside 5-240 minutes, and each specialization group additionally reports prescribedSets (schema-1.0-additive) skipping prescriptions whose target RIR floor is above 1.",
+      "evidence": [
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L21-L38",
+          "version": "repo-lines-v1:sha256:f5c920e7ba69ce7fc1058cdfc025f2704cb281d5bae73bf51b2060e183f7f869:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwNDI2M2QyMmM0MzRmOTc0MGVmMjdiNjJkYjA4OGNiNGI3NGVhNGVjMjhhMjkyOTRmNWVmNTU2OTI2NmFiNmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiMjlkZDZlY2FiMmU4N2IwZTNhNGI3OWJkYzFmNThkMjk3OTI0NTJiZWNhNThhNzcxZDdlYmNmNDJmZTM3NjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI5ZDk0M2VjNzlkZGM3ZTI3MGQ3ZTk0OTE4YjZmYTMzYWFmNDliODJjZTFlYjgwMTAzOWU4MmExOGIyYjgzMDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFmNmQ1YTNhOGZlZGM4MDkzM2JlODViNzg3YjA5YmI3YTA2YjM2ZTQxMDhjZjMzYzg0YjQ2ZWQ5OGIzMDJiMmEifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-check-in.ts#L161-L200",
+          "version": "repo-lines-v1:sha256:b00654dc0a35a728471f6952e474baa96d055db1f012dabe3ae48f851097956a:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhMDU3MTE1MGRhODFmZTAwYzMxOTBhZjA0Yzc0NGQzOGI1N2ZkZTA5OGNiYTgxNWMwYWM0OWY3NmM0ODVhNTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhMzg4YWMyNmY2NDkyOGFmZTFhNDk1NjBjMGUyZDE4NDMyOWFjMDczYmQ2YjYzMmUxYzQ0OGZkMGMyOTRkYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMzNzg1ODExY2Q3ZTZkZTg1ODU0ZWM3NGU1MzA5NjBkY2M1ZDMwMjc3N2Y3NmE4OGQ5MWI3M2ZkZjc2ZjI5NjcifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-check-in.ts#L33-L50",
+          "version": "repo-lines-v1:sha256:45964a9aca8136b1f07dead957ce8e759091cb1d03bc833ddd08468f4307e473:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjYWY1MDhlYzRkZWYzYjdhMTdlMmYyZWM3ZTQ3ZjU5YmUyNGI5NGQ1MTBmNjc1ZTdjYjk1NjE3N2FlMDdhYTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhMWQxYTYzMzkwMjI5Yzc5ODM0N2U4M2EwNDA1NDQxYzk0MDAwMzUyODRhZDE2OGMxYmY2Y2RmMWQ3MGEzNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5NDVlZjg4YTgyNDBlNmZkM2EwMTMzM2VlY2U3MjRjMGY2Y2NkY2YwZmU3OTczYTUxNzllYmM2MjM1NWViYTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU3N2NiNjVmZjkzZmMyMjRmNjViM2JhM2ZmNGI0YTFkNGUyZDdlOTYyYTczNTU4OGVkOGJlZTE0ZTUzN2RhYzQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_325739054ed14873888964f12bb7e7b5",
+      "statement": "Exercise trend classification requires four completed exposures with valid e1RM values; gaining/declining requires both of the last two exposures to clear both of the preceding two by a 1% noise margin, otherwise the classification is flat, and fewer than four valid exposures yields insufficient_data.",
+      "evidence": [
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L54-L60",
+          "version": "repo-lines-v1:sha256:46d279df2366a967bc745f15f77ae0048a832f3ea648d841319050dbc57b6dc8:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjNjZGY0NWZkMjQyZWI2MjdkOWY3MGVkZGFmYjA1NGYzNmU2M2VlY2NjMDM1YTNkZjY4MTI5YTY3YWM5N2VmYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDk1YzMzMGU3ZjU3MjRiMjAzMDMzYTM1OTkwZmRhMTY5MmUzMmY5ZmQxMmJlNTI4NDM1MTk4ZmEwMjQ2MGFiZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWZkYjExODcxM2U0MWY4Zjc1MTE2YTFmNjJiNGEzMDkxNDU3YjFlNmRlMDVkY2E4ZmM1MmM5OWI3OWZjZTVmOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjdjMjZkNTc5MjZkM2ZhMjY2MGY5ZDA0YWMzNTMzZmNlZTA0NmU4YzhhM2Y5YjVmODhiN2E4Y2EwMDNkNDU5NiJ9"
+        },
+        {
+          "resource": "repo://src/lib/coach-check-in.ts#L202-L211",
+          "version": "repo-lines-v1:sha256:2093704011fd639cb9e63a3709ccfddc811ff11b6201bdca6f48810eb0e168dd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzYWZhZjRmYjg1MDNkZDA2YjQ4NmMxMjZlZmE3YThkMDk3ODhiMGEzMDNhODliZjNmNzA1YzI1NGE1MjhjODciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg5Njc4YzNmOGQ2NDBlMTgyNTI4MjM2ZmMwOTU5ZDgxYjgxZGI2ODFhMzNjYTFiZjVhNzI2MzI3N2Y3NTU2MWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_00c97ba9244d4c52895a249b354f186c",
+      "statement": "CoachCheckInReport never includes email addresses, auth claims, user IDs, session IDs, program IDs, program-day IDs, or program-slot IDs, and consumers are expected to key on the version field before relying on its shape; the report re-resolves the current slot definition against the session's stored week rather than snapshotting the prescription at workout start.",
+      "evidence": [
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L62-L72",
+          "version": "repo-lines-v1:sha256:5d047d5e425c393999d7f40acf60708e1f093c7b457b20ccc83ac4aac0493138:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3MDdlY2ViOTcyMjQ5N2Q5OWYwZGNhNTc0NzAxM2YxY2JhYjQzMzY5NWM4NTU1ZGY4NGMwMGU5N2Y2NDYxOGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiMDVkYzZmODYzZDI3OWViM2QxYmY2MWY1OGQxMjQ1MGE0ZTU5MDQ2YmZlY2I1MjVkZWExYWY1MzE5ZDA4MjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMzMmIxMTBmNjEzM2IyMTdhODEwNzQ4NWM4NTU2ZmRlNjgzMTMxYjZiYTk4OGMxOTBhN2EyNjIyZDQ4YThlZWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjODZiZGMzOTk4NjhmZDg3MGQ4YWExYTNhYWY3YmIzNmJiOTFiYzExNDU0NTFmY2ViMzJkM2YwYjZhYzI2M2QifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-check-in.ts#L224-L248",
+          "version": "repo-lines-v1:sha256:f2a70e6ecc0e2214258c5d989acb43694db8a5f397e1aea90e1b6cdde7cdb29a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiZGNlZTg5MGQ3NTE2MjRiMGIzOWRkMzI1MWJkODk3YWFkNmIwMjIxOGI2MTM1ZDI5ZTg0YTMyMWYzNTgwNjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgxNGI5YmY3NDY2ZTc2ZmNlNDllMzk2ZjlhOTM1ZjRlYzk5M2JhZDZhNTg3ZDRhMDQzNjZkMGU3ZTY4YTY4YjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcwMjNjNjgwYTNkYjNhNjc2MThhMzBhYTJlMTg1MWE2NWM1MjMyYzdiMTg1ZWMwYzIzNGE0ZWZlZjc5ZjMyMzcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ececaff0fd124a4896507aa8eb2a7622",
+      "statement": "buildCoachRecommendations() in src/lib/coach-recommendations.ts is a deterministic layer, kept separate from coach-check-in.ts, that consumes the canonical report plus the same raw rows, delegates normal overload to sessionTarget(), and never mutates a program, slot, set, or session.",
+      "evidence": [
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L99-L104",
+          "version": "repo-lines-v1:sha256:8369dcd070b3ae616693f99f884f650c62e635c069c3cefaee8d3d8323b2d511:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTlhYzNhNmZjYjY5ZDUyMjFhMzk2NWRmNjU1YWQ5OGRiM2ViMjU0OGEyZTQwMjBiNTM2Yzk5ODUzZjExZjg0NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2VhNGIzMDI4OGZmMTIxY2Y2MzlhZjZjNGRiZGZmZWJjZmI4MmU5ZTY2NWFkYjUzN2Y0YTA0ZmFkYWU0MGNlMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzZkMzExNWQ3NjlkNWI3ZTZhOTI5OWM1ODNlMzExYzA0OWRmNzQ0M2M5OTI4OGZlZDRlMzBhNzg2MGY2Njk2YSJ9"
+        },
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L93-L136",
+          "version": "repo-lines-v1:sha256:e0e8dac6c1b6ed2f93b3a29ab76c5053b43d4752c78f39049d46246e32120c40:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxOTQ3ODQzMzUxZjA1MGJkOWMwN2RhY2JlNmNlY2FkZTcwNDFlMThiNDFkYWU4MzUwMzRlMzEyNzAzM2VmMTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgxZmRhZmM5OWUwZWJiNmFiMmRiMjU4YWUxNDk1MGViNjQ2ODE1NjFkMzExOGIzM2ZlNzAzZjY5YzRhMmNhODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwMmYxYmZkYzQ2ZmViNTVkMTM1MGFhOWJjZDMxODFiNzUwY2QxYzZjMTkzMDgyNzk2NmE4YjBjZWE5MDUxMmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8db8a321da1d495ca383300eaa15c8a9",
+      "statement": "Per active-program slot, recommendationForSlot() applies a fixed guardrail order: significant joint pain in the current window suppresses all slots and returns a single pain_review recommendation first; then an effective deload phase (via resolvePrescription()+isDeload()) returns deload_hold; then two consecutive harder-than-target first sets return an effort-based reduce_load; then a stall-report plateau whose latest stalled point matches the latest exposure returns plateau_review; then one down exposure (>1% below only the immediately preceding exposure) returns keep_movement instead of a plateau/swap call; only then does normal sessionTarget() double progression apply; a slot with no finished linked exposure returns insufficient_data instead of a cross-exercise estimate.",
+      "evidence": [
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L105-L121",
+          "version": "repo-lines-v1:sha256:959baa1667f769895d70b5fb2a7a7ee656332cf4694d055808207cd2eac514a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNjYmNkNTRhYWZjNjM4MGJhMjhmZTkzODAzNGJiNmExNDRhYTFkMjZkYjI5MDdjODRmNWNiODI0YWQ4N2M3ZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1NDMzODcyZjQxY2U5ODc4ODVlYTk2ODFjMWZiZWRkNDU0OWU5ZGNhZTNkODJiNDA4NmNlMThjZTFkNzJlYzMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiNzA1MGNiOGZmOWQ5NDAzODhhMzFkZjM5OWYyNWNiMTI5ZDczMDNkZjVkYjU4NWJlMjYxZDhmYzY4MWViYmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQwYmFjYzJjOWViNTBiMDA2MmYwMWJhNmE1NDkwNjU5NzBkNWEwYmFkMDUzODZjZmJiMjhlMWZjNzA0NzJiYzcifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L192-L349",
+          "version": "repo-lines-v1:sha256:9e67bf882f96052d36f88954eb20d39b5172c6f8ed7554f8dcc14ff3410075c5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTU4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJhYzQ1YjJkMmFjZTVmNTMzODcxYTFkMmU3YTBhNjFiOGEzYjhkNDY2NDdjNDg4ZmY2Njg2MjAzZjg4MDlkNTIxIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIyN2U1Nzg4ZDVkOWQ3M2QyNGE4MWRiYzBhNWE3NGJmYTgyYzljM2IzYWY5OWU1MmFmNzk2ZTkwYjQ2OGE4YTNkIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI5Y2FiZTdhZDdmYjMzOGIwOTVkY2EzZjNkODllNTQzNDJlMjBjZGZlM2Q3MTU4YzBmZmJlMGI4YmU1M2YxNjFjIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJjMDBiYTE0NjFlMWZmZTljNzViNDRiMDY4NmM1NDhhZGQ1ZmFjOTI5ZjcyZTFjYjg3NGY2NjZiNjIyZTRmNmE4In0"
+        },
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L98-L136",
+          "version": "repo-lines-v1:sha256:83bec3275ec1401cfe362d9471574776f4f5b88306c8033eac09c1942e4fdaca:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3NmFiMGJkODI0NWI1OWQzYzEwMjBmYzAwN2UzMzkwZjU3YzA5NDk5MjlkNjBmOTdlZWQ3NjllYjkwZmIxY2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiODhmNTlmMjEwNDRmNWZkMTlmN2IxYTQzNGU4NzFkMDZjZDY2NzRmMDE5NWZlNGFjNWVmNzMxZDI0YjNjNWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwMmYxYmZkYzQ2ZmViNTVkMTM1MGFhOWJjZDMxODFiNzUwY2QxYzZjMTkzMDgyNzk2NmE4YjBjZWE5MDUxMmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8183c6cd453444eb858aa65770f9ac64",
+      "statement": "sessionTarget()-based progression in the recommendations engine anchors on the slot's latest exact-exercise exposure via selectProgressionReference()/exerciseProgressionReference(), so a stronger first set on another program day after that anchor can advance the target but an older all-time best cannot; a first set below rep_min yields a rep-floor target with load recalibrated from observed reps/RIR, and generated targets never prescribe reps outside the slot's range.",
+      "evidence": [
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L105-L114",
+          "version": "repo-lines-v1:sha256:486361112683ddd8dc6aa4f7aea3504c16cd2c4283f83bf79a3fb6c2c88ec731:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNjYmNkNTRhYWZjNjM4MGJhMjhmZTkzODAzNGJiNmExNDRhYTFkMjZkYjI5MDdjODRmNWNiODI0YWQ4N2M3ZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0OTEzOGVlN2Q2ZTdmZDVjM2E5ZmMxNWY4NmM0NTAxZmE5MDQ4NjBhNDViNjBlZTk1MzQxYWVlY2U3NzgwNDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiNzA1MGNiOGZmOWQ5NDAzODhhMzFkZjM5OWYyNWNiMTI5ZDczMDNkZjVkYjU4NWJlMjYxZDhmYzY4MWViYmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVmMjgzYmQ0M2ZjZWY2NGQ0M2E4MTAwNjhhNjRjMDA3YmQyY2U5YWI5NDBlNGRhZDVkN2UyMTA3NDcyYTMyZDEifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L298-L422",
+          "version": "repo-lines-v1:sha256:a1628921991baeead287730e84bc9f11b457f017f22dc5d4714739fe0313e549:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0YTgwZmM0MTY2Yzk1MmE5YTA1ZjMxYmI2MjE0YzM0MzRlNDQ2MDc0MzY1NzQ0NjhlNzcyODc2NzE5ODNhZjU4IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIzYTNlNDZmOTQyNzZiNmY2ZjRlZDFmMDJhZjc4YmVmNmEyZWUxYzQzOWRkNTU4NGI5NzM5NDgzMTMyMTRkMmI3IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI1ZTEyYjYxMTg5NDNlMzBjMDA2ODMzZTc4MTYzMGE1M2IzMmY0MTdlZjVmOTc5NWMzZjEyZjMzMDgwMjRjNWQ5IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI1YTM1YWIyNjVlMTUzYTZkZjMyMDJmNzZlZjYyMmM0NGQwZjkxOWY4Nzc3OGY4N2FlZmUyNTk0OGIyZWUwNjBjIn0"
+        },
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L425-L456",
+          "version": "repo-lines-v1:sha256:70072d95fe8df3e47cb30c9c135895320e6b56902a5451305e6308953b2dd78c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwM2U1NWRjMTM2YjI4NzBiODM5ODdiZDU0MjQxMTc3NmFjNGVlMzljNTNiY2E1YmY4Yjg0MzY0Yjk0ZDc1MmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkMGYyZDNhM2FhZGEyNzU4NjQ1NzhkMGE0MzkxNTYzOGQ1NDNmZWNhMmM5NDg1OGRiOTQxMjExZTg2Y2VmMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM1MWU1NjI0ODdlMjZmOTZmNGVmMGU2ZWY5YmJhMmQzYzQzZmI1NDk0ZGMzZDcwMTZlNzEzMTM2MDMwOGUwNjcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_96dec0752b154e2eb7d517c3c2423851",
+      "statement": "Every CoachRecommendation carries an opaque key computed by stableKey() from kind, slotId, exerciseId, latest evidence timestamp, action, target weight/reps, and summary, so a new exposure produces a new key; recommendations also carry program-day context, action, rationale, evidence window/count/summary, confidence, dataSufficiency text, and priority.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L31-L52",
+          "version": "repo-lines-v1:sha256:fb614d94d9992e8a61595acecd10f2f83784d3faa558b9a955a387de3c42925c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYxM2JkMmE5MzAwNzg4ZTkxNzgzODkwOTMzODc4MmVlZWEwZDg4MmIyZjhkZTBlNjM5MDIyNTg2YmYzMjg1NjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlZDFiNDJjOWMyMzI1NmEyOGMxZjJlZDkzNmZkNmQ2N2E3OTcyODAwNjhjNDQ5NWJhMjBlMDM5YWUxZjk2NGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFiNDViODIyYzIzN2YyZjQ1MDIyN2RjZGY5ODBiYzZkYmJiMjMzMzU4NmNjZTI5ZGZlZmU0NDg4MjRkNDcxNGIifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L540-L571",
+          "version": "repo-lines-v1:sha256:334500fe66bf2f12079ed4cdc4ef13300f6837996dbcb2dbc09f696491d9e08d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjllOGU1ZjQ2ZGVjMTRmYTU3ODIzYTQxNzRjMjA2ZjAwNzdhNzg4MGFjZjZjYmJlNjYxYWE4Zjg3ZDNjNGVhMjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYTJjYjI1YTEyMmI0NDIyMWE2MjM0ZWM2NjBhN2I1ZmI3ZjliZGU3YjNiOWUyYjNjNTU5YTBkOTZmYWM3MzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmOGRhZjk0NmJhYTk5NWM3NTAyOTVkZGQyNGVlMDM3OTBjZTJkNjQzOGVhY2Q4NDViNjU4ZTAxYjhiMTNlNTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRhZTBhZDI0OGM0ZmM1MGY5ZDVhNzAwNGEwY2U1OTZmNDQxZDY5ZjIwZGZjZDgwZjYyNTljNTEyYjIwY2MxYmEifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L589-L598",
+          "version": "repo-lines-v1:sha256:36e745faef1cfd4fcfccd90d6887282a93d6c5405d52b09ce2ae287189907f8d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhZWI2ZmExZDg5YjQ3Nzc2ZGZkNTZhZjEyMmY4OTM3ZDFmYTQyZWZmYTgxNzY2YThhZjI4OTU4ZjBhNWM5MDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1YWI5ZDNmYmNkYmJlMWQ3ODFjYjA5ZGFjYjZiMmQyMDg2MmNhYzE1Y2M5OGY4Mjk5ZWE2MzdkMzNiMDdmYTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNiZjFhNTgyOGEyNjU3OWIwNDU3N2IzNzllMjkyZmUwNWI4OTFlNTk4ZmI1YWIzM2M3ODk5YTU0MWI2ZWY4ZjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_508f991f3e34420da7b5c0116a96e154",
+      "statement": "rankCoachRecommendations() scores each recommendation as CONFIDENCE_SCORE[confidence] times kindImpact(kind, isCompound), assigns priority \"now\" to pain_review or any score at/above NOW_SCORE (16, e.g. medium-or-better add_load on a compound), otherwise \"next\", and sorts by score descending with slot order as a stable tiebreak; formatCoachRecommendations() and the UI render mixed lists as Do first / Also tiers, and double progression is never reinvented by ranking.",
+      "evidence": [
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L139-L144",
+          "version": "repo-lines-v1:sha256:2139805673e77deb5ae7dafdd3da44c75606379be7a3eb776c892ed767d91b60:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDJhNWI5OGMxZmVhMThmZWJhNGY0OTY0MjA2Mjg2YTIxODlhYzNmNjUyMmUyMjQzOThiMjhhYTkyN2UzNzY3NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTIyOTBhZTEzMGQ0MmM1NmZhNzUzZDg2ZGRjMjMyMWViMGE4N2VjOGYwMWVmMzY2MjFkYmE0YWM5Y2FkZjk1OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmVmM2JlNDU1NGY3OWQ3YThhYmUyZGI2MjUxNTU3ZDRjMzdjMDJkODYzNjdkMzBhOTNlM2E4NDlkNTJlZTZlOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNhYjVkNzY4MjliMmY5MmZiOTY3ZDQwOWI4MTg4MTViNTMwOWQwZDU5NDk3NTlmNmMxNmI2ZDRiZGQxNjU3OSJ9"
+        },
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L604-L617",
+          "version": "repo-lines-v1:sha256:edfb421411f0b1382fd92b2e4964e39e644766e62fc165073db3485bee6fa905:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzZTdmOWM4ZGFhNzgyMzY4NmM4ODNhYmFjZGIwZjU3Y2MwYzJkZTVkOWI0Yjg3NzQ2YjIwZDQ1NmFiOTk2ZDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0MTA0NTVhMDc2ZDhiNGRjYzVmZjdmOThmMDA0YmE1M2Q2NzIzMTNmYTczZjg4ZDQxOWJlODAyZTZjN2IzOWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQyMjBmZmU3ZjM0ZjE3NjI4MDE2MGFhMTBjZDBiNjBiOTFiMGVhNThlYTlhMjljNGM1Yzg2NTE4ZGM2YzFhMzkifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L65-L181",
+          "version": "repo-lines-v1:sha256:26d62c741a33762ea16b2d4e6cc8e4581572be6297d329d1173918a260326b8a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIyY2Y4YjdiZTQzYjNmNjRmYWY5ZWYwYjIyMmI2YzhlY2I2ZDM5ZmYyNjQ3MGIzOWU1MTdhNTU5YjhkNDQ3Y2IwIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI4ZTllOWU4YWM0NDBmMjhhZDA1MDQxYTMzODYxYTdmMzE4MjIyZmM4YWNhM2JhNTY0Y2M1ZDgwODlmODgwMzBlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJiMTkwNDJkYjc2NmZmNTYwYjA4YWRlMDRiYTlmNWU1MDhlNGM4NTcyNTgxY2MwOWY3NTZlYjA1MzJkZTNiOTE1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_cb43077877d6482e98e53b0cc21f8ae0",
+      "statement": "Accept, dismiss, and defer decisions write only to coach_recommendation_decision; pendingCoachRecommendations() filters out insufficient_data/insufficient confidence, accepted/dismissed items, and deferred items whose deferredUntil has not passed, so a deferred proposal stays hidden for 7 days while a new exposure's new key produces a fresh, undismissed proposal; the API and clipboard export retain the full diagnostic set regardless of review-state filtering in the UI.",
+      "evidence": [
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L125-L137",
+          "version": "repo-lines-v1:sha256:3a9b03a304c5c2efd97bf1d30d2500ca548389d8f608599c026fcbc6e9c95d6f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmNDA0OTVjZWQxOTk4ZDExYzQ1YTJlM2IzY2E1YjQwMzdiNTI2ZjQ0MGZlMzBjNGNmYmMzNzA3NWI2NWNlOTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzMzkyNDMwZTAyMGM4OGQ1NWUzNWVkYTI5YWQ4YWUzMmI1Zjk5MWU3ZjhjZTY5YzBhYzA2MDkwYzVkNWJhNDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQwYmFjYzJjOWViNTBiMDA2MmYwMWJhNmE1NDkwNjU5NzBkNWEwYmFkMDUzODZjZmJiMjhlMWZjNzA0NzJiYzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkN2MzZDYxYmE4MzhmODZiMTAyZDU1YzZiMjhhMzcyMmM1OGY2NGU1NGIxYzNiNmUxYzdiODVjNjdmYjM5OWQifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-recommendation-decisions.ts#L1-L32",
+          "version": "repo-lines-v1:sha256:608a99bf6d4a0bd092b08bda6dbc0a9e7e83788fec3c2c1e4c1eeda5aff0a472:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxOTIxYTA0MGU0YTFkMjkzYjM4MzE3ZDBiMzg2MzYwYzZhMGFkMDQ2ZjdiOTM0Y2RhYmEyOWNkNjI2MjBhOTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1260f410c2b148e79b580bbc422e6af4",
+      "statement": "createCoachWeeklyHandler() in src/lib/coach-api.ts fails closed with 503 when COACH_API_TOKEN is missing/under 32 chars or COACH_API_USER_ID is missing/not UUID-shaped, before any credential check; a missing or mismatched token (checked via constant-time SHA-256 digest comparison, supporting both an Authorization Bearer header and a ?token= capability-URL fallback that cannot be overridden by an invalid header) returns an identical generic 401 in both cases.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/coach-api.test.ts#L49-L89",
+          "version": "repo-lines-v1:sha256:8fa4ffdb3b413e8a7ab3e27f7dff5f318e4e37cade2126a25d2f57616d2bccda:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiNmZlYThmNGMzYWNmMWM3MDlmNDVkNTBhY2Y5YjhkYWI1MmY2OTBlNGVkMTNkNDk0Y2I3NTVhZjNiYmFmMDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYyNjgxMWQ5MDI2YTdhOTQ4ZTFhNTNmNzRiMTk0ODIyN2EyNGE0ZTViZTZmOTk5NWM1ZGI5ZTM1N2U2N2RjYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyYTdhYTdhMGFlYWViNzBjODVmY2YxOTM4MWNkMmY1OTk3YWFkZWQ5YjRkYjg3ZTg2ZGE1NmVjYjcwNjMyM2MifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-api.ts#L27-L85",
+          "version": "repo-lines-v1:sha256:2b6cb239e3083f61db9ec1f00b020d83b602bcae1a7b71e016d2bb1b5f557759:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4ZmY1MWVlOGRkOWQ3NjFjZGZjOWYzYWU4MGZkNWM2YTc5ZDNiODRiYTE3OGQyMDhmZjNmY2U1MTQ1YmE4NzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxNWM0MGQwN2ZjYWM2N2E0OWUxY2ZhZDM1Mzg0ODdkMDUyMzdkZGJkNzBlOGFmY2EwZGVmZDljNjNiZDk4ZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjExM2JiN2E2NjI5NTM5N2Q4NzM1ZDMzNzRjNTMxNzgwMDZhNTk1ZTRmNDk0NGE0ODIyNjNiOTVlZDMzMTg2NjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8a939095cff147d1bca5c6b01cfa34c3",
+      "statement": "The weekly Coach API always sets Cache-Control private/no-store/max-age=0, Pragma no-cache, Vary Authorization, and X-Robots-Tag noindex/nofollow on every response, and the response body contains no internal identity fields (userId/sessionId/programId or snake_case equivalents).",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/coach-api.test.ts#L96-L99",
+          "version": "repo-lines-v1:sha256:18affd0f2eef744dac9c89a361a0fc6b28f0c7cd20f71ac904f11c06485320f8:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjkwN2EzNGU1ZDRjMDM0ZTQ5YjEwMDQ5Y2MxMTQxMjBhYmRmNzMyOTAxZmFiOTQ2ZWY2YjBkMzVlNjg4MTAyMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2EzZTQ2Zjk0Mjc2YjZmNmY0ZWQxZjAyYWY3OGJlZjZhMmVlMWM0MzlkZDU1ODRiOTczOTQ4MzEzMjE0ZDJiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTlhOWRhNDA1YTNiZmUxOTE0MmEzZGYxYjNiZTQ3MDZmZWY4NjIyMTZjZThjMzQ0NTY3MGUyOWRiMmI1N2ZjYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjZmNWI0MGIxNTg0NTdkMTc4NjRmMjE3OTA3ODZkZDVhMmVjZGI2NGI2NmE2NTFmNzg4ZDRlMjVjZDMzMDNkMiJ9"
+        },
+        {
+          "resource": "repo://src/lib/coach-api.ts#L19-L25",
+          "version": "repo-lines-v1:sha256:36e5ab9ad0da885b4bab304e5d5fe6eeea24563a7c2fd0681e93b85da9edcfce:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjM1ZjE5Nzc4NTIwZjE5YTQzYmFmYTY5ZWMxODI3YTcwYjRkNGQwZGYwMThjZDliZTU5OWVmZjI5NzhmYzM1OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTc0ZWU4YThkMWFhODQ1MzkxYmM2NzllYjcwY2U3ZjQ2YTNjZDZmYjJkMTZmY2NhNjdmYTE3OGY0ZjhjMWUwZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGQ2MzU1OTg5OTg4ZTMxYWY3YzQ2MGIxYmUyOTQ5MmMyYTQzYmIzNDIxZTFmOGU4YzJlNjIwZDE5ZmNiYWQ0OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjAzZDY3ZWU5Njc2MmY5ZTYwYzA0OWE1YzliZGNkZjJkYTZjOGYzYmM4NGU0NzFhOWNmMzVjN2RmZjlhMmRlZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_6d9ffba8ec4f4e54b48f040e3f055d1c",
+      "statement": "loadCoachWeeklyWithClient() in src/lib/coach-weekly-data.ts builds a Supabase client from SUPABASE_SECRET_KEY that bypasses RLS, but every query is scoped by an explicit .eq(\"user_id\", userId) predicate against the single hardcoded COACH_API_USER_ID passed in from the route, and it feeds the same shaped inputs into buildCoachCheckInReport(), loadStallAssessments(), and buildCoachRecommendations() rather than reimplementing aggregation.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/api/coach/v1/weekly/route.ts#L1-L11",
+          "version": "repo-lines-v1:sha256:49fa0757be9165b735930cf91bd18423a29f20da0dd455241c923fcb8cf12a93:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlYzZjNDUxMDhjMzcyMjAzYTYwNWI1N2U4NDI4OGQwZjJjMDhkOGE2ZjcyNGZmYjY1MTQ1ZWNiNjg0ODQwNzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-weekly-data.ts#L23-L204",
+          "version": "repo-lines-v1:sha256:22201356823f8e92c1b2d55ad51c45e1885976bd854547da20d2d46c49b7ca4e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkY2JjMmVlODVjNTQxYmUxNzNlYmFmN2UxNDBmNDc4ZjllY2NjZmUyMjBiN2MxNDg4YmYyNGVkZTE4NTAzMzc0IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJhMTA4NmFjYjA0Y2UxZWE1ZWNkMTY1ZjhkMDdhZGZmODQ0YWMyMWQyOGIzZTFhN2YxMzZiOTlhMGQyNmZiOWNkIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_a830d1c34e9443ec983b61c7c8957316",
+      "statement": "The AI Coach agent described in docs/AI-COACH.md is specified (2026-09-20) but has no implementation yet; it is locked to wrap rather than replace Track Coach, use LangChain TypeScript in-process (no separate Python service), keep the engine as sole owner of numbers/prescriptions with the agent owning only language/intake/drafts/navigation, and defer all writes past Slice 0 (drafts in Slice 2, confirm-chip startNextSession possibly in Slice 1, live mutations only in Slice 4).",
+      "evidence": [
+        {
+          "resource": "repo://docs/AI-COACH.md#L1-L29",
+          "version": "repo-lines-v1:sha256:6a56dc721961d639e3c2dcb30ae24aa258f8e5b1069351730acd9dfb7f236fd2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMzZkNjllMTUxOTYwOGQ5MjNkNzhiZTA1NTlkMGZkYzhjODNmYTRmZmM0MzBkM2UzMzRiYzMyYjdkODk3NWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmNWM5ZGM0OTlkYmI0ZWUyNWExOWEzOTRlNjlhZjAxMWJhZWRiYzI5Y2RiMzcyMDgyMWMwMDU1NzA2NmEyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ1ZGQ2MTMyMDE4Njg1OGE5NGVlYTY3ODlhNjZlY2MwNTAxYjdkNzk3ODM5OTY5YjA2NmZjZGMxYWUzMDQ2NjcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1895e66abb264cd384ce1f679b334787",
+      "statement": "Per docs/AI-COACH.md invariants, planned agent tools must take the user-scoped Supabase client from the request session and are never given SUPABASE_SECRET_KEY or COACH_API_TOKEN, keeping the agent's trust boundary separate from the weekly Coach API's elevated secret-client path; canonical figures must come only from sessionTarget(), buildCoachCheckInReport, buildCoachRecommendations, groupReviewSessions, and loadStallAssessments rather than being recomputed by the prompt.",
+      "evidence": [
+        {
+          "resource": "repo://docs/AI-COACH.md#L31-L40",
+          "version": "repo-lines-v1:sha256:4830e2a26ae7af6c1c0deadd2cd271e55e300ce380c9111ae8c6b93d7fcecc19:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4ZjY4MjQzMjZiMDUzYWY2NmZiYWJiNjE4ZTc2NzFhMjE0NTQ0MGVjMjM1NDNhMjMyNDllZDQ4YjJiNmQ3MjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1NzY3NmRjNWE4Y2RlNDE5MDRlNWQ2YjkwMWJiOTI1ZDJlNjMyYjMyYjZiMjA0YjkzOTY3ZGM3ODVjYjNlMzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMWVmNDI1ODRlYzA5MDkxMGQxMDZiY2M3N2FjOWE5ZDkyNzVmMWRkNGYwMmM2ZDRlNmI3MzZmNzgxNzNlZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNjYTA1MWZjZGQ1NWIwYWJkY2NlOGE2NDlmNjU0ZGE1ZjNjZTUxMzUzMDUxNjg4YzZkMWUyZjUzMDU2ZDJkZDgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_32c86cad038d4c209d4157a3ec2e88e7",
+      "statement": "The planned Slice 0 schema persists a full transcript per user in owner-scoped agent_thread/agent_message tables with every message stored (parts as JSON so tool calls survive reload), but each model turn only receives the system prompt plus the last N messages (a named constant), not the full history; Slices 0-5 must be built strictly in order and a later slice may add tools but may never weaken an earlier invariant.",
+      "evidence": [
+        {
+          "resource": "repo://docs/AI-COACH.md#L58-L74",
+          "version": "repo-lines-v1:sha256:7bdf924fb15c9721481cbf3720a91c6d9a0b22a04fdca795f640d4d3352458f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4OWJlOGI2ODM3NzcwNmEwNWRkMmY2ZjNhY2YyZTUzZTQ0ZjU5ZmQwZWIxYzA4MTQ0NmJhM2EwMzdmYmQyZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0ODM0NjYxNzU4MDBhYWNmY2VjOGE0Njc2M2NiN2NkYmNhNGVlZGNiNTQ5NWEyYmZiNmU5NzFiZTJmYzFjM2YiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlkMDAwZDZmZGY0YjFkOWJhOTYxODQ1Yzk0YWI4ODlkYzE0MmYyYTJlMTEyOTA2OTRkYzFhZDE4Mjk4NDllN2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmMDIzNGU4NTAzMWUyYjVlNDVhODU3YTg0M2NiZDk0ZTc1MTBmZTkyYjJkMWE3ODk3NGJkMGEzYTQ2NmMyNGQifQ"
+        },
+        {
+          "resource": "repo://docs/AI-COACH.md#L76-L204",
+          "version": "repo-lines-v1:sha256:8558852ff3ab558a5d18f0552db344bbd5509dadb5b831348abc0bca86d1601a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI1OWM0NjYwNWViMGEzZDhiN2JmZmQyMjZmNmIyY2FkOTRiYWE1YzQ4NGNjYTQ2ZTE0NGNmYjJiYWVhMDg3YzYwIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1NDcyMWVjZjJkNWY2NDgwZGMwZDkzZDljZDgxNmI0YzhmZWIxMWQ5ZmNlN2JhN2Y3OGYwNDY0MmJkMDNiMTgzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI4ZjMyY2Q3ZTk1OTVhOGQyZjhiYWRhZTczMzFlZDIwYWU4ZGRiOGFjMjk0Zjc0ZTg1NmNmMWM3YTEwZWRhYjk0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJhYmI1ZmU3OGYxZGI1Yjk5NmJiZWM4MDhhZWJmYjFjODI5ZDEzN2M3NzExNzFiNmM2MzdhYzIyYjE0NTU3NzhhIn0"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

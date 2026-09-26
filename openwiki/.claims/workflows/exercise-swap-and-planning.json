@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:1c1f8866f91aa5686170b7fea9d0f6c42fbc8dec4362624c8a45af1335a10c40",
+  "claims": [
+    {
+      "id": "claim_6baaff457c154f2fb8fa883aaed69147",
+      "statement": "loadNextWorkout (src/lib/next-workout.ts) is the single shared function used by Home, the /workout/next planner, and session start to compute the upcoming workout's week, day, and per-slot exercise/prescription, including folding movement_adaptation rows for fluid programs with the same foldPrescription function the active session uses.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/next-workout.ts#L9-L49",
+          "version": "repo-lines-v1:sha256:ca6413da52d9e884b1f9f50635445bb1a6607bd62acb70bd151bf081ad534ada:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyMjhiMjRjZDgyN2Q1M2VmMmExMGNlYjIyNjM0YmVhNGM1YTlkOWFkYTdmN2I4YmQ3YTYxNWY1MjlkNzZiYzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyNDI2OWJiMjgyZWFhNzk3ZjgxMTViYWFhNTIwYjgzNjIyZTAzZjA3YjI1OWUwMzY3MWUzMjVmOWViMmNjOGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhODc5Y2Q0MThlMDQ4ZjU4ZjEyN2Q2ODVkNzdmMzM4MjgyNWZjY2FkYWY2YmRkMDcxOWU1MTgwYmRkYjRkMjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_49d4ce7a7c074a739ef3ffc29ff7f909",
+      "statement": "loadNextWorkout derives the current week and day from the count of finished workout_session rows for the active program (week = floor(completed/daysLength)+1, day = completed % daysLength), and throws on any database read error instead of silently defaulting to week one.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/next-workout.ts#L14-L28",
+          "version": "repo-lines-v1:sha256:953d1ae609138125351b632fd0812f95d142261707d72dec3e4b6bafdf53373b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlZDZmNmZlZmYwYzkwYzYyYmI2MzU5Njk5ZGRiMzJiYWNlMzFmZjBiOGE0YjFlZmVkNDI1NTQ0NmYzMDJhYjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzYjNkZjA3NzJiNDA5OWM5MzMxYjY1Y2U5OGQ1MWM4ZGNiYzNlMzUwZjMwMTgwMzExZDNmNTAwZTdlZDQ2MWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiZGRmMDlmYTc3OTRmMGEzMjZkZWY1MGY1NDMwMjk4ZDc5NjQ2NzdlZjc3YjYzMTEzN2I5ZDZiZDM5NjRlNmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRhYTQxYjIwZjg3OTc4ZDA4OGVkZGM5ZWU4OWFlNjZlMWI3NTg5M2E5NGNkNTVlOTg3MGRiNTAyN2I1MWMzNWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_128a81317054498ba8fc290c2f47cc07",
+      "statement": "The next-workout planning cookie (next-workout-plan) is written with httpOnly, sameSite=lax, and a 30-day maxAge, keyed by workoutPlanKey(userId, programId, dayId, completedCount); readWorkoutPlan discards the whole draft if the key no longer matches and per-slot drops choices whose exercise no longer exists, isn't loggable, or doesn't match the stored id.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/workout/next/actions.ts#L29-L31",
+          "version": "repo-lines-v1:sha256:2c2d0f5e342e550bb3333c6b08f9f3a49930f27021d4598a4e405b39a5673caf:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTg1OTI3YmRjODMxZjU1ZDliNGE4MzNhZDk5MDI1NzRiNDFhMjkwOTcxNWVjMmRlNzNlNzZmMWE3MWMzODg3MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2EzZTQ2Zjk0Mjc2YjZmNmY0ZWQxZjAyYWY3OGJlZjZhMmVlMWM0MzlkZDU1ODRiOTczOTQ4MzEzMjE0ZDJiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTgyZWQ2ZmVmZDgzYWNjZmQ2OGQwNTRlN2I0YmI0Zjk4ZjIwMjVkYjA5YTg3ZDBjY2VmZDdkMTA1NTNmZWI5YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjc3NTdkM2I2MmFjOTk2ZGFhN2FmNzZmNjI1MTJiYTE5NzM1MGJlNjgzMzJkZjQ5N2I0M2EzN2RjNTAwNWE1NyJ9"
+        },
+        {
+          "resource": "repo://src/lib/workout-plan.ts#L4-L28",
+          "version": "repo-lines-v1:sha256:6e7b100dec3197ce92846d762a8b22391c8f35d2e24baa946c4a1f6b11d86e15:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyOTMwZjhhNjUyNjY1YWIzMmJmNzYxMWZlNzkyMGE4N2U3ZTU1YTJkZWRmNjMyYWM5YTg0MDQ0ZGM2MzgxZWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3NzIzNGEzMTBhODNhZThmMjI3YjhhMWM1NjBmOTNhNzc3MjU2MGFlYmFhY2NiZWQyMGVmMjk5MmI0ZmQwNjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4325042f43f74dd2abfd6f197ad2eecd",
+      "statement": "saveWorkoutChoice (src/app/(app)/workout/next/actions.ts) re-derives the plan via loadNextWorkout and rejects the write if the workout is already open or the caller's plan key is stale, validates the slot and exercise (rejecting non-loggable/template exercises), and rejects the write if the encoded cookie would exceed 3800 bytes rather than reporting a false success.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/workout/next/actions.ts#L11-L31",
+          "version": "repo-lines-v1:sha256:0108925d3517311c51cda08a6bd610903ba696c7a1d6ea7c345f02c732c281c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3YTY3NjNkYmMxN2ViOThlNGY3MzQzZjhlNjIzMGQ5OTFhNDg0ODM1MWUxMzM3YWM1ZjU4ZGMwNTk3ZTQxMzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM1YTdkZDdiMGE0YWVlMGE4ZTU5MzcwY2Q3ZDk5ZWYyODNkODlmOGVkMzgyNTk3MTdjM2VhNTQ1OGNkNWI2ZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI3NzU3ZDNiNjJhYzk5NmRhYTdhZjc2ZjYyNTEyYmExOTczNTBiZTY4MzMyZGY0OTdiNDNhMzdkYzUwMDVhNTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_46356975f70b475f8fc14aeec3bca07f",
+      "statement": "Planning a next workout never creates a workout_session or set_log row, so it contributes no duration, adherence, or training-history data; it only reads existing adaptation state.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/workout/next/actions.ts#L11-L31",
+          "version": "repo-lines-v1:sha256:0108925d3517311c51cda08a6bd610903ba696c7a1d6ea7c345f02c732c281c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3YTY3NjNkYmMxN2ViOThlNGY3MzQzZjhlNjIzMGQ5OTFhNDg0ODM1MWUxMzM3YWM1ZjU4ZGMwNTk3ZTQxMzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM1YTdkZDdiMGE0YWVlMGE4ZTU5MzcwY2Q3ZDk5ZWYyODNkODlmOGVkMzgyNTk3MTdjM2VhNTQ1OGNkNWI2ZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI3NzU3ZDNiNjJhYzk5NmRhYTdhZjc2ZjYyNTEyYmExOTczNTBiZTY4MzMyZGY0OTdiNDNhMzdkYzUwMDVhNTcifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/workout/next/page.tsx#L1-L18",
+          "version": "repo-lines-v1:sha256:6f4d748ff769dfbafc5351c138ecb85c81b0436758c0ba1279207eb14919f14e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE0NDA0M2YyMTRlODc3MDg1Y2MyNzViYjQ3ODY1YzViY2ZlMDg5ZmQ3YzA2N2E1ZWNiN2MwZTQ1Yzc3MWViYTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2fabf322d8714792aab9f5d0b8bcea07",
+      "statement": "startNextSession and startPlannedSession both call a shared startSession(planKey?) that redirects to an already-open session, redirects a stale planKey back to /workout/next, inserts the new workout_session with exercise_swaps set directly to the resolved planning choices, deletes the next-workout-plan cookie only after a successful insert (retaining it on failure), and never overwrites exercise_swaps when resuming an existing open session.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L122-L157",
+          "version": "repo-lines-v1:sha256:7fc7cdce30f0f7cf15913bb78b93c669fd28703ea2298cbecdc8374b9023a1ca:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiYjNlMmJlYWFlMGFhMWE5MzYzYmFkYmFmZGRlNGYyZjkyMzE3Zjg0ZDQ0OWU2YWQyMTA4YzMxZGE5ZTI4MjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5YTQ1Y2VhMDdlZTA0MDNjY2FhZGI1N2Y1NGQwODNkOWM5YWRiNTU0ZGQ0YTQ0NGMwOTAzNGFlNmE3ZDFlYTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAyYTkxZTNhNDY0ODExYjRhNDEyYzU5NWZiNGFjMTQ5YmI4ODcwMmRiYTZjNTkzMzk4ZGVhNTRiYzVmYTZjN2EifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b66c83337025457784b9821342492ff2",
+      "statement": "In an active session, choosing a replacement exercise opens a non-dismissible-while-saving confirmation sheet offering 'This workout only' or 'Remainder of program' scope; Cancel leaves the selection unchanged and a failed save shows an inline error allowing retry.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L320-L336",
+          "version": "repo-lines-v1:sha256:3d434d4ad47bc04a3cff70839c22f59826cfd5dbdc982620f6f44bda73710029:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3YTA5MTRjY2Y4ZjZkMDYxYmJmZmU0Yjc3NWJlYzMxYmQ0OGIwYWVkNDhlNGVjYzAwNTk5ZjI1MTc2M2ViMzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNjOWZiYjA1NDVjZWFhMzk2NWRjY2M4ZGIyOTg2ZmNhMzMzMTA4MDBkM2I4Yzk1NGRhYTAwYTdiYzMzNDI0Y2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJkMDkzZDdkNzhhNTkyOGE0N2VjNjQ3OGIyMWE3NzY2OTE5NDU3ODNlZjgyNmFiNzc5OTAxZjY4ZDUxOGVkMjQifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L699-L714",
+          "version": "repo-lines-v1:sha256:6eb2e6ff2e494e52245b50cd48d05daf5b5a4090f2238a1fd1c9cf694fbce94e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MTU3ZTdkMzY2NThkZGFiYjQ5MTg0OTQ1OTk5MzZhYmUyMzdhNzJiZTU4MjQ2MzBkNTJjMjQyZmQ5M2Q1YmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxMzAwNDg0N2UwNGQ4ODQxMmY5NGVhYjZiMDU2NDlkNjJiMDQyM2QwNDliYjRiMzI3YTgxNjMxNmQ2NDQzY2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNjN2FiZTk3OTM0NWMyZDNmNDQwOGJiNjU3NGY2MTc5OWMzNjQyM2NiMjRjZWZhNDg1ZDFkODA4NDc0OGIzMjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkYWUwZWUxNGEyZTQ0OTdlN2Q5ZDA0ZDE0ODhlNTEwZmNhOWExZGI4ZWExMWJhNmRhMTZiMzQ4YWQyZTM1YzAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_953eb1672bcc4447bf3b97f44f0c7e13",
+      "statement": "swapSessionExercise (src/app/(app)/session/actions.ts) validates the scope value and resolves the target exercise against the caller's merged catalog via isLoggableExercise, rejecting unresolved station templates before ever invoking the swap_session_exercise RPC.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L572-L590",
+          "version": "repo-lines-v1:sha256:567db0d87be57c0d03b45bccf67d0dfc12c65986900b686b6cba1e8731886f53:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiMGMxNGRhYzg1Njk3YzA3ODNhM2UzOWUyOGY3OTkyMDEwMTgzZjU3ZDE1NWFkYjAwYTk0NjY5YWE2OTFhZWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmMGViYjRkOGJiMmU0NjhjNzVjODlkOWZhMDFmZGJhZjc3MTBlMDI1MWFlZmM1MTM0N2ZmZGYyYTU2NjUzOTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQxNDg4ZTcwNzczMTY4NTM3ZDUwZTEyOTVlNzk0MDc5M2IzNzBmNmM2OWIyOTZhMDExNjlkN2ZhNTMzNGM3MDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZmY2IxZGI4OWEyZTFkNDQxZGU5Y2U5MmFmMmU3NmE2NzkwMTQyNzZjMDc5ZDAwNDlmOTZmODJkYWZhYzVlYzAifQ"
+        },
+        {
+          "resource": "repo://src/lib/session-swap-actions.test.ts#L25-L49",
+          "version": "repo-lines-v1:sha256:c747010f0ffd0a13134136bf58de77ceb4311d33dd2cae6d04ed12a84f8c2c8b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZjYjk5OGIxYzQ2M2IyZWI5MTAxOGJmNjU1MjJiYzUwMTA0YjdmZTAwOTg1N2I1ZGZjM2M3OGE3YWJhYjE4ZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI3NzlkMTE4ZDZlM2NiZjQ1MDUzOTc0OGRlZTdhNDMwN2FjYmU2NDQ2Y2JhMjk3ZjI3NjBmYTVkMGJiYTFiYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_75386ac996164c798c7f25169166767b",
+      "statement": "The swap_session_exercise Postgres function is SECURITY INVOKER with search_path='', revoked from public/anon and granted only to authenticated, and it enforces: the session belongs to the caller and is not finished, the slot belongs to the session's program_day, and the day/program/user chain is consistent, locking both rows with SELECT ... FOR UPDATE.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260911005629_exercise_swap_scope.sql#L8-L54",
+          "version": "repo-lines-v1:sha256:b95f5f53983d349d72e052627d538cd882aa51d5986d030cd0e218dae957bfcc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmZTE1M2UyMDZjYThmY2EyYjk5ZjBlMmRiZTUwZDE4ZTNiM2YwN2Q2NWNiODU5ZWI3YzFlMDM3NmE3MjEzNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyNTMxNGQ5NTdmNGRlMjcyZDM3MGZjZGZlN2VhY2EwYWU4MzE0NTA5MjgzNTgwNDNlOGQyNGZkMWY0OWY0YzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdkOTc4YTdlYzY3Zjk5NmNlMjgxYzIwM2FmMzkyMjJjYjVmZTUzZGJjZDMzNDc2NGVjOWU3YTg5YWQ3YTkzODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk0ODZiNTZkYjdmNGMzMDE4ZTE0NDBmZDlmODY1ZDNjODM4M2E1OGMwMjZjYzEzZDc1ZmRjMTU5YWRmYmM4ZTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_59acfb63e8054126a1f778ff864e11eb",
+      "statement": "swap_session_exercise always updates workout_session.exercise_swaps via a targeted jsonb_set on the slot's key (preserving other slots' choices), and only for scope='program' additionally updates program_slot.exercise_id/pattern and, only when the owning program's style is 'fluid', inserts a movement_adaptation row with action='manual_swap'.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260911005629_exercise_swap_scope.sql#L40-L52",
+          "version": "repo-lines-v1:sha256:489144758f87b5b10dc20d77f51a0b0692afad934bc875ffa8526e264a61ffbb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdjNTEzODZjMDExZTBhZjFhYWU1NWRkYjJiZjRiMDY0ZTIzNGEwYzMwNGJjZDI1Yzc5MjRmZjk2YmE3NTAxZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZWE1ZWNlZWEwMWNmZWI4OThjMDUyNzkwZmE3ODVjOTYwMjkwNThhZjNkZjVmMTQwYzNmNGE0ZjRjYzI2ZjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhNDIwMGMxZmZkNDQzNzVhYmJmMmVkZTczODEzZGZjMWIzMjljYmZiOWIyNTc1YzhjNmM1MDZhNWEzYjM1ZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNlYWEwMjMwYzAxNGM2ZDNmOTU2NmI2NWU0NGNkODllZDNmYTVmYjc2MDY0NWVhYzgzZmQ3ZDdhYWU4ODE5NDgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7693428c159346b0b831287194034634",
+      "statement": "supabase/tests/exercise_swap_scope.sql verifies, via rolled-back transaction fixtures run as postgres with assertions as authenticated: both swap scopes persisting, independent per-slot JSON keys coexisting, a later workout-only swap preserving an earlier program-scope change, unchanged logged sets and other program days, a future session inheriting the program-scope change but not the temporary session override, manual_swap rows recorded once fluid, and rejection of invalid scope, unrelated slots, finished sessions, and cross-user access.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/tests/exercise_swap_scope.sql#L1-L59",
+          "version": "repo-lines-v1:sha256:0752c865731916aa840ca2d95a09cb6146d3d15e5ae103fbccbba36a51e6108a:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5MzhkMzNkZDlmMDcxNjU5YWU5OTQ2ZGM5ZTU2ZDA5OTgzYzZiMWM0MjU0MDgwMWYzZDRkMGE3ZjM4MWYxZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzOGU5NDdmMzYxNGY0YmFiM2JmN2IwODM5OGFmMjBiM2ZiOTc5YzlkZTA0MzY5M2Y4YmFlMDgwNTQzMTlkMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5623193697c54c1784324139c609575c",
+      "statement": "The active session page resolves each slot's current exercise in priority order: an explicit workout_session.exercise_swaps entry, then the exercise actually logged for that slot this session (legacy fallback), then the fluid-adaptation-folded default, then the plain program_slot.exercise_id.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/page.tsx#L268-L286",
+          "version": "repo-lines-v1:sha256:2ea15f2fc181fe540777a7962ece5c0ef6d58a03ba8b1daad67d663f430f84f2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxZTA3YjMwN2I3N2NmMzAyMGJiNDYyZTg3YWEwMmI4ZTEyNWY3MGUxMjYyNGRjMDIyNDI3OGIzMjVlNDg3OTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyYzNjNjNkZjlhZDIxNmEyYWU2Mzc2YWRlMDQwMTM5MjgxOTRlODM0ZTEyY2ZlZWY0MDU1ZTc1MzgzM2VmNTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmY2VkMTAzZTExYTYxMDUyMTcwMWEyMzAzNjExMmY5NzdiNmVlNzgyZDgzZTJmMmRjMmI2YWIwNmU3Y2RjMDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIzMzQ0ZjI2ODQ3NDE4Mzg5NmRhYmY1MjY5NGQzZmFhNmZkOWM1MzZmYTJkNDU5YWYzMzkyMGRkNmU4YWJlMzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cac02a7a1ae5452ca0c0ce7e9e911105",
+      "statement": "foldPrescription treats a manual_swap adaptation differently from a plateau-driven swap: manual_swap preserves the currently effective rep range while resetting ladderStep, recentBands, and lastDismissAt, whereas a plateau swap resets the rep range back to the slot's original home band.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/plateau.ts#L163-L205",
+          "version": "repo-lines-v1:sha256:de4b120cb361a8591e61a80a808c7556e43c959f8ee9c5f32290574cac34f561:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiZTY2ZjRlZTM3NGQ2MjM0MjQxNTgwZGVlNTY2ZWM4NzU4MzAwZGUzYzZjY2JmZmUzNTIyMmVhNDQ4MGJhMzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4N2NkMjMyNTc3MGQ3MDc1NmUxZDcwZjFhZWRiODI0Yjc1ZjdlMGQ1OWU4OTU4OThkODQwNGE1OTRmZTg3MTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0ee8de5309724cfcb24391fb8f0ffc78",
+      "statement": "Accepting a system-generated plateau swap suggestion (acceptAdaptation) inserts a plateau 'swap' movement_adaptation row and also calls swapSessionExercise with scope='workout' to persist the active session's immediate choice, distinct from a manual, user-initiated program-scope swap which is what produces a manual_swap row.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L522-L553",
+          "version": "repo-lines-v1:sha256:3f65fc71b9f0a69db5cd00b4cce17a181ae0fcc8acae671ed9c63e84cae4ad94:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjMjAzYjk0Mzg0ZmJjYjEwNWE4OWMyMmI5NWYyODhhZjJkOTI2NWQxMDVhMTkwYWU3ZjdhNjIxZWYyOWNhYTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiODUzOGU3Nzg0Njg1ZWJmNGY3ZGVmOWZmYmVlMzQ2NTMwOTA1MDM0MTllYTQ0M2MzZDg1YjNmZTFiODRlZDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgxN2ZjMzE5OWYyYTk2ZTA3MjQzNTM1M2M5ZjFjNjlhNGM0NzY3MmZkZmEwYTc1ZDJlZTBjODU5MjgyMjZmYWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f81e60c40b4846e9aa822ddf878e1532",
+      "statement": "Because loadNextWorkout folds adaptations with the same foldPrescription function as the active session, a manual_swap produced by an in-session program-scope swap changes the folded baseExerciseId seen by Home/planner on the next computation, while the planner's own cookie-based workout-only choices are purely additive and never write program_slot, movement_adaptation, or adaptation history.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/workout/next/actions.ts#L11-L31",
+          "version": "repo-lines-v1:sha256:0108925d3517311c51cda08a6bd610903ba696c7a1d6ea7c345f02c732c281c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3YTY3NjNkYmMxN2ViOThlNGY3MzQzZjhlNjIzMGQ5OTFhNDg0ODM1MWUxMzM3YWM1ZjU4ZGMwNTk3ZTQxMzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM1YTdkZDdiMGE0YWVlMGE4ZTU5MzcwY2Q3ZDk5ZWYyODNkODlmOGVkMzgyNTk3MTdjM2VhNTQ1OGNkNWI2ZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI3NzU3ZDNiNjJhYzk5NmRhYTdhZjc2ZjYyNTEyYmExOTczNTBiZTY4MzMyZGY0OTdiNDNhMzdkYzUwMDVhNTcifQ"
+        },
+        {
+          "resource": "repo://src/lib/next-workout.ts#L31-L48",
+          "version": "repo-lines-v1:sha256:ddebe0d68818e651018273a12cf2d2400f84cd66d96daea5e924f2c571d43732:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlYzZhOGNhNGI3ZTMyMDY4NTZmZGZiMTE2NzM2YmEyNGUwNjg3MjkxMDY3ZDA3MzkyYjc4M2IzOWQxNmIwZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4ZjBmMTQ5ZjY2NDY1NTMyMjNhZGY3MTQ0ZDhlNWE3ZDA1ZTk3ZWEyNWZkNWYxZjQ3ODI1M2YwMWEwZGZhYjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZjNmYyNzlkNWYwYjk4NTFjNDNjNzUwNGJiZGFkMWZmNDY5Y2Y2NThjMWYxYzc1NWVmOGVjMTliMDA3ZmQ4YjAifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

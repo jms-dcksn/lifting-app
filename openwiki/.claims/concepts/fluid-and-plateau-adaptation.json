@@ -1,0 +1,266 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:fcc458680226a483b9ad4705942ffa544f726b156e6af4920f607ce58b365000",
+  "claims": [
+    {
+      "id": "claim_b7bd4d11653648ff9b65476e4a806c9f",
+      "statement": "detectPlateau in src/lib/strength/plateau.ts only flags a plateau when stalledExposures >= patience AND stalledSinceDays >= MIN_PLATEAU_DAYS (14), where stalledSinceDays is measured as elapsed training time between the last new-best exposure and the most recent exposure, not wall-clock time since now.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/plateau.ts#L49-L88",
+          "version": "repo-lines-v1:sha256:c139c2a5b8b84aab2ee1f80e490aa064f3cd6e39d6f9f4fea63bc9a1c2c3afd8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiNjk4NjVlMzk3MjYwNWJlMmFhYjliODU0YTliY2VlZmQ0ODFlZjJkMjFhMzFhZWMwNDczNzJlYWIwOTJjMzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIwOGRmMmZmNDYzZDgzYTQ5ZTg0NjNkNzdhMjRmZWFmMTUyNjAyOWUyZTMyMmRhMjQwNWU1MmNkMTUwYzdmYmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0MjYzZDhmYTFhOGFhZmNjNjAzNDM5NmIyZTE1MThhMjRhMGU4MzFmN2RiZjMxNGQ2NTBkMDZkMGQwNzc1YjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c73702dd12ea49f8a0977c61c67287f9",
+      "statement": "A running e1RM improvement only counts as progress if it exceeds margin(runningBest), which defaults to max(1% of the running best, 1 lb); a rep gain at a previously observed canonical effective load also resets the stall clock even if the stored e1RM is flat.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/plateau.ts#L46-L74",
+          "version": "repo-lines-v1:sha256:f267446bb489d8963499961448f4e607280c3fe3b9b5d4b979b105d27324fc0d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyMDVkYjcwY2JhYjQyZDA2NGYwY2Y0MTJlYWRlZWNlZTRlZTE2MzEyOTM1Y2I2NjM4ODVmMzJlOGQ1YmE2MjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkMzEzODI5ZjY5ODNlMmIyMDFjODY4NTkxZjAyZWFiMmY4YWIyOGE3NGZjOTVhYWJhZTQwYmYxMzI1MTk0YTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM4Y2NjZWI3MjU0Y2FmOTU1NmJiODNlMjI0MmM3ZjU1MTczYjAzZTZiODMzMDQxNzc5OGRhNmExMzhjNDRkNTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_de8ac54b179c4d4fa01f7226750750ce",
+      "statement": "Plateau patience defaults to 4 stalled exposures for barbell equipment and 3 for other equipment via defaultPatience, but an explicit program_slot.plateau_patience override (when >= 1) takes precedence, and this override is applied consistently by every consumer of stall-report.ts.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/stall-report.ts#L112-L114",
+          "version": "repo-lines-v1:sha256:a3d6e03f3854e159e3c974fa6b24795b50df811104d61a633e945abd29d7a431:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjk5MGVhMjJjMWVlMmQ1YTllZDk4NTRjNmFlMTEzNWQ5Mjg1ZjI1YzhjNmI1NmMwYWQ5YWQ4NDg1ZmIxNzI2OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmVhMjU0YmM5M2Y3ZjViMmZlODBhNDY4NWJkN2FiNWE0YjYyNThhNTZlMjJmMmJkZDllODc1ZmQ4ZjkzNDJhYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTlmZDQzMzY1NjEyYzE4M2FlZWM2MDFiNzIzZDdkOTJkNzVjMTRhODNkYTAwZDM2MGFiZjg3ZTU2YzYzMjUyMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjA2ODdjOTY3MmFkZWNjOGYwMjIxMTVjZGQyYTdkNTAyMmQ5ZThiMDhhOTVjNmIzOTA4OWJkMGExNGU0YzQ3MCJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/plateau.ts#L10-L31",
+          "version": "repo-lines-v1:sha256:59e81263818c12249b4e8f25da5106927bee9e554e77a2c9087dd03071c66b01:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1N2JjY2QzOTI3N2M2MjBkY2YyOTcwNDc1OGVkMWRmOWRkNTE5N2UxODM3YzJiNzY2MTdhYjI2N2QwODAwODQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJmMzU0NTczZjQxZjE2YWY3N2YzNmRlMzYxYTZkNjk2MjM3N2E3M2EwMjZjN2Y3NzM4OWUyNDFiZjBiMDA5NmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIzNWU0YzQwZjg5ZTkxMTQ1OTQxYjEyZTEyZjNmOTUzM2U1NTg1NjQ1NmZkMDdkYTk4MWU2YzJhNzAyYjEzZmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_066bdd14fcd9433296c96b944f9d57de",
+      "statement": "buildStallAssessments in src/lib/stall-report.ts is the single shared computation of per-slot stall evidence consumed identically by Fluid (via stall-data.ts/fluid.ts), weekly Coach (coach-recommendations.ts), and monthly review (monthly-progress.ts).",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L1-L10",
+          "version": "repo-lines-v1:sha256:1753ff9d4daa682d6e17c0294a6048121d9a6a805c3a45153d96285c54a84b7d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxYjdmOTA3OGU5ZTRlMWE0OWRiZDk4MmZiZmIxYWU5ZmVlMzU5NDlhNjhhNTdiN2FiNWE4NGE5ZDcyZTA1MmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhYWY2NDhjZDBmNzYxY2M3Zjg0ZDc3Y2NjZWJmYzcxYzkwYmUxNjZlZTA1ZjViNWE0NmU4ZmQ5MjM1OWQ3ZTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYwNmMyNjlhODhjY2NmYmEwMDRlZjFiYzk4MDQ0NjYwYjRmNTQwNGIwOGY5ODFmZGExZDcyYjUxM2YzYWVmMmQifQ"
+        },
+        {
+          "resource": "repo://src/lib/monthly-progress.ts#L1-L1",
+          "version": "repo-lines-v1:sha256:205cb970e6bed176bb9ab1b4f70255270c9e243a73071c8138fd801c9df6964e:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjA1Y2I5NzBlNmJlZDE3NmJiOWFiMWI0ZjcwMjU1MjcwYzllMjQzYTczMDcxYzgxMzhmZDgwMWM5ZGY2OTY0ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjA1Y2I5NzBlNmJlZDE3NmJiOWFiMWI0ZjcwMjU1MjcwYzllMjQzYTczMDcxYzgxMzhmZDgwMWM5ZGY2OTY0ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzUzNTg2ZTY3MDJmMzIwZDgwMDQ3NmIwMDBiZDAxNzBmYTE3MWQwNmVhYzg2YTU4YTQ5NmViMmRhYWMzMWU2NiJ9"
+        },
+        {
+          "resource": "repo://src/lib/stall-data.ts#L58-L60",
+          "version": "repo-lines-v1:sha256:bae003f821f7a46cf2c0877ab997092b7b06e7aea05d234afc024864e3ddcc55:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjliMGM4YTM0YTZiNmExZjVhNTc4NmMxMzQ2OGExZWJlOWNmYTFiZjUxMjA0YzI2ZGZmZGJkNGQzNGRiMzNlMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2FmZDhkODMwZDdhNmMxOGQzMmRlMWU0YTFhZWQ0N2ZhMTQ2Yjg0MjAwMThmYTU3YTM4YmJkNGUwMzJkY2I0YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTIwNDBlMDk1YTk0ZTJhZGE3NGU0MjFmMzcxODc1MWE5MWE4MTBiZmQ2NmY0OGY0ZTkzOWM3Yjc0ODBlYjY3MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://src/lib/stall-report.ts#L1-L44",
+          "version": "repo-lines-v1:sha256:3770f775edc41acaa543577d243b51b60b9e96b1a6e6074f8b85ae4ff8a2b8c6:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhNjg2NWM3MGZlZjZiOWRjMjM1ZGQ1MmQxMjJlYjVjY2YwNGNmZWMzZGExYmYzOTU1MGIxNGI4OGU1NTVmMTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0MzVmYWM3NjFlYmIyYzNjNGQ2YTcyM2Q4NzAzYzNiNTc5MTI2ZWM4NGVmZWYxZDkxNmY1YmU3N2IxZTRkZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk4OGM2NmM2NGJiYTFkYTdlN2RkN2ZjYzI4NmEzZGQ4NzFhNWY1ZDFkOWE1YzIwNTMxNjVhZDViNmMzZDAxNGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_332388fca53a4c1e83483ab41ce8186a",
+      "statement": "The stall evidence series is scoped to an exact exercise+equipment identity and resets whenever recordScope, phase id, folded prescription, rep range, RIR, or set count changes between exposures; a swap away and back, a mixed-identity workout, or a recorded adaptation therefore starts fresh evidence.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/stall-report.ts#L69-L99",
+          "version": "repo-lines-v1:sha256:9b660c675f62c28483749617ab5faf46acc1a06ac0817eadb6bd46d387d74559:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiZDRhMTk1OGI3NjQxZDkxZmZmOTE4Yzc3ODgzN2VmZGFiNTUwNDMyZGI5Y2NkNzdmM2Y2NGZhN2YyYzhhZmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliNjJmNjBkODU5MGE1NzljZjQ2ZjhkNjczNzhjNGM1NzJiOTYyY2VjY2RiOTBjN2E1ZjdiNDJiOTYwNzgyYTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZjYzE3Mzk5NjVlZjM3YTZkN2FmZDZlNGZhNjk2N2M4NjQxNmQwMjMzYTczODg4ZjBmOTM1NjU5MmUwNTg5ZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzYTI1MWVlNzFhZWQxZWRlOTgzZDVmMmI3YzhhOTIzZmY3OTJiNzU3NDhkMmYzOWQ2OTU4NzIzODEyOWQ0YzUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7d857e0087cc4b3d9c0bee1790b6ca80",
+      "statement": "A deload phase (set_multiplier < 1 or name/description containing \"deload\", per isDeload) is treated as a series boundary: the deload session itself is state 'deload', and the first subsequent normal workout establishes a new baseline rather than being counted as a stalled exposure.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/stall-report.ts#L115-L120",
+          "version": "repo-lines-v1:sha256:a191239f29357efd35b60a9116f2330cfff745dd3c4161dc9b5a465bcce0d64c:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2RhNmMwMmZiYWM0ZTIxNDg1MDBlMTE0ZWEzZTg5NjMzZDUyMTYzZDU0YmUyOTVkMGM4N2E1MTVjOTU0ZmIzNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2EzZTQ2Zjk0Mjc2YjZmNmY0ZWQxZjAyYWY3OGJlZjZhMmVlMWM0MzlkZDU1ODRiOTczOTQ4MzEzMjE0ZDJiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTNkNmUwM2YzODU0ZTE1OWUzYzk3NGZhNmIyNDc5NWI1MGRmODExMTA0ZDYxYTYzM2U5NDVhYmQyOWQ3YTQzMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://src/lib/stall-report.ts#L38-L41",
+          "version": "repo-lines-v1:sha256:f4db4e5450e9fc779e7b8e2673ede2f8e221d3a7ee1591a4fe1ab54bbbc6561b:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTg0NmYyNTU4Y2QwYTg3NzA0ZjQ5MGNiMzhhMDI5Zjk2ZjgzYWI2Mjc5NzJlOTA0ZDVmZTNhMmRmYzcwMDUzMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTZiOTFlZWI1NjNhY2VjY2MyYTEzOTRkNThjZTEwODkxZmM5NGU1ZTZhOTlhZTZkYTA1YTQxNDg1NTNkNmVkYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzM3ZGJhNTBjY2JlMmRkYjcxNTE4ZmY3ODU1NGIxOThlYzcyZDc3NDM0ZGFiYTEyNmMzNWRhNDAwYzg5ODk3ZCJ9"
+        },
+        {
+          "resource": "repo://src/lib/stall-report.ts#L85-L99",
+          "version": "repo-lines-v1:sha256:2b18b520798f4e5b83d347957e4570829d2dcfa0dc55f63c5db11d0663e937bc:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3YzcyMDE1MWMwMTg2YmYyYzQ4YmEwZGMwZDUxMGU4NTFhYTRjODI2OTgzNmZlN2UxMWM1OTRiNjFkZTQ5NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliNjJmNjBkODU5MGE1NzljZjQ2ZjhkNjczNzhjNGM1NzJiOTYyY2VjY2RiOTBjN2E1ZjdiNDJiOTYwNzgyYTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFlYjZiOTE0OGY1ZjkwNjJmZGQ5ZTNhNmQ5MWEyNGYzM2ZhMWJmMzZiYmZjZmVlZTdjZGZkNGRkOTk4OTAzNmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzYTI1MWVlNzFhZWQxZWRlOTgzZDVmMmI3YzhhOTIzZmY3OTJiNzU3NDhkMmYzOWQ2OTU4NzIzODEyOWQ0YzUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a3b33af21e064399af80d0dc52e1f1e7",
+      "statement": "buildStallAssessments fails conservatively: missing/non-finite e1RM, mixed-identity sets in one session, a mid-session prescription change, or an unknown week index in a phased program all clear the accumulated evidence series instead of guessing at continuity.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/stall-report.ts#L90-L99",
+          "version": "repo-lines-v1:sha256:a4c3a6c88038e53555e4b5c345932818f21ac0b3cf99f04882f2da82c89c92c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5MjVmZjVhMjEzNzg4YjJjMTVmNmU3Y2ViMGJkODNmZDNmMDhmZWQxOTMyZmE2YjFjODg5Zjg3ZTAxYTZlZTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliNjJmNjBkODU5MGE1NzljZjQ2ZjhkNjczNzhjNGM1NzJiOTYyY2VjY2RiOTBjN2E1ZjdiNDJiOTYwNzgyYTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMzMjY1NTJmYTc5NTNjOGZkYWI5ZDg0YmZkZjExMmM4NGUxZDZkMTMzYjlkOWQxMmEwYTgyMThhNDg4NTg3YmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzYTI1MWVlNzFhZWQxZWRlOTgzZDVmMmI3YzhhOTIzZmY3OTJiNzU3NDhkMmYzOWQ2OTU4NzIzODEyOWQ0YzUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d1add56128484adea28aaaf345249b58",
+      "statement": "An adaptation accepted after the lifter's most recent logged workout immediately invalidates that slot's former plateau state, and late entry of an old workout uses only adaptations at or before its own timestamp so it never borrows a later adaptation's context.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/stall-report.ts#L109-L111",
+          "version": "repo-lines-v1:sha256:59fd43365612c183aeec601b723d7d92d75c14a83da00d360abf87e56c632521:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjUwYzlhYTUxOTdjMGZiY2NhMDBkNDU0MjYxYmZkOTI2ODc0MjFjNmVmMmM1NmM0ZDBhYjIyYzliMzJkZmI0YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjM3ZjdkM2UzMDJkNzY1MDJiMmRjNjRhZjAxMmUyZGE5NjgwNDk5N2I0ZTM3NTNiOGU3ODU0MjFkMjc0ZWVjOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmU4N2M2YzZkZTk5M2YwMGU5MzU0MTM2YjJlYWEzZGM4NGIxYzEwNjgzODhmYjQyMWExNjQ2NGE0ZTBjNTBjNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTNkNmUwM2YzODU0ZTE1OWUzYzk3NGZhNmIyNDc5NWI1MGRmODExMTA0ZDYxYTYzM2U5NDVhYmQyOWQ3YTQzMSJ9"
+        },
+        {
+          "resource": "repo://src/lib/stall-report.ts#L76-L79",
+          "version": "repo-lines-v1:sha256:2faf147ce7b4f7d18bb657009c42160a7cc511648a2830e78446eee21571abac:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmEyNmZmZGI4MjBiYzY3ODAyZGQwYjVjMWIwNzVkMjVhMjVkNmQ5OTNkNDIwYWVhMWRiYTgwYjZmNDUxYTAyZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmJmNDk0YjlhNmI4ZTBlNDM2MWVmMTFiNGZjYzk4MzI1ZmQxOGRjOTQ5YWExNGY2OGEwMGQxNWM2NjA3ODg4NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2Y0NWE1YTdkNjRkNGQ0NWU4MmYzZWUwNTU0NmM1MTE2NWMxMzdjZGU1MDA3ODZlNGEwY2U2ZmIxYzMyMDkxOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmZmMTE1ZjFhNmVlZWIwYWZhYjc3Y2JjMGI5MDQ2YTc4NWRlNjE2M2QwYjZhNWIxMjBkNmIzZDkyN2ExZDA5NyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_29a5c461ac414048960100b4d21637b3",
+      "statement": "stall-data.ts's loadStallHistory paginates program_slot, program_day, program_phase, and movement_adaptation with id-ordered keyset pagination and throws on a failed page rather than returning a partial series, so stall classification never runs on silently incomplete evidence.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/stall-data.ts#L11-L35",
+          "version": "repo-lines-v1:sha256:7c72ea1e06730413f6ca2a90e383db1eb3f9a286334dff5db53202ca68bbacc1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4YjVkMmIxNGE1YjU5ODU2MjA5Y2MwMDZkZjExMWI4ZjY3OGJiZjE1Y2NjZDAwYzY1NzI0Mjc0OTA4MWY0ZGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmOWRiYzdmMmYyNGI1Mjg0MzU3Zjk4NjMwNmZlZjA0MTdjYzZmODFhODNhMDJiZjgxNTBmNzExMmY4ODNiMDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY2ZDIzM2Y2MjEyMGIzMzJjMjcyNTc2ZmJmYzI0ODQyNTkxZTVlOThkNzJjMjlkMjBjZDA5NWI4N2Y2OTM0NDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc3YTcyNjdiOGFlYjQ5MzkzZjQ1ODVkNzZjNzVmNjBjYWMzYjUwYTMwYjYxYjJlN2E3YjlkMDFiNjI0Y2I2YzQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e559c79e00e24d6b915a7e20f8c0363d",
+      "statement": "Fluid's intervention ladder has two rungs: nextLadderAction returns 'rep_change' while ladderStep is below RUNGS_BEFORE_SWAP (1), then 'swap' once that many rep-range rungs have been used without resolving the plateau.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/plateau.ts#L122-L124",
+          "version": "repo-lines-v1:sha256:34f898a61217811f201d39227ae4bcab929a1498871e39311035cf3bd7cafd5c:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTc1MDNkYmY5Njc2YTE3YzhiZGI2NjA3NTE2OGRhOWU1MjY2NjMwYmMwNzRkZmUyMGY5YmYwMThlZTdkZTgwZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTYxZTc3NjgzZjdkMDMyMDBkMzBjNDc0ZTA3MWM1MjQ1ODY4MThjMWRhZjJjNWEyZTFhMzc3NDBkYTg0NTQ4OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmFlNWI1YTUwMzA1N2ZhNjZjZTM4OWU2YzAxMDM2NmFhYTYxZDEyZjA4ZDQxMjRhZjQxMTBhMmI4ZmQ0MTU1YyJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/plateau.ts#L14-L14",
+          "version": "repo-lines-v1:sha256:e68ef026a5cc39fb52a804a481b10eff77281b162ce92657980a9f3654e86497:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTY4ZWYwMjZhNWNjMzlmYjUyYTgwNGE0ODFiMTBlZmY3NzI4MWIxNjJjZTkyNjU3OTgwYTlmMzY1NGU4NjQ5NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTY4ZWYwMjZhNWNjMzlmYjUyYTgwNGE0ODFiMTBlZmY3NzI4MWIxNjJjZTkyNjU3OTgwYTlmMzY1NGU4NjQ5NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2MzNDIyYWM3ZDRlM2E2MzM0Y2M1MmYwZjQ0ZWNlMjlhZGY0MmVkNzk3OWRjODk1MTc5MGQ5YmU1NmY2NWI4ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWRiOGIwNmMwMzIzYWUwYjMxNWYyMDUyOTU5MjhjNTFhYzEzZDMxZjQ3YTYyNGNkM2FmNTE5NDgxMGQwNzNmNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1ffc72070cee49bebefbbcad0a2012cd",
+      "statement": "pickRepBand selects the standard rep band (heavy 5-8, moderate 8-12, light 12-15) furthest by index from the current band, tie-broken toward the heavier band, skipping any band already used since the last swap (recentBands) unless that would leave no candidate.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/plateau.ts#L96-L120",
+          "version": "repo-lines-v1:sha256:21588c2a3917485ced16321d3b3fbfa840c7c5577bfc18f7288865c3d681ecc1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1NWIyYjIzNGRhMTkyMzUwNDAxOTI2ZmFlNGNjNTk0YjA0MDYwOTY5MGYzMGY3OTdmMzhhNTA0ZTE0MzkzN2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgzN2I5M2NkZTMwNTAwNjEwY2NjY2Y2Mjc3OWUxM2Y1ZTU5YTBjYzYyYTA3MDhjY2Q1MDQ2MTJjNzZmNmY5ZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxMGQ3YTFkMTM4N2U2NjlhYjk5OGU3MDdjY2YyOTUzM2Q4Zjc4ZDYwODIzNmNiMmY0ZWM0YjY3YzYxMWMwMzEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e7db4d33d19445dd88df06ccfa0647b0",
+      "statement": "rankSwapCandidates in fluid.ts ranks same-pattern, non-station-required alternative exercises by preferring movements not recently plateaued/swapped-away-from, then by staleness (least recently trained first), and a swap always resets the ladder to rung 0 while restoring the slot's home rep range.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/fluid.ts#L97-L136",
+          "version": "repo-lines-v1:sha256:28a2f4a1978a4fa8b0076ce865a8974dd0cdac7bcfd2bc7280b24383bfd5258d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2YjQwOWMxYTE2YWY3ZDU0NWQzMzdmYzJkMmQ3ZmFmZThlZWY0MWIzMzIwNWVlNTVkOGVlODY5NGI4ZjY5ODUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlMzNkYzczMWU3ZDA3YjFmMGMwNWNmZWJkN2UxOTIyMDIzZTYwNzdiYzBhZTdiYTMwMTQ4ZjUwODMzYTI1YTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIyODU2MzhlZTc0MmM3MGQwNjE2OTY0YmQ4YjFmOGUwMmQxOTY5YzgwOTRhMWZmNGFmYjc0MjBjNjMxMGY2N2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk3ZDg2MzJlNTRlOTI5OGFiYjk1ODcyN2UyZDUxNDA4YWJhZjEzNjYwMzUzNzkxMDE0MGFiZjY1YjMwYWI2MTMifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/plateau.ts#L126-L141",
+          "version": "repo-lines-v1:sha256:d8bdf3ae65a4f449ad12ff4fce0f260dc55dde2c9f0d59cef4c505682960e438:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyMmQyYTQ4MmM3MmRjNDdmMzIwN2NmYTA2NDdmNWZhOWYyZmUyZWRkMzQ0OTFlYzY3OTM3YjViYTRmMDFiODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc1ODg4YTEzOTQzNWY2ZDQzZjEwNzY3YTA0ZjFkNzk2ZjExNjM4YmUyNGNhZDdkMTMzZTgwMDZhMDk0YzYyOGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA0NmNlYzY5ZTNjYzM0ZjJiOTBmMTg5MTZjYzUwMDI5MGU5ZTJlZWY4NDE1NWFhNmY0NjJmMWZkNWI5MTFlNjIifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/plateau.ts#L185-L191",
+          "version": "repo-lines-v1:sha256:847ee3e22ecdc7b1119283a7c0815676f9a4300b957b7493bcba6c10d4d9bb6f:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2RlMWZkMTY3ZTdjZGU1MTE0ZmZiMTYxNzU5Y2QwZDliNTMxYmRlNzZlOTQwNzgwMTc3ZWE1OGY1ZTA4ZjMyOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjRmODgyMTdhMjg2NjQzY2JhYWNjNDE0YjFhZTliYjZmODk4NDU2NjBlYWYwZGYxMTNkOTU0NjQzYjQ3ZmFjMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWRmYjUyYzRkMWZjZmM3NDIyYTRiYzQ2M2RkNjEzM2IzNTM2ZTVkNTAzZjc2MWI0NTA1NTI0OWY5YTExMmNlOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjFlNDdhOGJjZjJmMDRiYzYwZDg0ZTgyNTRkMDRiNGUwMjkwMWVjZTg0YWYyY2Y5NDM5YjQ3MTgzNDg3NGIyZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_3bdd06a5710744c0aa532489b535e216",
+      "statement": "loadPendingSuggestions in fluid.ts only returns a suggestion for slots whose stall assessment state is 'plateau' and not currently snoozed; a dismissal ('Keep going') mutes the suggestion for SNOOZE_EXPOSURES (2) further exposures without resetting the underlying plateau detection.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/fluid.ts#L74-L83",
+          "version": "repo-lines-v1:sha256:fc1483c715f8967f2bcc53f22ee06b41a0b71467357284f502cb5ec135d75702:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMwN2I0YTk2MjUxODU4YTNkZmI1YjNjYWI5OTIyMjFmOGMzMmRkNWI4YjBhMDFiNDQwNzQyYjk1ODJkODM1NDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4YTY4MTQ1NTAwZmMxNmU4YjJkYzM3ZjNhNDZkZjA4NzEyZWFiMzI1YzI2MWJhZjAzYTg0Y2E0NDhhYWVhNjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdmZmI3YzY4OTE1ZWNjZjM1ZGY2YzlkMWQ5NjhjYjIwY2ZjNWNkMTkyMDEwOTY2NjQwMzY4YzZjMjQyMjg3NGIifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/plateau.ts#L13-L13",
+          "version": "repo-lines-v1:sha256:20570b824ded5fc0f4e07263c7455c2924303060a744db1ad21d648151259a1f:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjA1NzBiODI0ZGVkNWZjMGY0ZTA3MjYzYzc0NTVjMjkyNDMwMzA2MGE3NDRkYjFhZDIxZDY0ODE1MTI1OWExZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjA1NzBiODI0ZGVkNWZjMGY0ZTA3MjYzYzc0NTVjMjkyNDMwMzA2MGE3NDRkYjFhZDIxZDY0ODE1MTI1OWExZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzJhMTBkY2RmNzIzNWNlZWYyNjc0NTQ0YmIzMjY1NDhkNzg1ZDI5ZWIzZjhlYzU5NjJmYjRlODQzYmQ1YzczNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjBlZDk1NGUwYTBmYjc2MzZhMzNlN2FhZjRjMzUyZWE2YmZkM2ViY2VkYWM5NjdmNmUxYmExYjVlYzRlNGZjMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_7010cafd006d4daa94a217e31aab5860",
+      "statement": "The active session UI shows a Fluid plateau suggestion only before any set has been logged in that session, and accepting it (acceptAdaptation) or dismissing it (dismissAdaptation) appends a movement_adaptation row (rep_change/swap or dismiss respectively), with an accepted swap also calling swapSessionExercise at workout scope to apply immediately.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L338-L343",
+          "version": "repo-lines-v1:sha256:82e4902a6858f64d29fd2a4ab68752875f78bbfcb3c998cdebc5ece6d884ea5e:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWI1ZDEyNmFhN2ZhZWY3ZDZlYjkyYzIyZTNlOTY2ZDNlYjlmMDBiZDJkYzQyMGRhOTZhMDBkZmMwYmExN2JkNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmI3YTVhMmZlYTk0YmU4MjRmMjI0NTc4OTIwODUwMGMxODdjN2NiNWEyNWJiYWJiNzYxZDVjZTY4NWU1MzQyNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGNkMzgzNzFhMDA1MWEyMDdkZjdiNWFhZmIyMzU1MTljZmQ0MTBhNjc2ZWEwZmY0YzJiNzRlODFiZTIwZWU4NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWY5NWU3OGIxYTAwNGI5MzYyMmMyNzk2YzFjMzFmN2YwNTQwNGY5ODk0YWI0YzgzMzdkMDlmNjM0NzAxNWJmNSJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L518-L553",
+          "version": "repo-lines-v1:sha256:4ed20d5e55b2852fcdec5ba70c3ad63b6dbe14024c8af1835853e2c0154fffb2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5MjAyMWU1OTE4YTNiZjQyOWVhODI1MWJkNDIzOGJhZTdmYTEzNWYwNzVjMTZjMjM3ZDc4YzdiYjU2ZTIwNTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgxN2ZjMzE5OWYyYTk2ZTA3MjQzNTM1M2M5ZjFjNjlhNGM0NzY3MmZkZmEwYTc1ZDJlZTBjODU5MjgyMjZmYWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_71dc3ee3cdd64408964b0ee5f553bb00",
+      "statement": "foldPrescription replays the append-only movement_adaptation intent log chronologically into a slot's current prescription: rep_change rows widen the band and increment ladderStep, swap rows change exerciseId while restoring the home rep range and resetting ladderStep to 0, manual_swap rows change exerciseId while preserving the current effective rep range (unlike a coach-generated swap) and also reset ladderStep and clear any pending dismissal, and dismiss rows only record lastDismissAt.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/plateau.ts#L163-L205",
+          "version": "repo-lines-v1:sha256:de4b120cb361a8591e61a80a808c7556e43c959f8ee9c5f32290574cac34f561:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiZTY2ZjRlZTM3NGQ2MjM0MjQxNTgwZGVlNTY2ZWM4NzU4MzAwZGUzYzZjY2JmZmUzNTIyMmVhNDQ4MGJhMzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4N2NkMjMyNTc3MGQ3MDc1NmUxZDcwZjFhZWRiODI0Yjc1ZjdlMGQ1OWU4OTU4OThkODQwNGE1OTRmZTg3MTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_345c88edee0c423981d3c0e056abb75d",
+      "statement": "movement_adaptation is an append-only intent log keyed to program_slot_id that is never replayed against set_log to reconstruct historical performance; it only records what the plateau engine proposed and what the user did.",
+      "evidence": [
+        {
+          "resource": "repo://docs/EXERCISE-SWAPS.md#L29-L31",
+          "version": "repo-lines-v1:sha256:ee803e4d1e8a577ef809bbdef2602d13d68227c157d708346afc4688d351affe:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzcyYTZlYzZjYWMwZGE4ZmYyZDBlMmYwOWJkYzU5YzJkMDA0ZDUxNzk1ZWYxMzNiNWRiODNiZWUwYTc5ZTI4NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzIyNTdmMzI0MDJlN2IyYWMxNGNhOWFmZWQzZjdiOWI3NDk5OWM5NjYxMDhlYWM2MzFkMzJlMjRjODE4YzFhZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmQwZjI4MjczMDk2M2U0ODJmZmRjZmEzNjQzZDhhZjc3ZmYwNzg1YzY0YzQ3NzMwNzEzYTUxZmFlNTk3OTkzNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjAxODA3Y2Y5NmQ3MmFjNzJjMmM1YzUwZGM4YmIxOTU4ZDAyZWVmMWUwNjFiNDM4MjJlNWUxMjIxNWI4Njc4YiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_611115aaa2354c03b48a382bba842271",
+      "statement": "The SECURITY INVOKER swap_session_exercise RPC is the sole writer of manual_swap rows: for program-scope swaps on a fluid program it atomically updates program_slot.exercise_id/pattern and inserts a manual_swap adaptation row in the same transaction as the session-local exercise_swaps JSON update, while workout-scope swaps only touch the session JSON and never write movement_adaptation.",
+      "evidence": [
+        {
+          "resource": "repo://docs/EXERCISE-SWAPS.md#L29-L31",
+          "version": "repo-lines-v1:sha256:ee803e4d1e8a577ef809bbdef2602d13d68227c157d708346afc4688d351affe:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzcyYTZlYzZjYWMwZGE4ZmYyZDBlMmYwOWJkYzU5YzJkMDA0ZDUxNzk1ZWYxMzNiNWRiODNiZWUwYTc5ZTI4NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzIyNTdmMzI0MDJlN2IyYWMxNGNhOWFmZWQzZjdiOWI3NDk5OWM5NjYxMDhlYWM2MzFkMzJlMjRjODE4YzFhZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmQwZjI4MjczMDk2M2U0ODJmZmRjZmEzNjQzZDhhZjc3ZmYwNzg1YzY0YzQ3NzMwNzEzYTUxZmFlNTk3OTkzNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjAxODA3Y2Y5NmQ3MmFjNzJjMmM1YzUwZGM4YmIxOTU4ZDAyZWVmMWUwNjFiNDM4MjJlNWUxMjIxNWI4Njc4YiJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260911005629_exercise_swap_scope.sql#L40-L54",
+          "version": "repo-lines-v1:sha256:50953b547650e3688445d77e2b9c765ac08ac43c47685224936b4847a3c89d8c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdjNTEzODZjMDExZTBhZjFhYWU1NWRkYjJiZjRiMDY0ZTIzNGEwYzMwNGJjZDI1Yzc5MjRmZjk2YmE3NTAxZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyNTMxNGQ5NTdmNGRlMjcyZDM3MGZjZGZlN2VhY2EwYWU4MzE0NTA5MjgzNTgwNDNlOGQyNGZkMWY0OWY0YzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhNDIwMGMxZmZkNDQzNzVhYmJmMmVkZTczODEzZGZjMWIzMjljYmZiOWIyNTc1YzhjNmM1MDZhNWEzYjM1ZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk0ODZiNTZkYjdmNGMzMDE4ZTE0NDBmZDlmODY1ZDNjODM4M2E1OGMwMjZjYzEzZDc1ZmRjMTU5YWRmYmM4ZTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_db603a5aec524930ac59c762eae4901e",
+      "statement": "Weekly Coach emits a plateau_review recommendation (review-only, requiring confirmation, never auto-applied) when a slot's shared stall assessment is in plateau state and the latest logged exposure is the one that completed the plateau; Coach still prioritizes pain, deload, and repeated-effort-miss signals ahead of this review.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/coach-recommendations.ts#L277-L296",
+          "version": "repo-lines-v1:sha256:427685097bfa7195d5920163a91e82e09f09392b3bc12013be9797bd5155e2ec:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkMjdhZGYzMTAyOGQ1YjA3OTk1NDZlOGU3Yjg0MDRmNzAzNzYzNTBmODc0OWVlNTc5NGQ0ZGJjOGI2ZjBiMmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlMTJiNjExODk0M2UzMGMwMDY4MzNlNzgxNjMwYTUzYjMyZjQxN2VmNWY5Nzk1YzNmMTJmMzMwODAyNGM1ZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3YjQzOGY4NTdhMTYxMGFjMWZiN2IyZjM0ODcxOWJjMjM4NmFhZGRhOTAzMzM3Y2NhYjZjNTUxNjU4YzU2MmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5196ac7a0b3349ecbf760b23cf2f919d",
+      "statement": "Monthly review surfaces only plateau-state slots whose latest exposure falls within the selected month as 'worth reviewing' evidence linking to Coach's filtered next steps; it never itself recommends or applies a program change, and historical months never present a past plateau as a current recommendation.",
+      "evidence": [
+        {
+          "resource": "repo://docs/MONTHLY-PROGRESS.md#L105-L115",
+          "version": "repo-lines-v1:sha256:4996b61952ce67efe5cd6cc06a4c4ed6ba69d5cdc864e033e4f978c1590f7b1f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3YTAyMmU4MTM4YzBjZjIzODM4ZjFkNzBjYjIyNTNjZjc4ZDE3OWY0YWQ5OTdlOGNjNDVkODQ1Yzc3N2M5ZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiYTI2OGQyYjZlNjBjYjZiOWQ1Y2VjNDMzYTU2MDVkNTUyZjBkNmM3MTFlY2U1MGZkNjk3ZjgyYjI5MGViMzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIzMzk4ZjI4ZDAzMjMwYjE5OWU4MGZhNDQ2NzM5YzQ1N2I5MzIyNDNhMzJiZmFlZmRmM2Y2N2ZiOGY4YzdmZGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ3OTU3NWM4NDQyNDgzMDc1MTYxMzUxMDEzNTNiYjkwM2Y2N2JhYjhjNWUyZTAzMTE3YjNmZjA4YTIyZTgxZTcifQ"
+        },
+        {
+          "resource": "repo://docs/MONTHLY-PROGRESS.md#L49-L83",
+          "version": "repo-lines-v1:sha256:78ea7d50468a620561ebd3d74b6ba09c1e546cbfb6624212a76e655262d967fc:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5ZDY3MWIwOGVmMDM4OWU3NjU1Njc4NTQ2OTNlZjUyYzFhNTljMTg4NTc0MzMxYmJiNjc4ZjRlMzEzNDJjOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUzMzExNTk1ZWY4ZjVlMTc3YjJjMWI0MmZmZjU2OWFjZTU4ODAwNjBkZjljMjZjYjM3OTg1NzhiZjU3N2QyM2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFlYzY1ZWVjYTUzNWU2MjU2ZjQwNDliMTdhNGJlZmE4Y2Y3YWVlNjJjNGNjODc2OGQ1ZTFmZTU0NTI5MWI1MzQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1ec6e9633016498590e3a475c666a54c",
+      "statement": "Before the shared stall-report.ts contract existed, Coach filtered history to only the current exercise (risking joining history across an away-and-back swap) and Fluid grouped exposures by set-creation date while including unfinished work; both now consume the identical contiguous, phase-aware session series and rep-progress rule.",
+      "evidence": [
+        {
+          "resource": "repo://docs/MONTHLY-PROGRESS.md#L86-L89",
+          "version": "repo-lines-v1:sha256:d65db59602925138d60a01aa9156d5ddd607f1a337575ace0f79d0e7ed55d84e:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTM4YzFhOTU2OWY4MDIzNDkzMTNlODQyZmNjZmFmNDViNzk2OTgwYTU0MzQ0ODMyYmFmMDkyM2VjMzVhYmNjOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzc1YWY0NDMxYmNmMjE2MjBiMzhlNmE2MzIzYzdkY2E2MDE2Mjk4YTc4MThjODk0MzljMGFhZWIyNGU4OGU5MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDkxMmQ0Y2M0OGJkMWY4NTdlNzQ2ZDdhZDczYjA4YmI3ZjZmMGFjZjllZWQzMmVlODQxY2M2MmQ5MDNlNjU1ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzAyN2UyMDhjMWQ5NzlmMGMyOWRlYWI0ZmI0YjNjMmRjMzlkODk1MjE1NzM5MDAwY2IxMTBkMzhiMDM0Y2RkMiJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

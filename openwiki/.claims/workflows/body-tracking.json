@@ -1,0 +1,344 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:ade92e09f58140c78fb73d93a587be569cc7cee4bbb52298295d8b21d53687ff",
+  "claims": [
+    {
+      "id": "claim_7369f99913cc4baeb2bbe2e6e829e997",
+      "statement": "The Weight calendar Sheet (src/components/weight-calendar.tsx) is shared between /settings and the Track Body weight card, opens with today selected (or a specific date when invoked from a recent reading), uses a Monday-first calendar with dot markers for logged days and an outline for today, and supports arrow-key/Home/End/PageUp/PageDown keyboard navigation.",
+      "evidence": [
+        {
+          "resource": "repo://src/components/weight-calendar.tsx#L1-L106",
+          "version": "repo-lines-v1:sha256:7e2862e75a597041e874a69309b2fa652277ebd88d7e26fb24a4fcc8650b7baf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0NWZmM2U4NWQ2NzE1YTdhOWQwZjZjMWIzMmYzMGNkOGNiMTQ0Y2M3OWM4YWJhZTk1M2VhMTM3ODg5ZmFlMmRlIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJjZjAzZGI0ZDg5YTU4ZDdlYTQ1MjEyNzE4M2Q3OGViNDdmZWU5ZmYzYWY1NDA1NDNjZjYxMWU1NTg4NDRmN2UwIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_79706970f68a43548c6acc5919bc726f",
+      "statement": "Selecting an empty day in the weight calendar offers Save; selecting an existing reading prefills its value and offers Update or Remove; correcting the date on an existing reading moves it, and if the destination date is already occupied a separate confirmation step names the reading that will be replaced before retrying the save with replaceEntryId set.",
+      "evidence": [
+        {
+          "resource": "repo://src/components/weight-calendar.tsx#L108-L179",
+          "version": "repo-lines-v1:sha256:382c2c9901c4b10424f70219188839b6dc10716f714e6d30e2093a7c78a7659f:eyJzZWxlY3RlZExpbmVDb3VudCI6NzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwNTQ4ZmI5OTM2NWNkNjY4OWM3MGU3M2Y3NDE1MTcxMTdlZTA1Mzc2YmFiNDliOTQxMTg1YjMwZTVhZDQ2MDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmYzAyMmIzMTk1ZjUxZWRlYTM0MWUwYjAwNGEyZDE5NTYxMTk3MWFmYTE5NzU5ZDUzNThlZDE1NTk0ODM5YWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d8b35b014a234ab7a462a5810e2f150a",
+      "statement": "loadWeightMonth reads bodyweight_log rows for one calendar month scoped to the authenticated user via explicit user_id/logged_on predicates (at most 31 rows given the unique (user_id, logged_on) constraint), and writeWeightEntry validates the date (today-or-earlier back to 0001-01-01) and weight (0 < weight <= 1500 lb) before invoking the save_bodyweight_entry RPC.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/weight/actions.ts#L19-L63",
+          "version": "repo-lines-v1:sha256:ac587d2956b6ff6fe6a22c04ef85f0b4b39230af7c955c1d6de5ee254ca902d1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzMDY5N2UxMjRhNjdkOTcwNzVjYmQ0ZjI2MWEyNDU1ZGZlOWIzZGU5YTdiYWRjOTI4MzJjYzY1NDA0MmIxNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmYTQzMmJmMTZjY2EzMTUyMzM1MzA3MzE4MjRmY2Y0NjE5ZGIzNDYwMTFlN2JmM2E0ZGZmNTFmMTFjOTIzMzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU5YmZkNGNiYTM3Njg5ZDVhYjgyN2Q4YjE4OTc4ZjNkYWMwZjRlZDQzODFjY2RhNTcyZGZlZTM1N2I5YWEwYTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0dc6e113492f4afdbaf3f50c8458b0e3",
+      "statement": "save_bodyweight_entry is a SECURITY INVOKER Postgres function that requires auth.uid(), re-validates date/weight, takes a per-owner pg_advisory_xact_lock keyed on hashtextextended(user_id,0) to serialize concurrent calendar writes, locks the target entry and destination-date row FOR UPDATE, only deletes an occupied destination row when p_replace_entry_id explicitly matches it (raising unique_violation otherwise), and performs the insert/update and any replacement delete in one transaction; it is revoked from public/anon and granted only to authenticated.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260912143620_bodyweight_calendar_writes.sql#L1-L59",
+          "version": "repo-lines-v1:sha256:66f77c9cafecaf1c795da455bb945b0782ee27c6fbf7c29c2aba5f33279984d2:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcyM2RiYTk0NDIxNzQzZDAyODAyNjcyN2NhMjAxMDk4ZDBiZTI5MjJhZDBkMDI3YjY5ZjkwY2I3MzdjODU3MDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZGU3NWQ1ZjBhMzQ2YTY3NTNlYTkyNjEzMDMyYWMzN2E1YjM3ZjEyNWU5OTE1NjM4MjBlNGE2MmZiNzQ2ZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgxZjE4ZDJlNTNhZTVhY2FkZWM0NzdlYjExMTZmMzdiNGRmZmY2NTVmMjZlMDRjZThiZDczNmM2ZjcwMTg1MmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ca1138a9ceec46a48f74eba0da0bd23c",
+      "statement": "getCurrentBodyweight resolves to the newest bodyweight_log row for the user ordered by logged_on descending, falling back to profile.bodyweight only when no history rows exist; calendar writes never update profile.bodyweight, historical sets, e1RMs, or strength caches.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/current-bodyweight.ts#L1-L25",
+          "version": "repo-lines-v1:sha256:1a55a6ce5325e4db7b450a850d0d066a2b572b2e24bb6ac8d02aa5f427c0bf79:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExMjU0OGNhZjJlYTA0YzMwNWQwMmJmMjI4MjBlZDU0MzFjYTY1YjlhYjhiNzE2YTExZTIzMGI5ZTJkZGZiOTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a4b0578f087d4355b8d55f57810266f5",
+      "statement": "Successful weight writes and removals call revalidatePath for Home, Settings, Track (/analytics), the monthly review, the Body analytics page, the next-workout preview, and the session route.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/weight/actions.ts#L61-L83",
+          "version": "repo-lines-v1:sha256:8bb49bc6fbcbf51434ccfc3b93bbf8faa7fe6fcb846a83ae4e09fba342a6d011:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1NTFiNGQ2Njg4YjgzMzk4NDIxZDBlMmExOTViMjgyYzk3NDQ1NzVkNjdlYTkwZjIwZTNlZDRjNzdmNTQ4MjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdjYTg5NTRkNjNjY2FjOTFiMGE3ZWUxOTIwNTc0NzEzNzRjMjhkZDcwNGJmZmViMTczMTBiZWQwZGYyMGI3NmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_77e015e3ce704c768e1a98cd8607f874",
+      "statement": "supabase/tests/bodyweight_calendar_writes.sql is a rollback-only SQL test with synthetic users that asserts save_bodyweight_entry is denied to anon, cross-user edits raise no_data_found, an unconfirmed overwrite raises unique_violation, invalid/future dates are rejected, and an injected trigger failure after a replacement target is deleted proves the whole transaction rolls back.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/tests/bodyweight_calendar_writes.sql#L1-L75",
+          "version": "repo-lines-v1:sha256:3e76ec730aeda1919393ee8ca94667cd98d66026a905349c5108daf7c932262d:eyJzZWxlY3RlZExpbmVDb3VudCI6NzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiNWIzOTQ2ODY3ZjM1MDYzNTg4ODBhNWMwZjllNzE2ZDAwODdiNTI1ZGRiMGU0MWRkNzk3ODY4ZTZkNDczMzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzOGU5NDdmMzYxNGY0YmFiM2JmN2IwODM5OGFmMjBiM2ZiOTc5YzlkZTA0MzY5M2Y4YmFlMDgwNTQzMTlkMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a3b7dc50658c431590e0e82126161409",
+      "statement": "weightChartData/bodyweightTrend compute rolling seven-day windows where the current window is the as-of day plus six preceding calendar days and the previous window is the immediately preceding non-overlapping seven days; an empty window yields average: null rather than a fabricated zero, and points backed by fewer than three observations render as hollow trend markers.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/bodyweight.ts#L24-L58",
+          "version": "repo-lines-v1:sha256:f33691e1650ca2808d479576430f932c68491b26e1ef0bd92001060cf2db8510:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3NWFiNjRlNzI5OTMzZjQ4NzdkZWE5MjhlMDhhMGIxN2ZjZDRhODkyYmJhNzdhMDg2ZGI4YjNiZmQxYWQ4N2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg5Nzg0NGI5ZWY5MjMzMWZhNTIxY2MxOGMxZTkzM2VjOGNiZDg2N2I4NDlmODlkZGEwOTQ1OGM4NWU0NGMxMjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUwNmRlNzc2OTI5ZTdjNmExY2ZmYWExYzFlMWYxYjA2Y2RlMGRhZDE2ZTRlNmI4NTdlZGI3ZjExMTMzNzU5NTMifQ"
+        },
+        {
+          "resource": "repo://src/lib/weight-trends.ts#L21-L44",
+          "version": "repo-lines-v1:sha256:6d70bdcab3cc651f7ee2c3cf82c152c5a99134d132a04b68be2f1f5fafbe60bd:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxMTdmMTUxNWJmMTkzODVhNWQ0YWUwNjIwOTQzNTcwMTgwZTk2NDMwYzVlMGRjMmI1ODIzYWNkOTMxMzVhOWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4MmM5YjFkNGRjZDViYmQ4ZDhlY2E0NWFmZGJlMTBlNGEwODQ1YjZhOTUwYThhZTliOWY3ZmFlMzQ5Yzk2MTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIyODU1NTJkNmVjYmMyNDI2N2ZkYjU1NDUxOTk5ZmIyZmRhNjdmMDVlOTBlZmFiZGNiNGRmMzE0ZmExMDY4M2EifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_64ca4334ab184ef1880ef5f43ba42ebb",
+      "statement": "Summary metrics on the Body page (latest reading, seven-day average, change vs prior seven days) always use today and the prior non-overlapping seven-day window regardless of the chart's selected range filter, so switching chart ranges never changes the displayed summary averages.",
+      "evidence": [
+        {
+          "resource": "repo://docs/WEIGHT-TRENDS.md#L16-L18",
+          "version": "repo-lines-v1:sha256:fb67d99cb956ee2b8ffb9a24177c10e9159bc19c9143a4032a6767f15801c0ef:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmE2YzE2ZjdmYWFkMjYzOGMwMTBhZDg1YzhmYWQxNDc1YzVkZTU5OTFmNTkxZDlmZTQ2OTJjZTE5OGRkNTk3YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjk5MzYwZTQ5NGE2MWJmYzhlZmFhNTVkM2VkZDZhMTVlZDcwNjIyYTQyYjgzY2UwN2U2ZGY1MzE4NzExMmY2MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2EzYmU0YjE3NDk0MjBiMTBmYWZkNWIxOTQ3ZDVjNmY4NTcyYTlmYTcwY2ExZmM4MzhmZmFlOWM4MDYwMzNiZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjZiMzg1NjhkNDc0NzIwZWY5ZTU4NzQxYmE1NzllYTMyMzdjMWZmMTRjYmM3ZjFlZjA1NTk0ODBjNTA2NzRjNyJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/analytics/weight-trend-card.tsx#L22-L100",
+          "version": "repo-lines-v1:sha256:17f949c7abecea209d18fd850e7be8af288a4eaec7929fccb31e04c2628ea2fe:eyJzZWxlY3RlZExpbmVDb3VudCI6NzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdkYjgwMzliMTdhOTcxMDkxMGQzODA5YWE5OTBkNGQzOWMxZTBkMjZlNmI4ZjkyMDk0MzU4YjczOWFmOTg3MzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0ZDA5M2ZkODdjZmQwZTg2ZjdkMTBhMzAyNjVlM2UzYTQyMzkyNWZjMDdmMTM4OGZjN2E1NDBiNTA5NzU2MzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4NDExZTI0ZTVkZDlkNzVlMzI4YzA3YWVkMWE5ZWExMWQ1OWUyMzQ0YWFhYWFiNmUzY2ViOTZmZTlkZWYxNDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY5MjcwMTk5ZmVmM2YwNDM5NzM2NzU0OTI0MjMzNjhjZjNmNDM4MzQwYmM1YWRjMjJiMmM0ZTYxMzNhNWFhOGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c473f03512374c49b9aa3fbe3e815e32",
+      "statement": "weeklyWeightData produces 12 Monday-Sunday calendar-week bars aligned to the ISO-week boundary, with the current week clipped to today and marked partial.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/weight-trends.ts#L46-L58",
+          "version": "repo-lines-v1:sha256:599a300712398e5b2551fb503c5447663a896b48f9dd5dc3f44632d3951ef101:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhhMWJmNWQxOTFlYzFjZWQyZDAyZThlNTI0ZGYyNmE0YTk3NThjM2MxMTFjY2Y5ZWYxMTRkMDU5OTkzMzU4YzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkMGYyZDNhM2FhZGEyNzU4NjQ1NzhkMGE0MzkxNTYzOGQ1NDNmZWNhMmM5NDg1OGRiOTQxMjExZTg2Y2VmMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNlZjdiMDIzMDc5NDQ1Mjk4NGI1MjVjNmYyYThmMWU3NGNmODAyNGMzZTZmNzEwNWRiMTAxODk1M2JiMzU2NTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5f5cbf5067654c5190ad2951e95537b8",
+      "statement": "loadWeightHistory reads all owner-scoped bodyweight observations through today using keyset pagination, looping until an empty page so a server page-size cap smaller than the requested row count still returns full history, and surfaces errors rather than rendering a partial series.",
+      "evidence": [
+        {
+          "resource": "repo://docs/WEIGHT-TRENDS.md#L34-L37",
+          "version": "repo-lines-v1:sha256:7837a9cfd5e5136507d5bb539a94a9cb914690cc3c01d8e1c087c486b37ff88d:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGYxNWY5OWJkYzEzZDgzMmUzMjMxZTVhMmI1OGUwZTk3ZDQ0MmIzZWQyMjQxOTIzMzRiYTIyNDI2Njc4NTU3NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTlmYWE2MzlhZTg1YTIyMWViODAyZDJmMGZiOTI3ZGU0ZTQzMDg4ZmIyNmY5ZGY1M2M2ZDY0NWQ4M2JmNzQ3MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWFjMmI4MjdiMTEwMGYzMTM4ZDc2MTk5Mjk2NzEwZTljNWEzMWRjNmI1YTkwM2E3MjljYjczNWI4OTE2OTVkNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTgwMjVhZWIwYjM4OTM1ZDAzYWU4YmEzZTQzYWIzMWJkZmNiYzc4ZDM5YjI2YTAyODA1YmNjOTMwMmZhYzlmNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_8abd74041c414f65a76cc5a1752b9e62",
+      "statement": "The monthly review reuses the WeightTrendCard with an explicit calendar window: chart points are clipped to that window while rolling averages still look back the prior six days outside it, summary averages are anchored to the window's end date, and the displayed goal is always the current Settings value rather than a frozen historical one.",
+      "evidence": [
+        {
+          "resource": "repo://docs/WEIGHT-TRENDS.md#L65-L68",
+          "version": "repo-lines-v1:sha256:7567a412f715652bd1940ef1547056820535cc11f9e144d939c59eae418bfbca:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTE0MzMzZWI3NGFjNTM5Y2EwNTY4OTI0YWU1MDg0N2E0ODkxOWZiZTlmN2FhYWJjNzEyODc3Y2U0ZGQzMmMwZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjFkZGEyZjI3NDQwYjQ3Y2JjZTdmMDhiYWU1MDJiODUxODBhNGIyYWExY2Q3YWIwYTYwZWY5OGRhMDg2NTIyYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmZiYjhkOGJmODNlNzBmMzVhYWQ3NzlmMTAxYTI2YjBjZmQzMWE5ZmI0ZGI0MzExNzg4ZjRmYjhmZDI4NTY5MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/analytics/month/page.tsx#L39-L49",
+          "version": "repo-lines-v1:sha256:8a23fd73e5d2d0066cbf824c38f4cf1c6cf16af6c7cd1d9ac2d2af218daa6ec4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmYzNlNGVhNWU4ODIyNGM4MmMwZjg4NDM4Y2RhM2ZkMmZmNjU5NWJhM2E5ZTY4ZWViNzlmNmNjMWU2ZDVlOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxODU2NmVjMTkzNjZlNGY4MGFhMTMxMTBiYTY1YjFmMzExYjM2ODY2Y2UyYzk2MTJkZDU0NDhjYWI3NWNmYTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI5NDA0MzkwZWM5NDg2OTBhMWZjNzI1MDIxYWVlZWEwOTkzODE2ZTFmYmI3MjA5OGNjZjQ5MjBhOWM0ZGU2ZjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE2ZmMyNWRiNDQ5OTg4NWFiZDNmMTBiOTY2NTdmZmQ3NjI0MzY5YzQ1Nzg4MjlmZjU0ZDk2NmJkY2M1ZmNhYmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e432c27bf56d47019de8ae2ed17611e4",
+      "statement": "weightGoalDistance reports only absolute distance and an above/below/at position (at when within 0.05 lb) between the current average and profile.goal_weight, deliberately avoiding gain/loss intent inference or a completion percentage because the schema stores goal_weight but no frozen goal-start baseline observation.",
+      "evidence": [
+        {
+          "resource": "repo://docs/WEIGHT-TRENDS.md#L22-L30",
+          "version": "repo-lines-v1:sha256:8b7565b4a0330a22eccc820ecc570b6f6b53dbd401afa6a96b5e4efe585fb0a5:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzJiN2MzM2M4N2Q1NGMyZDFiNmRhMDE5ODc2NDQ5NTIwMTQ0Zjk0MDBmNDU2MzhiOGYxOTJiOTUzYWY0YjRkNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzVhYjk3MWI2ZmJmZTc2Nzg0YTg2Njc4ODU0YzU3M2U5NjExODM4M2ZiZDgwMTBlMWZjMDAwODZkY2RiZTU2ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjZiMzg1NjhkNDc0NzIwZWY5ZTU4NzQxYmE1NzllYTMyMzdjMWZmMTRjYmM3ZjFlZjA1NTk0ODBjNTA2NzRjNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWFjMmI4MjdiMTEwMGYzMTM4ZDc2MTk5Mjk2NzEwZTljNWEzMWRjNmI1YTkwM2E3MjljYjczNWI4OTE2OTVkNyJ9"
+        },
+        {
+          "resource": "repo://src/lib/weight-trends.ts#L60-L66",
+          "version": "repo-lines-v1:sha256:575625eefc50f497782c4aca96c33bc16c5d61a54bbdc14ca807db8180977ba2:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2QyYWQxMWYwOTZiZDJkNzIzODIzNTg5YWI1OTMzYWE4Mzc4NmJmNWFmMjRlODU3NWI3NWRhZjJjODNkZWY2OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmQwZjJkM2EzYWFkYTI3NTg2NDU3OGQwYTQzOTE1NjM4ZDU0M2ZlY2EyYzk0ODU4ZGI5NDEyMTFlODZjZWYyYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_5ab54454f13848db9a43e9381a1d79fb",
+      "statement": "Each body_measurement_log row is one tape-measurement site on one Chicago date key for a fixed site list (waist, neck, arm, thigh, chest); a missing site for a date is a missing row rather than a null column, and V1 stores a single arm number and single thigh number.",
+      "evidence": [
+        {
+          "resource": "repo://docs/BODY-MEASUREMENTS.md#L1-L9",
+          "version": "repo-lines-v1:sha256:a2b675aa57bf0c69d765f12f1e0b527b1103a6c59896eed8934386e967582aa2:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGYxMmQ1YTkwMTJkNGU1YmY2MjcxNDQ2YmY4Y2ZiZDIwMDA2NDVkNjJiZDUzODg1YzNjYzg2ZmNhODIwMDFmOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjg5YTJkMmZmODBhOTE2M2VkOTk0NmM2OGUzYjRiZDU4YWVhNDc5YTU4MDRkYmU3OTU4ZTQzOGUxYTk2ZTYzNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjQxM2NkNjljMjI0YzU2YTJhMTk1MDBiYjgwMmVmZjc3OWE3MjZiNjVkN2VjMjY5NWQ0NmU5MWZmYzE2NzVjMiJ9"
+        },
+        {
+          "resource": "repo://src/lib/body-measurements.ts#L1-L17",
+          "version": "repo-lines-v1:sha256:41582093034b84d7115584940f7eee73b51e91d11f3ac008ce270ba701390b64:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmZWYzNGFjYTBhZGViZjk3ODJjZTRlNTI2OTA0ZTgwYzQxMzY2YmJhMmJiNmZlZWQxNTZlYzFlNzk0OTUyYjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhMWQxYTYzMzkwMjI5Yzc5ODM0N2U4M2EwNDA1NDQxYzk0MDAwMzUyODRhZDE2OGMxYmY2Y2RmMWQ3MGEzNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiYzQ0MDU4OTAzODBlMmU0MjU0YjQ4ZTY4NTYwOWFmOTk5OGE0NjRkZjExMWZhZjkyODFjYzI2OTdhZjM1MGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7b25003909e841c79faa6501a496a23b",
+      "statement": "writeMeasurements validates via parseMeasurementWrite (inches must satisfy 0 < inches <= 80, date must be today or earlier), writes only sites with a submitted value so blank fields never delete an existing row, upserts on (user_id, logged_on, site), returns an error and writes nothing when no site is populated, and revalidates only /analytics/body.",
+      "evidence": [
+        {
+          "resource": "repo://docs/BODY-MEASUREMENTS.md#L13-L21",
+          "version": "repo-lines-v1:sha256:8c35ff3f3debf644e728bab30aabc8a97d84acf7e8b74d6865f1dc95132ebe93:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjZhMTUwZDNlNjljNDQ5ZWFkZmIwNjhjZDRhZTVkODEzNzQxMjNiZDRiODAyNmFlNWE5ZTc0MWYyMzA1MDQwZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWM2ZDc4MGNkM2VlMWU0Y2YyZDA4Yjc3NGRiNmYwOGEwOWEwNDNlN2U5ZjEwYzU4NzIzY2E4OWVmMmU1ZGI2MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjQxM2NkNjljMjI0YzU2YTJhMTk1MDBiYjgwMmVmZjc3OWE3MjZiNjVkN2VjMjY5NWQ0NmU5MWZmYzE2NzVjMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzYxYTUyNzA3MDAyMGIwNzdkODIzMTg4Y2JhOGI0ODcyNjc1Mjc5YWJiY2Q1ODM2OWZhZDM3OTY3ODhhMDgwZCJ9"
+        },
+        {
+          "resource": "repo://src/lib/body-measurements.ts#L155-L188",
+          "version": "repo-lines-v1:sha256:38907ca793d72aad3d3ee4a554f22beb97b6c4934401289dcbc601837b8e2062:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiOTk2NDVjMWZlYTgxMmJjNTNlOWNmNDUzMjAxZTAzZGQxNTUzOTgzOWFiNWIyODJhZjAyNDM1NGY5NmU2YzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0YTUxMjJmZGM5Y2M0NWE1NTUxY2NhZTNhNGU5OGQ0NDkxYjY1MDFhOWZmZGE2OGE4NjRlZmI1NjcyMWFkZWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/body-measurements.ts#L44-L59",
+          "version": "repo-lines-v1:sha256:89d334c4158f20ed855b91002034f215bdc12b99e11ff03743cf0b7de323d89b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFjMWZmMjM5YzQ4MGQ4MzRkZDJhM2E0Mjk0OTBmN2ExMjk5Mzg2ZjIwYWEzZGViYTM3YjQzZGNlZTVmMmUxMDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUyNGFmMDYzOTdiZjJiZDBlYmJiNzBkMDBjODhjZWQ5MDgxN2IyZWRjMTEwYTIxY2FkZTJhZmVjYzZmMzZmNzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMyYTJhYWM3YjU5MzU2Y2Y2ZWI1YjA0MzU0ZDhlNjFmOWRlNTgyYzhmYjY2NDU3YTAxZWY5NjM2MDljYjQzOTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_41a241bff6014adf87d699c22d8d957a",
+      "statement": "Tape measurement inches never enter effectiveLoad, getCurrentBodyweight, or the Coach API; body measurement RLS mirrors bodyweight_log, scoping select/insert/update/delete to the owning user, and supabase/tests/body_measurement_rls.sql covers owner isolation, a denied cross-user insert, invalid inches, a future date, and a duplicate (logged_on, site) write.",
+      "evidence": [
+        {
+          "resource": "repo://docs/BODY-MEASUREMENTS.md#L21-L38",
+          "version": "repo-lines-v1:sha256:fa12e321d5844a2f2917d699315c953190d2aca70489ec9bd8c555357b9e8883:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjNmQ3ODBjZDNlZTFlNGNmMmQwOGI3NzRkYjZmMDhhMDlhMDQzZTdlOWYxMGM1ODcyM2NhODllZjJlNWRiNjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZjQ2OWZkMDU2MmY5MzMwMmQ0MDM4MTFiOTVhNzgzZGY4Njk3Y2ViY2JkYWI5MTMzMzMyYzdjNDVmNzU4YWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4ZGJhYThhMWQ4YTljNWE1ZjA5M2VhMGFhZDhlMGQ0ZGQ0Mjk2YjZiMmNmMmQ0ZDU4MzkxZjYyNzExMDBjZGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg2ZGY1ZWRjOTY0Njk5NDllOGY0NWE0NGE1NDU1OTE3YTQwMTUxODZjOTIxMDZiM2I4ZTBjNzljZWNlOWFlNWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_451ad2c4946d4d07bfb5ae1e683b9240",
+      "statement": "Period tracking requires both profile.sex = 'female' and profile.period_tracking_enabled = true (checked by isEligibleForPeriodTracking), and every read/write helper in period-calendar.ts re-checks this eligibility at call time rather than trusting a cached or client-supplied flag.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/period-calendar.ts#L10-L54",
+          "version": "repo-lines-v1:sha256:b5dc532fd8296c45f3330c3225ac0fdef25f96b25b58e87b93d1dea19d3d7efc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlZjY3MWNkN2NhYmUyOGRjODVmZDVmYjgwY2RmMTdmOTlmODJjYThiNmE3MTJlNThkOTE2NDUzNmE5ZDljYzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3MTRjN2I3MzY3Y2YxYWEwNDExYjBhOGJjNzI1Y2VhYTU0NzQ3ZGYzMWUzMjVjM2E0Y2FmODkzZDM3MDU5NDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2OTA4YTM0MDQxNTM2MDNkOGZiYzE5NTZhZjQzNjgyYzk3NGEwNzliMTFmZWIyNjVmZTEwYWNlNWFmY2IxMjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c35752676c0c4cc1ac3c02b5b2122a4b",
+      "statement": "period_observation stores one row per observed day (id, user_id FK to auth.users ON DELETE CASCADE, observed_on date with a not-future check constraint, timestamps), unique and indexed on (user_id, observed_on), with an RLS policy scoping all operations to auth.uid() = user_id while the tracking-enabled gate is enforced only at the application layer via isEligibleForPeriodTracking.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/period-calendar.ts#L23-L54",
+          "version": "repo-lines-v1:sha256:ad000b5f582f449457a79ac8e159bf5d7ac74da56673941fc7538a779fc9999e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0Mjk1NzRmYzVlODVmZjRiMTM2NGVjYzYyMWFkODcyNjlhMDJjNzliOTI2YmVhMTk2Yjk2MTNhZjhjNDJmODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyM2UxMzg4ZmU5OTBhOTgzYTc1NDc1MjJmNjc0YWFmNTc5ZWJjNWIyZTljYmI2NjllMmQ0OTJkMmRjMTYwZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2OTA4YTM0MDQxNTM2MDNkOGZiYzE5NTZhZjQzNjgyYzk3NGEwNzliMTFmZWIyNjVmZTEwYWNlNWFmY2IxMjAifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260915203212_period_tracking.sql#L20-L46",
+          "version": "repo-lines-v1:sha256:c9ec0f59bf9a48cd27708563510f3981d54a2980be9c399a269d078c3fd53920:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyNGUyOTNiYzJkMjAyZWZiZTMzYjE5YTJmNTEwZDgzYTFmYWEyOTU0OTg1NDQyOTk1ZWFmZmU5OTc5ZjI4ZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzY2Q5MzU5ZTY2Y2Y3ZDZiOTFiMTNjYjFlNzNjYmExYmUxOTdiNzEzODRhMmRhZjVlMzYwMmVmNWIyZDI0MTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgxYmE5ZjBhZjkxMjQ1ZWMwZDYwMDYwZDQwNDgwNGVkMzUxMzE2ZGFkMjlhYmQ1ZTc5NjYzMjAxMmVlNzhhNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2b68eb085bf649958309f17f1bb7acfd",
+      "statement": "profile.sex is a text column defaulting to 'unspecified' with a check constraint limiting it to unspecified/male/female, and profile carries period_tracking_enabled (boolean, default false), period_consent_version, and period_consent_granted_at as consent fields; the live Settings UI exposes only the three sex options (the design doc's optional fourth 'Prefer not to say' value was not implemented).",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/settings/page.tsx#L112-L127",
+          "version": "repo-lines-v1:sha256:825c06a6fe03d4df08942fd8e23066e1cc529ce516f2c561d219fde80a30cdda:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFjNWIxZmVjODJlZWUwNGM0MjAyMDJlNjk4NDEwMjc1ZjZlYTVlZDYwNWM1NjhkMzA5MzY3NjE5OGNiMGIwOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmMjE1ZmQwM2NmYzJiZWViZjgwNGExN2FjNWU5NDc5NTFmN2NkMmRjMDU2MDUyMjQ5OWM2MDZmZGJjZDcxODUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk3NDcxMjIzYmI0NzQzMGFhYzY3NDUyMmZhOTYxODE4ZTBmYjE0MzgxZTljNmIzNWM3MWFlOTk3ZDNkZTU5ZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVlOTEzYjMxMzQ1ZTVhNjU2Y2E5ZGE5Y2RkNTExNzExNzFlMzYwOTY5OTMzMzAyYzNmM2VlZjkxNTc2NGIwODkifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260915203212_period_tracking.sql#L4-L18",
+          "version": "repo-lines-v1:sha256:e1dea87803fbc668e7752eb264cdd6daaa974885fd76213e715cd0c4d22af949:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUwODcwNDkwMTNmNzUyYzVkMTZkNGM5YzBlYmRkY2MxMTIzMWJlN2ZmZDJkODc3YWMzZGUwMzhmNzZkMTQ0MzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1NmU1NzBhM2IzYTUzMTBiMjcyMWFhMDhiZDdkZGI1MTUyYjFkYmVhYmNhYzAwMTNiYTQwNmM0NGExYzcyMTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVlNWM0MDY0NzVkZTMyZDA1YjBhY2M4YWZiNWQ5N2E3YmM3OTJlYWM4MWU0Yzc3OWZkOWM2NGU1NWU0ZjQ1YWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1NGMzOGZkMGRkMDU5OWM0YzI0ZGI3ZWFlNmIwYTgyYWM1ZTg4OTNkZGUxNzE2ODA1MTY1ZjkzY2MwNmI0ZDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f52ab96113e34b83a2cd818c02b805c9",
+      "statement": "enablePeriodTracking refuses to enable tracking unless profile.sex is already 'female', then sets period_tracking_enabled true, period_consent_version to 'v1', and stamps period_consent_granted_at; saveProfile auto-disables tracking (clearing period_tracking_enabled and period_consent_version but not period_consent_granted_at) whenever sex changes away from 'female' while tracking was enabled, hiding rather than deleting observations.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/settings/actions.ts#L17-L99",
+          "version": "repo-lines-v1:sha256:215f1f9ff4980208232ca991e4fa936d3b31e8c1c5201e47ca0639ee94259568:eyJzZWxlY3RlZExpbmVDb3VudCI6ODMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3YWRkN2JjZTZhZWIyZjk0MWUzZTFmNWE0OWNkMzBmMDc4ZDJmMzkwY2FhYTBhNTA3OWRmMzkwMjFjZDFhYzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmYTQzMmJmMTZjY2EzMTUyMzM1MzA3MzE4MjRmY2Y0NjE5ZGIzNDYwMTFlN2JmM2E0ZGZmNTFmMTFjOTIzMzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdhZmZiZjNiNTkzN2RhYWM2MmRiODk3MjQ5ZTY2YjMwODc5NDI0NzY1ODZhODYzNGNmYjc3MzRkYjQzODcxZGUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_93ed609b9570452b8aa9aa8668e515b0",
+      "statement": "PeriodTrackingSettings on /settings drives the full period-tracking lifecycle from profile.sex/period_tracking_enabled/hasObservations state: a hidden-data card with only Delete-history when sex is not female but history exists, a consent Sheet on first enable, Re-enable/Delete-history when disabled with kept history, and Log-period-days/Disable-tracking (with a Keep-history-vs-Delete-history choice) when enabled.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/settings/page.tsx#L185-L190",
+          "version": "repo-lines-v1:sha256:cbc67637788a760ee9c2be5c088e92f5f45ae1e807dbe3bddd31d773cbb8c751:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjFhNTg2ZWMxN2Y4OTAzMTkxYjU0M2ZhMzJhMzgxNWY3ZjUwOTZjOTlmMTZiZmJmYzgxZTdmMjBiOTc1OWE4MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWIxMDYzYzRkZWE2OGEzODE2NjExMGJhZDJkMzM4YjRkNzJlMDJkMzdiZTA4MTVhNzg0NTFlOTkzMzJkNmRmZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmI1M2Y3MTM2YmZhODY3ODBiNjAxYWI5OGNjZDIyYjk0YTBiNGY0YzhjZDFlNTQ1Zjc2OTQ0OTBlYTJlMGJmZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjU5ZDYwNjMwMzQzZmJiODQwOGYzMzVhYzA0NzU2ODk2MGFkYWU1YTc4NTYxYjgwMDg4OWJkNjI1NzAxMGEzOSJ9"
+        },
+        {
+          "resource": "repo://src/components/period-tracking-settings.tsx#L1-L262",
+          "version": "repo-lines-v1:sha256:84b4858d3c0c59a7a473f4f4e69f7bccc90f1b26482c21ef95d454016d7598c1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0NWZmM2U4NWQ2NzE1YTdhOWQwZjZjMWIzMmYzMGNkOGNiMTQ0Y2M3OWM4YWJhZTk1M2VhMTM3ODg5ZmFlMmRlIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJjY2Q2ZDY3Y2I1ZDY0YzM0NzlhNWQ4ODAyMzQ5YjAxZmRmZDJkZDA4MzU4MTIzZWE4M2RlYzg2Mzk4YTI3ZTM1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_c0a873b47c4e461d97252f428d0efe9c",
+      "statement": "disablePeriodTracking always sets period_tracking_enabled false and, when deleteHistory is true, hard-deletes all of the user's period_observation rows and clears period_consent_version/period_consent_granted_at; deletePeriodHistory (used from the hidden-data card) deletes observations and clears the consent-version fields without changing period_tracking_enabled.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/settings/actions.ts#L107-L166",
+          "version": "repo-lines-v1:sha256:1680fb251a6d02cc6218c0048d83cc18d0d162ed75bc9f4b08b2e75a37e09007:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlY2Y0NzEwNWFhNzRlNzBhYjc1YTA0NmExNzZhODNjNDBiOWI1ODBlNTE3NjljY2Y2NzJhNTNmMDczYWI5ODMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY3ZDZlMjI0NGMyNTgzODdhZWYwYjczMGFkNzc0ODkyOGM4Y2I0ZDA1MzM5OTFhN2FmNjM5ZDliODAwZWJiYjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e9f2bdbb9bea450b94622c1317d4d02e",
+      "statement": "LogPeriodButton/PeriodCalendar is a separate Sheet from the weight calendar (not a shared mode toggle) that reuses the same Calendar primitive and Monday-first layout; marking a period day is a daily boolean observation with no numeric value and no start/end range record, and backfilling any past date is unrestricted.",
+      "evidence": [
+        {
+          "resource": "repo://src/components/period-calendar.tsx#L1-L100",
+          "version": "repo-lines-v1:sha256:9df367ff6e3456ee9a73bfc1ba20a0007d8cb987544b5e373acaa90077814986:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0NWZmM2U4NWQ2NzE1YTdhOWQwZjZjMWIzMmYzMGNkOGNiMTQ0Y2M3OWM4YWJhZTk1M2VhMTM3ODg5ZmFlMmRlIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1MTU2M2ExMjNmNGM2NjNhMWI2N2NiNjgwZDI2YWUyZDM3NDg4NDdjMzNkNzVkMzViZWYyNTk5NTQwMjk3NTBkIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJiZWZiMmRiM2NhOWExMjVkZWE3OGJhZmZkMGFlMTk0OGVkZDYxOGMxYzlmMTJjOGRmZWUxYTQ0ZjQ0YTBlNzU4In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_f06c89e05db3461e832096327107012e",
+      "statement": "WeightTrendCard renders a session-only, default-on 'Show period context' checkbox and draws each observed period day inside the visible chart window as a muted-purple Recharts ReferenceArea, gated on the eligible/periodObservations props supplied by the monthly review page loader.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/analytics/month/page.tsx#L22-L48",
+          "version": "repo-lines-v1:sha256:9c22d131d682b79529e493dc2349e1d709118951c797e405d9a131018df4ab75:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4YjQ3Zjk1MDA0MDgwODRhNTg2NjA0ZWJmMzg2ZTIxOGZhYzFiNTQyOTZiMmU0NjM4NDY2M2Q5NGIzY2NlZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiMTA2M2M0ZGVhNjhhMzgxNjYxMTBiYWQyZDMzOGI0ZDcyZTAyZDM3YmUwODE1YTc4NDUxZTk5MzMyZDZkZmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE3ZjU3ZGExNzEwODhiYmFhZDVlOTRjOTdhMGI2MDM5OTAwM2JlNzRlZmFlOWI4ODIyZDUwOWIzM2JjZmUxNGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE2NGY0NmIxNWY4MzE1M2U5YzMwZDVhODUwMTJiZDdmMmZmMzhjMTllYzQ0NDI0NjQ0N2IwZTQ1YjJhYjEwNmEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/analytics/weight-trend-card.tsx#L150-L170",
+          "version": "repo-lines-v1:sha256:e49f0200ba054c2865d63e3ec36ab4c734da500764944448d9f354b301652e01:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1NmM3ZWJhYWIxY2M4MjUwMWJjYjZlMTY4ZmE5YTBlNWI5NTgxMDAwMmE3NzM2NzAxZTk2NjNjODQ5ODQ4NDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlMmQzY2MyYjNhOTVhYmU0YTE5OWE5MDMyMWY1OTc3NzQ0YjE0MzkwMDI0Nzc1YzlkNmIxYTIxMmMzMTU0ZjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY5YjljNTI0ZTQ5NmQ2MWQwMzE1NGViMmQ4NTcwYTM3MjIyNmY2Y2ZjOGNjMzAxMTVkYmRjZjA1MTI5MDkwMzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4MDZiODgyZTFjYTIwYTBkOGE0N2RjOTJmZTRkNWE5Yjk3YWRiOWRhY2JhNTA3NjE2NmRkOWEwNzljYTkyMjEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/analytics/weight-trend-card.tsx#L22-L78",
+          "version": "repo-lines-v1:sha256:20bccc0f9c9697a762deca33cb22d8e357bcafba1f789a6933f52189d79b261a:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdkYjgwMzliMTdhOTcxMDkxMGQzODA5YWE5OTBkNGQzOWMxZTBkMjZlNmI4ZjkyMDk0MzU4YjczOWFmOTg3MzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxMzAwNDg0N2UwNGQ4ODQxMmY5NGVhYjZiMDU2NDlkNjJiMDQyM2QwNDliYjRiMzI3YTgxNjMxNmQ2NDQzY2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4NDExZTI0ZTVkZDlkNzVlMzI4YzA3YWVkMWE5ZWExMWQ1OWUyMzQ0YWFhYWFiNmUzY2ViOTZmZTlkZWYxNDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFkNDkxNGYyNzZiNzRhYWVjNzliMzBlMDJhMmUxYjM2ZmZmNmQxNjcyZTkxOTE0MDY2MDEwNTc4NjcxNTYzMDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5a3da67190da4dec820bcc40ade6d5c0",
+      "statement": "ReviewChart/E1rmChart overlay the same purple period-band styling on a lift's e1RM timeline only in the All-history range; the default Last-8-workouts view never shows period bands.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/history/%5BexerciseId%5D/e1rm-chart.tsx#L1-L50",
+          "version": "repo-lines-v1:sha256:7f7ae2c5438340be90e627b29dfa65b3a0faf25476da0522167e8abdb2717ff3:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliOTk0NGUzODBmOGE1ZWIyZWU4OWYyODU3OWVmMjBkMjI2ODczOGZiZjdmODhhMTk4ZDZiMTlkZmIwZDhjNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2NDk4ZTBmY2UyMDhhZDlhYTEyOWNjMjQxNTcyY2ViZDE0MGY1ZDU5ZDRmYzNmYjU0NjMxNDNjYjAwNjIyOGMifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/history/%5BexerciseId%5D/review-chart.tsx#L1-L69",
+          "version": "repo-lines-v1:sha256:83c7953c51b0e70616746073cdd1a5d9f57838ac667cdf50ee81650c4e57e96a:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2MTE2YWI2MmE3MzdlNzc5NzhmYjIxNDE2YjdjMTQ3MTdhOWQ1ZmU4ZDRmMWRhYzIwMjRiZjk5Y2UxMTIzNjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f89b2b8b4b5d450395cae1ed3eca6960",
+      "statement": "buildPeriodPerformanceOverlay computes, per Monday-Sunday week touching the report window, the observed period days alongside that week's bodyweight-average change and canonical PR counts, reusing the same eligibility gate and month-window clipping as the chart bands; it is rendered by PeriodPerformanceCard on the monthly review and never transmits period data elsewhere.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/analytics/month/review.tsx#L1-L50",
+          "version": "repo-lines-v1:sha256:c5bc4a5a4410f29580b37a4fddd13f20ab214c7debe8e901f98cf4cd014d5609:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3YzFkOWZkZTc5YzZkOTNmYzg3ZTc3N2EwYzdjZDdhYjMwMTJmZDY0NWY3ZDQzNTIzZGI4YjUyZmY2NjExNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3NmJkMmFlYTcwMjhiN2JkMjM0YjBiNTcwZDE3NjZkYzg3MDZiMWU3MzkzYWViODE2MWZiOTk3ODYzNzk3ZjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2NmI4MDY1ODM4ODk1NTE0Y2IxMmI1Nzg3NjI3NmE1MWFmOWM0MmQ3MjQ3ZmNmM2FhYjZkZmNiN2VkMWU5ODgifQ"
+        },
+        {
+          "resource": "repo://src/lib/period-performance.ts#L1-L100",
+          "version": "repo-lines-v1:sha256:b6de7df010d4b04476e9cc9498c47b2a23c67d4caf79ad1f72b4e51997a4a852:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJmMDZiOTIyZTYxOGZiYTM5MmQ5YTFiOTI0YjQ2OWEzNDI5YmI4N2I1NTlmZjJmYzRmNDIzMDc5OGY0M2E5ODg3IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJiMzQwYjBhZWUwYmZkNDJhOGVkYzc3ZmEwMDhkNTY2M2FlNjEwOGU4YTM1MWZmZWFhZWUzMzFmMmM0MmNiOTQwIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJkYWUxMGY4ZmE5NGIzYzA2MjU5YThlOTkyZjlmYmFiNGVkNjI4MThlY2YzMGI5MTNiZTE4NTkyMzI2YmMyYjQ2In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_801ef805f5734464ad42f866836a5c34",
+      "statement": "Period tracking is implemented in the codebase (migration 20260915203212_period_tracking.sql plus src/lib/period-calendar.ts, src/app/(app)/period/actions.ts, and the Settings/period-calendar UI components) even though docs/PERIOD-TRACKING.md is labeled a proposed design spec awaiting review; the shipped code should be treated as the current source of truth over that document's status header.",
+      "evidence": [
+        {
+          "resource": "repo://docs/PERIOD-TRACKING.md#L1-L9",
+          "version": "repo-lines-v1:sha256:eab579c246de8962af9b355753e6a1d680ecec31e6fac8daa3bbdc41e401ef62:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTE1OGE4MWE3MmU5ZjZjOTJjNGY5ZDVkMGY5ZDkzYjAzZWI5ZTIwZDAyZTIxZDM3ZTNjYzQ2MTRmZGQzZTc2YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDE0ZmU3YTA0ZGUxMDc5NDM1OWNhMGNiNGNiZWI5MzYwMjA3ZjY4YTFhMmY0MjY3YTY3ZTk2YzA5YTIxMTBlYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDAxZjJlYzE3NTkzYzEwNTRlYjQ2MzY3ZDg0NTNlZjI0YTE3M2NlOTZiNzExN2Q5MWY5YTY4ZDQ0ZmVmOGIwMSJ9"
+        },
+        {
+          "resource": "repo://src/lib/period-calendar.ts#L1-L54",
+          "version": "repo-lines-v1:sha256:c3c17f5a8e23ac12dddbf3f9e3efa5ef452364dd662e5a99da014b3e9b7d3a9b:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4MGFhNDQ1ZmY1YjBmNzE2YjkzNzI3NGVmYzg4MmJmOTJiYTY0ODE2YjAwZjE4YTlmYmY3YmZiMDQwYjBhMjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2OTA4YTM0MDQxNTM2MDNkOGZiYzE5NTZhZjQzNjgyYzk3NGEwNzliMTFmZWIyNjVmZTEwYWNlNWFmY2IxMjAifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260915203212_period_tracking.sql#L1-L46",
+          "version": "repo-lines-v1:sha256:465f7701bbf5786276f07785040a709ab5366b895c7cc330ba09b70174558dd2:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyMGY0ODkzM2U0M2ExYWI3ZmMwNmZjNzk5NzJkNDI0MTFhNWY5NmEyZDhkY2Q2NDA3ZWM2NjliZjc3NDc4MTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzY2Q5MzU5ZTY2Y2Y3ZDZiOTFiMTNjYjFlNzNjYmExYmUxOTdiNzEzODRhMmRhZjVlMzYwMmVmNWIyZDI0MTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

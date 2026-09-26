@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:2497d87cdf13efbd704e86e377ad7fa5d1be8edd9a5f66e3f7d0f7e3f9efe006",
+  "claims": [
+    {
+      "id": "claim_02b8758872ad4b31bfb5b04c0b8584e3",
+      "statement": "set_log is the authoritative record of training performance ('atomic truth'); every other performance signal, including user_exercise_stat, is derived from or rebuildable off of it.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/0001_init.sql#L1-L2",
+          "version": "repo-lines-v1:sha256:d60d7f2e438d12390d8e4ffdd481935a664f785be6250c1c0630f80fba9758ab:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2NhNmQ3ODVjZGM0ZDY4ODA5YjAyZmUyZDEzODc1MTU0NmJlMWNjN2IyYWEwN2FlMjBiMDVhNzBkN2VkZDRiYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDRhYjI2Y2Q3ZTQ1NjIwYzhhNGM2NDNkN2FjNjllZDgxZTFmZDkzYWU5NGRmYmVjMzEwNjE5YmZkOGYxYjE4ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTdmNzRlNzgwNGEzNTFkZjEwNGU1Njc3YTg5ZjRhOWRmODM3YjhjMGZlZDJhOTc3Zjk3OWE4YWUxZmUyZDAyZiJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/0001_init.sql#L56-L82",
+          "version": "repo-lines-v1:sha256:6d53a5ebb4c6bac1066975130459c5066cf66bd600b07943413d8d4f275985b5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2NzhjNzUxMDVkYjZjNDVkYTUyNmIzZmJkYTE1OGY5ZTdiZjI3MTUzZDA2NzllMmM0YWIyMzYyN2I3YWFhODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ3MDhkZDJmYTQ0OGI3OTM2MDJjMjNmYjlmY2Y1NDQzNDVlOGIxNTQ5MjU1ODNhZDJmZWE2MDk4ZDYzMWM2NzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhNTVjY2Y4Y2I3NTk2YWEzZTAwMDM4NDliZTlkMjkyNmFhZmY5Mzg2YTYyYmFmYzgwMGU2ODE4NDlkOTg4N2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ee8d050208dd43de830718163d95e614",
+      "statement": "user_exercise_stat is an explicitly derived, rebuildable per-user strength cache (current_e1rm, personal_coefficient, coeff_confidence_n) keyed by (user_id, exercise_id), intended to be rebuilt from set_log at any time.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L50-L51",
+          "version": "repo-lines-v1:sha256:ad1617270ebb9ad9e108494eb9c1a24750e5d6d2b070e52e647704be00da2135:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWI3Yzk5ZGNmMDMxNzFmMTRiZjNkNzUwNzhjYmFjMGM0N2Q4ZWM2ZjNmZmI0NTVhMWVhNmQ0NzJlZmRiYWZjMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODBkZDdmODI1ODg3N2FmMTUwYjQ4NDA4MjVkYmY4NzVkMzk4YzBlNzdiMGI5MTk4MGEwNzY1MmYyMWRhYzBkMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzY1ODZjODUzNzhjZWZkNzUzZDU0ZmM1YTk4MjY1OWIwNDhhNmU1MWU4MGVjN2UyNGRlYjYyNWE2OGVhMmM5ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2E2YjZmOWY5MGQzNGU0OTkwMmZkYzYyNDQxYzA4ZTk0YzIxMzY3Y2U1ZGRmN2M2OTU5MTQ5ZjJmODY5NmQ1NiJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/0001_init.sql#L73-L82",
+          "version": "repo-lines-v1:sha256:ec8c753e6bae9c208a4eadf2f78815628e1ae8ee2f497ddeb6ea9bae9b93f770:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3N2NmMWU5YTIyNTljZDdmN2I4NmIxNGE1YzZkZDk1OTM0OTE5NGNiYzZiYWIwZWQxZWYwMzkwMjMxNzZhODUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIzNzExZDk3YjdhOTMyMWViZDEwZWU3M2RkODE3NjIzOTQ3MjMyNmZkZDIxNDRiYjUzMDU4NWEzZDY3YjYxZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhNTVjY2Y4Y2I3NTk2YWEzZTAwMDM4NDliZTlkMjkyNmFhZmY5Mzg2YTYyYmFmYzgwMGU2ODE4NDlkOTg4N2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_91c389f8dbfa4d6798dab0a61c462e7f",
+      "statement": "exercise_id is a text slug shared across exercise, set_log, and program_slot and is intentionally not a foreign key, so the seeded exercise catalog can live in application code (src/lib/strength/coefficients.ts) rather than the database.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/0001_init.sql#L1-L3",
+          "version": "repo-lines-v1:sha256:8d6b3738ed65c0f692b30aad21832a0ab2379664cd43b662c66e4b1b06bee349:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2NhNmQ3ODVjZGM0ZDY4ODA5YjAyZmUyZDEzODc1MTU0NmJlMWNjN2IyYWEwN2FlMjBiMDVhNzBkN2VkZDRiYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2JkODZhYmI4MWJhZjgyZmFhN2RhMDA2M2RjMWUzZGY5YzgyZTllNzc5ZWIxMjg1NmNiYmUzMTU5NDM1ZTM2YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTUzZWRlMTc5ZWNhYTY4NTU2ZTdmNDA5MGRhZmIzNzBlMjk5ZmYxNzFiNDQyYjliNDkzZjgwYjE4ZGYzNjIyZCJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/0002_program_builder.sql#L27-L28",
+          "version": "repo-lines-v1:sha256:6b225d4ecf7f9aab9dda0e12306ff472d235807d6ab9f676d0fdc4872026ae7f:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGIzMzdiMmY4OTQwMGIyOWJkMjY0Njg4MzY5OGZlMzZjYTQ4MzkxOGE0YWQzOTBjYmFiMjNlZDZmNjhiMjZjOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzI3MTYzOWM0YzI2M2ZlYzJiODlmOTUwMWNmMThkMDE1YzcyYzEyNTEyODg3YjYyNGZhMWFiYWU0YjhlYjE3NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmIzNmNiYzM2ZDE3YjM1ZjU2OWZkOGY1ZDExYmU2Y2Q1NTk0NGQwNWEzYTZmNWZiOThjN2Y4YmFkOGQ5YTQ3YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmMzMGU5YzNlNWUzYzIwY2NlZTExYzQ0N2UyZjQzYTA2NjVhYWMzYTM1OTYyMmEyNmJjOGI2ZDI2YWJhZGJjYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_fd66deebecc248b69c3d1bf8191d836a",
+      "statement": "A partial unique index (program_one_active_per_user on program(user_id) where is_active) enforces at most one active program per user at the database level.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/0002_program_builder.sql#L10-L12",
+          "version": "repo-lines-v1:sha256:33b35773c761a34f96dd376ea644e640903aa33a85c53cd08ee3b3cfced362dc:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWI5NTkxMWE5YTVkOGE5NzRkYjUzNTY3NzI2Mzg3MjAyNTM4NTdjNmQyODFkNmQ5ZTI2NzI1NDc2MGI2YjI0NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTYxZWVlMzQyZGViMGEwNWQzNTFkMDViMDg3NjdmOWE4ODgyYmEwZWE3MjIwMzdjNmEwMGI4Y2U3ODk0YWQwYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjZlYmE2NTMyZTBkNWM4MjMzZDdiZTM4YjdiOTIwODNjNDI0Y2VhNDY3MmEzOTM2MmYwNjY0MWFkNjhlNzVlMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjgxOWUwMjc2ODEwMzdkMWQzYmEzZWM2NzViZDRkYzA4OWZiN2U2NjZlNmEwYTRkNjhkNjgyZDM5MjgxNGQwMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_c4e0b208ef3a4044b373d05b490166c4",
+      "statement": "program_phase gives classic programs reusable week-ranged overrides of RIR range and/or set multiplier, enforced by check constraints for valid week ranges, RIR pairing, set multiplier bounds, and requiring at least one override field to be set.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/0010_program_phases.sql#L4-L35",
+          "version": "repo-lines-v1:sha256:c48354d53f8ee6298b4ecd0bcaaa2eb6664821d5f6b964f8a385a12644f461c9:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4MDUxYmIzMmNhZjZkY2IyMmMzZWNiYmM3NTIxY2Q2Zjk2ODE5NWM1OGEzZDBlZWQ2MDk3YWMxNzczYjRjYzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUwN2JiMDVmMjUyZDM1MTRjNjA5ZGZlNTI2Mjk3NDIwNDllODc5MTQzMTJkZGUyNGUxMTUxOWExZjIzZjFmYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgyNTU4YzhlNmM3ZmM2NzAzOTIxMTJmNWE4MGM1MDQyOWU5NWYzNDUyMmQzYThhZGMzN2IzZGY4MWQxNTE5Y2IifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5e7c021c9db2427a8fc4943bc3d2ce94",
+      "statement": "movement_adaptation is an append-only intent log for Fluid programs recording plateau-driven rep_change/swap/dismiss/manual_swap actions per program_slot_id; it is explicitly documented as not a cache of set_log and is never replayed to reconstruct performance.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/0009_fluid_programs.sql#L1-L22",
+          "version": "repo-lines-v1:sha256:4f742c9e3b360a9014bc5f9543acf1415015e88bd648719caab4dbe4c11d7431:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViNzY0NWQzZDMyODNjMzE0ZThmODYzMjQxNThiMDAzYTNlYWUxZmRhZDkzNjU1ODUyM2VhZDUyMWRlMmQ5ZjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE1NDhkMTMxMmJjZmYyM2IwODY0Yjc1OWIzYmFkYzRlNTFhYjM0YjlkODkzODRiNzYzN2ZmOGVhZDJiMDY2ZWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJjYzk2NGE0MDVhOTc2NWY4OTc0M2FkMDBlNjljOTJmMmZiZGFjNDEyMDhlZTVhYzE5MWZiMzExODgzMzMwYWEifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260911005629_exercise_swap_scope.sql#L43-L51",
+          "version": "repo-lines-v1:sha256:81bc428f549c8d77cad8e6d9f56fe226aba4c9abc3ddd95c278ef8db00b0d62f:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDRjYTgwMmMwNmNhMTZmZmVlYTM3M2ZlYzljZjk3ZDFiYWU4YzhjNDBiOGNkN2JlZDdhYjc0YzRhNmQ5YTBjMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2FiNTdmMmNlODFhYzhlMWNlODA5ZDEzYjYwZmRiNTFjZWMwZGIxODdkNmU5NThiYzAwYWFmOGY1YTYwNmFmMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTc2OGExNGQ2YTI0NThlY2ExMDM0MjdiOTljOGQzODEzZDdlY2Y3ZGE0ZGQ4YTlhNTUwODc4ZTNhNjYzMGNlOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGM4MGQ4ZmVlOTcyMDI4YWE0YTUxZGQwNTE1MWMzMzA2MGRiMjAxNmY2MmE5ZjBhYmExNGIxYjNiYTRhMzFkMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1b4ad312af374d048a0fa76a9adc63be",
+      "statement": "user_exercise_pin is a small owner-scoped display-preference table for Board tile pinning (position ordering) that has no effect on set_log, coefficients, swaps, or PR eligibility; the cap of 8 pins is enforced in application code, not a database constraint.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L150-L151",
+          "version": "repo-lines-v1:sha256:de1e8f944174fa6206a40ed0f2d1a75b443eefd1383f4bfcb2740e7d08ddca83:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzU3ZTI0ZjNlOTBjMjE0MThkYjI4YjI4YTBkZTQ3NzI5ZWVkY2MzNGEzZmE1OGQ0NjhjNDI5N2Q4NjRkMGU5YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTliZDliZGY0Nzg2OTI0OWY1N2ZlMmE2MzM0NzA2ODRkOTQ4NjQxNDgxODY2OTgzYWE4MjNjZTM2ZTFmNDg1OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjA1ZmRhMDhmYmU1YThhNzBhYWYzMDBlMDkxMTY3ZTA0ZmY1YzUyNTVmNTFmOTc5NDQ1ZWJhNWU4OGQ4YjQ2MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGRmOGY5OTI1M2Q3ZTFmNTJlN2RmYTYwYjAzYTU5NTE5ZWZlMjE4YzNiMzNmM2MwNTllZjU4Njg3NGQ0MTliNSJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260918000000_user_exercise_pin.sql#L1-L13",
+          "version": "repo-lines-v1:sha256:683e69a369c830c4ef8d986700162f0f96b96a8e24f374c3daa57bb00ac98089:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlZjY4MDk1ZmUzZmQ4NTgwMzUwNzA3YTg1ZWFhN2E5M2FhYjlmMGFmYTU1NDVjNDMzZmVmNzIzMzA4OTc4NjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjOTY2ZWI2YjViYTNlNjIxZThlNzJiNzM5MDhiNDA3NmI3MzE4MDcwNmJiYmVjZDc3NWZkNDY2MzhmZGU1OTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2973ee28135b419185575e6d73edc9ed",
+      "statement": "coach_recommendation_decision stores only the user's accept/dismiss/defer response to a Coach recommendation snapshot and never mutates program or training data; the recommendation itself is always recomputed from history.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260903120706_coach_recommendation_decisions.sql#L1-L21",
+          "version": "repo-lines-v1:sha256:052655522f492e800c2a1d02e0255ffb4969a37165025f4038193252ea7ef519:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVkMDU3NGQ2N2QzNTUxNjcxNWM0ZGVjOTIzNzYwMGE1OThiNTQxYzE0ZDEyNDdlYjA2YWFlZTVlZTgyYzZhNmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjExZjVmODA2MzMzZmNjZTYzZDEyOWQ1NTNmNWZhM2M5NTliZjczYTc5MmMxY2MyY2I1YjBmNmNiZTliNmYyMzUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_461e3339a30348aeb4c8be3dff809979",
+      "statement": "period_observation and body_measurement_log follow the same owner-scoped, date-keyed table shape as bodyweight_log, where a missing date/site combination is simply a missing row rather than a null placeholder; period tracking is gated by profile.sex = 'female' plus an explicit consent flag and is observation-only in V1 (no predictions or training automation).",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260915203212_period_tracking.sql#L1-L44",
+          "version": "repo-lines-v1:sha256:1f22842d4d474fa1a72377b5a4793b71c44eaae5631a1f6ca76093af9352a124:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyMGY0ODkzM2U0M2ExYWI3ZmMwNmZjNzk5NzJkNDI0MTFhNWY5NmEyZDhkY2Q2NDA3ZWM2NjliZjc3NDc4MTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1MmJhMDMxMjE5MTU0NWFlNmUwNjRjNGRiZWQ4NjRhNjU4MDA2OGZkYzU2YzRlNzZjYmRmNzI2Yzk5ZjliZmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmZDA3NGU4NzViNmM4OTRkMGY1MTNkZDFkNDcxOWI2NTIzMTgyOWM2MThiNTg2YTEyYTQ0MzE5YmRkNDUwNWQifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260919221137_body_measurement_log.sql#L1-L24",
+          "version": "repo-lines-v1:sha256:1c9585d88974abc2835499d2aae616bcec610ab1fb6f0bdc19377a13d6454ac6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhNDdlMmQyMWI4NjQ0YmJlZTBhZTE2ZTYxYzMzNjkzODYyN2E5OGVkMDlhZTdiNzg3ZmQ3MDE3OTVhNWExNGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY1OWY3NWRlYjZiMjJhZWNhOWMxZGNkNGJmMzNlMGYzZWEyMmUxNjIyNWVmNDU3OWU4MjBhZmQzNzg5YzAzODQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_df4c746ef85a4e55a76d8f6fe26fc8eb",
+      "statement": "Every user-owned table follows a uniform ownership RLS pattern: a not-null user_id column referencing auth.users on delete cascade, row-level security enabled, and a policy restricting rows to user_id = auth.uid() (profile uses id = auth.uid() instead); this RLS check is the primary enforcement mechanism for per-user data isolation.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/0001_init.sql#L87-L111",
+          "version": "repo-lines-v1:sha256:0a8883baef6a8b8d48fe332b144c359f6072597eddf73b13209b1497463fbeed:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjNDhiNjEwMTM0ZmYxMDY1NjYyM2NhNTExOTIyZGUxNDBkZTUzMDRiY2ZmNTFlNzIxMWQxYmFhNGJkYTNiZDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliY2NjMmJmOWZkYWY0NDBjYmM2ODRkOTA2OGExMmM2MWE0YWJhMTBiYTdiN2MyYTY3ODBkYzhmNWMzNDQ1ZTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkMjQzYTQ1NzVjNDQ4NjdkMjY2NTZmOWEyNWZhODkyNDczZTQzODAyMGY5M2E5OWQwM2Q3Y2VlZWQ1MDZkOWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5MjVhMTJlNGI2NzQwZTRiODk1MDRiMDhlM2Y2ZjA1OWNlNjFjMjNkNmM2ZWUyZjVjOTE3MmJkOGMzMTU0ZTYifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260918000000_user_exercise_pin.sql#L15-L22",
+          "version": "repo-lines-v1:sha256:ec18ebc3bcce7b7b54c093cacd215292d2c49b9719b2f66b82b8cfb8ad296f98:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTdhNDUyMDM4ZGYxNDBiMDdkNjQ5Zjk4MjUzOGVlZWRjZTBmNmFlYzY4ODMxYTg4ZThiNzM3YmQ4OThlMjc3MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2ExZGVkNGRjMjA2MTEzOTBlYzkxYWVjOTRhNTE4NTI2ZGZjOGFhMWEzNzgzOTVjZTQwMmE5ZTNlYzJhYjI5ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODMyNmQwMzg5ZDU1YTFkMTQ5NGFkODJiZDM1MmQ0ZTU4MzdiZjhhNDc4NDFlOGYzYTI1MTNlODA0N2UyZTg1OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTU2NGMzOTUzN2ZkZTgwMzU5ZGEyNTQ4NDBhZGY0MDY3NjJkZWY0YWY0NjU1YmQzMjUyZThiMzcyYWQzZjk2NiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_5fc99be31a9f45e5a35e59ed914f56a8",
+      "statement": "supabase/migrations files are treated as an append-only, additive history: schema evolution proceeds via new files adding columns/tables/functions rather than editing prior migrations, renames are rare and deliberate, and even documentation-only changes (e.g. new machine_type sentinel values) are added as their own migration rather than rewriting an existing constraint.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/0006_program_metadata.sql#L1-L3",
+          "version": "repo-lines-v1:sha256:7188e6168083f3a3b0859139a19c1567f4e004c230e792ac6e182f8f077cf34a:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWVmM2ZmOTQ4MjI2OWQ1OGZmMWIwNDlhZTZhYTIxZDE4MzU4ZmI5NzNiMjdhOGJlNjgyYmE4MDMyZWU5YmFjNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGFlOGMyYTdlYjA4YTExNzQyZTg3OTUyMzc0YmE4OGUwY2RhYjBiYmYxZDFlNDRjMTA4NmVmMTJlNjQ2NDEyMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260921233233_station_machine_type_comment.sql#L1-L7",
+          "version": "repo-lines-v1:sha256:2830bdcca18cfdaee1cd83105b1fdd431e15cd5204f059871b60d34fbe7b91b2:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjU1NWZkMjg2MTRhNWYzYWJhNTU3MGVhYjU0ZWQ1Y2UzOTlmMGRkMzMxNWJjZWQ2N2E0NzZjNTc1MWNmYWQyNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2NmNDc0MjYzYmI0Y2ZkMTc4ZDE5ZGI1ZjkzNDBjMGI1ZmE2ODgxOGRiNzlkZmM4M2UwYzY2MDJkNTZmYjM4YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_731b8cfcdecf4f6397f6092736106099",
+      "statement": "Program mutations spanning multiple tables are implemented as SECURITY INVOKER Postgres RPCs (not client-side statement sequences) because Supabase-js lacks an interactive multi-statement transaction API; every such RPC includes explicit user_id = auth.uid() predicates as defense-in-depth alongside RLS.",
+      "evidence": [
+        {
+          "resource": "repo://docs/PROGRAM-TRANSACTIONS.md#L82-L86",
+          "version": "repo-lines-v1:sha256:25f56270460760ef18d1f9181ab4f9e8fb88e2af7f79064d26c67cfa2c430602:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWUyYjFiODA3NThlM2JlMzg4Y2IzYWUyY2FhMDA3MmYwMzkwNzczY2QyMjUxNGI3OWNmOTQ1ZGMwODZkMWNkNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTMxMTk3Y2E3NDdlMThkNDM3YTZhZjg5YWJjYzBmNzdlOWJiNTJkNDg4NDU2YTVjM2NjZDA1Nzg5Njc5ZmE0NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjBkODZkMGZkMzRmZmIxZThhNzVkOWIzMjUwNjBjNGY0NDdlYmQxNDUwOTZkYTNjN2Q4OTQ4ZDdhNTYzNmYyOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzVkMzNmZjQ3ZjdmOGU1NzcxNGEzZGE2YmYzOGNiOTUyYmQ0YzRmYWJlNGE5NGI1ZDVlZWUzYTk1OTU5Nzk4NyJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260917000000_atomic_program_mutations.sql#L9-L14",
+          "version": "repo-lines-v1:sha256:f16018cbdfaf6e31f6537a1c344487410f7a43ebed5eebdcdd7d5185b5d51b28:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGVlMWMyMzA4ZjQ5ZWMxYzRlMmIzNTg0YzMwYTBjZjljZGY4NWFlNzYwZTAyODNhN2I0MzZjM2YyNzJhOWQ1YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWI2YmZkYWY4ZTIzZjEzZGI3ZTExYjI3MzZkOTJhM2Q1ZGFkMTBkN2E0YzMyNjhkNTYwNzNlMjI5ZWY5Y2U5MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzE2NjFkMGQxZTNjNGQ4ZGJhNjM1NmU0N2FkN2M5ZGNhNGZmOGQxNDYyYjhjYzQ4MzRhYmFkYzQxMzVhYjc4YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjk4ZGJiMWRjNGQwYTFkMTI1ZTA5ZGZmM2E4NmJlNjU2N2U1YTM0MzUxNzU0MWQ3OWNkOTY0OTc5OWY4ZGVhMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_2f1ac51fa286419ea575d5600cb3b629",
+      "statement": "save_program(p_tree jsonb) is the unified atomic entry point for insert/upsert/clone/template program writes: it atomically flips program.is_active for all of a user's programs in one UPDATE, then upserts program/program_phase/program_day/program_slot rows with ON CONFLICT (id) DO UPDATE and deletes rows absent from the input tree, preserving row ids across edits so set_log.program_slot_id continuity survives a builder save.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260917000000_atomic_program_mutations.sql#L9-L189",
+          "version": "repo-lines-v1:sha256:929e95103d2d5a519bf778425db2d5c7b53bfbba9695021abf20639a7f448dac:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkZWUxYzIzMDhmNDllYzFjNGUyYjM1ODRjMzBhMGNmOWNkZjg1YWU3NjBlMDI4M2E3YjQzNmMzZjI3MmE5ZDVjIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJhNmVhNWVjZWVhMDFjZmViODk4YzA1Mjc5MGZhNzg1Yzk2MDI5MDU4YWYzZGY1ZjE0MGMzZjRhNGY0Y2MyNmYyIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3MTY2MWQwZDFlM2M0ZDhkYmE2MzU2ZTQ3YWQ3YzlkY2E0ZmY4ZDE0NjJiOGNjNDgzNGFiYWRjNDEzNWFiNzhjIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI5NDQ0YTcyZDRkYTM1ZGRkMTc1MGQ4NTU1Y2M5ZmUxYTA3NGVkMzUyZTY4NzYzOGNhMTZiMzNiMTIxNDgxYTliIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_40ce7f04528c48cb911acf690aa38649",
+      "statement": "set_active_program(p_program_id uuid) is a minimal single-statement RPC that verifies ownership then flips is_active for all of a user's programs in one conditional UPDATE, guaranteeing no intermediate state with zero or two active programs.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260917000000_atomic_program_mutations.sql#L202-L235",
+          "version": "repo-lines-v1:sha256:fa6ab5f9201512c5ddfffdad96a5720ae897291f8f585a2b31470a7626e2cf34:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljMTZmNGVmOGRmOTQ1ZWI3NjcyY2RhMWQ5NWVkMjg5MDMzOWZkZTEzYjIzNDYwODY0N2U1NWUyNjdlNGU0NTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzNzUzODlmMTA0YWY2MTQwOTNkYzlhZWNkMDAwZDk2MGMzNGEwNTkzN2NmYzgwNjdkYzQzMDljYTAzMWE0MWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5MzBjNjBjOTY2YjUzMmMzNTliNWE5OTk0MWJiOGI0NzkyMjc2MDUzNzkxZDM2ZTRlN2U3ODAyMjNhNDkyZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6da288c1ca2c44fb981984e45c18fa21",
+      "statement": "swap_session_exercise is the pre-existing atomic reference implementation for in-workout exercise swaps: it takes FOR UPDATE locks on the session and slot, rejects swaps on already-finished sessions, always records the swap into workout_session.exercise_swaps, and only updates program_slot (plus logs a manual_swap movement_adaptation row for Fluid programs) when scope is 'program'; it never rewrites set_log.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260911005629_exercise_swap_scope.sql#L8-L53",
+          "version": "repo-lines-v1:sha256:dffc8caab5dffc88e3bb8457b35e1523e4569f2fd07141089e6d92a29683f09d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmZTE1M2UyMDZjYThmY2EyYjk5ZjBlMmRiZTUwZDE4ZTNiM2YwN2Q2NWNiODU5ZWI3YzFlMDM3NmE3MjEzNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlMzQ2YjNlYzhlNDY1Zjc5MTMzZTQxYjU0NzdhNzRkZGNmNTc3YzE1YjNmNWUzZDczOTRhOTEyZDE5Zjc0ZmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdkOTc4YTdlYzY3Zjk5NmNlMjgxYzIwM2FmMzkyMjJjYjVmZTUzZGJjZDMzNDc2NGVjOWU3YTg5YWQ3YTkzODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzNzc2YTNkOTA4OGY2OTQyM2IwYjIyZjQ3YTBjMjhhNDU0ZTU1OTg0MmJlNDEyYzhhYjI0MzQwMjA0NmY0NDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_07c25bc370504417b5921fd8e617d740",
+      "statement": "set_log supports an optional client-generated idempotency_key with a partial unique index on (session_id, idempotency_key), allowing safe retries of log-set requests without duplicate rows.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260916000000_idempotent_logset.sql#L1-L13",
+          "version": "repo-lines-v1:sha256:979d53d51cea44f926b41d92201bc7bf92a7069e0bd41f2b6fcb583b23918d0d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5YzdkYzMzZjhmMmVkOTk4N2ZjMDIwNmJhMzA4MWUyMzI5MGU2MzRiNTM0ZDMzYzJlNjc5NGZlMTY5MTZiMjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA1ZjU4ZmQ1NmMxODMzZTUwNWNlZjIyMjk0YmU2ZDU2OWU2ZGNmYTY5ZTJiNjdhMTA4Yjc3M2JmM2U5MDA5MjMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e1e972d824664b0c950e201e4367742c",
+      "statement": "Deleting a program cascades to its program_day, program_slot, and program_phase rows but sets workout_session.program_id/program_day_id and set_log.program_slot_id to null rather than deleting those historical rows; set_log is never deleted as a side effect of program or slot deletion, and deleting the active program does not auto-activate another program.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L79-L81",
+          "version": "repo-lines-v1:sha256:b7894b8b7f3374282c91853e1eea90a43dd5f3e541c16830bb39a4c927f1a228:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDU1MWI2ZWM0NDhlMGQzZTVkN2EwMTU1MTcyZWZmNWE4ZmQ5MmY2NGQ1ZTNiYzg5Zjc1MDE4MzhiMzk2NjI2NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODMzOTkxNmU2ODFhZGNkZTRjYThiOTc4NjY3ZTI1MmFhNzRiZmE2YTVjYjQwZTRmNGY5OTU1MTYwNDIyNTRiNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTc2M2UwNDIyMDM0MWZmZjk4ZTlhNjIzNzZmYjkyYzMzZmZkYWRiNjlkZGNiMWQ2M2I1Y2ZjMWE3OWQ5ZmE0MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWNjN2IyNWUxNjIxZDdlNmQwZDE4NDhmMGUwYzM2OTNmZGJlMzQ2NzZiODM1NjE3ZGU2OTBiYzhmYzkzNWI2OCJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/0001_init.sql#L47-L54",
+          "version": "repo-lines-v1:sha256:41ec742ba008ce2c3f5dde425c89b40b2d64c433eca8977b13ac3cb243caf91d:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmIxNzEzM2M4OGRhNDI4NjQxYTA2MTk4MWU0MWNiNDMzZmUzZmM0NTU5NDkxZWFkMjcxZGY2NzUwZmQ2NGNiNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDk5NjdlYzFlZDM4MzZmOGViMTdhZmYxNzJiNWJmZWY3ZGU2MDQ4NWE0MzljNmNhMTFjNTkxZTE3NTU3MzlhZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmIzNmNiYzM2ZDE3YjM1ZjU2OWZkOGY1ZDExYmU2Y2Q1NTk0NGQwNWEzYTZmNWZiOThjN2Y4YmFkOGQ5YTQ3YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTM4NTQ1YWNjMDhkY2RhYzVhYzQ5YmZkNjRjMGUxNjhlMDZjMzQ0Y2ZhNWRkY2I5YmRjMWI2Y2IwMjA3OGI0NSJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/0002_program_builder.sql#L18-L49",
+          "version": "repo-lines-v1:sha256:06d12c142285aa47569b179252362fad7ce1d3dcbcfe7bb01ed0ef99104f9020:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzZWJjZGY5MDI0YmRkZWFmYjZiNDYyMWVmMzQ5NTlkNTNkY2I1ZjM3NDM1NDE4MGU3NjdjM2YyZjYyYjE0ZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5NDNhMzY0ZmQ1OGI0Y2M5MmY2MjY3MDM5ZDhiNGUzNjZmZmVhMzE2ZjJhNDZiYzU4ZGRlNjRjNjBjNjIwMzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwMzMzMzYxNDk1Mjk1Y2E3NzY5ZDIxOTkwNWY0N2VkOGY2ZWUzOWU5NzkyNmU5Y2YyN2M3Mjk1MGMzZDgwODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM4NGVjY2ZlYzZmYzY2YzVkYmEyODRmYzI5MDMzMjNlODcwNDAzNTk3NjFmMWViZGM2YWMzZDVjZTUwOTQ5ZTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d6b7624b3a114c56870ceb2f3382a12d",
+      "statement": "The signup trigger handle_new_user() is a SECURITY DEFINER function hardened to pin search_path and have direct RPC execution revoked from public/anon/authenticated, so it can only fire via the auth.users insert trigger, not be called directly.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/0003_harden_signup_trigger.sql#L1-L13",
+          "version": "repo-lines-v1:sha256:7914526640afce00f07ded0b5ea4e14981713858906f148f9f3f35af552843ea:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmNzVjMDVhZDU3YTA5MGQ4NDNmMTgxMTJjZjlkMDFlNjM0NzhmNjk1ODJjZjhjZmI4MTNkYWIzY2RjYjlmNzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiZDQ2OGIzY2JkYTc3Mjk1MWY0YzIzMDJmNmJjODk2MGY1MDMwZTkwZjY0Yjg1YjYxYjY4YTJiNWUyNzJmMjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

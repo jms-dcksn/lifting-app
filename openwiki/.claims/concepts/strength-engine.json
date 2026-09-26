@@ -1,0 +1,278 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:80cc27b354db9396409d488650ae3be2c610c7a47687a8d34537cf04607a0cb8",
+  "claims": [
+    {
+      "id": "claim_e019fd7011f34d7cafdd9f24ecd48d64",
+      "statement": "e1rm.ts computes e1RM using an RPE/RIR load table (the RPE-10 column of the RTS table, keyed by reps-to-failure 1-12, linearly interpolated) rather than a bare Epley/Brzycki formula, because effective reps-to-failure equals reps performed plus RIR (RPE = 10 - RIR).",
+      "evidence": [
+        {
+          "resource": "repo://docs/DECISIONS.md#L19-L22",
+          "version": "repo-lines-v1:sha256:8bd9f271864a7d4d92184e7f4f0334eb1c07aaac17ccc883c646e5864e362fae:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFkZDExNGM4OTQzODk1ZTc2YzFhMjZkZmZlYzg0ZWVhNDk5YTdlMzFmNzcwNzI0ODZjMzg2NDg0MGNiZDA0MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWZhMWYyNTliN2I3NDVlYjRiODM0NWIzODE0Y2IyNzc1NDFjZTNjNjgyNDI2YzNhMzc2YjkwNTA0N2M5YmViOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWFlNDVhNWFlZmViMjg2MzdlODQyNjAyYWEyODdmMGEzNjIzNTI3MTk5OGU0MDU0NmJhNWJhODg0ZmQ4NzNkZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmJkMDIwM2FmMjFkZmIzYWUwNjJmYTZkNGI2ZjRiNDZkMGIzNzk1NmMwNDVhNTA3MDQ1M2E3MjUzZjJmZTI4ZiJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/e1rm.ts#L1-L26",
+          "version": "repo-lines-v1:sha256:f92672ea2994bb28651a17b0a54785f6b14a3308ff08c12a7ebfc86bf85a3b76:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE0MDNkOWE3OWEwMTAwYTc3NmFhZGUyODEzYTk3NTkyMWQ2MGJiZTJkMThiNTVkMWJjODA2Y2RjZTMyNTk2YWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNiNmM0N2Q4NjA2YTk1ZjJkYThlZGFhMDBiMmVhMDE4ZGMzOWVkODExNDEyYmEzYTIwNmE4YTEwOWUzMzg4ZTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_84278ce95ca24570b7f49e81effbd6cd",
+      "statement": "Beyond reps-to-failure of 12, pctOf1RM switches to an Epley-shaped decay anchored to the table's last point so the curve stays continuous and monotonic across the boundary.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/e1rm.test.ts#L10-L28",
+          "version": "repo-lines-v1:sha256:b0f14d3b7a8ee81389fd0cd3151552dac32fd42c0897b84b14f010a118c44248:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4OTIwYWY5ODFjZDg0NDBhOTg2MjQ3OThkM2RhYjZhMjA2ZWMwNzhmZWZkOGNlYzQ2MzYzZmU1M2FlNmI5NGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhZGU5ZTUxOWRhOTdiM2I1Yzc0MjUxMWMxNDU2ZmQ2ZjI5MzBkOTI2YzRjZWM0MmYyZDcxY2IyZjU0ZTY2YzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEzODg5NmZmZDk0YzAyNGU5ODUwYjBmZjU0NjJhYjY2ZWNjOGNmN2IzMTA1YmE3NTNkZTEzODQwYzUyNTg4YmMifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/e1rm.ts#L16-L26",
+          "version": "repo-lines-v1:sha256:9b5d1b02878a8303b7d0eb39c58a8a502c75a1743241eb84f4a8323158814a06:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzODA2OGE3ZWJmNDgxOTQ0ZTkzMGM4NzEwNGE1ZjVhYmRlMjBjYTcxZWQyMzI2ZWI5NDQzMGUxZDUyMzMxNWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkZjI5MjVmZGQ2YjMzYmNiNDJhNTRkMWY1ZjdlYjMwZmM3MmY4ZGU5YWMyMzE0NzU4NmRhNDQ3NWVhZjdkZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNiNmM0N2Q4NjA2YTk1ZjJkYThlZGFhMDBiMmVhMDE4ZGMzOWVkODExNDEyYmEzYTIwNmE4YTEwOWUzMzg4ZTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0dd4bcbe54f64a7195e4c810b1257e35",
+      "statement": "weightForTarget(e1rm, reps, targetRir) is the exact algebraic inverse of computeE1rm(weight, reps, rir), enabling round-trip conversion between predicted e1RM and a load to lift.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/e1rm.test.ts#L54-L68",
+          "version": "repo-lines-v1:sha256:710239f77f11ead2f9133dabb423872b7a1ff0c25c2a1e58973179a402e515ac:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1MWZlN2NiOGQyNGY4MTIwZWNmMGMxZWE0MjgwYzU3NjEwZjVhNDMyMzEyMjM4NmZlZjkwODEyMmNlZmQ3NWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI3NzlkMTE4ZDZlM2NiZjQ1MDUzOTc0OGRlZTdhNDMwN2FjYmU2NDQ2Y2JhMjk3ZjI3NjBmYTVkMGJiYTFiYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ2ZjFiZTJkYzQ1OTZlYWRjNDNmNzcxNmI5YmM1ZTBmOTM5NjUxYjY1Nzc4Mzk1MjA2MDc0ZmQ1NzUxOGU0MWUifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/e1rm.ts#L28-L36",
+          "version": "repo-lines-v1:sha256:7eeea44c3504fd2966653629a6e58d51b66c4e73e600bb2a352cb9e0bafd784e:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjU0ODI5MzRiMzVkYjliMDcxMjdlNWU4MjU4MGM2NWYyOGRmMmYwMGYyZjJlNzRiNzlkYTY1N2I5ZTMwODZlYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGY3NWIzMWM3OGEyMjAwODJiMjRlMTBhYTUwNDU1Y2Q1ZmMxMDM2MjM4MTZiNjM4ZGE0YWM0MTk3ZTRiZDgzYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGI4ZmQxNmIyNDk2MjZiYWUwNGQ5ZTQ2NDM1MGI0ZWE5NzAwNWMxZGIyZGJmNzQ2ZmE3YjlkMDc2MjNkNzhhMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_2106bf5949ea44809934868f1cb6e0d5",
+      "statement": "This RPE/RIR e1RM model must be preserved and not replaced by a bare Epley/Brzycki formula, since it is called out as an explicit invariant in both ARCHITECTURE.md and DECISIONS.md.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L14-L15",
+          "version": "repo-lines-v1:sha256:2286a5c8e5865872f8640def31d37fecd5828107451c2e0c21aeb5735a436bd9:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmJmODg4ODNhOTJkNGMwMmRmYmM0YzYwMDZiZWM3Mjc0MjVkODIwMTRmNDRmYWZiMmJkNGQxMTJlNjIxMWM2MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDhlMjRmYTEyM2ZkYjE1NDJmYjMzYTA5NTIyOTljY2UzNDhkNWQ2ZThkMjgwYzc5M2Y4MGZlNDUzYTVjZjcwMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTZhYTNkMTJkNGQxNzdlYTJjNDM4Y2JiYzkwZjdiNWJkYzdmY2Y4MTkzMGMwYWVhM2Q3ZWRkN2U2MzdhNzhiZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWMzMWZlYmQ0OTZmNzQ0MGRlZmRmMGFhMmQ0NGYwZTA1OTBjNTlmNjFkN2NhYjE2N2I2MDI4NDZhMmQxZjE3MCJ9"
+        },
+        {
+          "resource": "repo://docs/DECISIONS.md#L19-L22",
+          "version": "repo-lines-v1:sha256:8bd9f271864a7d4d92184e7f4f0334eb1c07aaac17ccc883c646e5864e362fae:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFkZDExNGM4OTQzODk1ZTc2YzFhMjZkZmZlYzg0ZWVhNDk5YTdlMzFmNzcwNzI0ODZjMzg2NDg0MGNiZDA0MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWZhMWYyNTliN2I3NDVlYjRiODM0NWIzODE0Y2IyNzc1NDFjZTNjNjgyNDI2YzNhMzc2YjkwNTA0N2M5YmViOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWFlNDVhNWFlZmViMjg2MzdlODQyNjAyYWEyODdmMGEzNjIzNTI3MTk5OGU0MDU0NmJhNWJhODg0ZmQ4NzNkZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmJkMDIwM2FmMjFkZmIzYWUwNjJmYTZkNGI2ZjRiNDZkMGIzNzk1NmMwNDVhNTA3MDQ1M2E3MjUzZjJmZTI4ZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_30ec771287ff445caf779b238cade699",
+      "statement": "coefficients.ts seeds one ExerciseDef per movement pattern with coefficient 1.0 marked isReference, and every other exercise in that pattern carries a coefficient expressing its strength relative to that reference lift in e1RM units; these are rough population priors intended to self-correct per user via Bayesian shrinkage.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/coefficients.ts#L1-L6",
+          "version": "repo-lines-v1:sha256:7eba2e958cf423036f13a2efbe80ff752db5dab103d296a81e1a3bd0cd4b4ce1:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTBkYjA3NjQ3NjA3NWYyYjA0ZmE0MGIxNDEwY2Q4NjA1NTgwNmU1OGYyYmMxZTQ0YTY4OTdjOTBkODJlMWMzMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzdkODUwMjA1OGNmNTc2ZWRiZjU1OGJhZDRkY2FiZmVhY2E1YTM5OTM5MjZjMWNjY2M5MzhkYzVhNzY2NjEyMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWNhMTgzZTA1Yjc1MTA4NWFlNTNmNzc4OTc4ZGE3Yzk4MGE5ZTFlNzRmNDg2ZmZlMWQ0NzM2MGE0OGNhZjY2YiJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/coefficients.ts#L132-L209",
+          "version": "repo-lines-v1:sha256:7e646791322803c539624ba4758557d30bb77adab5cab3748742b3c1c983b1bb:eyJzZWxlY3RlZExpbmVDb3VudCI6NzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmZmE0N2I5OTdiYjZkODFkNGM5MjE1YjY3YWRmYWM2Mzc3ZDNmOTRiMjgwZjExZDJmMDk0Zjg4OWRjMGU2ZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMmQyYzBkNmRjNWU3NGQ5MmZhMTRiOTFkYmVhMjY0MDkwYmViMzVmZGI5MTg4ZDliMzQxMTgxZGNlOWY0Y2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyYjA2ZGEzZjM5N2YyYzI5NWFmYzI0YmM5Y2QxMzU3MTQwMjIzNTc4MDgwNDM5Yjk1Yjc4NDI5Y2Q2NjYyYTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ2MDhhNzhjNTRlYzU3Yzc4YjRmYzllOGE2NWZkOWFmZDQ4NTYxYjFjMTlhYWY1ZDU2MGJlYTJmYjk0MTliOWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ffc133b764644f58bde0cba783e97e60",
+      "statement": "recommend() predicts an exercise's e1RM as pattern_strength * effectiveCoefficient(exercise), where estimatePatternStrength pools every logged variant in the pattern (each contributing variant_e1RM / its_effective_coefficient, weighted by 1 + min(confidenceN, 5)) into one latent pattern-strength number per user per pattern.",
+      "evidence": [
+        {
+          "resource": "repo://docs/DECISIONS.md#L23-L25",
+          "version": "repo-lines-v1:sha256:bbd0203af21dfb3ae062fa6d4b6f4b46d0b37956c045a5070453a7253f2fe28f:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTk4MDdhNTQ2Nzg0YzQ0YzEyZDE3MmJmYzczNTg5NGUzYTE3MzU3YjlmNGQ1ZDBmYjEyYjAzODI0ZWRiMDVjMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTJjYWE5YmRiMjc3MDZkNzZkYjgyZmFhZjQ1NmI1MDI4MTBiMDg1YTEwNTM2ZDY1YjQ0N2JlYTMzNTg5YmRjOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGU1YmViMzUwZWUyYmE1ZTI3NzNmNzkwZGUxYjAzMjI5ZDE5YzlkYzc4OWVmODA0YTQwN2JmZGM4ZWFlNTI0ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWE1MTE3ZGIwZTZhNWNhOTNkNjRlMTI1MDhmY2Y4ODRmNGE0ZDM1M2QzOGI3Yzg5MTA5MGE4ZDQzY2MwMjZjOSJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/recommend.ts#L1-L53",
+          "version": "repo-lines-v1:sha256:91270c2cf48ef732280ae151ffe316763bfacd4be1faeb363c0e93e29c073f12:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkMmNhNjQ2YmVmZTUxYTRjMWEzZDc0MDNmZmE1NzU1OGI0Y2FhZTQyYWQzZTYyNTdjNzI0MTIzMzU5YmU3MzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhjYzk2MTc0NjZjODNhNzcwYTU2YTljNTA4MjE1MjkwM2UxM2NkYmRhNzczYjI0N2RiODAxMmQ4N2VhMDdlOWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_54793118e0cb46afb023627efd8e5746",
+      "statement": "effectiveCoefficient performs Bayesian shrinkage of the population coefficient prior toward the user's observed personalCoefficient, weighted by confidenceN against a fixed PRIOR_WEIGHT of 4; with no personal coefficient yet it returns the unshrunk population prior.",
+      "evidence": [
+        {
+          "resource": "repo://docs/DECISIONS.md#L26-L27",
+          "version": "repo-lines-v1:sha256:40fadc2b7a975487c01e8d0710273cfb69e92c1b5c3b991aaf6e1c2eae61cf53:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjU5NzU1NGQ0ZDE0MDcyMDM3MmFjNTJhMGUzNTc3YjQ5MjM3ZDA1Mzc2MWNmNTBlZjBiN2Q5OTA0ODlhZGY3MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmY3NjliYmIyZDgyNWIyNDhkNTM0NjE1OWMwZDY1YWE0Nzk5YjljOGJhZDA2MTMyMGM3NDBiYTVmZDg1MDk2ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmJkMDIwM2FmMjFkZmIzYWUwNjJmYTZkNGI2ZjRiNDZkMGIzNzk1NmMwNDVhNTA3MDQ1M2E3MjUzZjJmZTI4ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTNiY2MyMzYzYzViN2Y1Y2FlNDVkZDRmODFlYTMzNmQ5M2E2OWM0NjRkMWE3NWM5MTE1YTE5ZmNhNTRhOTRjMCJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/recommend.ts#L22-L31",
+          "version": "repo-lines-v1:sha256:e8249c8e79dd3c174ffd1e926e552a8684801c0f274f5c70c439d5375831ce58:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5MzY2NzMxYWNiMjg2YWNlYmI3NTIwZDk5MDAxZTNmZGRkMmM2MmE2YWVmMjI5ZWY5ZTgzZmQxNmU2NWMxYjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYwMDYyMDk3NzNlZDMwYjA1NTdlNWQ1YjhkZmY1NWMxMDRmM2FiZTM0ODJiMzk0Yjg5MDg4MTYzMTkzMTQ5YmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk4NzVlZTAwNDY2ZDAwMzdjNzEwZDAwZjNlMTdiZjY1MjU5MDExOTBmZTMyNjU3NDk5ODg4Zjg5YjNiNDE3YjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_49b4e52d9eae4ccd83503e8d7cb079fd",
+      "statement": "recommend() returns confidence calibrate for needs-calibration exercises with no direct history (additionally biasing the suggested weight down 15%), low for pattern-derived non-calibration exercises, medium for own-history with fewer than 3 sessions, and high for own-history with 3+ sessions.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/recommend.ts#L66-L108",
+          "version": "repo-lines-v1:sha256:1724d53d84802dcda90eab6bed9492a696581c0ea531b0f94510c4a5599c5078:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwYmJlZmNkZDQ3ZGVlMDYzNjhlMWRiNTQyNjU2NzgxMjIwY2NiYTQxMzNjNTA3NTUzMmRiM2YyNTA2YzA3NjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA5MzJjMWY4YzQ2ODhiMDVjZTA1OTE3YTcxZmQzOTY1MDkwNDA1ODI5MGE3Y2M1YjM4Y2MyMjQxMGU3NjBjNzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUyNjFhMGIzYzZhNTkwNDIxNWE3ZmYyMTc5YjhkZDcxMGY3YmQ2NTViNmU5ZGIxM2VmZjRhY2I4ZmM4NzNkN2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e24d749c3d6448f38882d139d17ca9c6",
+      "statement": "selectProgressionReference bounds the progression comparison window using the latest same-program-slot exposure as an anchor: with a same-slot exposure, candidates are every performance for the exact exercise at or after that timestamp across slots/days; with none, the four most recent exposures are used; ties favor recency and a performance with no computable e1RM falls back to recency comparison rather than being treated as comparable.",
+      "evidence": [
+        {
+          "resource": "repo://docs/DECISIONS.md#L145-L154",
+          "version": "repo-lines-v1:sha256:15682f75c2cd4c999ec9406c0feb3fb498b7441a48b3747b36120da561d83318:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyOWNjZTBlYjc2NjFlNzA2Y2RmZDAyZmJhMTFiYzA2ZDYzYjM5MDVkMzdjODcwM2VkNTgzZTZiN2FjMjA5ZDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMmFlMTA1YTUzN2Q2NjJmODlhZTk5ZThjMDRhMTk3NGE4ODI4MzY2ZmMxZTJiOTc1NjQyMzRiZDUxMzE2MWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc2NTViZDcxY2JlOGFmYzg5NDA5NzVmYmJjNDFhMzcxMWE4MTI3NjVlNzE3N2U4NDkyN2U1NDRkMDI3ZWJkYWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU4ZGE0N2RlYjBjYmQxODVjMWEwMDgyMWM1NTIzMzllNTMwNjQyN2U2MDExNzNhYTg2YzA5YTEyOGE4ZDg1MTgifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/progression.ts#L55-L85",
+          "version": "repo-lines-v1:sha256:1752d25aa8513391114ac7856e2e87ea88e636c36f82eadf98b701b044930178:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiYmEwNDM2MWFiZDg4YjAwYWUxYzQyOWU3OWYwYmU0N2JmNmE5ODQ0ZmIyNTdkMDkyZjE1OGViNWY3NTEzY2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYzODIxZjA4NzYyYjI0ZGU4YWJkNzk0YzE2YWFiZGQ2ZGI3OWVjZTcyOTM1YmQxMWEwZWJmOGEyM2RlOTkxZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3YWI3ZDUyN2MyZDQwOWZmY2FhNGFhZDJmZjBjNDZkOTE2Zjk3NDA1Y2QzNTdlZDUzNGNkMmE0ZjU5OGJkNDgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_32e87fc15e0d4d0d99de8550036af6ea",
+      "statement": "sessionTarget() implements double progression: with no prior performance it delegates to startingWeight()/recommend() at rep_min; a first working set below rep_min is treated as a load-calibration failure whose recalibrated target is capped at the previously logged load (never increased); reaching rep_max adds the exercise's increment and resets reps to rep_min; otherwise weight holds and target reps increase by one, and this bump test is reps-only (RIR feeds the e1RM estimate but never gates the bump).",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L53-L64",
+          "version": "repo-lines-v1:sha256:ad7d29973895be15ede333f159148b57ec927e40b6e5296a210d4e609b457e09:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIwY2Q2Mjk0MWYwYzY3N2Y2MWVmYzQ2NGQ5Zjk2MWRlMTg1MTE1YjFiMmVhMjE2NmQxZDIyZjhjM2M4N2UzZGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0ZDVhZjRjYjM0MWMwZTY4ZTBlMmQ4NzY0ZjM1ZGVjY2Y5ZGRmNWYzMjMyZWZlZDI1YjdiNDM4MDU2MWJiNWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc5ZTU4MzUyZjhiZTk1ZTNjY2I1MWVmMDc0MmU0MDQ1MzMzMTU1YmJmYjRkMTVkNzk4NGJjODdiNzUxZGI2ZjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1NjI0NDFiMjgzODc1NjM1OGM5ZDk2NTdmYTBhYTExZjQ5NGRiY2JjNWRhM2I0NTZiOGU2Yjc5NWMwNzE3ZTkifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/progression.ts#L111-L183",
+          "version": "repo-lines-v1:sha256:ad00e6d4d0861df7a2c4fd73203f917057ab676ab30ee89dd4e4d16ab5d46f1c:eyJzZWxlY3RlZExpbmVDb3VudCI6NzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2ZWE2MDZmNmQ2ODA5MDAzNDRhZWIzMDc3MWE4MTkwODA5NzY3ZWYwOTBjMjE5YjQ1ZGEyZDNiMDZiZThmMzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJhZjhkMTc3NGY3ZDgzNmNhYTllY2M2ODFkY2ZjMTc2OTMwMDc3M2JkMGE4MGE1NDcwNDY0ZDhkMTIwNzNiZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_65f407c3871d425bbbe38d075a110233",
+      "statement": "startingWeight() and sessionTarget() are shared, framework-free helpers used both by the client-side active-session UI (computed via useMemo with no server round-trip, enabling instant swap re-derivation) and by the weekly Coach proposal layer.",
+      "evidence": [
+        {
+          "resource": "repo://docs/DECISIONS.md#L125-L136",
+          "version": "repo-lines-v1:sha256:47362b26da411eff4f03f08169315a9c1429eddd87f2de5f210415be084ae5ec:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhNzI5NmRlNzljZjc3NGVlNjg3ZTg0NmY4NjkxMjFmNmU3OTQ0M2RhZTc5ZDY1YjQwYzc2YzJjYWQ1NjY0OWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5MTdjYzI1ZjJiYjZmZmE5OTY1MjM0MWY0N2VkOWZlMzg4NDQ3MmEwZTU0NTI1ZTcyYjNiYzFlYzAxMDM1YzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU1YmZiOTUyYTA2ZDEwYTNhYTY4NGU4MWU1ZjRlZTEzMWRlNGNjYzIwNGU5NDQxODBhZDlhMzBiMzgzZDI2MzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjViMTNlYThlZjQxZGM3OGVmZThlYjA3ZDJlNDBlMzEzMTk2NDY3NzUxYWFmYzNhMTM0N2E3OTRjMTM3MzQ2NmUifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/progression.ts#L87-L129",
+          "version": "repo-lines-v1:sha256:c930e4aef3763abe0d80f3448e4c3293c6f2618366b1587b6b0b7f7e27d02f96:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlMzI4YTg3NmE5ZjcyMmUwZTU5YTk3OWQ3ZGE3NThhMTY2N2YwZmUxNjg2YWZjNTA1MzJmMDMzZWE1NzIzNTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkOWUxMjU0NjQyNTU3NmQzZGVhZThjOWI5ZGJmMTI4ZDVkNmRkYWY1ZDdmZTg1NzkzNDkyN2RlZmZhM2I5ZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwZTUxNzAzZGFlODcyNGJiZjI0ZjBiZWVlMDk0MjcwMmJlM2RiYjk3YzFmNTgwNGIzNzNiYTJkNzQyZGIwNzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b1c10c030c454941a961340979930921",
+      "statement": "For machines and cable-brand station variants (needsCalibration templates), recomputeAndUpsertStat in src/app/(app)/session/actions.ts computes personal_coefficient as current_e1rm divided by pattern strength estimated from the user's other exact-id stats, anchoring on the first session with working sets (re-anchoring while only one such session exists) and then holding the coefficient fixed while later progress moves the pattern-strength estimate instead.",
+      "evidence": [
+        {
+          "resource": "repo://docs/DECISIONS.md#L160-L171",
+          "version": "repo-lines-v1:sha256:5fd94b72c77a4d65147c066040a87319e0a1b2d147393f9ef7f4e54429d77fb9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlkYTQ5Yzc0MDU0MDg0NGQ3YzFkMjM0YjU4NTM4NWNjOTgyZTRiNTNiM2RlZWM4ODIxNjhlNzk2MGI4YmNkNzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3ZDQ3YTE5Nzc0OWJhMWM3MTk1MTYyMTI4NjBkMDE2YjNlMWI4ODE5NzMzNzk4Y2ZjMjEwNTMwZmM5NGVhZmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2MzhhNGE1ZjU3YjM4NDg2ZGZlZDQ1Mjc1YzM1YjE4ZjU1NzE4MWZjZWU4MDVhZTZkMWM2MGRjNjNjM2IzY2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVlZjA3MzUzYWI0NTk1NjY2Nzg3MDY5ODdjNjYyNjE5N2RlODA2MTJhNTIwNmQ0MmMxZDkzNmMzNTU4Nzk0Y2MifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L50-L106",
+          "version": "repo-lines-v1:sha256:7379909fd2c4db74cd1030cd7ce65a3a574a5d7f145567e92601b3f73129bc12:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzZjdhZmY5MTFmYTdlMmM0MTljMzU4YjM3ZmVmZGVlMGQxMjYxYzM3YzI5NGU5ZDg5NGU0NzFiZWJiNDkyMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYzZDExOWRkOWQyYzAwY2ExYWY2N2RjYWJjNDAxMzkwYzJmOGYwMzM5MzEzMWIzZWY0ZDk4ODkwMzM0MDkxODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdkYzIwNzNhYTExNzQyYmUwODdkMTc0NGQ0ZThkZTE2YTQyMzVhODY4MzMxNTdiNzFlZGI0OTJmZTgxYzMzYjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9db4c8aa934d49b094ec2aa6f17bbd88",
+      "statement": "coeff_confidence_n is the count of distinct sessions with working sets on that exact exercise and feeds effectiveCoefficient's Bayesian shrinkage; deleting all sets for a calibration exercise resets personal_coefficient to null and coeff_confidence_n to 0 so the next first set recalibrates from scratch, and barbell bench/rack/platform station variants skip the calibration branch entirely.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L42-L49",
+          "version": "repo-lines-v1:sha256:00a137bfab714fcbb0fac6dfd781aa8503527c1c72e9e6fafc023ba321be02fe:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDdmZGQ2MWMyYWRlMzYwODNjYmMwZTkyZDNiODY0N2RjMDBjMTg4YTY1NDNiMzlhNWQ4YjJjYzQ3NmRkMmI1ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODM1NmIyOGZhODk2Y2E3M2ZkMzY5M2Q3ZTI4NmU5YWMyOWI4MDAyYmYzN2QyZWZhNDNlNDhhYmQ2YTQyZGJlYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjBkM2NlMjE5M2Q5MWIwZTU3YjU4NjJjOGQ4ZDZjNTVjYjYzM2QwNDliZjJmOWQwYTIwOWNkMDc1YjVhOTlhMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzllNTgzNTJmOGJlOTVlM2NjYjUxZWYwNzQyZTQwNDUzMzMxNTViYmZiNGQxNWQ3OTg0YmM4N2I3NTFkYjZmNiJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L77-L106",
+          "version": "repo-lines-v1:sha256:efb491b69aa7e6385c3ad0a531abdfaa45b2b9ec8b3cb41a19d8f4a2be7f0f68:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3YjA0MDIwYWMwNWNhYzYwYjU5NWZjNGQyNjE0ODg2MmQzOTY1MDFhZjk1ZDc0ZGQ5ZjNhNjNmYmMwMTExZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk4YTM4ZGZlNTFkODQyN2U3MGZiZDE1MGExNGQzNzlhMDg5MmM2MGIzMzFiYWUxMTcyMGQ2MmMyZmQ3ODg4YjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdkYzIwNzNhYTExNzQyYmUwODdkMTc0NGQ0ZThkZTE2YTQyMzVhODY4MzMxNTdiNzFlZGI0OTJmZTgxYzMzYjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7b20446b3cd84f588cf1f508944ff395",
+      "statement": "The machine/cable calibration contract is anchor-then-hold by design, not continuous recalibration: machine coefficients must not be recomputed live off every session, matching the invariant recorded in both ARCHITECTURE.md and DECISIONS.md Phase 5.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L42-L49",
+          "version": "repo-lines-v1:sha256:00a137bfab714fcbb0fac6dfd781aa8503527c1c72e9e6fafc023ba321be02fe:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDdmZGQ2MWMyYWRlMzYwODNjYmMwZTkyZDNiODY0N2RjMDBjMTg4YTY1NDNiMzlhNWQ4YjJjYzQ3NmRkMmI1ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODM1NmIyOGZhODk2Y2E3M2ZkMzY5M2Q3ZTI4NmU5YWMyOWI4MDAyYmYzN2QyZWZhNDNlNDhhYmQ2YTQyZGJlYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjBkM2NlMjE5M2Q5MWIwZTU3YjU4NjJjOGQ4ZDZjNTVjYjYzM2QwNDliZjJmOWQwYTIwOWNkMDc1YjVhOTlhMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzllNTgzNTJmOGJlOTVlM2NjYjUxZWYwNzQyZTQwNDUzMzMxNTViYmZiNGQxNWQ3OTg0YmM4N2I3NTFkYjZmNiJ9"
+        },
+        {
+          "resource": "repo://docs/DECISIONS.md#L160-L171",
+          "version": "repo-lines-v1:sha256:5fd94b72c77a4d65147c066040a87319e0a1b2d147393f9ef7f4e54429d77fb9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlkYTQ5Yzc0MDU0MDg0NGQ3YzFkMjM0YjU4NTM4NWNjOTgyZTRiNTNiM2RlZWM4ODIxNjhlNzk2MGI4YmNkNzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3ZDQ3YTE5Nzc0OWJhMWM3MTk1MTYyMTI4NjBkMDE2YjNlMWI4ODE5NzMzNzk4Y2ZjMjEwNTMwZmM5NGVhZmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2MzhhNGE1ZjU3YjM4NDg2ZGZlZDQ1Mjc1YzM1YjE4ZjU1NzE4MWZjZWU4MDVhZTZkMWM2MGRjNjNjM2IzY2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVlZjA3MzUzYWI0NTk1NjY2Nzg3MDY5ODdjNjYyNjE5N2RlODA2MTJhNTIwNmQ0MmMxZDkzNmMzNTU4Nzk0Y2MifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ab6b07f8afb24dc38bf0e2ce80f43a69",
+      "statement": "recompute.ts's effectiveLoad() applies the bodyweight/assisted-load convention (effective load = bodyweight + recorded added load for bodyweight equipment, recorded weight unchanged otherwise) and returns null when bodyweight is required but unknown, which callers must treat as not-computable rather than coercing to zero to avoid poisoning pattern-strength pooling.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/recompute.ts#L15-L28",
+          "version": "repo-lines-v1:sha256:27284c9ac7c90e96e420e31434bcd55e143a6df41253475ad7fb71d06d064549:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlMTEyYWQ3ZDFiOGRiNjliMzFjZGExZmJjMzgwZGFlODRmM2QxZDA4MjQyNmVkM2RiZmRmODE3ZmM4MDQzZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRiZGY0MDViMmU2NWViOTAwZTZjY2QwYWQ1ZThmYWY1NDZiMWM0MmJiNjBmM2E0MTU0ZGE3MGQ2YjIyMWNmYzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4MjE4ZDQ3MDM3MmY3OGIzODA0ZDI3N2ExMzg2Y2YzMjgxY2ViYTYyNzUwNDdjYzIyN2I0MzRiZTk3ZmM4NzEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f5973809adde4a8eb4dbbc810171d269",
+      "statement": "recomputeStat() sets user_exercise_stat.current_e1rm to the maximum e1RM across all logged working sets for an exercise (demonstrated current strength), not the first set or a session average, and skips sets with non-positive reps or unresolvable/non-positive effective load.",
+      "evidence": [
+        {
+          "resource": "repo://docs/DECISIONS.md#L59-L63",
+          "version": "repo-lines-v1:sha256:c214b6b369a306a74b56c0b5b6ee3d40cb190b447cc2387705516f05b445be03:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWI2ZjAxMDMzMTNhODFiY2QwODQ0OGYwNmVjOTBiOTI4Zjg0ZmVhOWM1YzVmZTA5MDJmMjNmZGU4MWZkNDczMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYThkMGQ0ODZmNzk2ZDk4OGMzYTUxZDBhY2ZkZmY4YjliY2JhNTkwYzZhMDE1YmM0NmYxMDY4YTAzMTNkY2VmMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzFmMWRmMDA0NTM5Mjk4ZDFmMDQwMjgyNjA4YzdjOWRkZmM3MDVjN2FiNmQ0NjgzMjUyYWM3ZTM5MjZhZjkzOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWU5ZGVjMGRkODI5NmQ0MmNjMDZmMDhmMzY1NzlhZGU0NDhiYzEzNmJmOGFlMzdmMDczYTM5YWIxMjBiNDVhNiJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/recompute.ts#L34-L51",
+          "version": "repo-lines-v1:sha256:0ea1ac0a70a978a1c2735b2cd9d0c864454b233ad5832afd0f0bc3a7fc91a1fd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2ZjQzMDMxYTIzOWI3YjQxMWIzMzgxN2VhMDg5MjljNDBhYzc1M2ExYjA0M2ZmZTYxOTdhNzhhODFhZmEyMDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwNGM1MjIyYzkwOWYzMTliNWYzZTgxNjg0YTg0OGU2YjQxNzc5NTA2NWRlYTI0ODNhOTE5YjBmNzU3Zjc3MWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fde21e5d321a4171bfdec759a33b940b",
+      "statement": "recompute.ts computes only the e1RM half of the user_exercise_stat rebuild; the personal-coefficient/calibration bookkeeping is layered on separately in recomputeAndUpsertStat (src/app/(app)/session/actions.ts), which calls recomputeStat() and then upserts both fields together, keeping recompute.ts framework-free and independently testable.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L59-L118",
+          "version": "repo-lines-v1:sha256:b7906b64aaf25e40412f6fb21551c0690254720bd78dd7bc0b9d0323c0966440:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwY2FkOTkzYzI1YmIyOTBlMDRhZGY2OTliZjg4YzAzMDJiZWFlMDY2MjY4MjNiMzg2OGNhMjgyMGVkZmE5YjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI5MWQ2OTAyMDFmN2VjNzBkMmRmNmVhODI3YWExNGRhMTI0YWJhODA3MGUzYjdlNGYyM2ViMjBmNTdkOTJiZjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5YTQ1Y2VhMDdlZTA0MDNjY2FhZGI1N2Y1NGQwODNkOWM5YWRiNTU0ZGQ0YTQ0NGMwOTAzNGFlNmE3ZDFlYTQifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/recompute.ts#L34-L51",
+          "version": "repo-lines-v1:sha256:0ea1ac0a70a978a1c2735b2cd9d0c864454b233ad5832afd0f0bc3a7fc91a1fd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2ZjQzMDMxYTIzOWI3YjQxMWIzMzgxN2VhMDg5MjljNDBhYzc1M2ExYjA0M2ZmZTYxOTdhNzhhODFhZmEyMDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwNGM1MjIyYzkwOWYzMTliNWYzZTgxNjg0YTg0OGU2YjQxNzc5NTA2NWRlYTI0ODNhOTE5YjBmNzU3Zjc3MWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1d8aa28fe927410687720afaa1380db3",
+      "statement": "records.ts's workoutRecords() replays only saved set_log rows (never optimistic/unsaved rows) to detect rep PRs, top-weight PRs (max effective load), and e1RM PRs per exact (exercise_id, equipment_instance_id) scope, comparing the current session's sets against the best prior value from sets finished and created strictly before the session's start time.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/records.ts#L93-L169",
+          "version": "repo-lines-v1:sha256:3798a438292e4ce69e51ec3012789e08820732df192d0964566891ff5e3f34fb:eyJzZWxlY3RlZExpbmVDb3VudCI6NzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwMTM5MmNkZjRiZDA5YzY3N2NhNmFjNDRmNzhjN2Q2MmVmY2ViZjJhMWM3ZTYyMWUzMzE0NDdjMWU5M2M4NGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3MzBhNjVlNjg3N2Q2MmI4N2VmYjUzMjkzMDg0MmFiNTY3NDBhM2YxZTg3MTE3NDYyOWE3ZDg1MDk5ZTI1OGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJmZjQwYjk5Y2U3ZjUyMDg3OTBiMmE4OTBkMWMxNDYwMTYwMzczYjVjNDQxYzcwZTdhNTM4OWM4MDkwNDU1MDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU4YjVlM2Y2ZDc2NDVkMTEwODlkNTMzZTNhOGVjYTNkZjQ0NWI5M2Q2OGEwZmRjMGYwZTJlZjI0YjIyYzIzMzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_44b84ce33150480d98cdaba19b75ec91",
+      "statement": "eligibleRecordSet excludes machine templates (stationProfile === machine, never directly loggable) and warmup sets from PR eligibility, but keeps leftover flat cable/barbell-station template set_log rows eligible under their own exact exercise id since history policy does not rewrite them onto a later brand variant.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L150-L155",
+          "version": "repo-lines-v1:sha256:73d762b03dbe1ce83cdff017f7dee198346655f3fcda3436287800e5c141756a:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzU3ZTI0ZjNlOTBjMjE0MThkYjI4YjI4YTBkZTQ3NzI5ZWVkY2MzNGEzZmE1OGQ0NjhjNDI5N2Q4NjRkMGU5YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTczMTk5NDAwNjgyZmVhNzM3MGQ2Yzk3NjFhZTZiZGI2NmIxNzRhZDRlZTA3MTJkZmMxZjZjYTExNDc4ZWRlNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjA1ZmRhMDhmYmU1YThhNzBhYWYzMDBlMDkxMTY3ZTA0ZmY1YzUyNTVmNTFmOTc5NDQ1ZWJhNWU4OGQ4YjQ2MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmYzNDZmOTg0MWVmYjhjMWU2MGVlNmQxMDQyYzUyYTAzNjRiM2FhZTgxNGNiYjQ1ZjQxMDQwYjIxMDhjODk3ZSJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/records.ts#L73-L87",
+          "version": "repo-lines-v1:sha256:871477b51d8aae3f16bf37e18ff8c3e1339b2e7f2e3b6afe2c5610cb8bff505c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzMzM3ZTA5NjY3NDcxNDNlNzY4NTk4NmQzZWJhMWUyNTAwYWFlMWUzOGIxODJjMzBiODhmMTczZDRhYWNlNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5YzFlYThlYjg5OTdmZWEwOTE5OTdlNmE3MTVjNWUxZmNlZWUxYzAwMzRlNDBjMDdhNDE2ZmMzZGM0ZmUyMjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJmNWMxNmM4OTg5M2Y5OWEwMjYxNmY0ZjFlOWI0NzI5OWJlMzQ3YzMzNWE1NTMxNDRiNTVjNTMyNWU3NzBiZGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_eb84d13056814b53b6687779f1725b94",
+      "statement": "historicalBodyweight() recovers a set's historical effective bodyweight by inverting the persisted e1RM with the canonical RIR formula, rather than consulting today's current bodyweight, so record and calibration baselines are not corrupted by later bodyweight changes.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L21-L24",
+          "version": "repo-lines-v1:sha256:b7fcb2e431ac400b671a38a5276fe5b27c28331816c88e16da2d3552559d24fd:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDQ5ZjY2MmE0Y2I1YzlkNTNhMzI0MWJmMzBhOGFkNDA4NTUwOWZhOTk1MDcwMzc1MzcyNTlhMDRjM2JmMjMxYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGM2ZTkwMDQ1ZWUyM2U4OTFjNzEwZWViNGQ2ZTRjODJlZmRiZGViYjVjMzFhMmY1ZjcwNzdmYWFhZjU4ZTQzOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjJmNzMyMjY4NTFjOWM3ZWUxNDY2OTE3MGYxNTk1MmFhOTk1YWRkM2M4YWM3YTg5ODY1YWRmMTIzODJjYzY0NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTAyODRlZWNhZTYxMGI5MGRmNWM0MzVlMThjNWM1ZDMyZjczYjdiOGY4MzUxMjA1ZDU3MDQ4YThjNTU4MTdjZSJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/records.ts#L65-L71",
+          "version": "repo-lines-v1:sha256:8d982906c16371ee0e7acf49628befe05baa081fa7e5921f75eeb77c6adc4916:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTAyYTI5NzU3MGZhNjlkYjdiYmEzMWNmMmI4MzYwYWM5ZTAxOTQwZDI3OWVhMjQ3ZGM2Y2NkMmFiZTlmM2EzYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2M4ZjUzM2UwNzJjOWU4MzRjN2NjYTEzMWIxNDVkNGU3OTdkMDQ3YmJmODk1ZDVhNGYzZWI2ZmFkODFkNzNhZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjM4YjIxMjFmZjFiNmY2NDg4NDBmOTM5ZTE1NTEzZmY1ZGQxMzFiOGVlNzdlOWU3MDE2YzJiZDA2M2VlYmI0MCJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "pages": {
+    "/openwiki/architecture/data-model.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:2497d87cdf13efbd704e86e377ad7fa5d1be8edd9a5f66e3f7d0f7e3f9efe006",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/architecture/overview.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:1ff6d79707c0fc3db2b1e1fdd52dffc5a3dd0a562f5fd2c4684ac911d94f5f5f",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/concepts/exercise-catalog-and-identity.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:2d522de0914ebac112ec97248fe1cd8481f6f52e45842023034c5ca633068e44",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/concepts/fluid-and-plateau-adaptation.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:fcc458680226a483b9ad4705942ffa544f726b156e6af4920f607ce58b365000",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/concepts/programs-and-periodization.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:765eb635d27fc03b042e8be90cf36a44fe16dfc4401d616fe40489d1ed60b15f",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/concepts/strength-engine.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:80cc27b354db9396409d488650ae3be2c610c7a47687a8d34537cf04607a0cb8",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/concepts/ui-conventions.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:94caf0ca83bd1f5de93d1b878962f8d37d7bf009b370277b520532b24e24f898",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/integrations/supabase.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:b4752b2f13d4fc5b7acc147d7091e3cb2c48578a4a11c51383c87c72286b907e",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/operations/deployment-and-config.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:a853c0536c232a5a715484aba8038d08cc86e12eee6263a68b3c4273766e6d27",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/testing/testing-strategy.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:5262ac1cf6bde3cd73f6177e1c771b41160bddf88b1e5cc02415a84b5872c704",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/workflows/body-tracking.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:ade92e09f58140c78fb73d93a587be569cc7cee4bbb52298295d8b21d53687ff",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/workflows/coach-and-ai-agent.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:9aa64852620fac0dd8ad6ac66dd34430a0254d02035924c0d83fbdcaa76eada2",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/workflows/exercise-swap-and-planning.md": {
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0",
+      "pageVersion": "sha256:1c1f8866f91aa5686170b7fea9d0f6c42fbc8dec4362624c8a45af1335a10c40",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91"
+    },
+    "/openwiki/workflows/tracking-and-analytics.md": {
+      "pageVersion": "sha256:075bc9080e28c2115ce20319b7653947a9d8be9002e694b86749e62d59dbe631",
+      "completedBy": "openwiki/0.6.0",
+      "completedRunId": "aab34574-de80-487b-9ec9-0684525beb91",
+      "gitHead": "4f8bcf38965e3f6d70c769d82a3bf7f0482ed057",
+      "sourceFingerprint": "sha256:420ee4e9b8ff376f61a549a130c3ec34613b400fe29872eb76987e7674e964e0"
+    }
+  }
+}

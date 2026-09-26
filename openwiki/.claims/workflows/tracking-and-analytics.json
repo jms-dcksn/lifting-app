@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:075bc9080e28c2115ce20319b7653947a9d8be9002e694b86749e62d59dbe631",
+  "claims": [
+    {
+      "id": "claim_ca4e9339787f4eb5bf9b8c935954f68f",
+      "statement": "exerciseSummaries in src/lib/analytics.ts groups set_log rows by exact identity (exerciseId + equipmentInstanceId), excludes warmups and sets from unfinished sessions (finishedAt === null), and for each raw exerciseId keeps only the identity whose session history is most recent.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/analytics.ts#L216-L296",
+          "version": "repo-lines-v1:sha256:1fd6b2d74ff5baea57891c89ffcc2ea61f3939f6dace3e8fd7780ad9ee835ab6:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzZGEyZWU0MDUwNjE0YzNhNmZjM2YxN2UyN2JjMGQ4OWI4MzY5YWFmMTFmZjBiMzVmNWFkNDI2OTQ5YzlmM2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlNzVjNDVjZGY4MTBkZWE4ZjgwMWM4YTYwMzNhYTMxOWU0M2VkY2EwM2FkMjE2NmE1ODBlMzhiNjVhMzQzN2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzOTA5Njk0NWU5ZGM4MGQ1YzYzN2E5OWU0ZjEzMmIyOGQwYjE1ODg4MzEwN2Y2ZDM5ZmYwZGIwMzM3YzJkYjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_746dfd2d126b4de19715f3f2c3deb510",
+      "statement": "Each ExerciseSummary carries currentE1rm (latest session best), bestE1rm (all-time max over the identity), delta (latest vs previous session), trend, and e1rmSeries (per-session bests) used for the board tile sparkline.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/analytics.ts#L267-L296",
+          "version": "repo-lines-v1:sha256:c47b9deb5f6198f8e25ec8f124ecb860ece434015d7fd1bbe82f066b1047e76b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlM2Q2YWU5OTk4MjYxNzliZWFlNDg0MTYyNTU3MjhmMWQzMDg5ZDVlMmQ4M2Y0N2Y2MGQxMjY3MDFjZTAxYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5NGZjMGMxNzNkMWVjM2ZjNTAxZDdkZmE5Mjg1NTAxYzUyN2NmYjQ3MTI1ODNkYTNjYzM2MTgwNTY2YjRiZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzOTA5Njk0NWU5ZGM4MGQ1YzYzN2E5OWU0ZjEzMmIyOGQwYjE1ODg4MzEwN2Y2ZDM5ZmYwZGIwMzM3YzJkYjYifQ"
+        },
+        {
+          "resource": "repo://src/lib/analytics.ts#L52-L62",
+          "version": "repo-lines-v1:sha256:e5fd93bccda4dc4db69d74ef1bbd27f60e9705f90ec46edb0721e7d287fbf456:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxNDc0ZDE5ZWViZmM0OTI1ZGQ5YzcwZjVkMWZjNGYzN2JiZmY4NmE5ZWE3M2IyOWRlYTAzNWM5ZDk5YTNiOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIyNjlmMTk1YWNkOGJiMmExZDVhNTk3N2NjZmY3YWY3MmVjYmQ2YjBmNTQ2MWE5NGFmNTFmMGZjN2U0ZjNkYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4MWVhNzNiNjgwYjYwMTczZDFiYzQxNzY1MzRkM2U0NzZhZGMzOGI1OTAyZWY5N2EyNjA1ZTY2ZGNiOWM1MjQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_36132b80ccf34951b93a7f46b6fd8952",
+      "statement": "board.ts defaultCompoundIds selects one non-machine reference exercise per BOARD_PATTERNS (squat, hinge, horizontal/vertical press, horizontal/vertical pull) to form the always-present default-compound tiles.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/board.ts#L7-L60",
+          "version": "repo-lines-v1:sha256:12bed721c3875ed075b5323c79a099de79434671b2b2a6b3f9bcf5429aa97414:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlMWM2ZWI4NDdlMjE4YTU3NTJkYmNjM2FkN2NiMGFiOTM2ZTMwOTUyZTk3NTQ0ZWM3OGYwMWEzM2EyYTg3NmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQwNjgyNzEyYzdhZmJkYWEzZTgyMWQ2OTdkMjk3ZTQ3ZmRmNzJjZjBjOWMyYzAyZWZjZmEwN2FlOGFiOWM5ZjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIzOWI1Mjk3MjRiNzJmNGY2NWNkYjgwNzA0NmRkMjk5OTZhMWY5MTdkYzU0MzI0ZjNjYjhmN2I3ZmU4NTFhYzYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7aad545b965f4ea2a6fc21df12f24374",
+      "statement": "visibleBoardIds computes the visible tile set as (defaults minus hidden defaults, filtered to trained families) plus user extra pins ordered by position; trainedTileIds extends trained status through exerciseFamilyIds so any family variant's history counts toward a default compound tile.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/board.ts#L213-L227",
+          "version": "repo-lines-v1:sha256:891663dbba0eb0f089c439e5f4d77f64d14f30590019d4571faa56215476e3f5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlYzNhYTlmNjA5OTBmNTNiZmIyYzI5MTQ4N2QxNDUyMTU4MmI1YTZiYWRkZDY3OGFhMDk5MzcyZmJmYmJjNTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkMGYyZDNhM2FhZGEyNzU4NjQ1NzhkMGE0MzkxNTYzOGQ1NDNmZWNhMmM5NDg1OGRiOTQxMjExZTg2Y2VmMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/board.ts#L62-L91",
+          "version": "repo-lines-v1:sha256:b44039a3f001f6e7b2077e8e50be6ef287069b71864ec91a24dd1bdad6eaaa1a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2ZDVkNDcxNzgyMTc1Nzk0ZGFjNWI4ZDllZjg5Zjk2NjI1YjA3N2Y4OTg5YzljM2JhZGI1M2M5Nzk4ZWU5MGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkMGYyZDNhM2FhZGEyNzU4NjQ1NzhkMGE0MzkxNTYzOGQ1NDNmZWNhMmM5NDg1OGRiOTQxMjExZTg2Y2VmMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2ZWY4MTQzOGFkYzgwYjA5ODVjMzk2NDliNmI5MjdkNGJjNmJlYjJjMDFmOWEyYjgzNjllYjUwYTAwMzZhOTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c56bc4c2cdcf41d983407b659cdad2ee",
+      "statement": "canPinExercise enforces PIN_CAP (8) extra pins beyond the always-visible defaults.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/board.ts#L5-L5",
+          "version": "repo-lines-v1:sha256:a6ef9aeaaebe43ea772ecf44ae45b919d0669e51d11238412c066a24d2fd1da1:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTZlZjlhZWFhZWJlNDNlYTc3MmVjZjQ0YWU0NWI5MTlkMDY2OWU1MWQxMTIzODQxMmMwNjZhMjRkMmZkMWRhMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTZlZjlhZWFhZWJlNDNlYTc3MmVjZjQ0YWU0NWI5MTlkMDY2OWU1MWQxMTIzODQxMmMwNjZhMjRkMmZkMWRhMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzIxY2FkYjZkM2U1OWE3NzJlMWRlNmMwOTcxMDNmM2Q3NGU0YWE4OGNiMmQ1NDUyOTc3YzMwNDA1N2Y5MGNhMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWJlZWFjZTM3Y2FkMGQ1MzEwMjkxMTE3Y2NmZTk2MzBhZjdlMTBiOTU0YTkxOGIxNTYzNDcyYTBhYzZhNjk4MCJ9"
+        },
+        {
+          "resource": "repo://src/lib/board.ts#L93-L106",
+          "version": "repo-lines-v1:sha256:2accef64c8a4a6f6670bc28180f6e6a50af5e0e75e0544a144548443d4ffb3ac:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2NGM1NGZmN2JlNDQ4YmI3MTY1ZGYxYzFmMjFlZjVkMjMzNGIxZWUzMjA3NDQ1MzljN2YxM2NmNWE5NDJkZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEzNDJmOGQ4ZWJjMTY4OTgyMTBmYjhmNzA2Zjk1OTBjN2Q2ZWI4NTQzOTkzMzAxNGEzYWU1YjUyMjY5MTE5ZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRmYWExMzVmMzUxM2JmMmIxODNmYjEyOGY0NzIyYjQxOWNlODc4NDI0YWEzYWEwZWU4ZDFjNThjYjY1OWExMzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0b2faf5b5db843e5957fc53aa7d53152",
+      "statement": "buildBoardLifts displays a default-compound tile using the most recently trained exact family member (via latestFamilyMember/exerciseFamilyIds keyed on baseExerciseId) while routing that tile's reviewExerciseId to that one exact variant's Exercise review; extra pinned tiles use their own exact exerciseId summary with no family grouping. Records/PR totals are never merged across family members despite this display grouping.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/board.ts#L164-L211",
+          "version": "repo-lines-v1:sha256:529227e390690049f5fcbf64c1ff9a39c729255c81fe91b13db8d04a424308c2:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwYmNlNmI5ZmEwNDUxN2IzMjNmZTEzNDNiZTBkNWZjN2VjZTI4OGJjZWIyNDY1ZTE3ODlmOTU1N2Y1OWNlNzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ1MzA4Y2Y0NzcxYTEyNjgzNDg2MmM0OTZlYmEwZWI1MmYzOGNkOGQ0OWFmYTBhOGIxYjY1YzliYTg4NTNmNTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5YTk2OTViYmE1MDJhNGVhNWJlMDJhNGIzYzJiMzkwZDI1NmI3NGExNTRhNmJlMzZkYzdmZDQ4Y2VjNjdlYTMifQ"
+        },
+        {
+          "resource": "repo://src/lib/exercise-history.ts#L1-L26",
+          "version": "repo-lines-v1:sha256:250a73089735aa6b052c595012c0e35dbf8b698499a264d2af9967a98ae919ee:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzNTkzMTcxMGZhOTYxZTY2MjEyNjYwNTk0OWZkZTI3YWE1ZmNmMGYyYWQ1MWFlOTY0M2FiYWUwMGIxZDJlZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJlMWY1NDdiMWM0ZTRlYWZiMWFjYjVjYTVhZTIyMzFmMGE4YTQzOWMyOTBmYjVmNzgyYjlmN2MzMjI5YWUyNGYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_631d0a2af4e74c22a6b41315f8771d6c",
+      "statement": "A board tile's recentRecord flag is set when its reviewExerciseId appears in the current week's PR chips, computed via sessionRecordChips/weekRecordChips which reuse recapLines/recordCounts from strength/records.ts.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/analytics/page.tsx#L69-L94",
+          "version": "repo-lines-v1:sha256:fdcdab4d8660fcad5b02ca473d72934f03f278c70cdf0ee208527563324d5def:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4YzY4YmUyMDExNDFiYzYyNzI5NjRmMzFmYzhhZGYzMzc4ZmFkNGVjZDVkMjNjYTQwNDQ4NDQ1ZTMzMTQxZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyMjUzZGMwOWJhMmVhNDk1ZDcyYjMzYjY0ODU4NDE0ODY4ZTE1MmQ1NDBmYTNhNjYxMDAzNTE2N2FkMjlhZTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjNTcwNDc1MjI2YzI2YWE2ZDQ2NTg5YWJjZmEzZjhkNDNkMzUyMDhlZmUyNjkyYjI3Njk0MGRjNDIwMWVmMmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzOWE0NGYwYmRkNDgxNDU4M2YwMmFmOGVhOTUzNzA0NGM0MDRmNzc1NDYxZDAwODI3NWZmZGZmYmMzZTllZDIifQ"
+        },
+        {
+          "resource": "repo://src/lib/board.ts#L130-L162",
+          "version": "repo-lines-v1:sha256:c2dd14772a3493e234f228f8fa21f108cbc5378d6a4504dfdbd803399aafe9c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5YjAxZDUyMmRjZmQ3NjMxYzA5OGUzOTU3MDRhY2FiNTk3NWRmZDQ2NTIyMThjNWIwNDJlYmQ5MTY1YTVhYmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU2ZTllMzAyYjJhYTlkYTNkMWJmYzA0MDMwZDUyNDliYWY4M2QyOGE3YTc5YjJhODhmMGZlYTEzODgwYTgzMDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ5NDEyOWMxYTZhMTIzZGQxZTljOTJmNWM0ZWY3NmVhYTliNTZiMWM1ZjcwZjQ4Njk2Nzg5M2RiNGYyMmRkNWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f2c08e087cdb4be29a7a11a9fd45649b",
+      "statement": "HistoryPage (/history/[exerciseId]) resolves the equipment switcher via review-equipment.ts: reviewEquipmentChoices lists every equipment identity the user has finished sets on ordered by latest use, resolveReviewEquipment honors an explicit ?equipment= query (\"none\" maps to null) or else defaults to the latest identity used, and rowsForReviewEquipment filters all subsequent history/chart/comparison computation to that one exact identity.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/history/%5BexerciseId%5D/page.tsx#L88-L118",
+          "version": "repo-lines-v1:sha256:734ff9e4fa9db46f84a94de622ea03ad9e1b4b29fdec37bc85bf4d1c1a31a05a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0ZTdiYTNiMWExNWVkMjFlZjhjZWY5MjViYzY2ODI1ZDU3ZmIwN2M5MmQxZmEzMzdhYzFhMGRjZDc5OTIxZTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzNDFmYzcwZTNjYTU3MGFiMWMwYTFkZDI5YmMxOWUyOGZmZGU5N2U4MjBkZDJhMTNlYTdhMjFiN2VmZWQ5ODYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3M2Y3YWExNDAyYjk4NzU5MzA1MWQ3ODQ3ZDkyMzdiMzIxOGYyOGUwYTZlMzM2NmJlNjNlM2NkZmJiMzMxZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1OTRkZDAyMDUxODY1MjE1YTcyZjM5MmQ2MDI0NWZlZDc3MTEyMzI3ZTE2OGJjMWJmYzYyOGQ5Y2QwMWQ2ZmMifQ"
+        },
+        {
+          "resource": "repo://src/lib/review-equipment.ts#L1-L107",
+          "version": "repo-lines-v1:sha256:6a8c59a83121c9c32ba53c50495c9b3731288cbd9fda56e5260ad419186285d7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIyMmI0NzMxYzQzMThlOTA3ZjA5MDUwZjNmZWViN2ZlYmM1MjUyYTg5NDM1YzA4M2IwMWQzODdhYjcwNmY1Y2U3IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_346b23232d8b432e8f9c27e252759c8a",
+      "statement": "groupReviewSessions buckets a selected identity's finished-set rows into sessions keyed by Chicago dateKey and tracks each session's best e1RM; the Last card shows the most recent session's stored e1RM (never recomputed against current bodyweight) with a delta versus the prior session.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/history/%5BexerciseId%5D/exercise-review.tsx#L196-L229",
+          "version": "repo-lines-v1:sha256:7afc5fd98b5f4dc4588ebea5678da62ca34426d0896b3705cde6e467728785b2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwOGQ0YTc5YzFkMDc3MjQxZGZkZjljNTY1MDg0MDkyZGI1MGUyN2JmMTg5M2YyMDM3YzhmMWJlYjNkODU2MWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5NGZjMGMxNzNkMWVjM2ZjNTAxZDdkZmE5Mjg1NTAxYzUyN2NmYjQ3MTI1ODNkYTNjYzM2MTgwNTY2YjRiZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY0OTYxMWEzM2NmM2EzOTQ3YjcxOGFlNjM0ZmI3YmVjYjgwYWRkMjcwMzgwNTVjZTQ1NWU3ZTg0N2Q5OWRkNTEifQ"
+        },
+        {
+          "resource": "repo://src/lib/exercise-review-sessions.ts#L53-L97",
+          "version": "repo-lines-v1:sha256:398888d5a1917f16e77c8ce02459c1050c0b1ad5b914c2605a743e7817611c39:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjMzM2YTBkMzYwNDIxOTFhYjg0YzA1OTk4YjVhODRlMTJhYWJlOTgwMGQ4NmVhZmM5MDU4ODVlYTgzMDA1MTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiZjUwZTA3M2I1NDNmZTU5NGRlZTk4ZjA2YzVhOTRlMjQ0YTRkYmQxOGMxMTIyYTA0ODhmM2E3MTBlYzU2ODQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ3MTMwNDY2N2NkNWZiOTU4NWRmMzc4MDg3ZDBjMTViMTk0ZGZiMDI2NjNlMmM4ODEyZWNkODk1YWQ0ZWYzMjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f100d69ffb7949dd8abf4d467015acc9",
+      "statement": "reviewRecentWindow implements the Past-three-weeks card over REVIEW_RECENT_DAYS=21 elapsed Chicago days: zero sessions in the window yields a 'gap' state showing only the last-trained date (not a decline); one session shows its date/e1RM; two or more show workout count, best e1RM, and a delta between the window's first and last e1RM points.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/exercise-review-sessions.ts#L4-L4",
+          "version": "repo-lines-v1:sha256:753b6ae420dac7de8a8747944e7cc16bcc11c6550675cc4a85ef198122b76cbd:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzUzYjZhZTQyMGRhYzdkZThhODc0Nzk0NGU3Y2MxNmJjYzExYzY1NTA2NzVjYzRhODVlZjE5ODEyMmI3NmNiZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzUzYjZhZTQyMGRhYzdkZThhODc0Nzk0NGU3Y2MxNmJjYzExYzY1NTA2NzVjYzRhODVlZjE5ODEyMmI3NmNiZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTFjMzgyZjQ0ZTBmOGUyN2MzMTk0MTI2MTc0ODQzYzBlYmEzZWRkZGY5YWM2ODFjMDg5OWIzMzE1ODdhZjQ5NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDI2ODM1YzI2MjczMmUwZDY2ZmE3ZmU2MzVmODgwYmEzZWExYjgwZjc3YjhhYmEyMGUxNTA1MjI1YzVmMmQ2YiJ9"
+        },
+        {
+          "resource": "repo://src/lib/exercise-review-sessions.ts#L99-L121",
+          "version": "repo-lines-v1:sha256:ded554970fb9d59811591619ec2cb3b91fcdc3efcdfbcaa352c65fd64b7218cc:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmNTI5MzI0Y2VkNDA5OWQyZDAwZjM5ODJjYmJkNGI3YWZlNDA2ZWM2NTYwMDkxNzJiYzlhODcxMjRjNjNkMmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlMzE0MzMwYmY2ZmUyMmJmNWRmNmU5ZDc5YzMxOTE0MWQ2OGI0MGU1YmYzZmZiODY5ZDE3ZDgwMjllMDQ2N2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3NDk1ZjE0Mzc1NGZhM2ZjNjhhOTliMWNlNWQzMDc4NmEwNWFiMmFjMTFlOGI5MTRkZTJlYzg1MWEwNzNjYmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6e140f2da3bf4ff29af92b52553ef0fc",
+      "statement": "The e1RM chart toggles between a last-8-workout window (REVIEW_CHART_SESSIONS=8) and all history via reviewChartPoints, and when period tracking is enabled and range is 'all', periodDatesInChartRange overlays observed period days that fall inside the chart's date span; fewer than two chart points shows a placeholder instead of a chart.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/history/%5BexerciseId%5D/review-chart.tsx#L17-L69",
+          "version": "repo-lines-v1:sha256:a8ec896e725738bb4a98aa889d9342d4e6d1fb12f7069f7be12644f2cf16441d:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5MmFkYzM0NzUyNDQ2MmUzMWZkZmE1Yzc4NmMyZGE0ZmU3ODc4MzY3MzJjYjljNDM3NmEzNTJiODJhNzBkOTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJmNGFlYTg1YTdiNzJjMzNjMTIzMTcwMzdlY2NmNzJlZmEyNDRmYjA2OWVlYjcyOTIxMDVmMmQwYzE3NDE0NjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2MTE2YWI2MmE3MzdlNzc5NzhmYjIxNDE2YjdjMTQ3MTdhOWQ1ZmU4ZDRmMWRhYzIwMjRiZjk5Y2UxMTIzNjgifQ"
+        },
+        {
+          "resource": "repo://src/lib/exercise-review-sessions.ts#L123-L140",
+          "version": "repo-lines-v1:sha256:89405d1ffba5d467906f322ee4cbe588ae203f9d5d5be463f9dccd001f1b3f05:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1ZDAxNjk2MjVlOWIyNmUzNmVjNzc0ZWM2MGUxNGU3YjMxNzJlNTczZTI5MmM3ZGYyZGJlMmNmMzkwNjhmMGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE0MzFkOTE4NzVlNmIyNDkwNDQ2MDIzYWJkNGI1MmZhNjcyYWE0NGUxYjZlMzNhMGQ5MDRlMWYwNzk4ODE4ZjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ba8c61626ddf4e95bf770481cff55e12",
+      "statement": "MonthCompare lets a user pick any two calendar months and compares PRs, best e1RM, volume, and exposures per side; each side is computed by reviewMonthSide, which calls the same buildMonthlyReport engine scoped to a ReviewMonthSource for one exact identity, then filters results back to that identity and computes volume via identityVolume within the Chicago window; a month with no sessions for the identity returns reviewEmptyMonthSide rather than a zero-value trained month.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/history/%5BexerciseId%5D/month-compare.tsx#L1-L72",
+          "version": "repo-lines-v1:sha256:a71564b5d7dfc5508093de141b07030e44938b6898d5bdf52c30b816314295bc:eyJzZWxlY3RlZExpbmVDb3VudCI6NzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE0MzViMDMzMDkyYWFhYTIzZDFmNjU1MGZkM2VkNjQ0ZTUxZDg1ZTkzYjc0OGU3NDE5YTE3NTEwZmMyZjBlOTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/exercise-review-month-stats.ts#L22-L93",
+          "version": "repo-lines-v1:sha256:73921bf445d105252cda49616fe6b317725d8ec13603d1a95550a921f7c78b0f:eyJzZWxlY3RlZExpbmVDb3VudCI6NzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNjYjAyZmNiZmNkYmRmZmEwODg1MThkYjdmODFjMTBhMzg0Nzg0ZmEzNzAwMDZjNDg5MzZiOGVjMjUwNjc4MzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIwZjY3MWNmNDhmNTY0MDBlNTgwODZjMDFhYmUxMWQyYTkyNmQ5OTc3MWNlMzU1ZGRiOTVmMGNiZTY1ZTNkZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMwZmU2NzRhOTVjMjcyYWEwNmJlYmE5NGQ1YzYzZDllNTgyY2IyNmUzOTEwODU4YTVmNTVjNzY3NmE0ZjBhMTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e9518c229eca4d3496833c99c02a0f7a",
+      "statement": "reviewCompareDefaults defaults MonthCompare's thisMonth to the inbound ?month= param (or current month) and otherMonth to the prior calendar month, falling back to thisMonth itself before month 0002-01.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/exercise-review-months.ts#L16-L25",
+          "version": "repo-lines-v1:sha256:3461166ed3a007f78d68cdaa4518d4d1bf9c2fd7271ec66a698216028c2a14a5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwM2JkMWY4NTZlMDVlZWJmNTE2YzNjMWQwZTBhZTE2NWI0MmJkYTExYTQ3ODExMDA0YjNkMjY2ZDk3MGY1ODQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1ODhjOGM3YTU1YWU3YWJiMjM2YzBhY2E4ZmRkZWE5OGJjZmRmMjk1NWU5ZTNiZDAwNGNiNTE2YmEwODg4OTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk0MTRjMWFjMGFiNTA4NDNiZmMzOThhYzg4NDMyODMyNDA4NGM4ZDMxYzJjYTAxNDUzNGE0NmZjODRiYjQ5OTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c4c4e921ce8a40179294ffb1f44e1ea6",
+      "statement": "Links from the board and from monthly review to Exercise review are built by exerciseReviewHref, which encodes equipmentInstanceId=null as the query value \"none\"; Exercise review is a single shared template for both entry paths and shows a back-link to the originating month when a month param is present.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/history/%5BexerciseId%5D/exercise-review.tsx#L102-L119",
+          "version": "repo-lines-v1:sha256:383f2c4807ea50fceecddebc037b99a92d8b8f116a1349c16e68df2c41c58939:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJlNjFiM2Y5N2Y5ZGQ5NjRkYWE2N2Y3NDdjOGVjODA5MmY5MGYzMjBkNThjNGU1OTkxNWI3ODI4M2MzNTFhODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5NGZjMGMxNzNkMWVjM2ZjNTAxZDdkZmE5Mjg1NTAxYzUyN2NmYjQ3MTI1ODNkYTNjYzM2MTgwNTY2YjRiZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVmY2ViZjczZjg5NGNlZGIzMWZkODQxMTY0MDc0NWJjOGEzNDYyYThmNDk2NTRjNWNiNGM5ODlhNGU5MzI2M2YifQ"
+        },
+        {
+          "resource": "repo://src/lib/exercise-review-href.ts#L1-L21",
+          "version": "repo-lines-v1:sha256:eb95245d7ffc4fc062aef4a075110e98585935162fe6509c8846bc34db97559f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0NDEyOGQwNjRjZTVjZmZlMDM5YTM3NmMyZWNiODczODkzM2Y4M2EzNDY3MTlhYjU2MWQ0MTUzNTNiYmQzMDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5b3390c5bf4e4a109b3e342e98647369",
+      "statement": "monthlyWindows computes current/prior calendar windows such that a completed month compares two complete calendar months, while the in-progress current month compares elapsed dates against the same elapsed dates in the prior month capped at the prior month's length, and rejects months outside [0002-01, current month].",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/monthly-progress.ts#L60-L71",
+          "version": "repo-lines-v1:sha256:ba553ac3207b70891c2a0d790cc5b6f9ee90f942cb3d59cb33825a03774e8aac:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmZDg0ZDkwYTI2NDVjYjE5NTY5YjQ3M2IyNGNhNWViOTBhMjhjZjFlYTg0NDg1MjhiNDNhMTRkNTdhMGViOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU4NDhmYmMzYjBmNTNiNGU3MWNmOGNjMmMwZDI0NWMyY2E0NjZlMDg1NmRiZjI4OGU4OTMyYmM0N2E3ODMwZGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3MGM0YzZhZWQzZDQxNjA2YTE4YWFiMmU3NzVlYmNjMzBiMzkzNGNkZDYxMDEyNmFiZDA2ODJiNmZjMjM1OGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0e98db050bee41bdac58112b131a167e",
+      "statement": "buildMonthlyReport deduplicates sessions and sets by ID, restricts to this user's finished, non-future sessions whose Chicago date falls at or before the current window's end, and replays workoutRecords for every prior- and current-window session in chronological order against the complete earlier baseline, reusing the same canonical per-workout recap engine used by session recaps and Coach.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/monthly-progress.ts#L76-L96",
+          "version": "repo-lines-v1:sha256:afc429bda01de6385dcf14174209ccf4ef19dc1c89010a975ce9cdae794a3048:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmYzhmMzFjMmE1OWYxMDA3M2MxYzJmYmM2MTMyOTBjNjZlZjc1NjAxODlmNmU0M2VjN2RiM2M0YmJhODIxZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhMmNhY2EzNGU0ZWJmM2Q1NjRlMzU1ZjI2OTk5NzhkM2QxOTc4OGY1YjRmZWQ5YTQwNDYwYWExZTljOGU3MTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxZjUxNmY2OTBjZmFhMjc4ZDFkMDQzNTMwNmZkMWY1YWNlZjRmODU1YjliMDA4ODNjYTk1ZWNjNzk1MTkzYTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9b2961256cc44180b9cfa3177a5f97cb",
+      "statement": "buildMonthlyReport's per-identity lifts group sets by recordScope, count only eligible working sets (incrementing quality.excludedWorkingSets otherwise), take currentBest/priorBest as the maximum stored e1RM per window (rounded to 0.1 lb, never regenerated from current bodyweight; missing stored estimates increment quality.missingStoredEstimates), and classify state as not_trained/unavailable/new/improving/declining/stable by comparing the two window bests.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/monthly-progress.ts#L110-L146",
+          "version": "repo-lines-v1:sha256:2ab591b55af20acbb4cbf612d798fe346066b8d5cc0b6218b65af0c44cc9d8f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0MThjZGVlMTA0OWQ2MDQ0ZDI1MmFhMGY1ZTBiZTY2N2ZiNGU3YzY0M2Y4ODVmZjgyYWMwZmVmZjBhMzUwNWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1ZjVkNTU0YjExOTczNDZjMGJmNjhiMzkyYjVlZjg5NDQ1YzJmYTNlYzVkYTdhNjM0MjY0MzJlZGE0ZWI5MzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ3MGNjM2QzMjY0MjZhMjAxYzk5NzFiMjgxYzMxOTI4NDc1NzgzMjZlMjhkMTRhYjA3YTYxZTFmMDJiOThmNDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjExY2RiNDUwOWM1OTVlZmI0OGY4ZjRkYTRiOGE3YzI0ODY0NGJhY2MwNTYxOTJkNTkwOTg1NjZkYzE3OTdmZmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f31b50794f4a46b09da8b1161200f959",
+      "statement": "Version 1.2 of the monthly lift report adds repGains: per normalized effective load, any current-window rep max that beats the prior-window rep max at that same load, reusing record eligibility/bodyweight rules without itself affecting PR totals or e1RM state classification.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/monthly-progress.ts#L141-L145",
+          "version": "repo-lines-v1:sha256:2097900b935f5559327bbe42e2155554b9aefc085665362907f8c0b96d682c54:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGFmN2M5NWU5ZjlhZmEwNTEzMTU0MWFhZWM2MDg5NzI4OTdiMDk3MmM5Y2U1Y2YyOGE1MjE1NjhhMTVmNzY1NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzU0ZjAxZmRlNWNjNWQyMjU5MGM3MzAzNGM2ZjBhMDc5MGE1NjQ3MzkzZTZkYTMxMTJmMjgwNTMzNzYxNzlhMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGEyNmRjODVjNmUzZDg2OWQzMWRiYTUzYzY1NThjNWQ3MjdlYTNjODg3ODI2YmYxOTE5MWFmODExOGRlYTg1YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmI0OTgzZjkxYjgxYjVlNjFkYWRmZGJkZWEwMTljYTQ5MWIyOTc2ZjI0ZmFlYzk4MjQ2NDQxN2EyNTM0MWRiZiJ9"
+        },
+        {
+          "resource": "repo://src/lib/monthly-progress.ts#L29-L30",
+          "version": "repo-lines-v1:sha256:a7cf293d74898db4dd7cf9353b657730a6b368fe6239b877cfbbf561d69dfe58:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjIwMTBmNmU3MDE5MTIwNWEyNzhjYTdlZDg4NjVlYmQ5MmY4ZjE1MDRiNDc1NGJlOWQ0OGM0NjUwYjRjOTAzYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWUyNDY5ZDBmMGE0Mjc3N2QxMDBiZTI3OGY5NjY2MmI0OWQyZjhiYjkzODBmZDMyZDk4NmU1NTcwNjdjMDI3ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzIzNTNmNGQxMTc4MzY1Mjk4ZmNkYzUyYTBmMTY1MWZhZGViZTMxNWZhODcyNDkxODdlMDc3YTQwMGFhZWNmZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjgwNzZhM2YwYjkwY2UzMWJhZjRlZTJhMWUzNGEwODU0YWUzYjYyOGRiZTNiZjljZjdhZjc5Mjc3ZDA1OTk0MyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_782d1c6c227b42c88460f4f2e9c22137",
+      "statement": "buildMonthlyReport's achievements list current-window sessions with at least one record (full ExerciseRecords[] per session), currentWorkouts lists every finished current-window session regardless of records (consumed by the period-performance overlay to count training days without a second query), and stalls are filtered from the input StallAssessment[] to those whose latest point falls inside the current window.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/monthly-progress.ts#L147-L153",
+          "version": "repo-lines-v1:sha256:0aa891e59f87205bba3a8d9a6279886b6fa1eac99e99cd0f4dcdcff3256e8ecc:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTAyMWY0NDc3NjE5N2E3MTZiMjNmNmM4OGY3ZDVlNjQwODE4M2U3OTlmMWM3MzJhMDM1M2JlNjc2YTQxNjc2YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDRhZGQ0NTVmMDU4NDJlNzExYzk3YzU1OTQ1ZDg5ZTNiYmEzOGQzYWU1OTlmNTk3NmJlM2U2N2ZiMmNlNzY4YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmM4NjFiNjc3OGFkMmJlMjQyNWVkY2M0NjE5MWZmNjRlOGMxNmE1MzViMzQyZjJmMGUwN2UwYjcxY2E1YmI4NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_67e42548870f41f1bc949d9dbda91e1d",
+      "statement": "loadMonthlyReport composes loadMonthlyHistory (paginated session/set history up to the month's end), loadStallAssessments, and the pure buildMonthlyReport; there is no persisted monthly aggregate cache and every page visit rebuilds from current saved sets.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/monthly-progress-data.ts#L1-L11",
+          "version": "repo-lines-v1:sha256:eb255eb226d091ddbcc5277557d1c98934f7fff053d7d83d613baa30d2fe4261:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzNWZiNzJlYTMyNWFmMjAwMGQ0YzM1MzAxOTliMmFiYTUzYjFhNTU3NzljMjNjOTU5MThjNDE1ZDU1NWRmOWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiODBkN2YzNjM5YjJlNzZkODJmMzM3YjQ1ZmU5Y2EwOWEyNzg3Y2Q2MDllMTUyZjEzZmQ3YzVhMGE1ZTM3MDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d1a90414fd1b4ac79d2b663e5c4df66d",
+      "statement": "buildStallAssessments (src/lib/stall-report.ts) is the single shared stall/plateau evidence function consumed by monthly review, weekly Coach, and Fluid; it builds one contiguous evidence series per program slot keyed on the exact exercise/equipment identity, folded through recorded adaptations and the stored session week, and resets the series on identity swap, mixed-identity workout, phase change, or recorded adaptation.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/stall-report.ts#L44-L99",
+          "version": "repo-lines-v1:sha256:73e4cda5e0c85af4d512fcee8b4a757ab1d6f0540eb4806bceff76c7f114764c:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0MzVmYWM3NjFlYmIyYzNjNGQ2YTcyM2Q4NzAzYzNiNTc5MTI2ZWM4NGVmZWYxZDkxNmY1YmU3N2IxZTRkZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliNjJmNjBkODU5MGE1NzljZjQ2ZjhkNjczNzhjNGM1NzJiOTYyY2VjY2RiOTBjN2E1ZjdiNDJiOTYwNzgyYTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE3NGUwZjg0YTVkNDFmYWU5MDQxZDJjYWM5MmY0Y2EyNmRjOWI4YWJhM2M0ZTMxMGZhYmI1OTdkZWQ1MGM4NDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzYTI1MWVlNzFhZWQxZWRlOTgzZDVmMmI3YzhhOTIzZmY3OTJiNzU3NDhkMmYzOWQ2OTU4NzIzODEyOWQ0YzUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2d85663c7e7f4f438963584509c2decc",
+      "statement": "A deload session (isDeload: setMultiplier < 1 or name/description containing 'deload') breaks a stall series into the deload state, and the next normal workout starts a fresh baseline; default patience is four stalled exposures for barbell equipment and three for other equipment (defaultPatience) on top of the initial baseline, overridable per slot via plateauPatience.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/stall-report.ts#L109-L119",
+          "version": "repo-lines-v1:sha256:06978d97f6d5ff05e3ed3a283e8e977f3ca807c073f0b937744472774ca39981:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1MGM5YWE1MTk3YzBmYmNjYTAwZDQ1NDI2MWJmZDkyNjg3NDIxYzZlZjJjNTZjNGQwYWIyMmM5YjMyZGZiNGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzYWQ0MzBlOGU4NmNmZWExM2Y0ZGNiZjFlNTU4NjBiZjIyMDk0NTYxNWVlYTczYjQyZmQyNTdmZGNlYWQ1MjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlODdjNmM2ZGU5OTNmMDBlOTM1NDEzNmIyZWFhM2RjODRiMWMxMDY4Mzg4ZmI0MjFhMTY0NjRhNGUwYzUwYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEwMWJmMmE1NjhkYmY2MmM0ZTQ4MGNiMTliOGZjM2QxNTNjMzIzMmRjYjc1ZWQ1ZDE5MWIwZGMxODE4YzY3MzIifQ"
+        },
+        {
+          "resource": "repo://src/lib/stall-report.ts#L38-L41",
+          "version": "repo-lines-v1:sha256:f4db4e5450e9fc779e7b8e2673ede2f8e221d3a7ee1591a4fe1ab54bbbc6561b:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTg0NmYyNTU4Y2QwYTg3NzA0ZjQ5MGNiMzhhMDI5Zjk2ZjgzYWI2Mjc5NzJlOTA0ZDVmZTNhMmRmYzcwMDUzMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTZiOTFlZWI1NjNhY2VjY2MyYTEzOTRkNThjZTEwODkxZmM5NGU1ZTZhOTlhZTZkYTA1YTQxNDg1NTNkNmVkYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzM3ZGJhNTBjY2JlMmRkYjcxNTE4ZmY3ODU1NGIxOThlYzcyZDc3NDM0ZGFiYTEyNmMzNWRhNDAwYzg5ODk3ZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_63e5443c1450477e87bb1569b851e6d9",
+      "statement": "detectPlateau resets the stall clock when a running-best e1RM improves by more than max(1%, 1 lb), or when reps increase at a previously observed canonical effective load even with flat stored e1RM; a rep max at a new load alone is not counted as a gain, and only the 'plateau' state (not 'monitoring' or 'insufficient_data') surfaces as a Worth-reviewing card.",
+      "evidence": [
+        {
+          "resource": "repo://docs/MONTHLY-PROGRESS.md#L67-L73",
+          "version": "repo-lines-v1:sha256:dc1732faa3930d46b99ea7a5d9651d8af51e6f3de6428deee70644f629dd5f6c:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTM2NmRhNjFhYTdmYjMwZWU5ZGJhMGUyZDc0M2VjNTQ5YjExMjQ3M2VhOTdiNzk0ODQyNjI2Nzk3ZTliNWIyZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2ZiZjU3NzhkMzc0MjY1MDY4YzllY2RjODVlODMwNTdmYTc4MWUyYmIwYjQ4MDZhMTRjNGUwZDNhMzFlNzQxOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2MzMzZkMmVmMmJlMjUyZmNkYWQxYTQwY2E3MDQzNjY3OGIzNzFmZTQ3ZTU4NzQ1ZTcwMjdjZDRjMzhhOTAzMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODMzMjgwYzQwNGY0NTAzMGFhOWU1ZjQ5NmQ4MGY4MDMwMzYzZjhkYjU0YjVkYjRhYTBkMDA0YzY5NGI4YWU2YSJ9"
+        },
+        {
+          "resource": "repo://src/lib/stall-report.ts#L100-L119",
+          "version": "repo-lines-v1:sha256:1dfe1a490b29903f77c548818df2d377e7fc6bd8241a7b19dbbfc69b99f05c31:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzODlmMzQ4OTI5MzY0ZmZlYjI0ZDRmZjJiNzhkZDU4NTkwMGJiNzUzOGYxZTFjMzlkMmM3YjQ4OWYzYTc0MDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzYWQ0MzBlOGU4NmNmZWExM2Y0ZGNiZjFlNTU4NjBiZjIyMDk0NTYxNWVlYTczYjQyZmQyNTdmZGNlYWQ1MjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkNzY0NmI3NjdiZDI2MzFhM2Q1ZmIwNGNiZjMzMWVlNjdlNjUyOTcxZDM1NTAzOGU3M2NkZDAyYjZjMzUyNzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEwMWJmMmE1NjhkYmY2MmM0ZTQ4MGNiMTliOGZjM2QxNTNjMzIzMmRjYjc1ZWQ1ZDE5MWIwZGMxODE4YzY3MzIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0b57c30d2719498a9264507007943a29",
+      "statement": "An adaptation accepted after a slot's latest workout clears its former plateau immediately (points reset when current.phaseStartAt postdates lastSetAt); historical monthly views ignore adaptations recorded after the selected window, and a late-entered old workout uses its own performed date for context rather than borrowing a later adaptation.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/stall-report.ts#L109-L111",
+          "version": "repo-lines-v1:sha256:59fd43365612c183aeec601b723d7d92d75c14a83da00d360abf87e56c632521:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjUwYzlhYTUxOTdjMGZiY2NhMDBkNDU0MjYxYmZkOTI2ODc0MjFjNmVmMmM1NmM0ZDBhYjIyYzliMzJkZmI0YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjM3ZjdkM2UzMDJkNzY1MDJiMmRjNjRhZjAxMmUyZGE5NjgwNDk5N2I0ZTM3NTNiOGU3ODU0MjFkMjc0ZWVjOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmU4N2M2YzZkZTk5M2YwMGU5MzU0MTM2YjJlYWEzZGM4NGIxYzEwNjgzODhmYjQyMWExNjQ2NGE0ZTBjNTBjNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTNkNmUwM2YzODU0ZTE1OWUzYzk3NGZhNmIyNDc5NWI1MGRmODExMTA0ZDYxYTYzM2U5NDVhYmQyOWQ3YTQzMSJ9"
+        },
+        {
+          "resource": "repo://src/lib/stall-report.ts#L76-L79",
+          "version": "repo-lines-v1:sha256:2faf147ce7b4f7d18bb657009c42160a7cc511648a2830e78446eee21571abac:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmEyNmZmZGI4MjBiYzY3ODAyZGQwYjVjMWIwNzVkMjVhMjVkNmQ5OTNkNDIwYWVhMWRiYTgwYjZmNDUxYTAyZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmJmNDk0YjlhNmI4ZTBlNDM2MWVmMTFiNGZjYzk4MzI1ZmQxOGRjOTQ5YWExNGY2OGEwMGQxNWM2NjA3ODg4NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2Y0NWE1YTdkNjRkNGQ0NWU4MmYzZWUwNTU0NmM1MTE2NWMxMzdjZGU1MDA3ODZlNGEwY2U2ZmIxYzMyMDkxOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmZmMTE1ZjFhNmVlZWIwYWZhYjc3Y2JjMGI5MDQ2YTc4NWRlNjE2M2QwYjZhNWIxMjBkNmIzZDkyN2ExZDA5NyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_765597f9d2904556895bd7305a8282e2",
+      "statement": "The monthly dashboard UI (review.tsx) shows the top-5 percentage improvers, a collapsible rep-gains-only list, a Worth-reviewing list of supported plateaus linking to Coach's filtered next steps only while the month is in progress, and expandable achievements grouped by exact exercise/equipment; it deliberately does not list every lift or render an SVG trend line on the month page itself.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/analytics/month/review.tsx#L32-L153",
+          "version": "repo-lines-v1:sha256:860b8f2e10de9b34c5ae9a02b9d6b0a6e938ce21e16c40c6f45d060e66af2e64:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjYmEyYzQzMWM4ODUzMzBiZTMxOWZjMWNjOGQyYTMyODkzYjMyNzM1MjUzZTEwNTBjM2ViYmUxY2RlYTFhOWM4IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJjYWM3ZDNjYjY3ZWEzNGQ0YjI5ZjliNzIwZDM1ZDczOTUyNmZhZTQzZjlhMDIyNzFhZmQ3Zjc3MzA3MGQxNmJlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwZWIwMWMzYjVkN2Y1ZTQyMTNhZjQ2ZThjNDIzNjM0MjdkMjIzNDk3M2U1NzVmY2YwODdmMTgyMmEyM2YwZjgyIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4YmQ5MzFkNzc4MjMxYzJiN2Q5ZmEzZmE3MDJlOTUzZTk4ZGE1ZTlkNDRlMzE5ZWEwNmNlYTY5NTZlNDViYWIxIn0"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:b4752b2f13d4fc5b7acc147d7091e3cb2c48578a4a11c51383c87c72286b907e",
+  "claims": [
+    {
+      "id": "claim_abb6459621054ee39c84a7f149c464fa",
+      "statement": "src/lib/supabase/client.ts's createClient() builds an unmemoized createBrowserClient for Client Components, while src/lib/supabase/server.ts's createClient() builds a createServerClient bound to next/headers cookies and is wrapped in React cache() so one request reuses a single client instance across layout, page, and action calls.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/supabase/client.ts",
+          "version": "repo-file-v1:sha256:98d1f05ea5ed9859e7f292c9bef17f286332d7cfead0dcd526beb4dae7542608"
+        },
+        {
+          "resource": "repo://src/lib/supabase/server.ts",
+          "version": "repo-file-v1:sha256:b2dbbc07ef1754289d627cb413a1352e30a10f4f9b9bb536a26f883f4a0b2005"
+        }
+      ]
+    },
+    {
+      "id": "claim_ed262dbd3cdd4563abff5ae036ea78ac",
+      "statement": "src/lib/supabase/server.ts's setAll cookie writer wraps cookieStore.set in try/catch because Server Components cannot set cookies; this is safe because src/proxy.ts already refreshes and propagates session cookies on the underlying request.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/supabase/server.ts#L19-L26",
+          "version": "repo-lines-v1:sha256:6277d48c4dc6f45855101e7d397d70e40ecf2b556675b78c449faca036cdc9d2:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGJkZGE5ZTFmNDg4MGMxNmUzYWU4M2RkOTJiODlhMzgxNWIyZGIyODBmMTU2ODMwY2U5NGZiOTlhYjY3OTUyNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWU2NzNhYmQ0NTdhOTdlZWExN2E2MDA2MmViMGZhZWE2YmRmMDk0ODY4Y2M2YjhmOGMwZWJkYTJmNjFlZDQyZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGVmODk2MDU1MjZiNGYxMTBjOWE4ZTJmZjYwYWMzZmNhZDkxYTdiNGY3MmUzZTA1NzgzZjQ0ZmVmMWFlM2FjYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjRmMTI2NTBmYzhjMjFlNDAxY2I4ZDE1Mjc0ZTkxNjkxODQ4OTM2NmIzYjY4NGE1ZDc4MTU3OThkNjgxODg5MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_46aa2ccbe10e4d2899a49b3de56bbe10",
+      "statement": "src/lib/supabase/middleware.ts's updateSession() calls supabase.auth.getClaims() immediately after createServerClient() purely to trigger a token refresh and cookie rotation; code inserted between the two calls can break cookie propagation.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/supabase/middleware.ts#L1-L34",
+          "version": "repo-lines-v1:sha256:19bad24e07f893ccb4b4ec4d18900192b848b83665766c0de64d2f644d82aa82:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0MTE5MzkxYWY1ZWFiMjhhM2RjNGI2NzA1OWUwYzZhOWI5NjNlYzNkYWNiMTI0ODA1YTkxM2MyZGQwOGM4ZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjMGU3NzM3NDEwMTQ0OGRmYzU1NTQzMGVjMmFlMmYyZDJiMjk3YjdlNjAyMjZmNjAwZDZhNTE4YzEyZjdmYjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a9f84adf6f124179aef228df8df987f4",
+      "statement": "getCatalogMap() (src/lib/catalog.ts) and getCurrentBodyweight() (src/lib/current-bodyweight.ts) are wrapped in React cache() and take the memoized server createClient() instance as an argument, so a single request loads the exercise catalog and current bodyweight at most once regardless of how many call sites need them.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/catalog.ts#L59-L66",
+          "version": "repo-lines-v1:sha256:57a2136ba9c5324af664c7c5d6d481cc5cbcfad4aed034f9ca12e7b4c79b2959:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmUyNDlkMDA2MjY4OWQzYTFlYjlkYjM0ZmI0NGNmMDBmNjg2MjE1MzdlNzdiYTE3NWEyMWIxNThkZGJkZTVlZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjZmNWI0MGIxNTg0NTdkMTc4NjRmMjE3OTA3ODZkZDVhMmVjZGI2NGI2NmE2NTFmNzg4ZDRlMjVjZDMzMDNkMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzIzZDhmMTFhYTNmZDUxZWE2NmMwYWE4NjU2M2I5Yjc4MjkyZTQ0MGIxOTE4ZWMyZmIwMjY2N2RkNTI0NDQ1YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDlmZTY0NGU2NDdiZGIzZmRjM2Y4OGIyZTBmM2Q4MDI0MzYxYTdkMmI1ZGNhZmQ4YTQ4NGMzNDhkNzQ2OGI4NSJ9"
+        },
+        {
+          "resource": "repo://src/lib/current-bodyweight.ts#L1-L25",
+          "version": "repo-lines-v1:sha256:1a55a6ce5325e4db7b450a850d0d066a2b572b2e24bb6ac8d02aa5f427c0bf79:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExMjU0OGNhZjJlYTA0YzMwNWQwMmJmMjI4MjBlZDU0MzFjYTY1YjlhYjhiNzE2YTExZTIzMGI5ZTJkZGZiOTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2062803c0982487eaad27e8e86b5b49a",
+      "statement": "src/app/auth/callback/route.ts exchanges a magic-link PKCE code for a session via exchangeCodeForSession using the server client, then redirects to a same-origin next path (rejecting values not starting with a single \"/\") or falls back to /login?error=auth on failure or missing code.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/auth/callback/route.ts",
+          "version": "repo-file-v1:sha256:9475f38cb45c9d856a886a1167d63086fd21798b0d94a014cba7ca3a7f4cec28"
+        }
+      ]
+    },
+    {
+      "id": "claim_d9d7b2459ba142e990fa4347a6ce5bed",
+      "statement": "src/proxy.ts runs updateSession() on every request matched by its config.matcher (excluding Next internals, manifest, service worker, and static image assets) to refresh Supabase auth cookies, but it never inspects the claims result or redirects, so it does not gate access by itself.",
+      "evidence": [
+        {
+          "resource": "repo://src/proxy.ts",
+          "version": "repo-file-v1:sha256:5ec23b449ab1781aef3ec87cce3ccc010e150e63997f9a7ab7136fced7026333"
+        }
+      ]
+    },
+    {
+      "id": "claim_7346f1ad997c476c83acc5518ed051dc",
+      "statement": "src/app/(app)/layout.tsx is the top-level access gate: it calls the memoized server createClient() and supabase.auth.getClaims(), redirecting to /login when data?.claims is missing; this getClaims() check, not the proxy's session refresh, is the trusted authorization boundary.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/layout.tsx",
+          "version": "repo-file-v1:sha256:8c9fdc7f2bbf3716fbeb0117d75144276ce157cb536aedc8e9e7fb365ff53743"
+        }
+      ]
+    },
+    {
+      "id": "claim_9d0d465bad084d1fb24663849c5975c9",
+      "statement": "Server Actions independently re-check auth via a requireUser()-style helper that calls getClaims() and extracts data?.claims?.sub as the user id, throwing a user-facing error if absent, so authorization is enforced separately at both the layout boundary and inside each action.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/weight/actions.ts#L11-L17",
+          "version": "repo-lines-v1:sha256:437066f1382d939b1e6048e41c436e1e2790b14d214e615cd9682896eb2a4d94:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTkyNjUzZTkzNzU1MGVjMTVlMDUwNDA5NThjMjkwODhkYzAyNzg5NmQ3NWZjOWE0ODcwM2E3ZDQxNjJmYmMxMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODI3MGMwMDY4ZjkyMmQ4NzkxYTEyMWZjZDJkN2NlNjgwMGY0ZDlmZmI0MTM2NGU4MDNmZWJiYzIyOTM3NjViYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjUyNDczZWNiMDA2N2RiYzdjMzg1OWQwMjZkMmU2YWNmYTYxMjJjYmZhYmNhMjk2ZjJkYTNkM2U5MjJmOGJhMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e6197a301d38440bb12fb44d33df2363",
+      "statement": "Every user-owned table enables RLS with an owner-scoped policy of the form using (user_id = auth.uid()) with check (user_id = auth.uid()) (profile uses id = auth.uid()), making Postgres itself the enforcement point rather than application-level filtering.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/0001_init.sql#L87-L111",
+          "version": "repo-lines-v1:sha256:0a8883baef6a8b8d48fe332b144c359f6072597eddf73b13209b1497463fbeed:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjNDhiNjEwMTM0ZmYxMDY1NjYyM2NhNTExOTIyZGUxNDBkZTUzMDRiY2ZmNTFlNzIxMWQxYmFhNGJkYTNiZDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliY2NjMmJmOWZkYWY0NDBjYmM2ODRkOTA2OGExMmM2MWE0YWJhMTBiYTdiN2MyYTY3ODBkYzhmNWMzNDQ1ZTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkMjQzYTQ1NzVjNDQ4NjdkMjY2NTZmOWEyNWZhODkyNDczZTQzODAyMGY5M2E5OWQwM2Q3Y2VlZWQ1MDZkOWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5MjVhMTJlNGI2NzQwZTRiODk1MDRiMDhlM2Y2ZjA1OWNlNjFjMjNkNmM2ZWUyZjVjOTE3MmJkOGMzMTU0ZTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_67176ec3b244474fa4536956efafe23e",
+      "statement": "The signup trigger handle_new_user() is declared security definer and runs with elevated privilege solely to insert the initial profile row after an auth.users insert; it is a narrow exception and not a precedent for elevated reads elsewhere in the schema.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/0001_init.sql#L113-L124",
+          "version": "repo-lines-v1:sha256:7c0ea2d4c2f0e47c1676cb8f73b83671c43c32c5dee0f9a081e9b60ab2a06524:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmMTFkNjAxNWVmYmZhODE5MmYyNjliNmE1MjdlNmE1MWU2MTFjY2M1MDQyOWQyZTgxY2FhYzBlZDU3YzMyMGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3YWE5OGIxOTEwZGY5MWY4NjU4MTA2NzhkOTRlODk2NzQ0ZDAzYTRhM2Y0YzFkZTUwNjliOTZiNjgxYTM2OGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkNjVlZjhjM2QzNjBkYzVkMDUwNDg0ZGQ4MzViOWYzYWNhNjY3OGFlMzg2ZDRmZjMzMjJiMDRhNzQzZmVhMDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a305ef3628f5451e8a04edc042668ec2",
+      "statement": "GET /api/coach/v1/weekly is the sole elevated read path: the call chain route.ts -> createCoachWeeklyHandler() -> loadCoachWeekly()/loadCoachWeeklyWithClient() -> createCoachApiClient() builds a @supabase/supabase-js client with SUPABASE_SECRET_KEY (autoRefreshToken:false, persistSession:false) that bypasses RLS entirely.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/api/coach/v1/weekly/route.ts",
+          "version": "repo-file-v1:sha256:49fa0757be9165b735930cf91bd18423a29f20da0dd455241c923fcb8cf12a93"
+        },
+        {
+          "resource": "repo://src/lib/coach-weekly-data.ts#L196-L204",
+          "version": "repo-lines-v1:sha256:db2169a1705da05f3999c7f7854c4fd28d03f910f01425ee6bd8d3911c2dd9b9:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDUyMzZiNjM0ZGQxYWNjNTEyMTVkMTBhNjA4YTVhNGRiZmJhMzQ1OGZkZDdhNzc4YmVjOGE1MGYyZGRhZTgwNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTY4NDc5N2QxNDcwYThiZmY3YmQ1YTZhMDIxNGU5NWI5ZjMzMzA3ODgxZTY2YzM1ZmY3MDA1ODFjNzIwOGJkZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://src/lib/coach-weekly-data.ts#L23-L25",
+          "version": "repo-lines-v1:sha256:d8a12303c7c3fd00c857a792b10ed3f52b300c3edd464384a7bb5c9fc0c2f698:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGNiYzJlZTg1YzU0MWJlMTczZWJhZjdlMTQwZjQ3OGY5ZWNjY2ZlMjIwYjdjMTQ4OGJmMjRlZGUxODUwMzM3NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTEwODZhY2IwNGNlMWVhNWVjZDE2NWY4ZDA3YWRmZjg0NGFjMjFkMjhiM2UxYTdmMTM2Yjk5YTBkMjZmYjljZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzg2OWJkZjM5ZDA1YTdhODg1NGZkNmM2ODY4YTFkYTQ0YWE3NjQ4ZjJlNzZjMWM0OWVlMGE1ZWQwOTEyNjQwYyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_3c0709fda4ee48e4aa64e927b5e5b5f5",
+      "statement": "createCoachWeeklyHandler() requires a configured expectedToken of at least 32 characters and a configured UUID-shaped userId before processing a request, returning 503 on missing/invalid server configuration or a loader failure, and returns the same generic 401 for both missing and invalid bearer/query-token credentials using constant-time SHA-256 comparison via constantTimeTokenEqual.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/coach-api.ts#L27-L52",
+          "version": "repo-lines-v1:sha256:1d6dc5365dc8e9c2fb94f2e662c2230f9444b81b693887a1d96aab0adf545e34:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4ZmY1MWVlOGRkOWQ3NjFjZGZjOWYzYWU4MGZkNWM2YTc5ZDNiODRiYTE3OGQyMDhmZjNmY2U1MTQ1YmE4NzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxNWM0MGQwN2ZjYWM2N2E0OWUxY2ZhZDM1Mzg0ODdkMDUyMzdkZGJkNzBlOGFmY2EwZGVmZDljNjNiZDk4ZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmZDZmMzM2NmYwOWVkNzU1YTRjOTkyYjlkOWJhYzBhOTczODJiMWM0MDgzZmE1MzgxNGNjYjhjYmQ1NDhhZTYifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-api.ts#L65-L81",
+          "version": "repo-lines-v1:sha256:88e67719769a10a87a459a97b286a543b99d96212baeaf017bb7e26b0781d574:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1OWExOGVhMjA3ZjIxMmUzOTJlYjFjMDQwMGI1ZjBiOTllZWRiNmMyNTc1OGUzNmZhZTkzZGMzZGQ3M2NjNTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3NzEzNjkwZDVhMTk5MDMwYjZjOTRjZTcyNDU5YTY2NWQ5YTU2YTZiYWRjZmFjY2Q0ZTdlMjA1MTI0NjM4NDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b16462b03a8549db88e0a7ffc7a38a56",
+      "statement": "Every query inside loadCoachWeeklyWithClient() (set_log, profile, workout_session, bodyweight_log, program_day, program_slot, program_phase, exercise, program) carries an explicit predicate scoping it to the caller-supplied userId, which is the only mechanism restricting the secret client's reads to COACH_API_USER_ID since the secret key itself bypasses RLS.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/coach-weekly-data.ts#L42-L81",
+          "version": "repo-lines-v1:sha256:2b5164b0648448747f2a02471e80caa26aed834ed311f772ab02848c94ecc4e2:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyYWI1MDk5OWI4ZWJmMWRhOWZhNDRmZTM0N2EwZTY2NDlhMmNjYjM0NTg1MmMwYjhkNTExMmUwNmE4MzMyYTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmOWRiYzdmMmYyNGI1Mjg0MzU3Zjk4NjMwNmZlZjA0MTdjYzZmODFhODNhMDJiZjgxNTBmNzExMmY4ODNiMDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiNDRiZDQ0N2FmYWY2ZjgzNWI5ODM1YzVkNDY2YWVlOGUwMTYxMjQ3ZTBmMTYwOGU1NGNmNzEwZWIzYmE3MzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVkMmMxY2I4NjIxNDVlOTk2ZmE1MDg3MjJhMDlhMmY3ZGY2NzhjOGEyMTBhNTNlYWY0MTg3ZGI0Mjg5MzgwZWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b2ff91c3373c4fdaa82f3f41d786010f",
+      "statement": "The weekly Coach API response sets Cache-Control: private, no-store, max-age=0, Pragma: no-cache, Vary: Authorization, and X-Robots-Tag: noindex, nofollow on every response.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/coach-api.ts#L19-L25",
+          "version": "repo-lines-v1:sha256:36e5ab9ad0da885b4bab304e5d5fe6eeea24563a7c2fd0681e93b85da9edcfce:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjM1ZjE5Nzc4NTIwZjE5YTQzYmFmYTY5ZWMxODI3YTcwYjRkNGQwZGYwMThjZDliZTU5OWVmZjI5NzhmYzM1OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTc0ZWU4YThkMWFhODQ1MzkxYmM2NzllYjcwY2U3ZjQ2YTNjZDZmYjJkMTZmY2NhNjdmYTE3OGY0ZjhjMWUwZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGQ2MzU1OTg5OTg4ZTMxYWY3YzQ2MGIxYmUyOTQ5MmMyYTQzYmIzNDIxZTFmOGU4YzJlNjIwZDE5ZmNiYWQ0OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjAzZDY3ZWU5Njc2MmY5ZTYwYzA0OWE1YzliZGNkZjJkYTZjOGYzYmM4NGU0NzFhOWNmMzVjN2RmZjlhMmRlZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_5355777728dd44b7bad66050717f81c2",
+      "statement": "save_bodyweight_entry, swap_session_exercise, save_program, and set_active_program are Postgres functions declared language plpgsql security invoker set search_path = '', executed via supabase.rpc(...) from Server Actions, running with the calling user's privileges and RLS rather than elevated ones, with execute revoked from public/anon and granted only to authenticated.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260911005629_exercise_swap_scope.sql#L8-L55",
+          "version": "repo-lines-v1:sha256:a7e41ef24d397ca78f1d768227e2a5954c0f6867b78441ce3828ceb992c7eeb1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmZTE1M2UyMDZjYThmY2EyYjk5ZjBlMmRiZTUwZDE4ZTNiM2YwN2Q2NWNiODU5ZWI3YzFlMDM3NmE3MjEzNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk0ODZiNTZkYjdmNGMzMDE4ZTE0NDBmZDlmODY1ZDNjODM4M2E1OGMwMjZjYzEzZDc1ZmRjMTU5YWRmYmM4ZTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdkOTc4YTdlYzY3Zjk5NmNlMjgxYzIwM2FmMzkyMjJjYjVmZTUzZGJjZDMzNDc2NGVjOWU3YTg5YWQ3YTkzODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260912143620_bodyweight_calendar_writes.sql#L1-L60",
+          "version": "repo-lines-v1:sha256:a42d79569bd67a7edc96af24031d513273a6073866949f54f7a02db8ee881495:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcyM2RiYTk0NDIxNzQzZDAyODAyNjcyN2NhMjAxMDk4ZDBiZTI5MjJhZDBkMDI3YjY5ZjkwY2I3MzdjODU3MDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxZjE4ZDJlNTNhZTVhY2FkZWM0NzdlYjExMTZmMzdiNGRmZmY2NTVmMjZlMDRjZThiZDczNmM2ZjcwMTg1MmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260917000000_atomic_program_mutations.sql#L200-L231",
+          "version": "repo-lines-v1:sha256:ab20c6c0c51a508e17509ab0b8f2f2539fc37938c1cfd032bcd685923d3119f0:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZDM5NjA3OThlNGU5ODE5ZWIzNmE4NWZlMWU4Y2EyYzEwMTk1ZGRjNjM3MjdlNzhmNTQ5NWMzY2M4ZGEyYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkMWEzYTZhMzE3NmU3ZjdlYTUwOWI0OWQ3MDIxMjk0NGUzNjc5Y2E2NmY0ODRlZTRlZDM3NTVmNzFmNTUyM2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUwNTZjODhiZjJmNjJiYWNmM2I2MTAwNWNhYWJlMDdhMTI2NjdjOGMwMzAzMjZlYjRhZmI1YTRhODljNWIwZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAyNDRiODE4MjYyOTU5MTgyYjBjODMxYjJmYmU3YTcyNWU5NDg3NjU3ZGY3Nzc4OGZlN2JiYjJiMTg2MDAxNzQifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260917000000_atomic_program_mutations.sql#L9-L14",
+          "version": "repo-lines-v1:sha256:f16018cbdfaf6e31f6537a1c344487410f7a43ebed5eebdcdd7d5185b5d51b28:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGVlMWMyMzA4ZjQ5ZWMxYzRlMmIzNTg0YzMwYTBjZjljZGY4NWFlNzYwZTAyODNhN2I0MzZjM2YyNzJhOWQ1YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWI2YmZkYWY4ZTIzZjEzZGI3ZTExYjI3MzZkOTJhM2Q1ZGFkMTBkN2E0YzMyNjhkNTYwNzNlMjI5ZWY5Y2U5MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzE2NjFkMGQxZTNjNGQ4ZGJhNjM1NmU0N2FkN2M5ZGNhNGZmOGQxNDYyYjhjYzQ4MzRhYmFkYzQxMzVhYjc4YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjk4ZGJiMWRjNGQwYTFkMTI1ZTA5ZGZmM2E4NmJlNjU2N2U1YTM0MzUxNzU0MWQ3OWNkOTY0OTc5OWY4ZGVhMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ae9575e0d78b4087b8783e7e8aab7034",
+      "statement": "save_bodyweight_entry takes a per-owner pg_advisory_xact_lock to serialize calendar writes, enforces one bodyweight reading per user per date, raises errcode 23505 on an unconfirmed date collision (surfaced by writeWeightEntry as a replace-confirmation prompt) and P0002 when the targeted entry no longer exists.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/weight/actions.ts#L44-L60",
+          "version": "repo-lines-v1:sha256:2b8b6fb01e2b70b471f31b14ef100b77d6de3a0749fca79f7e1bf802ac20a79c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2N2M2YzAzNjhjYTVmNzg5OTU5ODhiYzlkOWYwOTZjZDJkYjhjYmJiZDIzOTJhMTE0ZDM3ZTM5MGFhZDgwNWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3NmYyZmQxYzc4NWE1YWQ4MDlmMTM5NGI5MjNkYjE3YzllYmUwODA2OGQ0ZWQ1ODk3ZTM0ZTcyYTQwNTFjZjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZhZjJlYzUxMWZkMmFmNzllYzI3MTRjNDAxYjg4NjZmZWQ0OTU0MjdhNjEzZTM2NmM3NGIwYzlmYTBiMzUxYTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRkNWUzMmFkZjUwNjdkNDQ4NTQ1MjA2NDg3MGI2YWUyYTA2ZTNlNjMzNGQ4NzI2ODgzM2ZhMmFmZjU3NzhmYWQifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260912143620_bodyweight_calendar_writes.sql#L29-L57",
+          "version": "repo-lines-v1:sha256:dc63d3a36d7ed00edf2b04b057989381f513bb3d8a9150720bb70162df82453a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2NDJjNzJiODgxYzIwYjcyMDYzZjA0M2Y2MWU2NjkxNDE4NTcxODk3YjlkYWZmMDg5ZjVjYWI3Mzg4MzUwYWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlMzQ2YjNlYzhlNDY1Zjc5MTMzZTQxYjU0NzdhNzRkZGNmNTc3YzE1YjNmNWUzZDczOTRhOTEyZDE5Zjc0ZmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMxOTNjNmI3NWExZDhmZjNhYjhiNGMxZGQ0NDAxNzE5YTgzYWQyNzM5YjIxOTk5ZDUzMWEwMjVhNzQ1OTUzMjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE3OTdkZDIwZGZlZjI2OGYwMzUzNTdiMTQ5NGU2OTI0NjVjMDk2MjY4MmMwYmQ1MTBiMjlmN2E5ZWQ4YzdlZGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3765b0601d82479f848395c7ffcb5696",
+      "statement": "swap_session_exercise writes a workout-scoped substitution into workout_session.exercise_swaps jsonb and, only when scope is 'program', also updates the single target program_slot row and inserts a movement_adaptation row for Fluid programs, after verifying the session is unfinished and owned by the caller and that the slot belongs to that session's program day; it never rewrites set_log.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260911005629_exercise_swap_scope.sql#L8-L53",
+          "version": "repo-lines-v1:sha256:dffc8caab5dffc88e3bb8457b35e1523e4569f2fd07141089e6d92a29683f09d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmZTE1M2UyMDZjYThmY2EyYjk5ZjBlMmRiZTUwZDE4ZTNiM2YwN2Q2NWNiODU5ZWI3YzFlMDM3NmE3MjEzNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlMzQ2YjNlYzhlNDY1Zjc5MTMzZTQxYjU0NzdhNzRkZGNmNTc3YzE1YjNmNWUzZDczOTRhOTEyZDE5Zjc0ZmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdkOTc4YTdlYzY3Zjk5NmNlMjgxYzIwM2FmMzkyMjJjYjVmZTUzZGJjZDMzNDc2NGVjOWU3YTg5YWQ3YTkzODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzNzc2YTNkOTA4OGY2OTQyM2IwYjIyZjQ3YTBjMjhhNDU0ZTU1OTg0MmJlNDEyYzhhYjI0MzQwMjA0NmY0NDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c42a50589d154bd8b5da106888a7b4bf",
+      "statement": "save_program upserts an entire program tree (program, phases, days, nested slots) from one JSONB payload inside a single transaction, preserving program_slot_id continuity (referenced by set_log foreign keys), deleting rows absent from the payload, and activating a program with a single update statement (is_active = (id = v_program_id)) so no intermediate state has zero or two active programs; set_active_program performs the equivalent single-statement activation after verifying ownership, without rewriting the full tree.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260917000000_atomic_program_mutations.sql#L1-L69",
+          "version": "repo-lines-v1:sha256:d9f5f3369cf8e425bcb1889a49e4732662b2a86b9bd0581a0f4acc018259ef6d:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwM2FmZTdlNmVlNWNiYThkNDI1NTU5Y2EwOWE2ODkyMDkzYjk3Mzg1ZWJlN2U1MGUyMjU3MDM5ZTAzMGZhZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE1N2E0MmM4YTJmNTY0OTgzYjVhNGZlZTYzNDhlZTNiZTRjNmRiOGNlNTQxY2ExMTFkOWJkMTMxN2M4YzBjMzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRkZWE1ZGQyNTFkZTFlNGZiYWEzNjBjZmY5MjIyZDM3ZmEwYWQ2ZDg0NjIyZDk0OTc2N2VjMmNkZjhmMTVkZDUifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260917000000_atomic_program_mutations.sql#L200-L228",
+          "version": "repo-lines-v1:sha256:6fe6fce32cb4209d151b927dd15e36f038340abe609d7019dcf351656e4340af:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZDM5NjA3OThlNGU5ODE5ZWIzNmE4NWZlMWU4Y2EyYzEwMTk1ZGRjNjM3MjdlNzhmNTQ5NWMzY2M4ZGEyYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlMzQ2YjNlYzhlNDY1Zjc5MTMzZTQxYjU0NzdhNzRkZGNmNTc3YzE1YjNmNWUzZDczOTRhOTEyZDE5Zjc0ZmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUwNTZjODhiZjJmNjJiYWNmM2I2MTAwNWNhYWJlMDdhMTI2NjdjOGMwMzAzMjZlYjRhZmI1YTRhODljNWIwZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUxNWY2MmViYWNjODIwZDk2ODQ5NGE2ZTRkYjdkM2FjZTgxMjVmZjk2MTk3ZThlNDhkNGI2ODcyZjFlOTUwYzcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3a8b09fad3944c8f8a97e6a328f23355",
+      "statement": "supabase/tests/*_rls.sql are pgTAP-style ownership regressions run against a local Supabase stack via npm run test:db and are executed in CI on every pull request, while other scripts under supabase/tests/ (e.g. program_mutations.sql, exercise_swap_scope.sql) are psql-style checks with no TAP output run individually via psql -f.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L66-L85",
+          "version": "repo-lines-v1:sha256:82ad6b876edbc78077d6ee44f0aab80fccb881d1902e21919a64a6b4c451594d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxNjQ2ZThiNzljYzdmNmY1MmExMzdjNGJhZDRkNzE5OGIxMmQyYWMyOGRkNTRkMmFkMWEzZTIyNDBmZGE3MWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2NDdiNmNiOGJkNWViMjMwNGQyNTFjZDEyODQzYTVlMmRlYjY1ZmFlMDI4OWMwODEzN2VhMDk0OWM2MmZmZGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzZTEwOTFjMWU5ZGFkNzA0NzY0MTY2YTAwMzA3NWY4NmM5NDRiYTA2NTgxZjQ4ODI4MzFkNTVhMzA3NTQxMTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2ZTg1YTJjYWY1MjU3N2VmZjc3YmY4NGYwOWU5MWQwMjk0NTUzYWNhYjUxM2I5ODFmODRiMzZlM2RkYTljYjkifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

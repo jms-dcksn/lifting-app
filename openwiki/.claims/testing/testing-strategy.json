@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:5262ac1cf6bde3cd73f6177e1c771b41160bddf88b1e5cc02415a84b5872c704",
+  "claims": [
+    {
+      "id": "claim_1c9ad075a92e4f79bc77059a80f7d633",
+      "statement": "Vitest is configured with environment \"node\" by default and discovers only src/lib/**/*.test.ts and src/lib/**/*.test.tsx, so unit tests are co-located next to the modules they cover rather than living in a separate test directory.",
+      "evidence": [
+        {
+          "resource": "repo://vitest.config.ts",
+          "version": "repo-file-v1:sha256:7bb689176ab7ac3f3d67cbc40030b2bf81160001d299fd34132d72e5d970cb65"
+        }
+      ]
+    },
+    {
+      "id": "claim_5019076b1f094c75b27f4f36e4ae09eb",
+      "statement": "Component tests that need a DOM opt into jsdom per-file via a \"// @vitest-environment jsdom\" pragma instead of switching the whole suite's default environment.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/info-button.test.tsx#L1-L1",
+          "version": "repo-lines-v1:sha256:8e517231884f5aee75dd3b0509f10b318c87d19f7f3d49a452f86ec583b381cb:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGU1MTcyMzE4ODRmNWFlZTc1ZGQzYjA1MDlmMTBiMzE4Yzg3ZDE5ZjdmM2Q0OWE0NTJmODZlYzU4M2IzODFjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGU1MTcyMzE4ODRmNWFlZTc1ZGQzYjA1MDlmMTBiMzE4Yzg3ZDE5ZjdmM2Q0OWE0NTJmODZlYzU4M2IzODFjYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODZlYjZhNjg4NTRkMzgxNTZhNjAzNDU2NDY1MTBhODJhMzUxNWIwYjIzNjJlZmZjZTk4NTMxZjk4YzdhMzA1NiJ9"
+        },
+        {
+          "resource": "repo://vitest.config.ts#L1-L9",
+          "version": "repo-lines-v1:sha256:3c560dc4dc6dae836f8920069dcff6cf4d669200f06e7439bbcfb35d4d18d8d2:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODE3NGU5ZTkwMDM4ZWIzYTBkZDM0ZDMxMzNmODg4ZmEyZWU1MTNkMjI3Y2Y5OTNlMzZlM2M1NzVkNWU5OGRjMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGQ1Y2QyZmI0ZjNkZjg4NDUxNTI1NWIzOTUyM2YyZjhiNTQ3MmJlZWE5ZjU2NmZmY2EyMDRkYjgwMjU2MTA0MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjZmNWI0MGIxNTg0NTdkMTc4NjRmMjE3OTA3ODZkZDVhMmVjZGI2NGI2NmE2NTFmNzg4ZDRlMjVjZDMzMDNkMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_844e5eaa01b14d33830edf8a001f325e",
+      "statement": "Mocked action/data-boundary Vitest tests mock @/lib/supabase/server's createClient and implement a fake `from(table)` query builder that records each select/insert/update/delete call and its chained filters (e.g. id and user_id), letting the test assert the exact owner-scoped write the Server Action issued without a real database.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/program-actions.test.ts#L1-L79",
+          "version": "repo-lines-v1:sha256:121217c50c5ae62ef90767dd79013a68dfec84222966cdcc8a7914c1a7f257d0:eyJzZWxlY3RlZExpbmVDb3VudCI6NzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3MTVjYjI2OTk3MjM5YjZjYTc2NmEwYTdiNzhjMDFjYWE2MTdlNDQyNzNjN2FlOWRiNzU3NjAxMjQ2Y2ZiOGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlkMTliNzkxNDBjMGVlN2E2MTU5YmQ1ZGI5MjBkOGIwNzYxOWJlZTYwOWQ3MTZmZTRlMmY3YjM4OTM5NGRkMTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_484eef47aef44a53a6251137068cdd0d",
+      "statement": "npm test runs `vitest run` and npm run test:watch runs vitest in watch mode; these are the two Vitest entrypoints defined in package.json.",
+      "evidence": [
+        {
+          "resource": "repo://package.json#L9-L12",
+          "version": "repo-lines-v1:sha256:6a96277fa79938a77f6a735c9b7a2f0e0f26c6a4a37644957d1a42abd42fe0b5:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTUxYjE4YzA3NWE2NDg3NTJkYTc4NjI3NzY4NjdiMmQ2YTI1MjQ1NWVlNzY5NDQ2MzNmZDUwMDkyM2IyMTBiMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzhmNDM3OGQ4NWNjZjdkNjk4YmFmNTcxNmFkMWU5M2ZmYWU2OTQyYmE1ZmIzY2I4ZDhlOGE2YjRiN2FjYTkyMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDIzNjdkN2QwZDM5Y2UwZjU1ZTFhNDc4ZGM0M2Q1Zjk1NzJhOGZmMzllZmFiNmZkMzFjNDU1YTUxY2ZjZmNhOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_b8a05430c2874ad9bd5b62112fdd9caa",
+      "statement": "npm run test:db runs `supabase test db supabase/tests/*_rls.sql`, so only files whose name ends in _rls.sql are executed by this command and by CI; other scripts under supabase/tests/ are never invoked by it.",
+      "evidence": [
+        {
+          "resource": "repo://package.json#L12-L12",
+          "version": "repo-lines-v1:sha256:d62a5cd60fbdce25eb0594cd1824aa4b408ff15296e29d06995b38ddf72bd69e:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODBiNTdhNTNjNzM1NWEzYzMzMDBmNjFjZmI4ODAzNDBkN2ZlM2ZjZGMxZTg5MGVkNTBiZTI3OGFmZGM4YjFjMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDIzNjdkN2QwZDM5Y2UwZjU1ZTFhNDc4ZGM0M2Q1Zjk1NzJhOGZmMzllZmFiNmZkMzFjNDU1YTUxY2ZjZmNhOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ba0b100d57af4d77b99a4a155873fea2",
+      "statement": "supabase/seed.sql enables the pgtap Postgres extension that the *_rls.sql regression suite depends on, and is scoped to local/dev seeding rather than being pushed to a deployed project.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/seed.sql#L1-L4",
+          "version": "repo-lines-v1:sha256:365e1d5f9f8ebfd7c37ed9ab2cc9b8ca00cdfda88ae644d2c603088681d89e77:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTFiZWM2ZGM2ODk5NjNkMTk4NDQ5ZTU4Y2UxNGY5ZjhlYWNmMTRkMTY5MmNhMDdmMDAxYzA2NDFjNjgyNzI3MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTFlYzBmZmExMjQ3ODllMTczNGZhZjdiY2VhZWJiMGI3OWFmNTFjOThlMzBkMTIwN2I0MTQ5NTkwNTgxZThmNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_f720fa15f8be48c49be0867663ad7c94",
+      "statement": "Each *_rls.sql script wraps its fixtures and assertions in begin/rollback, uses pgTAP's plan()/finish() and assertion functions like is() and throws_ok(), simulates an authenticated request by setting local role authenticated and request.jwt.claim.sub, and verifies cross-user denial both via throws_ok for actions that must fail as the acting user and via a post-reset-role check (from an unprivileged role) that a same-looking update/delete as the wrong user actually matched zero rows.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/tests/set_log_rls.sql#L1-L91",
+          "version": "repo-lines-v1:sha256:0234114dfe7156163713ecb8ab3e7016696354ac26005887e5684f90d8e9f70a:eyJzZWxlY3RlZExpbmVDb3VudCI6OTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViZmYxNzE2MWNiNWM0MGUzZTIyZTRjMTMzZjE1YjM2YWMxNjkwNjExMTZmNjU4NTdjZDdmMWI0N2FlNDcxY2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzOGU5NDdmMzYxNGY0YmFiM2JmN2IwODM5OGFmMjBiM2ZiOTc5YzlkZTA0MzY5M2Y4YmFlMDgwNTQzMTlkMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8b3fb6a0566a4da7b4383aa6b8a6f0e1",
+      "statement": "The current *_rls.sql suite covers one owner-scoped table (or closely related group) each: body_measurement_rls.sql, bodyweight_history_rls.sql, coach_recommendation_decisions_rls.sql, period_tracking_rls.sql, program_rls.sql, session_feedback_rls.sql, set_log_rls.sql, and user_exercise_pin_rls.sql.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/tests/body_measurement_rls.sql#L1-L5",
+          "version": "repo-lines-v1:sha256:815dc77715e4253843bb45f95d868f91481d5afd227eb8b39f5d61b918506700:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTJjNWU3N2I5N2U3Njk1NDZkOTg4MTU2MGNmYTMyNmVjMjFkZDJhM2Q2ZTA2NDRlM2U2MjkxNzQ2ODFmMDdhNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTk3NDQxM2ZjMTg0ZmJjMDRhMzY0NDkwZGQyMTg5MmNmZjVmMzc2NDg1MjNiYTJlODZlZWM3OWQ4MGY0M2E1ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzY0ZDBlMzI5NjM1NDBmNjFmMDNjNjY3ZThjNzMxNTFhNGE0MzU1YjlmNTNjZDY4YmIxZTAyOWViMTI1NTFmMiJ9"
+        },
+        {
+          "resource": "repo://supabase/tests/bodyweight_history_rls.sql#L1-L5",
+          "version": "repo-lines-v1:sha256:7c540bc50ab2d989b004ebe347f7deb6faa1f23547a7aa0940ea1f418fbe85ea:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTJjNWU3N2I5N2U3Njk1NDZkOTg4MTU2MGNmYTMyNmVjMjFkZDJhM2Q2ZTA2NDRlM2U2MjkxNzQ2ODFmMDdhNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTk3NDQxM2ZjMTg0ZmJjMDRhMzY0NDkwZGQyMTg5MmNmZjVmMzc2NDg1MjNiYTJlODZlZWM3OWQ4MGY0M2E1ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGJjN2NjZjYxMDI4YTIyMmI5ZDBlZTkwOTc2Y2UyOTZiZGQ1MzQzYzVlYzcwZTg0MzU0ZGEzZmIwNDljZDExMyJ9"
+        },
+        {
+          "resource": "repo://supabase/tests/coach_recommendation_decisions_rls.sql#L1-L5",
+          "version": "repo-lines-v1:sha256:e1cda33853b15c4d84a6ac71cd39ebea0d38bc450ca9ce921fbbc1024ce47ca1:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTJjNWU3N2I5N2U3Njk1NDZkOTg4MTU2MGNmYTMyNmVjMjFkZDJhM2Q2ZTA2NDRlM2U2MjkxNzQ2ODFmMDdhNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTk3NDQxM2ZjMTg0ZmJjMDRhMzY0NDkwZGQyMTg5MmNmZjVmMzc2NDg1MjNiYTJlODZlZWM3OWQ4MGY0M2E1ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2I2ZDg2MjM2ZGEzM2U0M2FhZmM5ZDAzOGU3NjBjMjY5MTcyMGE2ZTFkMDM0NWY3Y2I3NjRlY2Q2NDM1ZDY0ZiJ9"
+        },
+        {
+          "resource": "repo://supabase/tests/period_tracking_rls.sql#L1-L5",
+          "version": "repo-lines-v1:sha256:cbf69584ffb037ad1fbe89e5f0d97cd31af591ad02abdb17728f602b1ca6c8f8:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTJkMDBlMzU2ZTRmNDU0YjE5ZDMzODExZDhlMWZiMTZlZDllZmVlNDM0OGFlZDU4NzhkZWFhOTMzZGZhODExOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTY2MTY3YmQ4NjY3YTQ1ZDgzY2YwMDY1ZDg4OTY4YjZiYjU0NTEzOWRkMmE4Y2QyZjdhZjYxMTFjMzlhYThkNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWIyZDVkNWQ4OWUyOGIzMmI1NjAyMTdiOWU3OWFhZTk2NGNmZWFjMDlkYmE5ZGZhMTY5MTNkM2MyN2JlZWRlYyJ9"
+        },
+        {
+          "resource": "repo://supabase/tests/program_rls.sql#L1-L5",
+          "version": "repo-lines-v1:sha256:f063a165af16575674e87dbd701539edd9942b4fe8b5724059ce86f79cfac5bc:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmQ3MjY4OWQ1MWI3MGU0MzE4YjJlN2JiMWIyOTI2ZGM5MjdlM2FlMTdjYjk3ZTVmZWUxMTA1OGViNGU3Y2I4MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWFmMmY1Y2M0Mjk3MjZhNjNjYjIwNzdkNjRmZjkzODhhMGIwZGQwMjE2NGE5ZWE0ZTQ3ZmUxMmM0NWRmNGViYiJ9"
+        },
+        {
+          "resource": "repo://supabase/tests/session_feedback_rls.sql#L1-L5",
+          "version": "repo-lines-v1:sha256:6a4b7a294eaac49931ac578e73ab0e4e003b33f9713a775f9c2747920d740915:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTJjNWU3N2I5N2U3Njk1NDZkOTg4MTU2MGNmYTMyNmVjMjFkZDJhM2Q2ZTA2NDRlM2U2MjkxNzQ2ODFmMDdhNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTk3NDQxM2ZjMTg0ZmJjMDRhMzY0NDkwZGQyMTg5MmNmZjVmMzc2NDg1MjNiYTJlODZlZWM3OWQ4MGY0M2E1ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTNjYWJmMTE2YmEwNjdlYmViYmY3MjQ1YTlhODNhZWNlOTZiNjYxZjExNTdmZmYxOGQ3Yjc4ZDZjZmNlZTQxNCJ9"
+        },
+        {
+          "resource": "repo://supabase/tests/set_log_rls.sql#L1-L5",
+          "version": "repo-lines-v1:sha256:c252afc1e1d4278a4f822e3cde33c77dd8bf69d153e9681d91169b1b6fc16deb:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWJmZjE3MTYxY2I1YzQwZTNlMjJlNGMxMzNmMTViMzZhYzE2OTA2MTExNmY2NTg1N2NkN2YxYjQ3YWU0NzFjZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDI5YjM4NzI0MjljM2RhMTIzM2M2Mjk3ZDNiYTQwYmNlZjMyYzkzZGI4NWVlMWQ2NDBlYjVjOGIwYzk5NGVmNCJ9"
+        },
+        {
+          "resource": "repo://supabase/tests/user_exercise_pin_rls.sql#L1-L5",
+          "version": "repo-lines-v1:sha256:6a4b7a294eaac49931ac578e73ab0e4e003b33f9713a775f9c2747920d740915:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTJjNWU3N2I5N2U3Njk1NDZkOTg4MTU2MGNmYTMyNmVjMjFkZDJhM2Q2ZTA2NDRlM2U2MjkxNzQ2ODFmMDdhNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTk3NDQxM2ZjMTg0ZmJjMDRhMzY0NDkwZGQyMTg5MmNmZjVmMzc2NDg1MjNiYTJlODZlZWM3OWQ4MGY0M2E1ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGJmMGI5M2JlODY3Mjc1NjcwYzdhNzIyOWVmOGZjODBmM2YwNTQ1ZDZlNWM1ZDEyMzE4Y2UzYWU5YzQ1MjRkZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_b6896b4b778d4db5bcf7ec985a21c161",
+      "statement": "supabase/tests/program_mutations.sql, bodyweight_calendar_writes.sql, exercise_swap_scope.sql, period_tracking.sql, and strong_foundations_variety.sql do not match the *_rls.sql glob, use plain PL/pgSQL assert statements or a final PASS select rather than pgTAP plan()/finish(), emit no TAP output, and are therefore never executed by npm run test:db or CI; they must be run individually with psql -f.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L35-L36",
+          "version": "repo-lines-v1:sha256:35c96bfb525ff5d68852608aca15b07eeef6ca3248f4208c2d69471d5dbe3896:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzMzNzM0OTdlZDJlYTM5YmU2ZDllYWY1NjhmZDIxODYxYmQzNjBlZDQxNDk0ODVkYjEwNjk5NDRkOGI1MWFiMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmU0YzU2Y2MxMDAyOTM0YmZkZmFmOGM5NGIxODUxZDNjOTc5YmUyZTJmZWM1NmI2MDIyZWU5MDhlMjI5ODZkMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTNhMDYwYjVlMTRkNzgzNDQ0ZTZmN2E4NDdmMTM5NzQzYTI4NDNlNzg1ZTUwYzEwZDM4ODkxOTY2NzZjM2M1NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDI5NGQwMjE4ZTI4NGRhM2U1N2ExYzFjNjYzODQ5NTc5ZTA0Y2VhMDBlMzQ1MjkyNGFhNmQ4YjY2NGIyOGQxNSJ9"
+        },
+        {
+          "resource": "repo://supabase/tests/exercise_swap_scope.sql#L1-L10",
+          "version": "repo-lines-v1:sha256:76f14fc71af352788a021dbf72ce037e48ded65b67eb2d8c1f6f541ff191766d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5MzhkMzNkZDlmMDcxNjU5YWU5OTQ2ZGM5ZTU2ZDA5OTgzYzZiMWM0MjU0MDgwMWYzZDRkMGE3ZjM4MWYxZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlZWUyYzFhMDE5ZGNkZWEyYTM1YzVmNjBkNmJiZTJkMzcwZTc5ODIyOTI2OTA2M2E4ODRiN2E5YjExMjE0N2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1OTVjNTBmNzc0YTdiMGZjZDE3ODAzZmIwNDBkM2JhMmY1YzRjMDRlMmVmNGViZDZjODU0NjM5ZTdkOThkMTEifQ"
+        },
+        {
+          "resource": "repo://supabase/tests/program_mutations.sql#L1-L30",
+          "version": "repo-lines-v1:sha256:12439fa6f5205618a8e3059ac4fc894ca95a5ee221d9b7734085adc807923914:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5MzhkMzNkZDlmMDcxNjU5YWU5OTQ2ZGM5ZTU2ZDA5OTgzYzZiMWM0MjU0MDgwMWYzZDRkMGE3ZjM4MWYxZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwODkzOTNlODc1NjRhOTNmNzllZTNhZWQwZjEwMmI5ODU0YTA3MDllZDlkMTdmYzJjMTU5NzJlZGRiZWUxNjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3ZWZhMTg4YjMyMmFmMjUyMmJiNmEzMzhjZjVkMDUwNTE0OGQ1MTgwNDk1YzY4Yjg4OWI3NjE0ZTY2M2Q1ZTIifQ"
+        },
+        {
+          "resource": "repo://supabase/tests/program_mutations.sql#L258-L263",
+          "version": "repo-lines-v1:sha256:62477c938e7d6ec90587029338ef0524c6eb18ff7f1e91704d71fdc11af57c1f:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTZlYTVlY2VlYTAxY2ZlYjg5OGMwNTI3OTBmYTc4NWM5NjAyOTA1OGFmM2RmNWYxNDBjM2Y0YTRmNGNjMjZmMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjM4ZTk0N2YzNjE0ZjRiYWIzYmY3YjA4Mzk4YWYyMGIzZmI5NzljOWRlMDQzNjkzZjhiYWUwODA1NDMxOWQyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTUxZmE3MWE1YjliZDIzNDE3Njk5MWY1M2QzMjRjODkzZGU5ODY2ZTNmYmQ4YWQ4NjU2YTUxODg1YzE3OTQ1ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_0ad3b9ce60d246ca85777759f1ff1091",
+      "statement": "program_mutations.sql injects a failing trigger mid-transaction to prove that a partial multi-table save_program write rolls back completely, and asserts save_program/set_active_program invariants: exactly one active program per user, cross-user save/activate rejection, empty-days rejection, and program_slot.id continuity across an edit-in-place save.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/tests/program_mutations.sql#L209-L257",
+          "version": "repo-lines-v1:sha256:91e7ea7ac9e479e39617452366f10de7dee75b6f188604df097749d54efdc764:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliODg2MTQ0NTI1MjNiYzJkMDM3ZTk4YjdkMThjNjNlZGYwODIyYTkwZDQxMzQ1NjI0YWYwZDY3NDI5M2IyYTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwNGVjZTJiMWRkZWZmN2UyZTBjNmE2NGRiZDljOTg0OTUwOThmOGRlZWEyNDVmYjg2NDBiNjk0NjU1MWNiYzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkxOTU4ZTgwY2EyOGM4ZDQ4M2QwYjNmNjViZDRiMTM0MDA5MWVhNDNlZmJiMGMxMTM2Y2M2YzFhNjIwM2Q2OTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhOTliZWI1ZTFlOWNhOGMwMzYwMWZlMzAzMzI0OWU2MjUzZTVlOTEwMzE4OTc4OWI5OTZjNzE0ZTE0N2M1YTUifQ"
+        },
+        {
+          "resource": "repo://supabase/tests/program_mutations.sql#L7-L10",
+          "version": "repo-lines-v1:sha256:2b2bc56adfa53482980baab2f1604945eae33d47b91a287869d3e0e29dfbfeb8:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTkwZTEzYWFkNDMzZGFiNjhhNTdmN2QyNzBlZTkzZDczMzRmZmU4M2ZjYjI0ODM3YzVhMzlmODY3MmU3MTdlZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWUzNDZiM2VjOGU0NjVmNzkxMzNlNDFiNTQ3N2E3NGRkY2Y1NzdjMTViM2Y1ZTNkNzM5NGE5MTJkMTlmNzRmZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWY4ZmNlMGE4MzExNWYyZWJlYzU4MTZlMjJjNjlhYzA3NDFhOTBhNjdjYjE1NTcwNTAyYjQ0M2ZkOTExNjMxNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDYxYzM5ZDUzNjcxMjUxYmFlODg0OGMyZGUxOGJiYzI5Y2U4ZjE5MzE3ZDBjYmZlZWNkZTllYjQ5NjAwMGUzOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_0368c1e38f5a4cbbb2645127b01d09a3",
+      "statement": "exercise_swap_scope.sql verifies swap_session_exercise's workout-vs-program scope split: a workout-scoped swap does not mutate program_slot or prior set_log rows, a program-scoped swap updates the slot's prescription without touching other days, prior logs, or unrelated slots, later temporary swaps don't override a permanent choice, and an invalid scope or unrelated slot is rejected.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/tests/exercise_swap_scope.sql#L14-L49",
+          "version": "repo-lines-v1:sha256:0d52887bcc6eae81ab58abc712f20e90d5028e7b1897837d123ff09333f07656:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3NzlkNDgzZGU0MzZiZDNkNDVlM2YzNjI5YmM0MmFhNzQ2OWU0MWExYzEyYTAzMDQxMGY0ZjIwNzhkNjZjZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5NWExNTYxOWIwOWI5OWQxMTZlYmFkYTAzZDdkY2RhMzBjN2MxZjJmYmIwOTFjZjQxYWE3MjE4MTcxMTdmZDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1OTVjNTBmNzc0YTdiMGZjZDE3ODAzZmIwNDBkM2JhMmY1YzRjMDRlMmVmNGViZDZjODU0NjM5ZTdkOThkMTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBjNmQzOTU1MWM1MmE5YzY2ZTQ5N2VkYjY0YWQ0NWY4YmZkY2I2NjEwNDE5YTJlZDVkN2U5MTNmNTEwZWZlNGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_09ca196e5de34d82a94d8423ea21ecb0",
+      "statement": "CI (.github/workflows/ci.yml) runs two independent jobs on push to main and on pull requests: an `app` job (npm ci, lint, tsc --noEmit, npm test, then npm run build with placeholder Supabase env vars) and a `database` job (npm ci, npx supabase start, npm run test:db, npx supabase stop with if: always()), so an app-tier failure and an RLS regression are reported as separately required checks.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L1-L58",
+          "version": "repo-lines-v1:sha256:64406535adcce47855f57e25513ab5cc38906d8428f56a566fa63999903479c5:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2ZTFiMzJmYTA5MDc5YWUyZjAwMDFmZmYwZWNhMjdiNDk4NTk1N2Q0ZWI0ODU3OTI5YjNjZjA1OGZhYWU1NDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3YmZhMmQ3MDk3MWJlNWEwMmVhODU5MTEwNzM2YzJmN2JiNmI4NjE1NGJhNjY4MDExM2U1ZjI5MWZhYTg0NDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9ee66f4453234ae18d2b22dc7e82f7dd",
+      "statement": "AGENTS.md defines the required verification gate for application changes as running npm test, npm run lint, npx tsc --noEmit, and npm run build, plus browser verification of changed UI flows when authenticated state is available, while docs-only edits instead require checking references and claims against source; npm run test:db is called out separately as needing Docker and a local stack.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L31-L39",
+          "version": "repo-lines-v1:sha256:338bb45a7b216aef809be9a5f669184ad532960d0f3ab8d1fd168e46bc56cb41:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmVlNjg1YTg2MTE2YjU0N2UyZDEwMjhiMjI4NDk4NzE1YTNjYWE0MzVjMjAzMDlmNzM0MWE4MjZjMDY2MDI5OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmNmYzBkZjAzMWI0MDUxYWY2MWE4NmJmMTFhOGVlMzUxNmYyZWIwYjUzOGUxMmUwYzIxNTI0OWQ5YjhiZjM1NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjAyMmFkM2NhYWEwMWFkOTc3OWZmYTFiYTk4NTdjY2RmYWU4ZjgzYmQ1Y2ZhNDQ3NGRjYThlN2E4YzM4Njg5MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2Q1ZDNmNmVhN2I0MWJkMTAzODU2YmY0YjIzMTE1MjI4MWYxMDEzMmI2NjJiZjA2YjE2ZTEzZTUwMGIxOTgyNCJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

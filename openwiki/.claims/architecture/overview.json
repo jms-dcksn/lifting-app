@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:1ff6d79707c0fc3db2b1e1fdd52dffc5a3dd0a562f5fd2c4684ac911d94f5f5f",
+  "claims": [
+    {
+      "id": "claim_dedce62370b045f28dbab1e2b3a85fa7",
+      "statement": "The app is organized in three layers: a framework-free strength engine (src/lib/strength/) with no Next.js/Supabase imports, server loaders and Server Actions that are the only code talking to Postgres, and an App Router UI layer where Server Components render hydrated data and a small set of Client Components handle interaction.",
+      "evidence": [
+        {
+          "resource": "repo://docs/architecture.html#L696-L745",
+          "version": "repo-lines-v1:sha256:dde19e21d64388463c507005933bf4010225fd26789a2d8bb5a65a7b2b590041:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlMTc3YjQxN2VlNTM0MzYyMTYxYmFiZGI5ZWU5MTIxYWIxMzQ0YWYzMDVlMjU1MWNkOTIxNTUwNjlmMDc3ZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyZjNjZmQxMWRhNjE1MDE5N2FjZWVkMDg0MDZhYzY0YjA1MDM0MGRlN2JjMDQxMjRhNGNiN2VmYTY3MTM0MGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0NTRmOGE4NjdjZDgxZDExMmU2MmFiOWY0MTQwM2UyZTQ0Zjc0NDVjZTg3M2ViMTIwNTU1MDMwOGQyNTMzNDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA1NzY1YTA2MTlmZjNkODNiMjk4ZjMyNjRjYzYzYmZlNmYwMmM1YTc1ZjY4NTUyYjZmY2ExNDdmZmJhZGVjOTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f6c833f4ecf84c3fb76cd482f96757b2",
+      "statement": "src/proxy.ts (the Next.js 16 replacement for middleware.ts) runs on every matched request except static assets/_next/HMR, calls updateSession() to rotate Supabase auth cookies, and deliberately does not redirect unauthenticated users.",
+      "evidence": [
+        {
+          "resource": "repo://src/proxy.ts",
+          "version": "repo-file-v1:sha256:5ec23b449ab1781aef3ec87cce3ccc010e150e63997f9a7ab7136fced7026333"
+        }
+      ]
+    },
+    {
+      "id": "claim_41905c80b2fe4e318990b09f4a3ec631",
+      "statement": "(app)/layout.tsx is the real access-control gate: it builds a Supabase client, calls auth.getClaims(), and redirects to /login when claims are missing; Server Actions independently re-check auth via their own requireUser()-style helper rather than relying on the layout.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/layout.tsx",
+          "version": "repo-file-v1:sha256:8c9fdc7f2bbf3716fbeb0117d75144276ce157cb536aedc8e9e7fb365ff53743"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L28-L35",
+          "version": "repo-lines-v1:sha256:adb52486998e47f6463fafbbc50d70da3391d8be3e03ee3bd7ba2dd6d696005d:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDdlNGRkY2Q5Mzc0M2QwNWQzNTc4ZmYwNDI5ZDk1YzM3NDVmZDZiODI5MDA4MjEyOTc3N2VjMGEwYjQzNjhhOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjE0ZDlmMjRlMDZlYzI1ZTRiNWQzNGY3OGNlNjE0NWM5ODRjYTk5ZmY4M2RlMTRiNWZhN2U4NjhiOTliNWM0MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGVkNDAxZDk1ZmE2ZjBjYWJmYjhkNzYyNTM0ZTFjZmE3YjlkYWIyMDRiNjc3N2VjNmNkZTUzMjgwZWRlNDE2NiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_dd105c827d06438fa58b1611c63cc4bd",
+      "statement": "createClient(), getCatalogMap(), and getCurrentBodyweight() are each wrapped in React cache(), so within one request layout, page, and Server Action call sites that pass the same client instance share one query per underlying table instead of one per call site.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/catalog.ts#L59-L60",
+          "version": "repo-lines-v1:sha256:7240aaaafbd201a36e34e22c2bfdb4399c1b5e3711f77c7546a25f90482b5b22:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmUyNDlkMDA2MjY4OWQzYTFlYjlkYjM0ZmI0NGNmMDBmNjg2MjE1MzdlNzdiYTE3NWEyMWIxNThkZGJkZTVlZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjg2NzkyMDliNmFhYmI0MTEwN2MzMjQ1ZDJiMjg4ZDY0N2NhMzcxZmJkYjk3Nzk5NWYwNTdkMTQ3ZDE2ZjZiYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzIzZDhmMTFhYTNmZDUxZWE2NmMwYWE4NjU2M2I5Yjc4MjkyZTQ0MGIxOTE4ZWMyZmIwMjY2N2RkNTI0NDQ1YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODA4MDQwMTk4ZDA2OGRmNjA5NDYwOTNlY2RmM2ZiZjVkZDAxY2U3MjRmNDYyNjM4YmI0MDY3YjhjMmFiZjMxYyJ9"
+        },
+        {
+          "resource": "repo://src/lib/current-bodyweight.ts#L6-L24",
+          "version": "repo-lines-v1:sha256:e58f259d55fe27262d98ccbcb8d44c8a6cfa8dca3bead02dd2454506fd3c25c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZmY0MjE3MmQyZWRlNjA4OTc2OTBhYmYzNTYyZTAwYjM0Yzk5MjRkNjdiMjgyMzI3N2NmMDg4NWU4ODA4YzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzNTM2ZTBhNTRmN2Q1Y2RjNGU0MzNhZjkwOGU5MzJhZDE3YmQ4YWRmZmNlMzMzYWU5NmY4ODRlNDMzOTlkMGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdjMDhiYTQ0NTBlMzkzMjg2NTFlYTdmMTBmMWQyNzJmMWU2YzYyYjQzMDMzZWY2NWM4M2U5ODM0OTUwMDhkMmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIifQ"
+        },
+        {
+          "resource": "repo://src/lib/request-cache.test.ts#L72-L99",
+          "version": "repo-lines-v1:sha256:eeecc0f32493e524f639f3ea6c72dac069b5d4a7d7ebcfbcd1e91e12984bece8:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3OWM3YTM3OGRmMzA1NDVmMjgyMmYzYzk1NDk3OWUwODFmYzZjYmI3MjE2YjM2YjFjOTNlODQ2YTIyMmY3OGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRmNzExNjZiZDNlZWQ2M2IwNGU4ZDc4OTVkMWIzYzE2NTdhNjc4ZDllM2YyYmE5OTk3ZjAzZjQyYjQ4NWVmNjkifQ"
+        },
+        {
+          "resource": "repo://src/lib/supabase/server.ts#L9-L29",
+          "version": "repo-lines-v1:sha256:232cd2b7758d4a8470a3b613c5eefbb0f643cceeee05d33b8f413993160382a7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEyNGFkOTNlYjJiYjYzYmEyZWQ5ZWU5OTRhNjlhYzIxNWZhM2NlMGNlODYwNmQwZjEzMjYyYjdlOTc3ZmViMzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzY2ZjYTNmYzMwYWExNGQ1NzM4M2ViOGZjNTUxYmZiOGJkMGUwNTViZjM5MTMyZjQwODA0YmI1NWMxNzM1MjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b2c09177afdb4bd19d3546ac477a50a6",
+      "statement": "React cache() memoizes by argument identity, so the shared, request-memoized Supabase client instance from createClient() is what allows getCatalogMap and getCurrentBodyweight to dedupe across different callers in the same request; if each caller built its own client the dedup would not occur.",
+      "evidence": [
+        {
+          "resource": "repo://docs/architecture.html#L503-L521",
+          "version": "repo-lines-v1:sha256:749649c4f89b8c4ad1340c574fec710e1e0e03c8c3f35dbc7eb4ec020ea2a966:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmMWMxZjQzYzQxYzViMWRmMGNlNWVkMjM0ZDMyNWE5M2Y4M2UyZGIzMjY4NGIxZmIyMWM3MTYwZWE1ZDhlOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyZjNjZmQxMWRhNjE1MDE5N2FjZWVkMDg0MDZhYzY0YjA1MDM0MGRlN2JjMDQxMjRhNGNiN2VmYTY3MTM0MGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzMmY4YzQ4MDEyY2ZiZmNhYzQxMDlmNGMxZmZkNGEzOTg0OGVjYzZjNzNiNTA4ZjczNTE2OGQ1YTMzZDM2NDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhYjU4MzZmY2EyODFmZjg0MDg4NGM5Mzc4ODg5YTIzNTA1ZTNlNjBhYmUyZjliZjBkODM2MGZiN2Y0OWRmNTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/supabase/server.ts#L6-L9",
+          "version": "repo-lines-v1:sha256:e109e01f37e82c3b1750f917c9eda878ac0b4d81ec45730d12d0d6939f55b37f:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTIyNzM5MjQ1ZmY5MTdmNmFlYWUxNjdmOTNkMjYwOGI3NzEzNTU3ZmI4NDQ3MWMwNjUyMjlmY2UyMmVjNWFjYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTI0YWQ5M2ViMmJiNjNiYTJlZDllZTk5NGE2OWFjMjE1ZmEzY2UwY2U4NjA2ZDBmMTMyNjJiN2U5NzdmZWIzOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDEwOTY5ZmYxNmJlYmFmNDlkNGY4ZDA1YTdkZjJlZDE5YTczMDVlOTEwNzhhM2NjY2EyZTQ5Njc2N2Q1NDA2OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjQ2NTRjNzYzZjFmOWU4MTM2YWYyYWJjY2E4MDc5YzcxOTUwNzkxMzU1N2ExNDNlNjEwODIyNTIwOTVlNjYxMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e64ff300f84b4bab993104d73cd92084",
+      "statement": "The weekly Coach API (GET /api/coach/v1/weekly) is the sole elevated read path in the application: it has no browser session so it uses a separate server-held secret client that bypasses RLS, and every query on that path carries an explicit COACH_API_USER_ID predicate; the route is capability-token gated, read-only, and no-store/noindex.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L119-L123",
+          "version": "repo-lines-v1:sha256:d0480ece394fbcac9946ebafe5b033a595ad3c8c9284f7f43663fe940e0a0cac:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjgxNDU1ZTZmZDA5NzFhYmJlZTYxNGYwNWEzYzQ3NjU2NDIzNDMzY2MwMDk5MjkwNGVmNzIyMzk3NzUzY2Q4ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWQ0ODk5YmQ0MDY3ODYxNDEzYTQ1ODdjMDNlNTMwMDM1Zjg2ODMwMDZjYzZhYjZhYmFlZDY5ZDlkMzA2OTUzNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWU0NWY3MTRiYTBmYjVlYWNhMDljZDRjYmVkYjA0MmQ5ZmIyYTNkZjRhMTkxZjgxOWE4ZThhNGRiYjFmY2IzOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTE2ZDQwZjM3MTY4OTFjMzZmNDIwOTk2MjMxOWY5NTFjZDM4MWI5YmVhY2Q1Mjk3NjNlM2JjODhkNjhlNGI0YSJ9"
+        },
+        {
+          "resource": "repo://docs/architecture.html#L523-L531",
+          "version": "repo-lines-v1:sha256:51939578125add39f29fcb01739e799aea0a90a803712893a682c2a8edfa96b6:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTViN2RjZWJkNjBiN2M2MDlkMzk0ODlkNDA4ZDA5YTlmNjFjNzZhZWU3N2I4MGMzZWZkZjBmM2RhZTY4NjY4YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDNiMjY1NWFkMzU3NjM0ODkxNzY5ZThkNmY1OGE3ZWUxMjcyZDhiNDA3M2QyYWFlNmM3MjNmYjNmNzBlMGVkMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjdjMjUwMWJkMDA3YWU3MzZjZjhmOWE4ZWQyOThjNjcwNjIyODUwMzRmZTU3Zjg2NWM4NDZkNWE5YjU4ZmJiNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDZmY2Q1Y2ZkN2IzNjYyY2IzYTZiN2JjM2ViY2Q1N2M5Mjk4MjEwOWE5N2NhMzM2ZWZiMTJkOTU1MmJiY2U4ZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e7f589ae046742eaaaf8423ea0f97b4c",
+      "statement": "The signed-in app shell lives under the src/app/(app) route group; AppShell is a Client Component that uses hideAppChrome() to hide the bottom tab bar on immersive single-purpose flows (active workout /session/[id], the /workout/next planner, and the program builder at /program/new or ?mode=edit), and isTrackPath() keeps the Track tab visually active while browsing /history/[exerciseId].",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/app-shell.tsx",
+          "version": "repo-file-v1:sha256:3ea1cb0b56691e74310a27ec9931dda3573cf95e25759aecb497fca80578f7a2"
+        },
+        {
+          "resource": "repo://src/lib/app-chrome.ts",
+          "version": "repo-file-v1:sha256:189ae047963cf94275a297541fb3d881fe9e1061df92a4bcf2403e574e4a8fca"
+        }
+      ]
+    },
+    {
+      "id": "claim_c848d98d1ee147fe8d2b84af5ce44ebc",
+      "statement": "The four tabs are Lift (/), Track (/analytics and /analytics/*, plus /history/*), Program (/program and /program/*), and You (/settings and /settings/*), each matched by its own predicate in app-shell.tsx.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/app-shell.tsx#L10-L15",
+          "version": "repo-lines-v1:sha256:0a2193e85f718ec2c9e5054de5fa337a722121924080e6d5fb700505cb0fe576:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODVhMmVhMGI4ODRlYmNkOGI5MGVhYTc1MzcxNDIxMzgzZmJjNzc2MDE4ZTQyYjAwMzQyNDk0ZGE1ZTEyNGFlZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjAyZDJjMGQ2ZGM1ZTc0ZDkyZmExNGI5MWRiZWEyNjQwOTBiZWIzNWZkYjkxODhkOWIzNDExODFkY2U5ZjRjZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjNjYjBhYmU2ZGFmZWExNTk0OTc4YjQ3OTRkMjk5YjI2NWE1ZDVmMjdiMjA3NWRiZDc3MGYwYjEzMTJhODYwNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2QwYjY4MjVlYmFiYzM5MTZiYzNkOTQxMzk3NjgwMTk1ZjEwMzNjZjVhNWY2Y2MzOGNmNjc2MjJjN2E0NmMyNSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_10a3c5c1413740b791e6bec62399cb59",
+      "statement": "logSet() re-authenticates via requireUser(), inserts into set_log using an idempotency_key so a unique-constraint conflict (23505) returns the existing row instead of erroring, computes e1rm at write time, then calls recomputeAndUpsertStat() to rebuild user_exercise_stat; if that rebuild throws, the function still returns the successful set write with a recomputeWarning instead of failing the write.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L170-L260",
+          "version": "repo-lines-v1:sha256:72695ac5333493ea12316b817e4758ad23a832c60b7c75c42d657d66a3ef9787:eyJzZWxlY3RlZExpbmVDb3VudCI6OTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyOWFjM2UyYzM1YmJlZjY5MWQ0MmZiYjg3OGM4Y2U5NmYyYWFkMjI5ODViNGRhODU5ZDFiOTUwODIzOGNmMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmNzZiMjA1NmMyYjg5NjNmZDMyYTM0ZDI0MzliOTUxMzBjOWJkZmIxOTVlZjJmOGMzZDM4M2ZlMjljOTMwNzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg4MDQwZWIxYjBlY2U5ZTI5ZjVmYjNlNmM5MmRlOGExZDEyN2I1ODQyYzQ0YmYxNmUxYTVkZjNhNTEyN2EzNTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_effc47cf2145457792c6bd0d01044e7e",
+      "statement": "Mutation Server Actions call revalidatePath() for every route their write could affect immediately after the write/cache-rebuild completes, e.g. logSet revalidates the session route, its recap route, and the per-exercise history route, while other actions in the same file revalidate /, /analytics, /analytics/month, /analytics/volume, /analytics/coach, and /program as appropriate.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L244-L340",
+          "version": "repo-lines-v1:sha256:f5edd264f8340c333c99082084601e8ac5775774ab5f67809a5938fb6581d241:eyJzZWxlY3RlZExpbmVDb3VudCI6OTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyZDU4NzQ3MTc3MTRiZGNlYmIxYTRmMzMxMDA2NWJhYTBmNzcxN2U5MDliN2UzMTNiMjg5OGU5YjM3MzU0MmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEyYTU1ODBiZmYzNDhjZjI2ZDNjZDI4MDI1MTRmZDFlMTU5ODA0YzU3NmRmNTU2YjRkM2U3YzliOGFkN2EyMjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjZjNhMTY5NmU2YWMwMWY4MTNjZTc4MWU0ZTk5ZjFlMzY2Mjk0OWY3ZWRjMDk5MzY0ZmIyOTIwMDkyNWUxMmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0ZGQxMmFiYmZjMjMzYzUyZDRiODYxMDA0ZjRiYWI1OGY5NmYyYTA2ZGQ1ODRjMzdmOThjZDlmY2ZjMTg4NjEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L37-L40",
+          "version": "repo-lines-v1:sha256:f3a11d3389aac3adf5e1901a268847d49c30f2cde79a04a5c5be71c8fff1db95:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTgwNTMzZWQ2ZDRlMjU1MmE2NDFjYTFiNTQwMzlkM2U3OGFhMjJmMTU5MTVmZGZlNTE1ZThlZmE3MTE0NGVmMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGZhNDMyYmYxNmNjYTMxNTIzMzUzMDczMTgyNGZjZjQ2MTlkYjM0NjAxMWU3YmYzYTRkZmY1MWYxMWM5MjMzMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTNjMDA4NTgxYWM2MjllNjRmZWUyZTYyZDM0OTMyMWI2ZjIwZjY0ZDY2MzI3MmRhZGFhYThmZDY0YjA3ZTJkMyJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L499-L504",
+          "version": "repo-lines-v1:sha256:05072f7a83c21164a82b2e037a56c91f3742cd4eefafed319193dc3c23067ebc:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTBiMzUxZTk1NjNiZjJiZDhhZDRlZGM2ZGQ4NzE5ZmMwNTA1YmIwYWViODNiZTliOWU0ZTFkZTY5MmMzZmMwZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTJhNTU4MGJmZjM0OGNmMjZkM2NkMjgwMjUxNGZkMWUxNTk4MDRjNTc2ZGY1NTZiNGQzZTdjOWI4YWQ3YTIyNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTQyNjBkOWE3ZTFlNWE4NGJlNmM2ZWJjNzkwYjg5ZTJlMTQyMGQ3ZjMxNGJmODg1ZmQzZjc5ZjM0ZjE4M2ZjNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGIyOGIxZjA1Y2MwOThkYjUwMjQwMTUyMmRjOGVhM2VmYzcwODE4M2ZhYTExNTNhN2JmZGI3MGM3MjM3ZTY3NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_3d7ede87f22c42d48ba1d3836051b566",
+      "statement": "user_exercise_stat is a derived, rebuildable cache of each exercise's current e1RM and personal coefficient, rebuilt from set_log via recompute.ts's recomputeStat() after relevant writes; it is never the source of truth for PR/record eligibility, which instead replays directly from saved set_log rows through strength/records.ts.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L50-L52",
+          "version": "repo-lines-v1:sha256:79e58352f8be95e3ccb51ef0742e4045333155bbfb4d15d7984bc87b751db6f6:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWI3Yzk5ZGNmMDMxNzFmMTRiZjNkNzUwNzhjYmFjMGM0N2Q4ZWM2ZjNmZmI0NTVhMWVhNmQ0NzJlZmRiYWZjMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzY1ODZjODUzNzhjZWZkNzUzZDU0ZmM1YTk4MjY1OWIwNDhhNmU1MWU4MGVjN2UyNGRlYjYyNWE2OGVhMmM5ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDU0MmVjNDY2N2I1MmJjNDBkODAxN2QyNjAwYzg0NWIwYWRjM2NkYTViOTI3N2I2ZDI1YjU3Mjg0MjUxZTYwYiJ9"
+        },
+        {
+          "resource": "repo://docs/architecture.html#L560-L571",
+          "version": "repo-lines-v1:sha256:b991618eaf6e2f9f08467409dbff89f2b8d445b9c9b4833d4e63ed2014f34d0f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhNDQ4ZmZiMTU1ZjI5MWM5ZWNhMTZjNTFhZDZjZTQ3MDRiNjQyNTc0NWZjNjE5NDI0N2MzNDUzODlkMWVlZTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlMDA2Mzk5NzZmYTc2MzFhNWRiZDI3ZTNlNGNjMjI3YmI0YzM3MWM3NTVlNjVlNzlkNDlkZDMwMGVkOGY0M2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY2NDFhNTQzYjgxNTcyMDQwMWVmODAxZWEzMmNjZjVhZjFhODA5MjMzYmMxMzdkYTBhMDdiYzNkYzgxNWQ2MjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlZDIwM2U3NDRjYTJlNjBhMWEzYjBmOTRiYTFjMzFmN2VlNzM5ZGZhZDg5MjEzYzUzNDA5YmMxM2M2ZmNkMTMifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/recompute.ts",
+          "version": "repo-file-v1:sha256:b2fe99d05ec07f93644cc7b23069d7c7b6c575cfe32c4b2f30d788e7d7d59e81"
+        }
+      ]
+    },
+    {
+      "id": "claim_27d5b150e65d46aa83fe708ac48a12ca",
+      "statement": "The app keeps no parallel analytics schema or materialized views: set_log is the sole authoritative ledger, and Track, Coach, month review, and PR pills are pure TypeScript functions computed over that ledger at read time, with any needed time window (e.g. 21 Chicago days, last 8 session-bests) applied in the loader or a pure helper rather than a new cached table.",
+      "evidence": [
+        {
+          "resource": "repo://docs/architecture.html#L587-L611",
+          "version": "repo-lines-v1:sha256:f5a05d6ff969769bd02db082cab293e8a7b672d287b15d54ec755ef632e3d7d5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2YzZmYjNlODRhZDc3NGFjOTNlZjdmYTBlMmUwMDRlOWI2OWYzNjFhNzQwYTBlNmE3OWM4ODQxZWUxNGNiOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIwMThmODA0MDdkMTZiZWU2OGRjODU5MzU5MDEyYTViMTk2NmQzNzFlMWIwZjljZDliMDdkOWFhM2E3MzQyYTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4NzQ2ZmYwZWY2Y2E0MTA2NjkwYjVlZTEzNWMxNWRkYjJiNDJiN2NlYmYxMWY3ODA4MDQzZjBhMDk4MDUxNjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2MjNlMGMyODA0NDUwOTFiZGUyNmM5ZDgyMTVhMzRjYmZkNDg4NjM5ODA1OTBjMGEyNDg3ZTQ2YjdkMjEzN2MifQ"
+        },
+        {
+          "resource": "repo://docs/architecture.html#L792-L804",
+          "version": "repo-lines-v1:sha256:bd649160c97c0ea6f271484f4a0f510dc7c4a330d40a122859ddfabcc0c63362:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzMjcyYjZkM2IyNDgxM2RmYjY2N2MxY2NmNGI2NTdmMmFmZjRmODljMmE3MDNmZDEwMTI4MTg3NWFkYWIzOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5OGYwNzUzYzc3YzljYWMzNjU5YTgwMjRmNTFhMDNiNmU2NmIwNDAwZmZmNWMwNGU5NGI0ZWNkMWZlOWQyMjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmNGIzNjU4NjU2N2YwYmI2MTYxMDI5Y2JlMmJhYmVlMTZhNGEyNmFjZTJkNjZmMTM5ZDI2NmQ5MzQxODk3Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmYWUxNDM4YzgzY2Q1YWMwZTU5MGU3NTZjZjI1NWEyZjk1NDU5NTg3ZmJlMWRmZTY2ZmRmZTA0ODcxZjU4YmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fd3319c08179411891f35ae4ad478402",
+      "statement": "Server Component pages batch their independent queries with Promise.all rather than issuing them sequentially; for example the Home page resolves the next workout, last finished session, and week-record chips concurrently, then a second Promise.all for the last-session summary, week records, and the full set_log scan.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/page.tsx#L39-L64",
+          "version": "repo-lines-v1:sha256:b1763443efff6f5ae65c707fa13f00a34ce04f7779e21be7e4626400e1228162:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjMjNlMDdjNWFjNWQ5ODRiYjFhYjgyNzYyYTY1YmIyZDdhZjQzYjA3ZWZjMWY2YzBhZDUzNTkwZmM4ZGE1N2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmOWRiYzdmMmYyNGI1Mjg0MzU3Zjk4NjMwNmZlZjA0MTdjYzZmODFhODNhMDJiZjgxNTBmNzExMmY4ODNiMDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFkYjNlN2NkMGMzYTYyMzA0NzY2ODE2MWQxMDRlOTlkODYyMDljYTNlNzc1NGEyNWIxMTlhNDkwNzg3ODA0MjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE4MTI1ZDI2ZTFkOTI2MmUwMGRmODhlM2Q1MjA1ZTIyNGMxMmUzNmRiYTBiYjRhN2FkZmFjZDAzMWIyYzQ0YTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_61f404e4601646b1885a874790258956",
+      "statement": "Session targets (sessionTarget()) are computed client-side in a useMemo against server-hydrated stats and history so that swap/rep/RIR edits update instantly with no network round trip, while Track/Coach/month-review aggregation over full history runs server-side and ships already-shaped data to client-only chart components.",
+      "evidence": [
+        {
+          "resource": "repo://docs/architecture.html#L534-L553",
+          "version": "repo-lines-v1:sha256:f5e07ec3335ac71b58b063209b8c0760e7a0706fbfc0c320d91439f272ceb735:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1YjVlZWQ0MTAwZjA2MDQ2YzZjNzRhYzlkZjQ3N2VhYTE2ZTk2MmZhZDg1Yjc2OTIxODE2Mjg0ZWU2ZTBmNGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlMDA2Mzk5NzZmYTc2MzFhNWRiZDI3ZTNlNGNjMjI3YmI0YzM3MWM3NTVlNjVlNzlkNDlkZDMwMGVkOGY0M2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4NzQ2ZmYwZWY2Y2E0MTA2NjkwYjVlZTEzNWMxNWRkYjJiNDJiN2NlYmYxMWY3ODA4MDQzZjBhMDk4MDUxNjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhlYTQzMTkzMTk3Y2Y1ZTk4MmYwYzk3Njc2NzY5YzVlNjQ1NjBiZDQ4MWRkZTBiNjM1Y2NhNGNkZWNmMDUzZTIifQ"
+        },
+        {
+          "resource": "repo://docs/architecture.html#L780-L791",
+          "version": "repo-lines-v1:sha256:1680931234a1d7b8e1fd61729873a548be19fee182ca9480838a48b6c7f01454:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzMjcyYjZkM2IyNDgxM2RmYjY2N2MxY2NmNGI2NTdmMmFmZjRmODljMmE3MDNmZDEwMTI4MTg3NWFkYWIzOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5OGYwNzUzYzc3YzljYWMzNjU5YTgwMjRmNTFhMDNiNmU2NmIwNDAwZmZmNWMwNGU5NGI0ZWNkMWZlOWQyMjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmNGIzNjU4NjU2N2YwYmI2MTYxMDI5Y2JlMmJhYmVlMTZhNGEyNmFjZTJkNjZmMTM5ZDI2NmQ5MzQxODk3Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjNzFmMTI2YTgxYjVjYWRkYjVkODAzMzlkMThjNGIxMjUzYzc3MTQzNGVlZDRmMzE4Zjg3NmQzMmE5NzlhMmUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a9fac17228c74138896d0b3661e19334",
+      "statement": "The rest timer is optimistic and starts immediately on local set logging, living in session/[id]/layout.tsx so a set_log revalidation cannot reset it; failed set writes surface as a visible card error rather than a silent revert, and PR pills only reflect persisted set_log rows so an optimistic row never earns a record before it is saved.",
+      "evidence": [
+        {
+          "resource": "repo://docs/architecture.html#L554-L571",
+          "version": "repo-lines-v1:sha256:584170245354e5906f3890375430ab04a6c07394a4a339b2654f0963b0ca7dfb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkZWZjMGJmMGY5M2ZiOWE5ZTVmMmU3YjM4NmE1YmU3ZWQzYjllYWE0OTFlZjg2MzM0ZDc0OGRjMjM0OTdiNWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlMDA2Mzk5NzZmYTc2MzFhNWRiZDI3ZTNlNGNjMjI3YmI0YzM3MWM3NTVlNjVlNzlkNDlkZDMwMGVkOGY0M2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU2NjM0MTRmMDkwNGY5ZjAyMmViNzViMDBmYTZjNTEyNzMyY2U4YmJlMzAzNjQ5NDA2MjEwY2JiN2VkYmNkMjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlZDIwM2U3NDRjYTJlNjBhMWEzYjBmOTRiYTFjMzFmN2VlNzM5ZGZhZDg5MjEzYzUzNDA5YmMxM2M2ZmNkMTMifQ"
+        },
+        {
+          "resource": "repo://docs/architecture.html#L841-L852",
+          "version": "repo-lines-v1:sha256:05c3fcc667c54ebdb36d296b4dcba3c29a78ffb4d7eb8423ee64bbe5092b2866:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzMjcyYjZkM2IyNDgxM2RmYjY2N2MxY2NmNGI2NTdmMmFmZjRmODljMmE3MDNmZDEwMTI4MTg3NWFkYWIzOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5OGYwNzUzYzc3YzljYWMzNjU5YTgwMjRmNTFhMDNiNmU2NmIwNDAwZmZmNWMwNGU5NGI0ZWNkMWZlOWQyMjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmNGIzNjU4NjU2N2YwYmI2MTYxMDI5Y2JlMmJhYmVlMTZhNGEyNmFjZTJkNjZmMTM5ZDI2NmQ5MzQxODk3Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2ODU5MjNiN2NkMDYyODJlZTUzYjlhZDhkZDQ3YjU0MDdkNWU0NWJlYjM0YzljOTZiMTdkZjBlODlmZWNhYmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8f7bccb5bbc04353961f2eae4ebc1c1b",
+      "statement": "Every user-owned table is scoped by row-level security to auth.uid(); the weekly Coach API is the sole elevated-privilege exception, and it still enforces one explicit user predicate on every query rather than relying on the bypassed RLS.",
+      "evidence": [
+        {
+          "resource": "repo://docs/architecture.html#L829-L840",
+          "version": "repo-lines-v1:sha256:2d58b638a10f115b8725f1719fa840786d38572a6eb0ea1dcde6ad37d6ae399c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzMjcyYjZkM2IyNDgxM2RmYjY2N2MxY2NmNGI2NTdmMmFmZjRmODljMmE3MDNmZDEwMTI4MTg3NWFkYWIzOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5OGYwNzUzYzc3YzljYWMzNjU5YTgwMjRmNTFhMDNiNmU2NmIwNDAwZmZmNWMwNGU5NGI0ZWNkMWZlOWQyMjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmNGIzNjU4NjU2N2YwYmI2MTYxMDI5Y2JlMmJhYmVlMTZhNGEyNmFjZTJkNjZmMTM5ZDI2NmQ5MzQxODk3Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3YTg4ZTE5ZmNiNmZhNDFhMWFlYWMxM2YwYzQxNTlmNzg4N2M2MGJjNmQzN2U1MjU5MTM4NWI5NTNhYmYwNTYifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

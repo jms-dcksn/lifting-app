@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:a853c0536c232a5a715484aba8038d08cc86e12eee6263a68b3c4273766e6d27",
+  "claims": [
+    {
+      "id": "claim_ab520d3d484a48c4a6d228435c45c130",
+      "statement": "The app deploys via Vercel's GitHub integration for jms-dcksn/lifting-app, where pushing/merging to main releases to production and other branches receive automatic preview deployments.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L1-L8",
+          "version": "repo-lines-v1:sha256:f2e57472c6a916b02ec4d6464f3be4e096a7efe2d271a1275ba86be91f958e45:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDZjZDIxM2Y3MmZiZmZhNjZmMWFkMDc0NDMyNzNkMTMyYzBkM2Y2NTljNzAyNDUyNTdlNzliYTIyMGY4ZGQyZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzQyYzU2ZWYxN2JmMGJiNDA3YWRmMTE1YWQzMWFmZWFiNDFmMjkxYjg5OTk2Yjg5MDM4NzQ3OWVkNmQ2ODg0MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTdkN2FmMzgwYzBkNmU2OGI3ZjRhOWFlYzVjMzA5M2QzMTc5YWQ2M2RkZDNiZDJiYTE1M2JlNmEwMTBlNjI2MyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_71b4a94bffe547a4adab5ca06cbaecb5",
+      "statement": "The application reads five environment variables from .env.local.example: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are public (bundled into the client), while SUPABASE_SECRET_KEY, COACH_API_USER_ID, and COACH_API_TOKEN are server-only and power the weekly Coach API.",
+      "evidence": [
+        {
+          "resource": "repo://.env.local.example#L1-L5",
+          "version": "repo-lines-v1:sha256:5f1e0980795b2b6b1fc2a3372ed2dd34b1e1520c6714ce1ee8be5b1bbf2c5591:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTc1N2JkZmU5ZDkwMjU0OGRlYTMwMmNjMWU3NDQ5Y2RhN2E5ZDc3NTM2ZDY2MTFjNGY4YzZiYTM4Mjg4MzI0ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2ViNDEzMmViMjQyYTQwZTE2NDllNGY4MjRjOTEwMDdiMDk4MTZhNTA3OTliYzUwYjNkOGJiOWM2M2MwN2JmNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://DEPLOY.md#L10-L29",
+          "version": "repo-lines-v1:sha256:ef517bfedb22a466731adc74f585b77fe013866378294110a710ba6f9d812c95:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmMjc2NGI4MjViNGI5NDE3ZGJmNjM3YTcwYjRlOTViZTAxZTBmNDU2MjYxMzQxODlmNDdkOWIwYzA0NmQwYzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU4NmFlMzc0YzEwMTQ3ZTFlMGRhYzRkYzQ5OGIzNTJlMmE5NzZlNjI5M2QwN2E4MzI2YjJmYTcyMTc4Y2ZlZmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEyM2QzYmFmMGQwZTMyYzIzZTAyN2U2NzM4OTc2YzFlODJlMWIxNzJlNmZjMTRhMjk3MTJmMzJjMTIwNTNjNWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlhMDRjYzBkZDUyMmVkMTBhNzMzZWMyOTJiN2FiOGY0NGFlMjRkZWE0MzJmZjM4ZDNkMzRiNWFiMzg1MDU3NWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_77ce6fc94f8c483db0f78df2a16bcfa1",
+      "statement": "Changing a NEXT_PUBLIC_ environment variable requires a rebuild/redeploy of the client bundle since these values are compiled in at build time rather than read at request time.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L27-L29",
+          "version": "repo-lines-v1:sha256:a8582a5ee772a84916b2a834ec4c8064281c53a1885a56fef6dee439b4dc07ae:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDA3MDVjZjI1NzkxM2ZkOTQ3ODRhN2Q3NGM1MWRjY2I5ZTFjNjAyNzQ5NDg3MGE4ZGVjNzEzZjZjZjNiZjQ3MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTg2YWUzNzRjMTAxNDdlMWUwZGFjNGRjNDk4YjM1MmUyYTk3NmU2MjkzZDA3YTgzMjZiMmZhNzIxNzhjZmVmZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzIyM2M4NzA0MGIzMTZmYmVhZWUwMGNkMjExZjkyYTQ5YTNlYzMyYTIwZTlmNWQ2YTI0MjJkNjYxMTcxMWRmYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWEwNGNjMGRkNTIyZWQxMGE3MzNlYzI5MmI3YWI4ZjQ0YWUyNGRlYTQzMmZmMzhkM2QzNGI1YWIzODUwNTc1YSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_b2d4714a3f6d4e66b07d410df2aa0f75",
+      "statement": "Without valid Coach configuration (SUPABASE_SECRET_KEY, COACH_API_USER_ID, COACH_API_TOKEN), the weekly Coach API endpoint returns 503 instead of failing the app.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L22-L25",
+          "version": "repo-lines-v1:sha256:5475997142f1c979e647bda8802a4b4579fa24dcc8c489e02538e2fb9b6b3ec4:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGRkNThhM2QyMTJiNTg4YTc2NzM2YjU3OTZlODYwNWFjYWViMzYyYWYwODhlMWViZGVkNjhlY2RhOWQ1MGQxMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWQyOGYwZjA4NzIxZDg5ZjdmNjBiNzYyMDhkNDczMTIyZjk0OGEzYTRjMTEwZTg1OWQzM2MwNmM1ODMwZWU0MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTg4ZWE2MWE1NmQ5Y2JkMGIyZTExYjFiZWQyMmZhNjFmYjBhMDMxYzY2NmI2MGE1ZjIxMTU2YTVhMDczMGZkZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzZjM2RiNWRlMGMwMGI4MzNmODc5MTM2NzRlMzlmMzUxNjVkMmJlYjcwY2ViMjllNjk4MGIxYzkzMDA3MWQ2YSJ9"
+        },
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L85-L86",
+          "version": "repo-lines-v1:sha256:cab89f0af6b78094ed5e2a35608e1aaced700c50b325dc21b5c6927eca841e43:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTUxYzZhMjczNWI2ODdlYTJmZWNmMzBlYTM2ZWZjNmI0MDdiYmNkMjVhZTIzOTIzZTNiZGVjMDgzNzM5MmY3YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjJiZjU4YzVlMjAwMGFmYzcwYWE0ZWQwNDFhNjg5N2YzMmY4MDNmMGY1NDE3MDgwOWZiZGM0Njg5YzhhODgzZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjU2YTc0NGEyMTlmYjNjYmNlMzA2NDI2Y2RkNjU1MTNjOTE0N2EwZDY4OTNlZGY1YjQzYzcyM2U2YWE0MGJjNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjI0MGQyYTY2MDQ4NmJhZDViZTVmNGRjZDQxOTIwYTg2ZTc2YWEzYjAwZmVlMTNkOGZkZDRlOTRhNjI2YTc1MyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_dec6141674764cb180b8440bfe1379f7",
+      "statement": "The weekly Coach API scopes all database reads to COACH_API_USER_ID in application code even though SUPABASE_SECRET_KEY bypasses RLS, and requires COACH_API_TOKEN to be at least 32 high-entropy characters generated by a cryptographic RNG.",
+      "evidence": [
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L76-L92",
+          "version": "repo-lines-v1:sha256:ed195a7cb214fdcce9ebc85e80f776b59257f895cefe1941cb049e034bfc2e35:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3YjQyNDc0NjU3MWE5YzQzMTUwMzA3ZjlhMTAwZmM4OGRiYzMyNjI2ZmJiNjgxNTk2Yzg0NDM3MGE3ZDc3MTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4ZDIzY2Q4YTA5YTM5MmMwYTYyOThmZjE5ZTNiZjYyY2FlNzg2OWI5NTliYTU3NGIwZDhjYzM0ZDM0NWU4YWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjODZiZGMzOTk4NjhmZDg3MGQ4YWExYTNhYWY3YmIzNmJiOTFiYzExNDU0NTFmY2ViMzJkM2YwYjZhYzI2M2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM1YzBlMzkxNmE3NWY2NzgyNWQyZDU0ODgzNzdjYTk5MzhjY2I4MzliNDI1NThlMDhhNTM1NTFiOGY4Mzk5MWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b329eac42077423e980be9f48a9a376c",
+      "statement": "CI's app build job supplies placeholder public Supabase environment values because Next.js only needs them defined at build time and makes no real request during next build; real values live only in deployment settings.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L28-L33",
+          "version": "repo-lines-v1:sha256:9b1a8067e52beaaa1ff13d870ad271e6d52c94d0a9a351f525bc72a524d2b41d:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWQ4ZGQyZDhmMDQ1YTUwNWJiOWViZDU3MzI3ZTk5YzIxZjBlYjAzZDkyNWI2NmIyNjcyOTcyNmFiNDc1NjlhZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDNlZTdmMDQ2NDcyZmJmYzAzMDViZjA0MWQ2MWQyMjgzNDc1MmY2ZjY1MWY0ZmZmMjFhZmNlY2JlMTE0ZDRjOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGY5Y2I3NTgxYWU0N2RhZDZkNTg3NzIxZjg2ZmRhZDM0MTU1ZmI2NWQ0ZjVkZDA2MmE5MzExMzhmNDJkNTQxOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWI0YjBlNmYxM2FlZjhiNmEwODdmNjVhMDkyYzYzNWQ5ZDBlZWUwODQ2MzNjZWNjZTM3YWU4ZTQxZTEwMzFjMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_cb021f4186bf479989474fbdb640356a",
+      "statement": "New environments are provisioned by linking a Supabase project and running npx supabase db push, and migrations are tracked applications against Supabase's migration history rather than scripts to be replayed indiscriminately on an existing project.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L31-L47",
+          "version": "repo-lines-v1:sha256:00c4367b06041ec638b0074aaa4d47ebe82a27b1ddeaab388a5eb1c91edb0858:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA0YzZlZWI1YTMxN2FhOWQ1MjY3NzI0MjcyYTc5OTgzNGY4OTNlZGQ3ZmY2NjEwY2ZiYTJjM2M4NWNhM2NlNTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjllZDA2MWI4YzU4NGUwODQ2OTM5MmNhNzA3NTgzMDExM2VjZDhlZDk2ZTdkMTliYjllYjU5MmUxYzY0YzJjYzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjNTQ2YzNkNTFiNThkMDQwN2Y3NjcyN2IwNGZmNDNiYTA1ZThlOWIxNTJhN2E3MDEwYjc3OTg2MmZmOWQ1NTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBhODViMGVhY2E2Y2E0NmU5YjAwNTMxOTlhOGY4Yjc1MGIxYmZiNTA5MDJjMjBiYjUwYThiNWYyZTIwZGE4NDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_dc1fec5c93df4fc1a976d4e648d40b78",
+      "statement": "supabase/migrations/ contains tracked migrations spanning program builder/phases, session feedback, bodyweight history, Coach recommendation decisions, exercise swap scope, atomic program/bodyweight-calendar RPC writes, period tracking, rest-tone preference, exercise pins, and body measurement logging.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260915203212_period_tracking.sql",
+          "version": "repo-file-v1:sha256:465f7701bbf5786276f07785040a709ab5366b895c7cc330ba09b70174558dd2"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260916120011_rest_tone_enabled.sql",
+          "version": "repo-file-v1:sha256:a245dc9161b5c4a78e00b2ec9d5cd4e346c7bfefbd4a8cd86499d3227ad7b0f4"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260917000000_atomic_program_mutations.sql",
+          "version": "repo-file-v1:sha256:f3d31f5751fc69eeb66f3a2296b45600d9d75cc56d090288fa3259295f31a226"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260918000000_user_exercise_pin.sql",
+          "version": "repo-file-v1:sha256:ce0a95881d54f59582248b911514f09ef3259067ff085c67b09bf2727ee0b7e7"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260919221137_body_measurement_log.sql",
+          "version": "repo-file-v1:sha256:383566d1b0809e01b1203e0f9b9fb51a2359c54456870981df0fe3f9fbf9a626"
+        }
+      ]
+    },
+    {
+      "id": "claim_256e059e1c584186a5e2a133c031ddcc",
+      "statement": "The period-tracking migration (adding profile.sex, consent columns, and period_observation) must be applied before deploying the You (/settings) UI that reads those fields, and breaking consent-copy changes should bump period_consent_version to require re-consent.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L43-L47",
+          "version": "repo-lines-v1:sha256:588ba42929fb2f00847ef186a70d797362a33d4a6d5c678e7b162a6a883264f0:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODBjNTk3MTVhNDNiZTg2MDBlNjUwODUxYWM4MTMxNjkzZGY1MTJjOTYwNzA4ZmUyYWYxZGU2MmNlNmVjZDgzNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWVkMDYxYjhjNTg0ZTA4NDY5MzkyY2E3MDc1ODMwMTEzZWNkOGVkOTZlN2QxOWJiOWViNTkyZTFjNjRjMmNjNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2U1ODk0ZGU2MmY4ODQ1MmViN2MzNTY5MzA5Nzk2ODZjYjlkYTkxYmM4OTk5ZGUxZjE2NzBlYmFlMmNkOTRiYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGE4NWIwZWFjYTZjYTQ2ZTliMDA1MzE5OWE4ZjhiNzUwYjFiZmI1MDkwMmMyMGJiNTBhOGI1ZjJlMjBkYTg0MCJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260915203212_period_tracking.sql",
+          "version": "repo-file-v1:sha256:465f7701bbf5786276f07785040a709ab5366b895c7cc330ba09b70174558dd2"
+        }
+      ]
+    },
+    {
+      "id": "claim_245cb6b26c5b4b5caf7e83703a4aea7f",
+      "statement": "The rest-complete tone migration adding profile.rest_tone_enabled (default true) must be applied before relying on the Settings checkbox that reads it.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L45-L46",
+          "version": "repo-lines-v1:sha256:59d5260919d8a36535be689f7b5950f210631d8d0abb812fe0e9458d9a739116:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWIxMmY5YjAxOTYwM2QxODg1NzFhZTBjMjJiZDllOTVjZTkxZjEyZGFlN2ZmNmRlMDVjNjJmOWRkNDdjNDBkNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjhjZjRlY2FjMDM5OGM0ZDBiMjFlMGI4NzlkOWMxMDJhYTUwY2M5ZDlkNDdiYTAxYmIxNDYxODllYjNiMDBkYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzhjOTllZTc1OWJmZDRmN2I4YzAzMTM0MTg1OTQ0NzkxNjQwNTVhOWFhNGFhY2NjYWEzYjFjYmExZjgxNDhkZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTQ1ZGJjMThlMGMzOWMzMmMzN2ZjZDU3M2VjOThhMmI2Mjk3NTM3YjA4ZDEyZjc4NDQ0MDU5YzI5YWFlNzc5OSJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260916120011_rest_tone_enabled.sql",
+          "version": "repo-file-v1:sha256:a245dc9161b5c4a78e00b2ec9d5cd4e346c7bfefbd4a8cd86499d3227ad7b0f4"
+        }
+      ]
+    },
+    {
+      "id": "claim_ab9527ef8d6644c69d4b74e78009a573",
+      "statement": "Vercel's build does not run database migrations; migration application is a separate manual step operators must perform against the target Supabase project.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L46-L46",
+          "version": "repo-lines-v1:sha256:68cf4ecac0398c4d0b21e0b879d9c102aa50cc9d9d47ba01bb146189eb3b00da:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjhjZjRlY2FjMDM5OGM0ZDBiMjFlMGI4NzlkOWMxMDJhYTUwY2M5ZDlkNDdiYTAxYmIxNDYxODllYjNiMDBkYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjhjZjRlY2FjMDM5OGM0ZDBiMjFlMGI4NzlkOWMxMDJhYTUwY2M5ZDlkNDdiYTAxYmIxNDYxODllYjNiMDBkYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2FiMWIwYmJkYjA4OTRkNTcyNTcxM2VlZDNjODc3YTk5Njg5ODk4ZWNiZGZmNWU0NDFmNGEzOWJkN2VhMGU1YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTQ1ZGJjMThlMGMzOWMzMmMzN2ZjZDU3M2VjOThhMmI2Mjk3NTM3YjA4ZDEyZjc4NDQ0MDU5YzI5YWFlNzc5OSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_3dd6bd1d475f4bb19e09869ef7677f48",
+      "statement": "Auth is configured for email magic-link login, requiring Site URL and allowed redirect URLs to be set for production and preview origins, with /auth/callback exchanging the PKCE code, src/proxy.ts refreshing cookies, and getClaims() performing the trusted authorization check in the app layout and actions.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L49-L52",
+          "version": "repo-lines-v1:sha256:afcdcc29126d3259b8b46af655d494dc1a5073e0d5a1f88d24a6fbd5059d0aec:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTI2MTE2Y2VlNTk4MDg3ZGM3OGY4MTU5MTRhZDQ1M2UyNWNlNTk4N2YxNGE2Y2I2MTNlNDE3MTdhOTZmYmY5ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWFkNzU5MDFmOWIyZmEyNDYzMDViYjUyMjlkZmJkMmM3OGFkNDUwNzY4ZDljYTQzMDNmZjk5M2RjMGQ4ZTFiNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWVhN2ZjODZlZDI3MzQ1MjYzNjZmMDhiNWYzYjIyZDBhYzAyZjBlNGNjMzAwNjIwNzNkYjg5ZDQ3MzY4MTExZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTEzOGU5OTNmYWQ0MmE2YmRhOTI1NmRjNzFlYTQzZGUzZDA4OTM0NzhmY2JmZTUzOWUyNjc2MTA2ZDFiM2M0MiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1e5b6c28e5ad418195b12ab6491f7596",
+      "statement": "CI (.github/workflows/ci.yml) runs two jobs on push to main and on pull requests: an app job running lint, tsc --noEmit, Vitest, and next build, and a database job that starts a local Supabase stack and runs the pgTAP RLS suite via npm run test:db before stopping the stack unconditionally.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L1-L58",
+          "version": "repo-lines-v1:sha256:64406535adcce47855f57e25513ab5cc38906d8428f56a566fa63999903479c5:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2ZTFiMzJmYTA5MDc5YWUyZjAwMDFmZmYwZWNhMjdiNDk4NTk1N2Q0ZWI0ODU3OTI5YjNjZjA1OGZhYWU1NDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3YmZhMmQ3MDk3MWJlNWEwMmVhODU5MTEwNzM2YzJmN2JiNmI4NjE1NGJhNjY4MDExM2U1ZjI5MWZhYTg0NDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cc2bbe572bbf49cdbb8477e8c6d58d0c",
+      "statement": "npm run test:db resolves to supabase test db supabase/tests/*_rls.sql, running only the pgTAP-formatted ownership/RLS scripts; other scripts under supabase/tests/ are plain psql-style checks with no TAP output that must be run individually with psql -f per their own feature documentation.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L75-L77",
+          "version": "repo-lines-v1:sha256:6a95d00e678f6ae483cadf74b279ee8184edc44baed11709a4a9662a3e2cca3f:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjZhNzk3NWRiZGNkOTQ2NzgzNzM2OTIwOTZhNDIzOTkwYzQ1NmY5MzMyODgzMGEyMzNkNDFiMGRlNzU4MTUxZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWJiZjM1YTI0OWYxMzE5NTIzMWRmMTZjNTliOTY3NWQ3ZDlmYzVkMzFlMjIwZmNlZWE2ZjU4NmViNDlhMTk2OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjljZTZiMGQxNTkwOTRiOTY3NjRmNjJjMWM5MTBmZjBkYmRlNzBmOGVhYjYyOTY2MGViNGNlYzg4ZWE5ZjdkNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTA0MjM5YzZkZmY2MGUwNTliNWVmYWE4MTYxYmNmNDliZTNlYjM0ZWQwYTYzMDU0MjRhMzAyOWE5YjU3NDJhOCJ9"
+        },
+        {
+          "resource": "repo://package.json#L12-L12",
+          "version": "repo-lines-v1:sha256:d62a5cd60fbdce25eb0594cd1824aa4b408ff15296e29d06995b38ddf72bd69e:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODBiNTdhNTNjNzM1NWEzYzMzMDBmNjFjZmI4ODAzNDBkN2ZlM2ZjZGMxZTg5MGVkNTBiZTI3OGFmZGM4YjFjMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDIzNjdkN2QwZDM5Y2UwZjU1ZTFhNDc4ZGM0M2Q1Zjk1NzJhOGZmMzllZmFiNmZkMzFjNDU1YTUxY2ZjZmNhOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_a41d5a14c0934a09a9b9d6143d11cc09",
+      "statement": "Installing dependencies via npm ci pins the Supabase CLI version used both in CI and by a developer's local npm run test:db, so both run the identical binary against the identical test files.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L46-L48",
+          "version": "repo-lines-v1:sha256:77f55fe4aa2407613945dbe264857ce70f374bd7b076c198c78b629cdbd4a749:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmFmM2FjNTM2MzdhZmFkMTIzOGEyZWYzOTI2MzM5ZWY4OTYzZGVmZWI3NmJiOTEzMzBjZDY5NTI5YTc3MGE3MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjNmMTdmNzA4YmY5NDE4YjhmYzA4YzE1YTBkNTFiMDE3YzNlNjRlNzkxOTYzZDk0ODI5YmFlNGY1M2ZhYzVkNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGU2YzY0ODVmYjJhYTVhMWYzMWMzN2I4OWQwNzIyYjgzZTM1MzQ0Yjk2MWU1ZGI1ZGViZTZkZGIwNzBhOTVlNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWM3OGZkZTlkYTk1ZjI0NTBkMzlmM2MzYWExMWFjZWUwMjg3ZDdiMzA1ZDFmM2VmOWI4NDU3MjAyNTRlZDRjNyJ9"
+        },
+        {
+          "resource": "repo://package.json#L30-L30",
+          "version": "repo-lines-v1:sha256:844512364102d791739cac657a82c663f790d9709ade5d2a3c223671a0c1c57b:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODQ0NTEyMzY0MTAyZDc5MTczOWNhYzY1N2E4MmM2NjNmNzkwZDk3MDlhZGU1ZDJhM2MyMjM2NzFhMGMxYzU3YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODQ0NTEyMzY0MTAyZDc5MTczOWNhYzY1N2E4MmM2NjNmNzkwZDk3MDlhZGU1ZDJhM2MyMjM2NzFhMGMxYzU3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGRkMjE5NjA4OWEyYmJjYmU2NzY4NGUyYzlhZTk3YTkyYjgyNmFjZDI0ODExMTRhNGM2YjM3OTRhMWQ3ZmE0YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2Q4YTdiZTI5YmY2OTQ5NmU1MDFmOGJiMDY0MjQ5Y2MzNGU4MDhiYzY1NjMxOGY0YWYzNmYxYTBmYzRmMzk5MyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_7cbbb713f72945cdbfc84abef1977454",
+      "statement": "supabase/config.toml enables only db, auth, and rest services for the local stack (disabling realtime, studio, storage, edge_runtime, and analytics) to keep CI runs and nested-Docker Cloud Agent boots lean and reliable, and configures localhost/127.0.0.1 Site URL and redirect globs so magic-link PKCE /auth/callback works locally since verifier cookies are per-host.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/config.toml#L1-L36",
+          "version": "repo-lines-v1:sha256:f1ee4d89f8fe198d228b7ec411bb99fb109ae7be50709f0a7f51924df9203ac8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMxNGNiMDI4ZGMxNjk4NjEzODQzYmJhNTIxZWRmMmJlYjkyODJkNjk3MWEwMDY4ZGI4MWZlNmE5MjUwMDJjMzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhYzg5Nzg2YjcyMDI4OGY0ZTU2YTNlYmI4ODkwYzA2MzIyZTY4ZWZkNmMzYmUzOTFiOGQ4Mjc3YjRkODY3MmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_00039ed3221e4956b9f74c6ecd3c3aaf",
+      "statement": "A full release verification runs npm test, npm run lint, npx tsc --noEmit, and npm run build locally, then requires pushing a preview branch, inspecting deployment checks, and manually smoke-testing login/callback, program creation, planning/Start, logging/swapping/finishing a workout, Track/monthly review, and weight calendar edits before merging to main.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L54-L85",
+          "version": "repo-lines-v1:sha256:1211d1bdf75d264adbf85155fdb84fb53fb1667607f19c9a55422edeb530bd3d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2NTA1ODI2OGVkMDcyYzI5NTVkOGI5ODhlNzM2YjY1YTIwMjMwMGVkNTRlNTA0YjIwNDE1ZjMyMzQ0NTdmNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2NDdiNmNiOGJkNWViMjMwNGQyNTFjZDEyODQzYTVlMmRlYjY1ZmFlMDI4OWMwODEzN2VhMDk0OWM2MmZmZGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQzMWYwMWI2NTVjNWVhYmZhNWVmMTAzZjFmNjc3NTEyZWEyYTkxOWU4ZjBjNzg1MDU1YmVhNmFmNmFmNWZjNzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2ZTg1YTJjYWY1MjU3N2VmZjc3YmY4NGYwOWU5MWQwMjk0NTUzYWNhYjUxM2I5ODFmODRiMzZlM2RkYTljYjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_77b8b46ffded43adbf9317e0276e4d31",
+      "statement": "Preview deployment writes reach whichever Supabase project that preview's environment variables select, so the target project must be confirmed before writing test data through a preview URL.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L79-L82",
+          "version": "repo-lines-v1:sha256:91d4e33545e479440ba3ea11aba50c1a486c0128e7fb14cfc1a8e063dad05b83:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzE2YjkyM2FmZTcwNmQ5NGRlZmZjYTliN2JlZmI3ZTA3OWIxYzQ1ODk4NGYyZWJlNDdlNmRjMDMyNWUwMzg0ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzAyZjYxNmRlNTczNTM1MDZmNmYwMjFkODJjZWJmMTdmODcyY2I5YTIxNDY2MzhkZWZlZTVhZTUxYmFhZWNjMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGExYWQzN2FlN2U3YjEwMDMyN2ViNWY2YjdiYTBiMGQ3YzBkNDY0ODhjMGQyMWIxMjk4ZmMwNTNiMTQ5Yzg1ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmRlNzE4Y2Q2NjEzMDgzNmIxOWRhYzAxMGVkNTZmM2YzZTcyZDViNTA2NDg5NWEwZTEwYzU5MWUyZGZhMmQyMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_9e1e72ce48bc4caea454c1f1b168fe44",
+      "statement": "Application rollback (reverting a Vercel deployment) does not undo already-applied database migrations; schema repair after a rollback requires a new reviewed forward migration rather than relying on rollback to restore prior schema.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L89-L90",
+          "version": "repo-lines-v1:sha256:a01f16fbe7e82a16e3f10cdc771ba00d897bd7e85ad0b651b7863c7478fb55ad:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDMyNzg4NDM0ZDAyMTIzZmNiZDI2NmY5YjMyODljYjQxYTlmZTAwM2JhNmNiNmUwYzc2NTdmOWY2MzM5NjNhNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTM3ZTAzMDgwMWY0MTg1YjI5NjZmODEyMzA2NmRmNTI3ZjJkNDZjNTBmZmM2NzA2MTIxMjYxNmUxYTM0ZmJmMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjZlODVhMmNhZjUyNTc3ZWZmNzdiZjg0ZjA5ZTkxZDAyOTQ1NTNhY2FiNTEzYjk4MWY4NGIzNmUzZGRhOWNiOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzFjMTRiNjEyYTc3YTM4NjYyNDMwODQ0NWJjNzNiNzk3ZmJmYmM5NTgxODk2MzFkN2I1NWY1YzgzOGQ1NjRkYSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_61a59112e08a4e179a99ee1a2239070e",
+      "statement": "COACH_API_TOKEN and SUPABASE_SECRET_KEY are rotated independently: token rotation involves generating a new high-entropy token, replacing it in deployment settings, updating any scheduled caller's capability URL, validating the new token, and confirming the old token returns 401; SUPABASE_SECRET_KEY rotation happens in both Supabase and deployment settings when database-level exposure is suspected.",
+      "evidence": [
+        {
+          "resource": "repo://DEPLOY.md#L91-L92",
+          "version": "repo-lines-v1:sha256:5836385afdb09cbb4ad849011f20eff19d8744152e6e355a8272a9f2f57e2f3e:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiM2VjZTJkYTI2M2I5NDEzYWRlZjk5NTA2MDc0ZDE2MTI5YWIwMzUxYWFjMWFjYzM1NzFmYTQ2MDQ4ODYzZGZhYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTM5NjcyZjIwZmI2NTIwZjI2MjU0NzgzM2E5ZGYyMDU2Yzk3MTdjNzBkMGQzYmE1N2FmOTg2NGMzZDZkY2UyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmExNGFiNjI2YmNiOWExNjQ0MjFkNWI0ZmYwMjFhNGIyMTdhM2Y1MTJjMjRkZDk2NDY1OTMxOTFmNzBkMzk3NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzAwZjY5MjFjZTVlYzFhZDAzYWQ3NzYxYzY3ZDA0NTM3YWNkYjMzYzc3MTVmYmJkYjRjNDUxNDUzZTVlYjgxMCJ9"
+        },
+        {
+          "resource": "repo://docs/COACH-REPORT.md#L94-L97",
+          "version": "repo-lines-v1:sha256:0ec393352caa602ec78404605d62bf34431d4b2f2129780a0d1b954bf51b8034:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmU2NjZlMGI1MGQ4MTE3MzMzNDVkZGUxNTFlOTRmOWVlMDc1NjcxMDhhMjc0NmQzNzlkODNmZDVjYjY3MzUyYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTdlODEzYjQxZDlhYTA1NjM4MTUwZWM1OTg2ZWM1OGEwNDQzNGY1Y2I1ZmVlMDgxZjk5NTY5NWJkYTg2M2ZkNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2IxODM0NWVmYzgwMjgwMDE3NmJhMzRjMTk3YzEwMzU2Yjk0M2ZlYjAzNDVjNjg3Zjg1ZjAwYjg4YTg0M2QyZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWUyYzE4MWYzMDM4MTgwZTdhZmFkYTVkY2RhYjg0ODBjZWIzYzdhOTM2NWQ1YmVhZjQyMGNhNDkwNjM2YTAyMCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_c20fcc6f757c41018c22502d6f7ca8d0",
+      "statement": "This checkout has no pinned Node engine, .nvmrc, or vercel.json; CI pins Node 20 via actions/setup-node, so the Vercel-side runtime selection must be verified directly in project settings at release time.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L15-L17",
+          "version": "repo-lines-v1:sha256:b6d98e33a591c542a3ddbd88f29ba1f3445cddbc6e332b1c9ec8ce0a6ae6cc2a:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTJjODViNDk2MGZmNzMzNzZmNDI2NGMxMmU2NDJiMmYxNWEyY2I3OWY5ZTg0YzM5YmQyMDYxNDc1YmJkZjU4NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDk0NjcwMzM1YzUwYmY1NGIxYTZkMjAzZTU3ZjNlODE1OTQ4MGE2MTIwNzFjY2VjZTI3NmNlZTkyMGU2ZDYzMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWY3N2U4ODYyZWMxZDQzNjk0MjZmY2FmYWQ5MTBhOGM5MDQ0MTAxMDQzZmE1MmZhNjQ2MWY3NWJmY2RmMDlkYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTIxNmQ4MDQ3N2M2MTFhZGIyYWE1YWFmZGE2ZDJmZTZjYzNlYjBkNjU3ZGU3MDk0MmFkNGYyZWYyOTA4YzI5NSJ9"
+        },
+        {
+          "resource": "repo://DEPLOY.md#L93-L94",
+          "version": "repo-lines-v1:sha256:c00f6921ce5ec1ad03ad7761c67d04537acdb33c7715fbbdb4c451453e5eb810:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTYwNWVmMTJlYzQyYTA1OTIzYWVmMDk1ZTFmMzNlOGE4OTk4Yzc4MTRiZDExNzk2NTMyNDc1YWY4OTdhOTM1YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTIzNzNjMWU0MmVlNDBhMDdlYTlmZWNiYTk2ODRjNGNkMDhkNjhhMzg5NjY3OGUzY2IzMDZjZWE4NDcwZGE1YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjQxZGEyYjQ5ZDA3OTJiZWU3ZGRlYWUxZjY3YTRhM2FiZGJjNGZiOWZhMmE3YmVhM2MyNTViNGI3MzVlMTE3MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-25T19:18:52.086Z"
+  }
+}

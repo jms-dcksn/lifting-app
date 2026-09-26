@@ -121,6 +121,33 @@ export function IconSearch({ size }: IconProps) {
   );
 }
 
+export function IconChat({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path
+        d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v7A2.5 2.5 0 0 1 16.5 16H10l-4 3.5V16H7.5A2.5 2.5 0 0 1 5 13.5v-7Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function IconSend({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path
+        d="M5 12h14M13 6l6 6-6 6"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 export function IconMore({ size }: IconProps) {
   return (
     <Svg size={size}>

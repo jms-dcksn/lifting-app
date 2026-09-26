@@ -31,8 +31,11 @@ type CoachQueryRow = {
   set_index: number;
 };
 
-export async function loadCoachUi(userId: string) {
-  const supabase = await createClient();
+export async function loadCoachUi(
+  userId: string,
+  supabase?: Awaited<ReturnType<typeof createClient>>,
+) {
+  const client = supabase ?? await createClient();
   const today = dateKey(new Date());
   const [
     { data: rows, error },
@@ -44,28 +47,28 @@ export async function loadCoachUi(userId: string) {
     { data: phaseRows, error: phaseError },
     { data: decisionRows, error: decisionError },
   ] = await Promise.all([
-    supabase
+    client
       .from("set_log")
       .select("session_id, program_slot_id, exercise_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup")
       .eq("user_id", userId)
       .eq("is_warmup", false)
       .order("created_at", { ascending: true }),
-    supabase.from("profile").select("bodyweight").eq("id", userId).maybeSingle(),
-    supabase
+    client.from("profile").select("bodyweight").eq("id", userId).maybeSingle(),
+    client
       .from("workout_session")
       .select("id, performed_at, finished_at, program_id, program_day_id, week_index, readiness, joint_pain, notes")
       .eq("user_id", userId),
-    loadWeightHistory(supabase, userId, today),
-    supabase.from("program_day").select("id, program_id, name").eq("user_id", userId),
-    supabase
+    loadWeightHistory(client, userId, today),
+    client.from("program_day").select("id, program_id, name").eq("user_id", userId),
+    client
       .from("program_slot")
       .select("id, program_day_id, exercise_id, target_sets, rep_min, rep_max, target_rir")
       .eq("user_id", userId),
-    supabase
+    client
       .from("program_phase")
       .select("id, program_id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
       .eq("user_id", userId),
-    supabase
+    client
       .from("coach_recommendation_decision")
       .select("recommendation_key, status, deferred_until")
       .eq("user_id", userId),
@@ -80,8 +83,8 @@ export async function loadCoachUi(userId: string) {
   if (decisionError) throw new Error(decisionError.message);
 
   const [catalog, program] = await Promise.all([
-    getCatalogMap(supabase, userId),
-    getActiveProgram(supabase, userId),
+    getCatalogMap(client, userId),
+    getActiveProgram(client, userId),
   ]);
   const weightTrend = bodyweightTrend(bodyweightEntries, today);
   const bodyweight = weightTrend.latest?.weight ?? profile?.bodyweight ?? null;
@@ -149,7 +152,7 @@ export async function loadCoachUi(userId: string) {
     currentBodyweight: bodyweight,
     bodyweightTrend: weightTrend,
   });
-  const stalls = await loadStallAssessments(supabase, userId, catalog, new Date(coachReport.generatedAt));
+  const stalls = await loadStallAssessments(client, userId, catalog, new Date(coachReport.generatedAt));
   const coachRecommendations = buildCoachRecommendations({
     stalls,
     report: coachReport,

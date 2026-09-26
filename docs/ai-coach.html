@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>AI Coach — Slice 0 explainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+    </script>
+    <style>
+      .code-rail { border-left: 3px solid #0f172a; }
+    </style>
+  </head>
+  <body class="bg-stone-50 text-slate-900 font-sans">
+    <main class="max-w-5xl mx-auto px-6 py-12 space-y-14">
+      <header class="space-y-3">
+        <p class="text-xs uppercase tracking-wider text-slate-500">lifting-app · Slice 0 · 2026-09-20</p>
+        <h1 class="font-serif text-4xl tracking-tight">How the in-app Coach talks to the ledger</h1>
+        <p class="text-lg text-slate-700 max-w-3xl">
+          This page teaches the shipped Slice 0 agent. The deterministic Track Coach still owns
+          the numbers. The agent is a talking layer on top of loaders you already have.
+        </p>
+        <p class="text-sm text-slate-600">
+          Contract: <a class="underline" href="AI-COACH.md">AI-COACH.md</a>
+          · Decision: <a class="underline" href="DECISIONS.md">DECISIONS.md § AI Coach</a>
+        </p>
+      </header>
+
+      <section class="space-y-4">
+        <h2 class="font-serif text-2xl">The path of one question</h2>
+        <p class="text-slate-700 max-w-3xl">
+          You tap the chat button (or open <code class="font-mono text-sm">/coach</code>).
+          The browser sends your words to a server route. That route proves you are signed in,
+          writes your message to Postgres, asks LangChain to think, and streams the reply back.
+          LangChain may call a tool. Each tool is a thin wrapper around an existing loader.
+          LangSmith records the trace so you can see which tools ran.
+        </p>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
+          <pre class="mermaid">
+flowchart LR
+  UI["Sheet or /coach"] --> Route["POST /api/agent/chat"]
+  Route --> Loop["LangChain agent loop"]
+  Loop --> Tools["Read tools"]
+  Tools --> Loaders["Existing loaders"]
+  Loaders --> PG[("Postgres ledger")]
+  Route --> Thread[("agent_thread / agent_message")]
+  Loop -.-> Smith["LangSmith traces"]
+  classDef sink fill:#0f172a,color:#f8fafc,stroke:#0f172a;
+  class PG,Thread,Smith sink
+          </pre>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="font-serif text-2xl">“How was this week?”</h2>
+        <p class="text-slate-700 max-w-3xl">
+          The model is not allowed to invent adherence. It must call <code class="font-mono text-sm">weeklyCoach</code>,
+          which calls <code class="font-mono text-sm">loadCoachUi</code> — the same function Track Coach uses.
+          The answer then names that source.
+        </p>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
+          <pre class="mermaid">
+sequenceDiagram
+  participant You
+  participant Route as /api/agent/chat
+  participant Agent as LangChain
+  participant Tool as weeklyCoach
+  participant Coach as loadCoachUi
+  You->>Route: how was this week?
+  Route->>Route: persist user message
+  Route->>Agent: system + last N messages
+  Agent->>Tool: weeklyCoach
+  Tool->>Coach: user-scoped client
+  Coach-->>Agent: report + proposals
+  Agent-->>You: “3/4 this week (weeklyCoach / Track Coach)”
+  Route->>Route: persist assistant + tool parts
+          </pre>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="font-serif text-2xl">Full transcript vs last N</h2>
+        <p class="text-slate-700 max-w-3xl">
+          Every message is saved. Reload <code class="font-mono text-sm">/coach</code> and you see the
+          whole thread, including tool-call parts. The model does not get the whole thread.
+          Each turn takes the system prompt plus the last
+          <code class="font-mono text-sm">CONTEXT_MESSAGE_LIMIT</code> messages (20).
+          If that window is still large, old tool JSON is stubbed out first.
+          User and assistant sentences stay. There is no summarizer and no embeddings.
+        </p>
+        <div class="grid gap-4 md:grid-cols-2">
+          <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+            <p class="text-xs uppercase tracking-wider text-slate-500">Postgres (UI)</p>
+            <p class="text-sm">All turns, all tool parts. One thread per user.</p>
+          </div>
+          <div class="rounded-lg border-2 border-slate-900 bg-white p-4 space-y-2">
+            <p class="text-xs uppercase tracking-wider text-slate-500">Model window</p>
+            <p class="text-sm">System prompt + last 20. Prefer dropping old tool results before dropping words.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="font-serif text-2xl">Who owns what</h2>
+        <p class="text-slate-700 max-w-3xl">
+          If the agent computed a squat target itself, Home and the session screen would
+          drift. So the engine keeps the math. The agent only narrates.
+        </p>
+        <div class="grid gap-4 md:grid-cols-2">
+          <article class="rounded-lg border-2 border-slate-900 bg-slate-900 text-stone-50 p-5 space-y-2">
+            <h3 class="text-xs uppercase tracking-wider text-stone-300">Engine</h3>
+            <p>Numbers, prescriptions, stalls, Last / 21-day / chart summaries, <code class="text-stone-100">sessionTarget()</code>.</p>
+          </article>
+          <article class="rounded-lg border border-slate-200 bg-white p-5 space-y-2">
+            <h3 class="text-xs uppercase tracking-wider text-slate-500">Agent</h3>
+            <p>Language, which tool to call, citing the source, refusing diagnosis and writes.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="space-y-6">
+        <h2 class="font-serif text-2xl">Code from this slice</h2>
+        <p class="text-slate-700">These snippets are from the landed files. If they drift, the HTML is wrong — update it.</p>
+
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/policy.ts — last N</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>/** Last N persisted messages sent to the model. The full transcript stays in Postgres. */
+export const CONTEXT_MESSAGE_LIMIT = 20;
+
+/** Soft cap after last-N. Drop old tool results before user or assistant text. */
+export const MODEL_CONTEXT_CHAR_BUDGET = 24_000;
+
+/** Max tool calls the agent may make in one turn. */
+export const TOOL_CALL_BUDGET = 8;</code></pre>
+        </article>
+
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/tools/weekly-coach.ts — wrap, do not fork</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export async function weeklyCoach(supabase: Client, userId: string) {
+  const loaded = await loadCoachUi(userId, supabase);
+  return {
+    source: "weeklyCoach" as const,
+    checkInText: loaded.coachCheckIn,
+    report: loaded.coachReport,
+    recommendations: loaded.coachRecommendations,
+    decisions: loaded.decisions,
+  };
+}</code></pre>
+          <p class="text-sm text-slate-600">The LangChain <code class="font-mono">tool()</code> adapter sits beside this. The public interface is the function, not the adapter.</p>
+        </article>
+
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/app/api/agent/chat/route.ts — cookie auth, not the weekly secret</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const handlers = createAgentChatHandlers({
+  async auth() {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getClaims();
+    const userId = data?.claims?.sub as string | undefined;
+    return { supabase, userId: userId ?? null };
+  },
+});</code></pre>
+          <p class="text-sm text-slate-600">
+            Unauthenticated requests get 401 before any tool runs. Tools never receive
+            <code class="font-mono">SUPABASE_SECRET_KEY</code> or <code class="font-mono">COACH_API_TOKEN</code>.
+          </p>
+        </article>
+
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/messages.ts + thread.ts — persisted shape</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export type AgentPart =
+  | { type: "text"; text: string }
+  | { type: "tool-call"; id: string; name: string; args: unknown }
+  | { type: "tool-result"; id: string; name: string; result?: unknown; omitted?: boolean };
+
+// appendMessage writes role + parts JSON onto agent_message
+parts: input.parts as unknown as Json</code></pre>
+        </article>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="font-serif text-2xl">What Slice 0 will not do</h2>
+        <ul class="list-disc pl-5 text-slate-700 space-y-1">
+          <li>Write programs, start sessions, or accept Coach proposals.</li>
+          <li>Read period observations.</li>
+          <li>Replace Track Coach at <code class="font-mono text-sm">/analytics/coach</code>.</li>
+          <li>Summarize, compact, or embed the conversation.</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

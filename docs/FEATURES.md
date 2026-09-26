@@ -360,7 +360,8 @@ Secondary, not equal cards, behind Explore:
   in-progress Coach stay), achievements (rep, top-weight, and e1RM lines), and the shared weight card
 - Coach (`/analytics/coach`) — check-in snapshot, ranked next-step proposals (Do first / Also),
   Accept / Later / Dismiss / Accept all (list updates immediately; failed saves show an error),
-  collapsed insufficient-data trends, a one-line hard-set shortfall flag, and clipboard export.
+  collapsed insufficient-data trends, a one-line hard-set shortfall flag, and Copy report
+  (clipboard write plus a selectable fallback; shows Copied or Copy failed).
   Stall links use `?exercise=`. `/settings?coachExercise=` redirects here.
 - Body (`/analytics/body`) — weight trend chart and tape measurements (waist, neck, arm, thigh, chest)
 - Volume (`/analytics/volume`) — weekly tonnage for all training or one logged

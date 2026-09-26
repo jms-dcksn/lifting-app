@@ -2,19 +2,26 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { copyTextToClipboard } from "@/lib/copy-text";
 
 export function CoachCheckIn({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   async function copy() {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    const ok = await copyTextToClipboard(text);
+    setStatus(ok ? "copied" : "failed");
+    window.setTimeout(() => setStatus("idle"), 2000);
   }
 
   return (
-    <Button type="button" variant="secondary" className="w-full" onClick={copy}>
-      {copied ? "Copied" : "Copy report"}
+    <Button
+      type="button"
+      variant="secondary"
+      className="w-full"
+      onClick={copy}
+      aria-live="polite"
+    >
+      {status === "copied" ? "Copied" : status === "failed" ? "Copy failed" : "Copy report"}
     </Button>
   );
 }

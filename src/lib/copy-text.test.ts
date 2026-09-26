@@ -18,6 +18,7 @@ describe("copyTextToClipboard", () => {
     vi.stubGlobal("navigator", {
       clipboard: { writeText: vi.fn() },
     });
+    vi.stubGlobal("scrollTo", vi.fn());
   });
 
   afterEach(() => {

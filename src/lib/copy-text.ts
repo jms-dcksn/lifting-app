@@ -27,6 +27,10 @@ function copyWithExecCommand(text: string): boolean {
   input.style.padding = "0";
   input.style.border = "0";
   input.style.opacity = "0";
+  const active = document.activeElement instanceof HTMLElement
+    ? document.activeElement
+    : null;
+  const { scrollX, scrollY } = window;
   document.body.append(input);
 
   input.focus();
@@ -41,5 +45,7 @@ function copyWithExecCommand(text: string): boolean {
   }
 
   input.remove();
+  active?.focus();
+  window.scrollTo(scrollX, scrollY);
   return ok;
 }

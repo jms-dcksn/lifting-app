@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   KNOWN_BRANDS,
   MACHINE_TYPE_LABEL,
@@ -270,19 +270,31 @@ function CustomForm({
   onCreated: (def: ExerciseDef) => void;
 }) {
   const [name, setName] = useState("");
+  const [equipment, setEquipment] = useState<Equipment | "">("");
   const [pattern, setPattern] = useState<Pattern>("horizontal_press");
-  const [equipment, setEquipment] = useState<Equipment>("barbell");
   const [brand, setBrand] = useState("");
   const [machineType, setMachineType] = useState<MachineType>("selectorized");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const stationRef = useRef<HTMLDivElement>(null);
   const isMachine = equipment === "machine";
   const isCable = equipment === "cable";
   const showStation = isMachine || isCable;
 
+  useEffect(() => {
+    const el = stationRef.current;
+    if (showStation && el?.scrollIntoView) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [showStation]);
+
   const confirm = async () => {
     if (!name.trim()) {
       setError("Name required");
+      return;
+    }
+    if (!equipment) {
+      setError("Select equipment");
       return;
     }
     setPending(true);
@@ -303,16 +315,54 @@ function CustomForm({
   };
 
   return (
-    <FormShell title="Custom exercise" onBack={onBack}>
+    <FormShell
+      title="Custom exercise"
+      onBack={onBack}
+      footer={
+        <>
+          {error && <p className="mb-3 text-caption text-danger">{error}</p>}
+          <Button type="button" className="w-full" pending={pending} onClick={confirm}>
+            Create exercise
+          </Button>
+        </>
+      }
+    >
       <Field label="Name">
         <Input
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Landmine Press"
+          placeholder="e.g. Machine Calf Extension"
           className="h-11 w-full"
         />
       </Field>
+      <Field label="Equipment">
+        <Select value={equipment} onChange={(v) => setEquipment(v as Equipment | "")}>
+          <option value="" disabled>Select equipment…</option>
+          {EQUIPMENTS.map((value) => (
+            <option key={value} value={value}>
+              {value.replace(/_/g, " ")}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      {showStation && (
+        <div ref={stationRef} className="flex flex-col gap-4">
+          <p className="text-caption text-muted">
+            {isMachine
+              ? "Brand and type identify this machine for tracking. Unbranded is fine if you do not know the make."
+              : "Brand identifies this cable station for tracking."}
+          </p>
+          <StationFields
+            brand={brand}
+            setBrand={setBrand}
+            machineType={machineType}
+            setMachineType={setMachineType}
+            brandRequired={isCable}
+            showType={isMachine}
+          />
+        </div>
+      )}
       <Field label="Pattern">
         <Select value={pattern} onChange={(v) => setPattern(v as Pattern)}>
           {Object.entries(PATTERN_LABEL).map(([value, label]) => (
@@ -322,29 +372,6 @@ function CustomForm({
           ))}
         </Select>
       </Field>
-      <Field label="Equipment">
-        <Select value={equipment} onChange={(v) => setEquipment(v as Equipment)}>
-          {EQUIPMENTS.map((value) => (
-            <option key={value} value={value}>
-              {value.replace(/_/g, " ")}
-            </option>
-          ))}
-        </Select>
-      </Field>
-      {showStation && (
-        <StationFields
-          brand={brand}
-          setBrand={setBrand}
-          machineType={machineType}
-          setMachineType={setMachineType}
-          brandRequired={isCable}
-          showType={isMachine}
-        />
-      )}
-      {error && <p className="text-caption text-danger">{error}</p>}
-      <Button type="button" className="w-full" pending={pending} onClick={confirm}>
-        Create exercise
-      </Button>
     </FormShell>
   );
 }
@@ -420,15 +447,17 @@ function FormShell({
   subtitle,
   onBack,
   children,
+  footer,
 }: {
   title: string;
   subtitle?: string;
   onBack: () => void;
   children: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   return (
     <>
-      <div className="flex items-center gap-2 border-b border-border px-3 pb-3">
+      <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 pb-3">
         <button type="button" onClick={onBack} className="px-2 py-2 text-body text-muted">
           ← Back
         </button>
@@ -437,7 +466,12 @@ function FormShell({
           {subtitle ? <p className="truncate text-caption text-muted">{subtitle}</p> : null}
         </div>
       </div>
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto overscroll-contain p-4">
+          {children}
+        </div>
+        {footer ? <div className="shrink-0 border-t border-border p-4">{footer}</div> : null}
+      </div>
     </>
   );
 }

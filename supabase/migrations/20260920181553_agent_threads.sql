@@ -2,7 +2,7 @@
 -- survive a reload. The UI reads the full transcript; the model only sees last N.
 
 create table public.agent_thread (
-  id         uuid primary key default uuid_generate_v4(),
+  id         uuid primary key default gen_random_uuid(),
   user_id    uuid not null references auth.users on delete cascade,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -10,7 +10,7 @@ create table public.agent_thread (
 );
 
 create table public.agent_message (
-  id         uuid primary key default uuid_generate_v4(),
+  id         uuid primary key default gen_random_uuid(),
   thread_id  uuid not null references public.agent_thread on delete cascade,
   user_id    uuid not null references auth.users on delete cascade,
   role       text not null,

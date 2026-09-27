@@ -79,7 +79,7 @@ export async function startTurn(
     appendReply: async (messages) => {
       const saved: AgentMessage[] = [];
       for (const message of messages) {
-        saved.push(await insertMessage(supabase, userId, thread.id, message));
+        saved.push(await saveMessage(supabase, userId, thread.id, message));
       }
       return saved;
     },
@@ -93,7 +93,7 @@ async function openThread(supabase: Client, userId: string, text: string) {
   const created = await supabase.from("agent_thread").insert({ id, user_id: userId, title });
   if (created.error) throw new Error(created.error.message);
   try {
-    const userMessage = await insertMessage(supabase, userId, id, userText(text));
+    const userMessage = await saveMessage(supabase, userId, id, userText(text));
     return { thread: { id, title, updatedAt: userMessage.createdAt }, userMessage };
   } catch (error) {
     await supabase.from("agent_thread").delete().eq("id", id).eq("user_id", userId);
@@ -104,7 +104,7 @@ async function openThread(supabase: Client, userId: string, text: string) {
 async function continueThread(supabase: Client, userId: string, threadId: ThreadId, text: string) {
   const thread = await findThread(supabase, userId, threadId);
   if (!thread) return null;
-  const userMessage = await insertMessage(supabase, userId, thread.id, userText(text));
+  const userMessage = await saveMessage(supabase, userId, thread.id, userText(text));
   return { thread: { ...thread, updatedAt: userMessage.createdAt }, userMessage };
 }
 
@@ -153,7 +153,17 @@ async function loadTranscript(supabase: Client, userId: string, threadId: Thread
   });
 }
 
-/** Also moves the thread's `updated_at` to this message, so the history list sorts by last activity. */
+async function saveMessage(
+  supabase: Client,
+  userId: string,
+  threadId: ThreadId,
+  message: NewMessage,
+) {
+  const saved = await insertMessage(supabase, userId, threadId, message);
+  await stampThreadActivity(supabase, userId, threadId, saved.createdAt);
+  return saved;
+}
+
 async function insertMessage(
   supabase: Client,
   userId: string,
@@ -171,17 +181,25 @@ async function insertMessage(
     .select("id, role, parts, created_at")
     .single();
   if (error || !data) throw new Error(error?.message ?? "Unable to persist agent message");
-  await supabase
-    .from("agent_thread")
-    .update({ updated_at: data.created_at })
-    .eq("id", threadId)
-    .eq("user_id", userId);
   return {
     id: data.id,
     role: data.role as AgentRole,
     parts: parseParts(data.parts),
     createdAt: data.created_at,
   };
+}
+
+async function stampThreadActivity(
+  supabase: Client,
+  userId: string,
+  threadId: ThreadId,
+  updatedAt: string,
+) {
+  await supabase
+    .from("agent_thread")
+    .update({ updated_at: updatedAt })
+    .eq("id", threadId)
+    .eq("user_id", userId);
 }
 
 function userText(text: string): NewMessage {

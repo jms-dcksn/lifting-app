@@ -13,7 +13,6 @@ const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f
 type Row = Record<string, unknown>;
 type Failure = { message: string; code: string };
 
-/** Enough of the Supabase query builder for thread.ts, with the table constraints the migration adds. */
 function memoryStore(options: { failMessageInsert?: boolean } = {}) {
   const tables: Record<string, Row[]> = { agent_thread: [], agent_message: [] };
   let clock = Date.parse("2026-09-27T12:00:00.000Z");

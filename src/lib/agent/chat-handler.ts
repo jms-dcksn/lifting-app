@@ -80,7 +80,6 @@ export function createAgentChatHandlers(deps: {
   return { GET, POST };
 }
 
-/** The body must name its thread: `null` starts one, a UUID continues one. */
 function parseTurnRequest(body: unknown): TurnRequest | null {
   if (!body || typeof body !== "object" || !("threadId" in body)) return null;
   const { text, threadId } = body as { text?: unknown; threadId: unknown };

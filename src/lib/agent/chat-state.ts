@@ -100,7 +100,7 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
   const { screen } = state;
   switch (action.type) {
     case "loaded":
-      return awaits(screen, action.snapshot) ? show(action.snapshot) : state;
+      return isWaitingForSnapshot(screen, action.snapshot) ? show(action.snapshot) : state;
     case "failed":
       if (screen.name === "loading") {
         return { threads: [], screen: { name: "chat", conversation: DRAFT, turn: null }, error: action.error };
@@ -150,8 +150,7 @@ function show(snapshot: AgentChatSnapshot): ChatState {
   };
 }
 
-/** A snapshot lands only on the screen waiting for it, so a late row fetch cannot replace a newer choice. */
-function awaits(screen: ChatScreen, snapshot: AgentChatSnapshot) {
+function isWaitingForSnapshot(screen: ChatScreen, snapshot: AgentChatSnapshot) {
   if (screen.name === "loading") return true;
   return screen.name === "history"
     && screen.opening !== null

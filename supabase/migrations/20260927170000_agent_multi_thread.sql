@@ -1,11 +1,5 @@
--- Many agent threads per user. A thread row is written together with its first
--- message, so its title comes from that message and its id is chosen by the app
--- (the same uuid is the LangSmith metadata.thread_id).
-
 alter table public.agent_thread add column title text;
 
--- Slice 0 created an empty thread whenever the chat opened. Those rows never
--- held a conversation.
 delete from public.agent_thread as thread
 where not exists (
   select 1 from public.agent_message as message where message.thread_id = thread.id

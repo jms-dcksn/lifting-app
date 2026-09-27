@@ -74,7 +74,7 @@ export function AgentChat({
     const { conversation } = screen;
     setDraft("");
     dispatch({ type: "send", optimisticId: `local-${Date.now()}`, text });
-    let saved = false;
+    let userTextStored = false;
     try {
       const response = await fetch("/api/agent/chat", {
         method: "POST",
@@ -88,15 +88,14 @@ export function AgentChat({
         throw new Error(response.status === 503 ? "Coach is not configured." : "Could not send.");
       }
       for await (const streamEvent of readSseEvents(response.body)) {
-        if (streamEvent.type === "thread") saved = true;
+        if (streamEvent.type === "thread") userTextStored = true;
         dispatch({ type: "event", event: streamEvent });
       }
       dispatch({ type: "closed", error: "Connection lost." });
     } catch (caught) {
       dispatch({ type: "closed", error: caught instanceof Error ? caught.message : "Could not send." });
     } finally {
-      // Until the thread event, the server has not saved the message, so hand the text back.
-      if (!saved) setDraft((current) => current || text);
+      if (!userTextStored) setDraft((current) => current || text);
     }
   }
 

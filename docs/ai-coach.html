@@ -303,7 +303,7 @@ parts: message.parts as unknown as Json,</code></pre>
   const created = await supabase.from("agent_thread").insert({ id, user_id: userId, title });
   if (created.error) throw new Error(created.error.message);
   try {
-    const userMessage = await insertMessage(supabase, userId, id, userText(text));
+    const userMessage = await saveMessage(supabase, userId, id, userText(text));
     return { thread: { id, title, updatedAt: userMessage.createdAt }, userMessage };
   } catch (error) {
     await supabase.from("agent_thread").delete().eq("id", id).eq("user_id", userId);
@@ -331,8 +331,7 @@ parts: message.parts as unknown as Json,</code></pre>
 
         <article class="space-y-2">
           <h3 class="font-mono text-sm">src/lib/agent/chat-handler.ts — the body must name its thread</h3>
-          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>/** The body must name its thread: `null` starts one, a UUID continues one. */
-function parseTurnRequest(body: unknown): TurnRequest | null {
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>function parseTurnRequest(body: unknown): TurnRequest | null {
   if (!body || typeof body !== "object" || !("threadId" in body)) return null;
   const { text, threadId } = body as { text?: unknown; threadId: unknown };
   const trimmed = typeof text === "string" ? text.trim() : "";
@@ -345,8 +344,7 @@ function parseTurnRequest(body: unknown): TurnRequest | null {
 
         <article class="space-y-2">
           <h3 class="font-mono text-sm">src/lib/agent/run.ts — one id for LangSmith, no checkpointer</h3>
-          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>// LangSmith groups a conversation's traces by metadata.thread_id. Postgres stays
-// the transcript, so there is no checkpointer and no configurable.thread_id.
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>// LangSmith groups a conversation's traces by metadata.thread_id.
 const run = await agent.streamEvents(
   { messages: toLangChainMessages(windowed) },
   { version: "v3", metadata: { thread_id: input.threadId }, callbacks: input.callbacks },

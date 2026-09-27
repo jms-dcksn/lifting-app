@@ -51,8 +51,7 @@ export async function runAgentTurn(input: {
     ],
   });
 
-  // LangSmith groups a conversation's traces by metadata.thread_id. Postgres stays
-  // the transcript, so there is no checkpointer and no configurable.thread_id.
+  // LangSmith groups a conversation's traces by metadata.thread_id.
   const run = await agent.streamEvents(
     { messages: toLangChainMessages(windowed) },
     { version: "v3", metadata: { thread_id: input.threadId }, callbacks: input.callbacks },

@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { cx } from "@/components/ui/cx";
 import { IconGrid, IconPlay, IconProgram, IconUser } from "@/components/ui/icons";
+import { AgentEntry } from "@/components/agent/agent-entry";
 import { hideAppChrome, isTrackPath } from "@/lib/app-chrome";
 
 const tabs = [
@@ -41,7 +42,12 @@ function ShellFrame({
   return (
     <div className={cx("flex min-h-full flex-col", !hide && "pb-[calc(4.25rem+env(safe-area-inset-bottom))]")}>
       <main className="flex flex-1 flex-col">{children}</main>
-      {!hide && <TabBar pathname={pathname} />}
+      {!hide && (
+        <>
+          {pathname && pathname !== "/coach" && !pathname.startsWith("/coach/") ? <AgentEntry /> : null}
+          <TabBar pathname={pathname} />
+        </>
+      )}
     </div>
   );
 }

@@ -708,6 +708,12 @@ Gym logging already hides chrome (`hideAppChrome`); the agent entry follows that
 it does not fight set entry. Stream protocol may follow LangChain / agent-chat-ui; visual
 language stays this app’s primitives.
 
+**Replies are markdown, not a typed UI protocol.** The sheet is a conversation: you on
+the right, Coach on the left, with the calibrate accent marking the two sides. The model
+writes paragraphs, bold, and bullets; the client renders that subset and lifts one
+`Source:` line under the bubble. A structured card schema waits until a reply needs an
+action, such as the Slice 1 confirm chip. Record gold stays on actual records.
+
 **Period data stays off-limits** until a separate opt-in, matching the Coach V1 export
 exclusion and Settings consent copy.
 

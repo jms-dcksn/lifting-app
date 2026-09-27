@@ -18,11 +18,21 @@ the 2026-09-13 documentation review.
 | `SUPABASE_SECRET_KEY` | Server-only weekly Coach loader; bypasses RLS |
 | `COACH_API_USER_ID` | Weekly API's sole allowed account |
 | `COACH_API_TOKEN` | Weekly API capability authentication |
+| `AI_GATEWAY_API_KEY` | Server-only Vercel AI Gateway key for the in-app agent. Vercel deployments may use `VERCEL_OIDC_TOKEN` instead |
+| `LANGSMITH_API_KEY` | Server-only LangSmith key. Agent traces go here |
+| `LANGSMITH_TRACING` | Set `true` to emit traces. The route also enables this when a LangSmith key is present |
+| `LANGSMITH_PROJECT` | Dedicated project name. Default and recommended: `lifting-app-agent` |
+| `AGENT_MODEL` | Optional Gateway model id (`provider/model`). Default `openai/gpt-5.4` |
 
-The first two are required for the app and exposed in the browser bundle. The remaining
-three enable the private weekly API and must stay server-only. Without valid Coach
-configuration, the endpoint returns 503. See [Coach API](docs/COACH-REPORT.md#weekly-coach-api)
+The first two are required for the app and exposed in the browser bundle. The Coach
+trio enables the private weekly API and must stay server-only. Without valid Coach
+configuration, that endpoint returns 503. See [Coach API](docs/COACH-REPORT.md#weekly-coach-api)
 for high-entropy token requirements, supported auth, privacy, and rotation.
+
+The AI Coach / agent keys are also server-only. Never prefix them with `NEXT_PUBLIC_`.
+Without a Gateway key (or OIDC token), `POST /api/agent/chat` returns 503. Apply the
+`agent_thread` / `agent_message` migration before dogfooding chat. Use the dedicated
+LangSmith project `lifting-app-agent`; do not share it with other apps.
 
 Keep real values in ignored `.env.local` or Vercel environment settings. Configure Production
 and Preview separately; verify which database a preview uses before writing test data.

@@ -6,14 +6,16 @@ import { CoachMarkdown } from "./coach-markdown";
 
 export function AgentTranscript({
   messages,
+  pendingText,
   streamingText,
   pendingTool,
 }: {
   messages: AgentMessage[];
+  pendingText?: string;
   streamingText?: string;
   pendingTool?: string | null;
 }) {
-  if (messages.length === 0 && !streamingText && !pendingTool) {
+  if (messages.length === 0 && !pendingText && !streamingText && !pendingTool) {
     return <p className="text-body text-muted">Ask how this week went.</p>;
   }
 
@@ -26,6 +28,11 @@ export function AgentTranscript({
           </li>
         ),
       )}
+      {pendingText ? (
+        <li>
+          <YouBubble text={pendingText} />
+        </li>
+      ) : null}
       {pendingTool ? (
         <li className="text-caption text-faint">Looking up {toolLabel(pendingTool)}</li>
       ) : null}
@@ -42,22 +49,23 @@ function AgentBubble({ message }: { message: AgentMessage }) {
   const text = textFromParts(message.parts);
   const tools = message.parts.flatMap((part) => (part.type === "tool-call" ? [part.name] : []));
   if (message.role === "tool") return null;
-  if (message.role === "user") {
-    if (!text) return null;
-    return (
-      <div className="ml-auto flex max-w-[92%] flex-col items-end gap-1.5">
-        <p className="text-caption font-semibold uppercase tracking-wide text-calibrate">You</p>
-        <p className="rounded-card bg-accent px-3 py-2.5 text-left text-body whitespace-pre-wrap text-accent-foreground">
-          {text}
-        </p>
-      </div>
-    );
-  }
+  if (message.role === "user") return text ? <YouBubble text={text} /> : null;
   if (!text) {
     if (tools.length === 0) return null;
     return <p className="text-caption text-faint">Checked {tools.map(toolLabel).join(" · ")}</p>;
   }
   return <CoachReply text={text} tools={tools} />;
+}
+
+function YouBubble({ text }: { text: string }) {
+  return (
+    <div className="ml-auto flex max-w-[92%] flex-col items-end gap-1.5">
+      <p className="text-caption font-semibold uppercase tracking-wide text-calibrate">You</p>
+      <p className="rounded-card bg-accent px-3 py-2.5 text-left text-body whitespace-pre-wrap text-accent-foreground">
+        {text}
+      </p>
+    </div>
+  );
 }
 
 function CoachReply({ text, tools = [] }: { text: string; tools?: string[] }) {

@@ -1,11 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import { enableLangSmithTracing, gatewayApiKey } from "./policy";
-import { appendMessage, getOrCreateThread, loadThreadMessages } from "./thread";
+import { parseChatSelection, parseThreadId, type TurnRequest } from "./chat-state";
+import { loadChat, startTurn } from "./thread";
 import { bindReadTools } from "./tools";
 import { runAgentTurn } from "./run";
 import { encodeSse, type AgentStreamEvent } from "./stream";
-import type { AgentMessage } from "./messages";
 
 type Client = SupabaseClient<Database>;
 
@@ -23,9 +23,11 @@ export function createAgentChatHandlers(deps: {
   async function GET(request: Request) {
     const { supabase, userId } = await deps.auth(request);
     if (!userId) return json({ error: "Unauthorized" }, 401);
-    const thread = await getOrCreateThread(supabase, userId);
-    const messages = await loadThreadMessages(supabase, thread.id);
-    return json({ messages }, 200);
+    const selection = parseChatSelection(new URL(request.url).searchParams.get("thread"));
+    if (!selection) return json({ error: "Invalid request" }, 400);
+    const snapshot = await loadChat(supabase, userId, selection);
+    if (!snapshot) return json({ error: "Not found" }, 404);
+    return json(snapshot, 200);
   }
 
   async function POST(request: Request) {
@@ -33,27 +35,12 @@ export function createAgentChatHandlers(deps: {
     if (!userId) return json({ error: "Unauthorized" }, 401);
     if (!gatewayApiKey()) return json({ error: "Service unavailable" }, 503);
 
-    let text = "";
-    try {
-      const body = await request.json() as { text?: unknown };
-      text = typeof body.text === "string" ? body.text.trim() : "";
-    } catch {
-      return json({ error: "Invalid request" }, 400);
-    }
-    if (!text) return json({ error: "Message required" }, 400);
+    const turnRequest = parseTurnRequest(await request.json().catch(() => null));
+    if (!turnRequest) return json({ error: "Invalid request" }, 400);
 
     enableLangSmithTracing();
-    const thread = await getOrCreateThread(supabase, userId);
-    const userMessage = await appendMessage(supabase, {
-      threadId: thread.id,
-      userId,
-      role: "user",
-      parts: [{ type: "text", text }],
-    });
-    const persisted = [...await loadThreadMessages(supabase, thread.id)];
-    if (!persisted.some((message) => message.id === userMessage.id)) {
-      persisted.push(userMessage);
-    }
+    const turn = await startTurn(supabase, userId, turnRequest);
+    if (!turn) return json({ error: "Not found" }, 404);
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -62,21 +49,15 @@ export function createAgentChatHandlers(deps: {
           controller.enqueue(encoder.encode(encodeSse(event)));
         };
         try {
+          send({ type: "thread", thread: turn.thread, userMessage: turn.userMessage });
           const generated = await runTurn({
-            persisted,
+            persisted: turn.transcript,
+            threadId: turn.thread.id,
             tools: bindReadTools(supabase, userId),
             onEvent: send,
           });
-          const saved: AgentMessage[] = [];
-          for (const message of generated) {
-            saved.push(await appendMessage(supabase, {
-              threadId: thread.id,
-              userId,
-              role: message.role,
-              parts: message.parts,
-            }));
-          }
-          send({ type: "done", messages: [userMessage, ...saved] });
+          const saved = await turn.appendReply(generated);
+          send({ type: "done", messages: [turn.userMessage, ...saved] });
         } catch (error) {
           const message = error instanceof Error ? error.message : "Agent failed";
           send({ type: "error", message });
@@ -97,6 +78,17 @@ export function createAgentChatHandlers(deps: {
   }
 
   return { GET, POST };
+}
+
+/** The body must name its thread: `null` starts one, a UUID continues one. */
+function parseTurnRequest(body: unknown): TurnRequest | null {
+  if (!body || typeof body !== "object" || !("threadId" in body)) return null;
+  const { text, threadId } = body as { text?: unknown; threadId: unknown };
+  const trimmed = typeof text === "string" ? text.trim() : "";
+  if (!trimmed) return null;
+  if (threadId === null) return { kind: "new", text: trimmed };
+  const id = parseThreadId(threadId);
+  return id ? { kind: "continue", threadId: id, text: trimmed } : null;
 }
 
 function json(body: unknown, status: number) {

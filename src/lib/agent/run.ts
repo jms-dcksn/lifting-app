@@ -1,5 +1,6 @@
 import { createAgent, toolCallLimitMiddleware } from "langchain";
 import { ChatOpenAI } from "@langchain/openai";
+import type { Callbacks } from "@langchain/core/callbacks/manager";
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import type { StructuredToolInterface } from "@langchain/core/tools";
 import {
@@ -30,8 +31,10 @@ export function createGatewayModel() {
 
 export async function runAgentTurn(input: {
   persisted: AgentMessage[];
+  threadId: string;
   tools: StructuredToolInterface[];
   model?: BaseChatModel;
+  callbacks?: Callbacks;
   onEvent?: (event: AgentStreamEvent) => void;
 }): Promise<Array<Omit<AgentMessage, "id" | "createdAt">>> {
   const windowed = selectModelMessages(input.persisted);
@@ -48,9 +51,11 @@ export async function runAgentTurn(input: {
     ],
   });
 
+  // LangSmith groups a conversation's traces by metadata.thread_id. Postgres stays
+  // the transcript, so there is no checkpointer and no configurable.thread_id.
   const run = await agent.streamEvents(
     { messages: toLangChainMessages(windowed) },
-    { version: "v3" },
+    { version: "v3", metadata: { thread_id: input.threadId }, callbacks: input.callbacks },
   );
 
   const emit = input.onEvent ?? (() => {});

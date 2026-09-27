@@ -138,7 +138,7 @@ export function IconSend({ size }: IconProps) {
   return (
     <Svg size={size}>
       <path
-        d="M5 12h14M13 6l6 6-6 6"
+        d="M12 19V5M6 11l6-6 6 6"
         stroke="currentColor"
         strokeWidth="1.75"
         strokeLinecap="round"

@@ -3,6 +3,7 @@
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { AgentChat } from "@/components/agent/agent-chat";
 import { AgentTranscript } from "@/components/agent/agent-transcript";
 import { hideAppChrome } from "@/lib/app-chrome";
 
@@ -98,5 +99,37 @@ describe("agent chrome", () => {
     expect(coach?.textContent).toContain("Track Coach / Coach check-in");
     expect(coach?.textContent).not.toContain("**");
     expect([...host.querySelectorAll(".uppercase")].map((node) => node.textContent)).toEqual(["You", "Coach"]);
+  });
+
+  it("opens on the latest message with the composer still on screen", () => {
+    const scrollHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollHeight");
+    const clientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientHeight");
+    Object.defineProperty(HTMLElement.prototype, "scrollHeight", { configurable: true, get: () => 900 });
+    Object.defineProperty(HTMLElement.prototype, "clientHeight", { configurable: true, get: () => 200 });
+    try {
+      act(() => {
+        root.render(
+          <AgentChat
+            variant="sheet"
+            initialMessages={[{
+              id: "1",
+              role: "user",
+              createdAt: "2026-09-27T00:00:00.000Z",
+              parts: [{ type: "text", text: "latest" }],
+            }]}
+          />,
+        );
+      });
+      const scroller = host.querySelector(".overflow-y-auto");
+      const form = host.querySelector("form");
+      expect(scroller?.scrollTop).toBe(900);
+      expect(scroller?.contains(form)).toBe(false);
+      expect(host.querySelector("a")?.textContent).toBe("Full screen");
+      expect(host.querySelector("input")?.hasAttribute("disabled")).toBe(false);
+      expect(host.querySelector("button[aria-label='Send'] path")?.getAttribute("d")).toBe("M12 19V5M6 11l6-6 6 6");
+    } finally {
+      if (scrollHeight) Object.defineProperty(HTMLElement.prototype, "scrollHeight", scrollHeight);
+      if (clientHeight) Object.defineProperty(HTMLElement.prototype, "clientHeight", clientHeight);
+    }
   });
 });

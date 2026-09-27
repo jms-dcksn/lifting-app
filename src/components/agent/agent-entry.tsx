@@ -38,7 +38,7 @@ export function AgentEntry() {
         <IconChat />
       </IconButton>
       {open ? (
-        <Sheet onClose={() => setOpen(false)} ariaLabel="Coach" className="h-[85dvh]">
+        <Sheet onClose={() => setOpen(false)} ariaLabel="Coach" className="flex h-[85dvh] min-h-0 flex-col overflow-hidden">
           {messages ? (
             <AgentChat initialMessages={messages} variant="sheet" />
           ) : (

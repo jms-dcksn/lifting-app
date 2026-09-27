@@ -54,10 +54,11 @@ those functions; they are not the public interface. Policy (`period` excluded, w
 allow-list, tool-call budget) lives in one module and is applied by the route.
 
 Streaming UI uses existing primitives (`Sheet`, `IconButton`, type scale, copy density).
-Your turns sit on the right; Coach sits on the left. The model writes markdown, and the
-sheet renders bold, lists, and gain percents. A single trailing `Source:` line is lifted
-under the Coach bubble. Take stream/message protocol from LangChain / agent-chat-ui; do
-not take that chrome.
+Your turns sit on the right; Coach sits on the left. The sheet and `/coach` open on the
+latest message, and the composer stays pinned. The model writes markdown, and the sheet
+renders bold, lists, and gain percents. A single trailing `Source:` line is lifted under
+the Coach bubble. The sheet link to `/coach` reads Full screen. Take stream/message
+protocol from LangChain / agent-chat-ui; do not take that chrome.
 
 ### Schema (Slice 0)
 

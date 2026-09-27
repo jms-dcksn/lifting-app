@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
+import { useLayoutEffect, useRef, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import Link from "next/link";
 import { IconSend } from "@/components/ui/icons";
 import { IconButton } from "@/components/ui/icon-button";
@@ -22,10 +22,13 @@ export function AgentChat({
   const [streamingText, setStreamingText] = useState("");
   const [pendingTool, setPendingTool] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const bottom = useRef<HTMLDivElement>(null);
+  const scroller = useRef<HTMLDivElement>(null);
+  const stickToEnd = useRef(true);
 
-  useEffect(() => {
-    bottom.current?.scrollIntoView({ block: "end" });
+  useLayoutEffect(() => {
+    const node = scroller.current;
+    if (!node || !stickToEnd.current) return;
+    node.scrollTop = node.scrollHeight;
   }, [messages, streamingText, pendingTool]);
 
   async function send(event?: FormEvent) {
@@ -88,33 +91,39 @@ export function AgentChat({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {variant === "sheet" ? (
-        <div className="flex items-center justify-between px-4 pb-3">
+        <div className="flex shrink-0 items-center justify-between px-4 pb-3">
           <h2 className="text-heading">Coach</h2>
           <Link href="/coach" className="min-h-11 py-2 text-body text-muted">
-            Full thread
+            Full screen
           </Link>
         </div>
       ) : null}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4">
+      <div
+        ref={scroller}
+        className="min-h-0 flex-1 overflow-y-auto px-4"
+        onScroll={() => {
+          const node = scroller.current;
+          if (!node) return;
+          stickToEnd.current = node.scrollHeight - node.scrollTop - node.clientHeight < 48;
+        }}
+      >
         <AgentTranscript
           messages={messages}
           streamingText={streamingText}
           pendingTool={pendingTool}
         />
-        <div ref={bottom} />
       </div>
-      <form onSubmit={send} className="flex items-center gap-2 px-4 py-3">
+      <form onSubmit={send} className="flex shrink-0 items-center gap-2 bg-background px-4 py-3">
         <Input
           aria-label="Message"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
-          disabled={pending}
         />
         <IconButton type="submit" aria-label="Send" pending={pending} disabled={!draft.trim()}>
           <IconSend />
         </IconButton>
       </form>
-      {error ? <p className="px-4 pb-3 text-caption text-danger">{error}</p> : null}
+      {error ? <p className="shrink-0 px-4 pb-3 text-caption text-danger">{error}</p> : null}
     </div>
   );
 }

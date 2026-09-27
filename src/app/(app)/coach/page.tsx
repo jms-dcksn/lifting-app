@@ -13,8 +13,8 @@ export default async function AgentCoachPage() {
   const messages = await loadThreadMessages(supabase, thread.id);
 
   return (
-    <div className="mx-auto flex w-full max-w-page flex-1 flex-col px-4 py-6">
-      <h1 className="text-display">Coach</h1>
+    <div className="mx-auto flex h-[calc(100dvh-4.25rem-env(safe-area-inset-bottom))] w-full max-w-page min-h-0 flex-col overflow-hidden px-4 pt-6">
+      <h1 className="shrink-0 text-display">Coach</h1>
       <AgentChat initialMessages={messages} variant="page" />
     </div>
   );

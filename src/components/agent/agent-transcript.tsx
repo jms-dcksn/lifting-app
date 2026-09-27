@@ -1,6 +1,8 @@
 "use client";
 
+import { splitCoachReply } from "@/lib/agent/markdown";
 import { textFromParts, type AgentMessage } from "@/lib/agent/messages";
+import { CoachMarkdown } from "./coach-markdown";
 
 export function AgentTranscript({
   messages,
@@ -17,18 +19,19 @@ export function AgentTranscript({
 
   return (
     <ol className="flex flex-col gap-4">
-      {messages.map((message) => (
-        <li key={message.id}>
-          <AgentBubble message={message} />
-        </li>
-      ))}
+      {messages.map((message) =>
+        message.role === "tool" ? null : (
+          <li key={message.id}>
+            <AgentBubble message={message} />
+          </li>
+        ),
+      )}
       {pendingTool ? (
-        <li className="text-caption text-muted">Looking up {toolLabel(pendingTool)}</li>
+        <li className="text-caption text-faint">Looking up {toolLabel(pendingTool)}</li>
       ) : null}
       {streamingText ? (
         <li>
-          <p className="text-caption text-muted">Coach</p>
-          <p className="text-body whitespace-pre-wrap">{streamingText}</p>
+          <CoachReply text={streamingText} />
         </li>
       ) : null}
     </ol>
@@ -37,18 +40,40 @@ export function AgentTranscript({
 
 function AgentBubble({ message }: { message: AgentMessage }) {
   const text = textFromParts(message.parts);
-  const tools = message.parts.flatMap((part) => {
-    if (part.type === "tool-call") return [part.name];
-    return [];
-  });
+  const tools = message.parts.flatMap((part) => (part.type === "tool-call" ? [part.name] : []));
   if (message.role === "tool") return null;
+  if (message.role === "user") {
+    if (!text) return null;
+    return (
+      <div className="ml-auto flex max-w-[92%] flex-col items-end gap-1.5">
+        <p className="text-caption font-semibold uppercase tracking-wide text-calibrate">You</p>
+        <p className="rounded-card bg-accent px-3 py-2.5 text-left text-body whitespace-pre-wrap text-accent-foreground">
+          {text}
+        </p>
+      </div>
+    );
+  }
+  if (!text) {
+    if (tools.length === 0) return null;
+    return <p className="text-caption text-faint">Checked {tools.map(toolLabel).join(" · ")}</p>;
+  }
+  return <CoachReply text={text} tools={tools} />;
+}
+
+function CoachReply({ text, tools = [] }: { text: string; tools?: string[] }) {
+  const { body, sources } = splitCoachReply(text);
   return (
-    <div>
-      <p className="text-caption text-muted">{message.role === "user" ? "You" : "Coach"}</p>
+    <div className="mr-auto flex max-w-[92%] flex-col items-start gap-1.5">
       {tools.length > 0 ? (
-        <p className="text-caption text-muted">{tools.map(toolLabel).join(" · ")}</p>
+        <p className="text-caption text-faint">Checked {tools.map(toolLabel).join(" · ")}</p>
       ) : null}
-      {text ? <p className="text-body whitespace-pre-wrap">{text}</p> : null}
+      <p className="text-caption font-semibold uppercase tracking-wide">Coach</p>
+      {body ? (
+        <div className="relative overflow-hidden rounded-card border border-border-strong bg-surface px-3 py-2.5 text-body before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-calibrate">
+          <CoachMarkdown body={body} />
+        </div>
+      ) : null}
+      {sources.length > 0 ? <p className="text-caption text-faint">{sources.join(" · ")}</p> : null}
     </div>
   );
 }

@@ -54,7 +54,10 @@ those functions; they are not the public interface. Policy (`period` excluded, w
 allow-list, tool-call budget) lives in one module and is applied by the route.
 
 Streaming UI uses existing primitives (`Sheet`, `IconButton`, type scale, copy density).
-Take stream/message protocol from LangChain / agent-chat-ui; do not take that chrome.
+Your turns sit on the right; Coach sits on the left. The model writes markdown, and the
+sheet renders bold, lists, and gain percents. A single trailing `Source:` line is lifted
+under the Coach bubble. Take stream/message protocol from LangChain / agent-chat-ui; do
+not take that chrome.
 
 ### Schema (Slice 0)
 
@@ -100,7 +103,7 @@ Build in order. A later slice may add tools; it may not weaken an invariant.
     exercise plus equipment instance.
   - `nextWorkout` → `loadNextWorkout` plus the same `sessionTarget()` hydration the
     session screen uses, so “why is this target X?” matches Home / planner / Start.
-- System prompt: answer from tool results; name the figure’s source; decline medical
+- System prompt: answer from tool results; name the source once on a final `Source:` line; decline medical
   diagnosis (pain stays a review prompt, as Coach already does).
 - ~20 labeled eval questions you grade: expected tool(s) and cited numbers against
   fixtures. Co-locate under `src/lib/agent/`.

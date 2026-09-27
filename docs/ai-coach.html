@@ -57,7 +57,8 @@ flowchart LR
         <p class="text-slate-700 max-w-3xl">
           The model is not allowed to invent adherence. It must call <code class="font-mono text-sm">weeklyCoach</code>,
           which calls <code class="font-mono text-sm">loadCoachUi</code> — the same function Track Coach uses.
-          The answer then names that source.
+          The answer is markdown. It ends with one <code class="font-mono text-sm">Source:</code> line.
+          The sheet lifts that line out of the bubble so it is not repeated under every figure.
         </p>
         <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
           <pre class="mermaid">
@@ -73,7 +74,7 @@ sequenceDiagram
   Agent->>Tool: weeklyCoach
   Tool->>Coach: user-scoped client
   Coach-->>Agent: report + proposals
-  Agent-->>You: “3/4 this week (weeklyCoach / Track Coach)”
+  Agent-->>You: markdown reply, then one Source line
   Route->>Route: persist assistant + tool parts
           </pre>
         </div>
@@ -175,6 +176,67 @@ export const TOOL_CALL_BUDGET = 8;</code></pre>
 
 // appendMessage writes role + parts JSON onto agent_message
 parts: input.parts as unknown as Json</code></pre>
+        </article>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="font-serif text-2xl">How the sheet shows the reply</h2>
+        <p class="text-slate-700 max-w-3xl">
+          The transcript is a conversation, not a second Coach report. Your words sit on the
+          right in the accent fill. Coach sits on the left. A tool lookup is a quiet
+          “Checked …” line, not another speaker. The model still sends markdown text. The
+          client renders bold, bullets, and a green gain percent, and moves a final
+          <code class="font-mono text-sm">Source:</code> line under the bubble.
+        </p>
+        <div class="max-w-sm rounded-2xl border border-slate-300 bg-slate-950 text-stone-100 p-4 space-y-3 text-sm">
+          <div class="text-right space-y-1">
+            <p class="text-[11px] font-semibold tracking-wide text-amber-300">YOU</p>
+            <p class="inline-block rounded-xl bg-white text-slate-950 px-3 py-2">How did this week go</p>
+          </div>
+          <p class="text-xs text-slate-500">Checked this week’s Coach report</p>
+          <div class="space-y-1">
+            <p class="text-[11px] font-semibold tracking-wide">COACH</p>
+            <div class="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 border-l-4 border-l-amber-300">
+              <p>This week went solidly — <strong>4/4 sessions</strong> completed.</p>
+            </div>
+            <p class="text-xs text-slate-500">Track Coach / Coach check-in</p>
+          </div>
+        </div>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/markdown.ts — one source, then the body</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const SOURCE_LINE = /^(?:\*\*)?Source:\s*(.+?)(?:\*\*)?\s*$/i;
+
+export function splitCoachReply(text: string): { body: string; sources: string[] } {
+  const sources: string[] = [];
+  const kept: string[] = [];
+  for (const line of text.split("\n")) {
+    const match = line.trim().match(SOURCE_LINE);
+    if (!match) {
+      kept.push(line);
+      continue;
+    }
+    const source = match[1].replace(/\*\*/g, "").trim();
+    if (source) sources.push(source);
+  }
+  return { body: kept.join("\n").replace(/\n{3,}/g, "\n\n").trim(), sources };
+}</code></pre>
+        </article>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/components/agent/agent-transcript.tsx — sides and the accent</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>&lt;p className="text-caption font-semibold uppercase tracking-wide text-calibrate"&gt;You&lt;/p&gt;
+&lt;p className="rounded-card bg-accent px-3 py-2.5 text-left text-body whitespace-pre-wrap text-accent-foreground"&gt;
+  {text}
+&lt;/p&gt;
+
+&lt;p className="text-caption font-semibold uppercase tracking-wide"&gt;Coach&lt;/p&gt;
+&lt;div className="relative overflow-hidden rounded-card border border-border-strong bg-surface px-3 py-2.5 text-body before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-calibrate"&gt;
+  &lt;CoachMarkdown body={body} /&gt;
+&lt;/div&gt;
+{sources.length &gt; 0 ? &lt;p className="text-caption text-faint"&gt;{sources.join(" · ")}&lt;/p&gt; : null}</code></pre>
+          <p class="text-sm text-slate-600">
+            The accent is the calibrate token. Record gold stays on actual records. A typed
+            card schema waits until a reply needs an action, such as the Slice 1 confirm chip.
+          </p>
         </article>
       </section>
 

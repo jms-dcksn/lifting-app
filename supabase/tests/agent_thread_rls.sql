@@ -1,16 +1,16 @@
 begin;
 
-select plan(8);
+select plan(11);
 
 insert into auth.users (id, email)
 values
   ('51000000-0000-0000-0000-000000000001', 'agent-owner@example.test'),
   ('52000000-0000-0000-0000-000000000002', 'agent-other@example.test');
 
-insert into public.agent_thread (id, user_id)
+insert into public.agent_thread (id, user_id, title)
 values
-  ('51000000-0000-0000-0000-000000000011', '51000000-0000-0000-0000-000000000001'),
-  ('52000000-0000-0000-0000-000000000022', '52000000-0000-0000-0000-000000000002');
+  ('51000000-0000-0000-0000-000000000011', '51000000-0000-0000-0000-000000000001', 'how was this week?'),
+  ('52000000-0000-0000-0000-000000000022', '52000000-0000-0000-0000-000000000002', 'secret');
 
 insert into public.agent_message (id, thread_id, user_id, role, parts)
 values
@@ -60,7 +60,7 @@ select is(
 );
 
 select throws_ok(
-  $$insert into public.agent_thread (user_id) values ('52000000-0000-0000-0000-000000000002')$$,
+  $$insert into public.agent_thread (id, user_id, title) values ('52000000-0000-0000-0000-000000000033', '52000000-0000-0000-0000-000000000002', 'nope')$$,
   '42501',
   null,
   'a user cannot create a thread for another user'
@@ -73,11 +73,30 @@ select throws_ok(
   'a user cannot insert a message for another user'
 );
 
+select lives_ok(
+  $$insert into public.agent_thread (id, user_id, title) values ('51000000-0000-0000-0000-000000000012', '51000000-0000-0000-0000-000000000001', 'second chat')$$,
+  'a user may start a second thread'
+);
+
 select throws_ok(
-  $$insert into public.agent_thread (user_id) values ('51000000-0000-0000-0000-000000000001')$$,
-  '23505',
+  $$insert into public.agent_thread (user_id, title) values ('51000000-0000-0000-0000-000000000001', 'no id')$$,
+  '23502',
   null,
-  'a user may have only one agent thread'
+  'a thread insert must supply the app-chosen id'
+);
+
+select throws_ok(
+  $$insert into public.agent_message (thread_id, user_id, role, parts) values ('52000000-0000-0000-0000-000000000022', '51000000-0000-0000-0000-000000000001', 'user', '[{"type":"text","text":"sneak"}]'::jsonb)$$,
+  '23503',
+  null,
+  'a user cannot attach their own message to another user''s thread'
+);
+
+select throws_ok(
+  $$update public.agent_message set thread_id = '52000000-0000-0000-0000-000000000022' where id = '51000000-0000-0000-0000-000000000111'$$,
+  '23503',
+  null,
+  'a user cannot move their own message onto another user''s thread'
 );
 
 update public.agent_message

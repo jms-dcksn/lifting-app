@@ -5,8 +5,10 @@ replace it. Track Coach (`/analytics/coach`), `CoachCheckInReport`, and
 `GET /api/coach/v1/weekly` stay the factual check-in and private export. The agent is the
 language, intake, navigation, and draft layer on top of existing loaders and actions.
 
-**Status:** Slice 0 shipped 2026-09-20. Later slices are still specified, not built.
-Rationale lives in [Decisions](DECISIONS.md#ai-coach-2026-09-20). The teaching surface
+**Status:** Slice 0 shipped 2026-09-20. Chat became multi-thread on 2026-09-27
+([Threads](#threads)). Later slices are still specified, not built. Rationale lives in
+[Decisions](DECISIONS.md#ai-coach-2026-09-20) and
+[AI Coach threads](DECISIONS.md#ai-coach-threads-2026-09-27). The teaching surface
 is [ai-coach.html](ai-coach.html) — update that HTML whenever agent behavior changes.
 
 Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/coach`,
@@ -21,13 +23,13 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 | Runtime | TypeScript in this Next.js app. No Python service. |
 | Library | LangChain TypeScript for the agent loop and ecosystem. Tools and prompts are plain TS so the loop can change. Deep Agents is out until Slice 5. |
 | Writes | None in Slice 0. Drafts in Slice 2. Confirm-chip `startNextSession` may land in Slice 1. Live mutations wait for Slice 4. |
-| Surface | Persistent entry + `Sheet` on Lift / Track / Program / You. Full thread at `/coach`. No fifth tab. Hidden wherever `hideAppChrome` is true. |
+| Surface | Persistent entry + `Sheet` on Lift / Track / Program / You. Full screen at `/coach?thread=`. Both carry chat history and New chat. No fifth tab. Hidden wherever `hideAppChrome` is true. |
 | Jev | Skip in Slice 0. Slice 2 uses it to classify program constraints, not to emit a program. |
 | Models | Vercel AI Gateway, server-only. LangSmith is the trace sink. |
 | Data | Logged-in user client + RLS. Domain tools wrap existing loaders. Not the weekly Coach secret, not a generic SQL tool, not embeddings over `set_log`. |
 | Authority | Engine owns numbers and prescriptions. Agent owns language, intake, drafts, and navigation. |
 | Privacy | Period observations stay out unless a later, separate opt-in. Same default as Coach. |
-| Context | Full transcript in Postgres. Each model turn gets system prompt + last N messages. No summarization, compaction, or distilled user-memory in Slice 0. |
+| Context | Full transcript per thread in Postgres. Each model turn gets system prompt + that thread's last N messages. No summarization, compaction, or distilled user-memory in Slice 0. |
 
 ## Invariants
 
@@ -43,10 +45,10 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 ## Module
 
 ```
-src/lib/agent/           tools, policy, prompts, thread helpers
-src/app/api/agent/chat/  auth-gated streaming route
-src/app/(app)/coach/     full-thread page
-src/components/agent/    Sheet, transcript, persistent entry
+src/lib/agent/           tools, policy, prompts, threads, chat state
+src/app/api/agent/chat/  auth-gated snapshot (GET) and streaming turn (POST)
+src/app/(app)/coach/     full-screen chat page
+src/components/agent/    chat, transcript, persistent entry + Sheet
 ```
 
 `src/lib/agent/tools/` wraps loaders and actions. LangChain `tool()` adapters sit beside
@@ -54,19 +56,74 @@ those functions; they are not the public interface. Policy (`period` excluded, w
 allow-list, tool-call budget) lives in one module and is applied by the route.
 
 Streaming UI uses existing primitives (`Sheet`, `IconButton`, type scale, copy density).
-Your turns sit on the right; Coach sits on the left. The sheet and `/coach` open on the
-latest message, and the composer stays pinned. The model writes markdown, and the sheet
-renders bold, lists, and gain percents. A single trailing `Source:` line is lifted under
-the Coach bubble. The sheet link to `/coach` reads Full screen. Take stream/message
-protocol from LangChain / agent-chat-ui; do not take that chrome.
+Your turns sit on the right; Coach sits on the left. The sheet and `/coach` open the most
+recent thread at its latest message, and the composer stays pinned. The model writes
+markdown, and the sheet renders bold, lists, and gain percents. A single trailing
+`Source:` line is lifted under the Coach bubble. The header holds Coach, Chat history,
+and New chat. The sheet adds Full screen, which opens the same conversation at
+`/coach?thread=<id>` (a draft opens `/coach?thread=new`). Chat history, New chat, and
+Full screen are disabled while a turn streams. Take stream/message protocol from
+LangChain / agent-chat-ui; do not take that chrome.
 
-### Schema (Slice 0)
+### Threads
 
 Owner-scoped `agent_thread` and `agent_message` with the same RLS pattern as other
-user tables. Slice 0 get-or-creates one thread per user and **persists every message**.
-Message `parts` are stored as JSON so tool calls survive a reload. The UI reads this
-full history. The model does not: the chat route loads last N messages (`CONTEXT_MESSAGE_LIMIT`
-in `src/lib/agent/policy.ts`). pgTAP coverage is `supabase/tests/agent_thread_rls.sql`.
+user tables. A user has many threads, and **every message persists**. Message `parts`
+are stored as JSON so tool calls survive a reload. The UI reads a thread's full
+history. The model does not: the chat route loads that thread's last N messages
+(`CONTEXT_MESSAGE_LIMIT` in `src/lib/agent/policy.ts`), and `selectModelMessages` is
+the only place that cut is made.
+
+- **Draft, then saved.** New chat is a draft with no row, so opening chat or pressing
+  New chat never writes. The first send inserts the thread row, then its first message
+  (`startTurn` in `src/lib/agent/thread.ts`). If that message insert fails, `startTurn`
+  deletes the thread row before rethrowing.
+- **Id and title.** The app picks the thread id with LangSmith `uuid7()`. The same id is
+  the LangSmith `metadata.thread_id`, which groups a conversation's traces. There is no
+  checkpointer and no `configurable.thread_id`; Postgres is the transcript. The title is
+  the first user message with whitespace collapsed and cut to 80 characters, or
+  `New chat` when that is empty (`threadTitleFromUserText`).
+- **Order.** Each message insert moves the thread's `updated_at` to that message's
+  `created_at`. History lists the latest 50 threads by `updated_at desc`
+  (`agent_thread_user_updated_idx`).
+- **Ownership.** `agent_message (thread_id, user_id)` references
+  `agent_thread (id, user_id)` (`agent_message_thread_owner_fkey`, `on delete cascade`).
+  RLS checks only a row's own `user_id`, so without the composite key a caller could
+  point their message at another user's thread id. There is no second RLS `exists`
+  policy.
+- **Migration.** `20260927170000_agent_multi_thread.sql` deletes Slice 0's empty
+  threads, backfills titles from each thread's earliest user text, and replaces the
+  one-thread-per-user key with `agent_thread_id_user_key unique (id, user_id)`.
+
+pgTAP coverage is `supabase/tests/agent_thread_rls.sql`.
+
+**Chat contract.** `src/lib/agent/chat-handler.ts` serves `/api/agent/chat`. Every
+response is no-store and noindex.
+
+| Request | Result |
+| --- | --- |
+| `GET` | The history list and the latest thread, or a draft when there is none. |
+| `GET ?thread=new` | The history list and a draft. |
+| `GET ?thread=<uuid>` | That thread, or 404 when the caller does not own it. |
+| `GET ?thread=<anything else>` | 400. |
+| `POST { text, threadId: null }` | Starts a thread and streams the turn. |
+| `POST { text, threadId: <uuid> }` | Continues the caller's thread, or 404 with no writes. |
+| `POST` without the `threadId` key, with blank text, or with a malformed id | 400 with no writes. |
+| `POST` without a Gateway key | 503 with no writes. |
+
+GET never writes. A turn streams SSE in a fixed order: `thread` (the saved summary and
+user message), then `text` / `tool-start` / `tool-end`, then `done` (the saved
+messages) or `error`.
+
+The client is one reducer (`chatReducer` in `src/lib/agent/chat-state.ts`) over three
+screens: `loading`, `chat` (a conversation plus an optional in-flight turn), and
+`history` (a conversation plus the row being opened). The `thread` event adopts the
+saved id and replaces the optimistic row; `done` merges by message id. `/coach` reads
+`?thread=` (`new`, a thread id, or absent for latest; an unknown or malformed id falls
+back to latest) and mirrors the open conversation into the URL with
+`window.history.replaceState`. A draft's first send therefore moves the URL to
+`/coach?thread=<id>` when the `thread` event arrives, without a server round-trip. The
+sheet fetches its snapshot each time it opens.
 
 ### Env (Slice 0, server-only)
 
@@ -90,9 +147,10 @@ Build in order. A later slice may add tools; it may not weaken an invariant.
 - Auth-gated `POST /api/agent/chat` using `getClaims()` and the cookie Supabase client.
 - LangChain TS agent loop, Gateway model, LangSmith tracing, a tool-call cap.
 - Persistent `IconButton` + `Sheet` on screens where the tab bar shows; `/coach` as the
-  full thread. Hide both entry and Sheet chrome using `hideAppChrome` (session, recap,
-  planner, program new/edit).
-- One persisted thread per user. Keep the full transcript in `agent_message`. On each
+  full-screen chat. Hide both entry and Sheet chrome using `hideAppChrome` (session,
+  recap, planner, program new/edit).
+- A persisted transcript. Slice 0 shipped one thread per user; [Threads](#threads) is
+  the current many-thread contract. Keep the full transcript in `agent_message`. On each
   model turn, send system prompt plus the last N messages only. Prefer dropping old
   tool results before user/assistant text if a token budget is also applied. Facts
   still come from tools, not from earlier tool JSON in the window.

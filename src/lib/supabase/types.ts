@@ -41,11 +41,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "agent_message_thread_id_fkey"
-            columns: ["thread_id"]
+            foreignKeyName: "agent_message_thread_owner_fkey"
+            columns: ["thread_id", "user_id"]
             isOneToOne: false
             referencedRelation: "agent_thread"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
@@ -53,18 +53,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          title: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
-          id?: string
+          id: string
+          title: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          title?: string
           updated_at?: string
           user_id?: string
         }

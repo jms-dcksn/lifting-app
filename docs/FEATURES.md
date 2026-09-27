@@ -405,7 +405,7 @@ Coach contract.
   icons plus labels, `aria-current` on the active tab (`app-shell.tsx`). Hidden on session
   routes (active workout, recap, finished sets), next-workout planner, and program builder.
 - **AI Coach entry** — persistent `IconButton` + `Sheet` wherever the tab bar shows, except
-  `/coach` (the full thread). Hidden with `hideAppChrome`. Not a fifth tab.
+  `/coach` (the full-screen chat). Hidden with `hideAppChrome`. Not a fifth tab.
 - **Auth gate** — layout is a Server Component gating on `getClaims()`.
 - **Route-level loading skeletons** — `loading.tsx` fallbacks for home, session, recap,
   history, and analytics so server navigations never flash a blank screen. Session loading
@@ -445,7 +445,10 @@ Coach contract.
 ## 13. AI Coach (`/coach`, `/api/agent/chat`)
 
 Read-only grounded chat wrapping the deterministic Coach. Agent owns language; engine owns
-numbers. Persistent entry + `Sheet` where the tab bar shows; full thread at `/coach`.
-Four tools: `weeklyCoach`, `activeProgram`, `exerciseReview`, `nextWorkout`. One thread
-per user in `agent_thread` / `agent_message`. Model sees last N messages only. Teaching
-page: [ai-coach.html](ai-coach.html). Track Coach at `/analytics/coach` is unchanged.
+numbers. Persistent entry + `Sheet` where the tab bar shows; full screen at
+`/coach?thread=<id>`. Four tools: `weeklyCoach`, `activeProgram`, `exerciseReview`,
+`nextWorkout`. Many threads per user in `agent_thread` / `agent_message`. Chat history
+lists the latest 50 by last activity, New chat opens an unsaved draft, and the first send
+saves the thread titled from that message. Model sees the open thread's last N messages
+only. Contract: [AI-COACH.md § Threads](AI-COACH.md#threads). Teaching page:
+[ai-coach.html](ai-coach.html). Track Coach at `/analytics/coach` is unchanged.

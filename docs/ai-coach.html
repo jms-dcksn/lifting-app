@@ -15,15 +15,17 @@
   <body class="bg-stone-50 text-slate-900 font-sans">
     <main class="max-w-5xl mx-auto px-6 py-12 space-y-14">
       <header class="space-y-3">
-        <p class="text-xs uppercase tracking-wider text-slate-500">lifting-app · Slice 0 · 2026-09-20</p>
+        <p class="text-xs uppercase tracking-wider text-slate-500">lifting-app · Slice 0 · 2026-09-20 · threads 2026-09-27</p>
         <h1 class="font-serif text-4xl tracking-tight">How the in-app Coach talks to the ledger</h1>
         <p class="text-lg text-slate-700 max-w-3xl">
-          This page teaches the shipped Slice 0 agent. The deterministic Track Coach still owns
-          the numbers. The agent is a talking layer on top of loaders you already have.
+          This page teaches the shipped Slice 0 agent and the multi-thread chat built on it.
+          The deterministic Track Coach still owns the numbers. The agent is a talking layer
+          on top of loaders you already have.
         </p>
         <p class="text-sm text-slate-600">
           Contract: <a class="underline" href="AI-COACH.md">AI-COACH.md</a>
-          · Decision: <a class="underline" href="DECISIONS.md">DECISIONS.md § AI Coach</a>
+          · Decisions: <a class="underline" href="DECISIONS.md#ai-coach-2026-09-20">DECISIONS.md § AI Coach</a>
+          and <a class="underline" href="DECISIONS.md#ai-coach-threads-2026-09-27">§ AI Coach threads</a>
         </p>
       </header>
 
@@ -59,8 +61,9 @@ flowchart LR
           which calls <code class="font-mono text-sm">loadCoachUi</code> — the same function Track Coach uses.
           The answer is markdown. It ends with one <code class="font-mono text-sm">Source:</code> line.
           The sheet lifts that line out of the bubble so it is not repeated under every figure.
-          The sheet opens on the latest message. The composer stays pinned, and the link to
-          <code class="font-mono text-sm">/coach</code> reads Full screen.
+          The sheet opens your most recent chat at its latest message. The composer stays
+          pinned. Full screen opens the same chat at
+          <code class="font-mono text-sm">/coach?thread=&lt;id&gt;</code>.
         </p>
         <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
           <pre class="mermaid">
@@ -72,6 +75,7 @@ sequenceDiagram
   participant Coach as loadCoachUi
   You->>Route: how was this week?
   Route->>Route: persist user message
+  Route-->>You: thread event with the saved message
   Route->>Agent: system + last N messages
   Agent->>Tool: weeklyCoach
   Tool->>Coach: user-scoped client
@@ -85,8 +89,8 @@ sequenceDiagram
       <section class="space-y-4">
         <h2 class="font-serif text-2xl">Full transcript vs last N</h2>
         <p class="text-slate-700 max-w-3xl">
-          Every message is saved. Reload <code class="font-mono text-sm">/coach</code> and you see the
-          whole thread, including tool-call parts. The model does not get the whole thread.
+          Every message is saved. Reload <code class="font-mono text-sm">/coach?thread=&lt;id&gt;</code>
+          and you see the whole thread, including tool-call parts. The model does not get the whole thread.
           Each turn takes the system prompt plus the last
           <code class="font-mono text-sm">CONTEXT_MESSAGE_LIMIT</code> messages (20).
           If that window is still large, old tool JSON is stubbed out first.
@@ -95,11 +99,106 @@ sequenceDiagram
         <div class="grid gap-4 md:grid-cols-2">
           <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
             <p class="text-xs uppercase tracking-wider text-slate-500">Postgres (UI)</p>
-            <p class="text-sm">All turns, all tool parts. One thread per user.</p>
+            <p class="text-sm">All turns, all tool parts. Many threads per user. History lists the newest 50.</p>
           </div>
           <div class="rounded-lg border-2 border-slate-900 bg-white p-4 space-y-2">
             <p class="text-xs uppercase tracking-wider text-slate-500">Model window</p>
             <p class="text-sm">System prompt + last 20. Prefer dropping old tool results before dropping words.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="font-serif text-2xl">Many chats, one id each</h2>
+        <p class="text-slate-700 max-w-3xl">
+          You can keep many chats. Opening the sheet or tapping New chat saves nothing. That
+          screen is a draft. Your first message is what creates the thread. The server picks
+          the id with <code class="font-mono text-sm">uuid7()</code> and titles the thread
+          from your words. The same id goes to LangSmith as
+          <code class="font-mono text-sm">metadata.thread_id</code>, so every trace from one
+          chat lands in one LangSmith thread. Postgres still holds the transcript. There is no
+          checkpointer.
+        </p>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
+          <pre class="mermaid">
+sequenceDiagram
+  participant You
+  participant Chat as AgentChat reducer
+  participant Route as POST /api/agent/chat
+  participant PG as Postgres
+  participant Agent as runAgentTurn
+  participant Smith as LangSmith
+  You->>Chat: first message in a draft
+  Chat->>Route: text plus threadId null
+  Route->>PG: insert agent_thread with a uuid7 id and a title
+  Route->>PG: insert the first agent_message
+  Route-->>Chat: thread event with the id, title, and saved message
+  Chat->>Chat: adopt the id (on /coach the URL becomes ?thread=ID)
+  Route->>Agent: that thread's last N messages
+  Agent-->>Smith: every run tagged metadata.thread_id = ID
+  Agent-->>Chat: text and tool events
+  Route->>PG: insert the reply messages
+  Route-->>Chat: done with the saved messages
+          </pre>
+        </div>
+        <p class="text-slate-700 max-w-3xl">
+          Every later message sends that id back. The server checks that the thread is yours
+          before it writes anything. Someone else's id gets a 404, and the model never runs.
+          A request without the <code class="font-mono text-sm">threadId</code> key is a 400,
+          so a client cannot fall back to a hidden default thread.
+        </p>
+        <p class="text-slate-700 max-w-3xl">
+          The browser keeps the chat in one reducer with three screens. The sheet starts in
+          Loading because it fetches when it opens. <code class="font-mono text-sm">/coach</code>
+          renders its snapshot on the server, so it starts in Chat. While a turn streams,
+          Chat history, New chat, and Full screen are disabled, so the streaming reply always
+          belongs to the chat on screen. New chat swaps in a draft without leaving Chat.
+        </p>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
+          <pre class="mermaid">
+stateDiagram-v2
+  direction LR
+  [*] --> Loading: sheet opens
+  [*] --> Chat: /coach server snapshot
+  Loading --> Chat: snapshot, or a draft and an error
+  state Chat {
+    [*] --> Idle
+    Idle --> Streaming: Send
+    Streaming --> Idle: done, error, or dropped
+  }
+  state History {
+    [*] --> List
+    List --> Opening: tap a row
+    Opening --> List: fetch failed
+  }
+  Chat --> History: Chat history, when idle
+  History --> Chat: Chat history, New chat, or the row loads
+          </pre>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2">
+          <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+            <p class="text-xs uppercase tracking-wider text-slate-500">Which chat a URL opens</p>
+            <table class="w-full text-sm">
+              <tbody class="divide-y divide-slate-200">
+                <tr><td class="py-1.5 pr-3 font-mono whitespace-nowrap">/coach</td><td class="py-1.5">Your most recent chat, or a draft if you have none</td></tr>
+                <tr><td class="py-1.5 pr-3 font-mono whitespace-nowrap">?thread=new</td><td class="py-1.5">A draft. Nothing is saved until you send.</td></tr>
+                <tr><td class="py-1.5 pr-3 font-mono whitespace-nowrap">?thread=&lt;id&gt;</td><td class="py-1.5">That chat, when it is yours</td></tr>
+                <tr><td class="py-1.5 pr-3 font-mono whitespace-nowrap">?thread=&lt;other&gt;</td><td class="py-1.5">Someone else's id or a malformed value opens your most recent chat. The API answers 404 or 400 instead.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="rounded-lg border-2 border-slate-900 bg-white p-4 space-y-3">
+            <p class="text-xs uppercase tracking-wider text-slate-500">Why a composite key</p>
+            <div class="flex items-center gap-3 text-sm font-mono">
+              <div class="rounded border border-slate-300 px-3 py-2">agent_message<br />(thread_id, user_id)</div>
+              <span aria-hidden="true">→</span>
+              <div class="rounded border border-slate-900 bg-slate-900 text-stone-50 px-3 py-2">agent_thread<br />(id, user_id)</div>
+            </div>
+            <p class="text-sm">
+              RLS checks a row's own <code class="font-mono">user_id</code>. It cannot see
+              whose thread <code class="font-mono">thread_id</code> names. The composite
+              foreign key makes Postgres reject a message aimed at another user's thread.
+            </p>
           </div>
         </div>
       </section>
@@ -123,7 +222,7 @@ sequenceDiagram
       </section>
 
       <section class="space-y-6">
-        <h2 class="font-serif text-2xl">Code from this slice</h2>
+        <h2 class="font-serif text-2xl">Code from the landed files</h2>
         <p class="text-slate-700">These snippets are from the landed files. If they drift, the HTML is wrong — update it.</p>
 
         <article class="space-y-2">
@@ -171,13 +270,103 @@ export const TOOL_CALL_BUDGET = 8;</code></pre>
 
         <article class="space-y-2">
           <h3 class="font-mono text-sm">src/lib/agent/messages.ts + thread.ts — persisted shape</h3>
-          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export type AgentPart =
-  | { type: "text"; text: string }
-  | { type: "tool-call"; id: string; name: string; args: unknown }
-  | { type: "tool-result"; id: string; name: string; result?: unknown; omitted?: boolean };
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export type AgentTextPart = { type: "text"; text: string };
+export type AgentToolCallPart = {
+  type: "tool-call";
+  id: string;
+  name: string;
+  args: unknown;
+};
+export type AgentToolResultPart = {
+  type: "tool-result";
+  id: string;
+  name: string;
+  result?: unknown;
+  omitted?: boolean;
+};
 
-// appendMessage writes role + parts JSON onto agent_message
-parts: input.parts as unknown as Json</code></pre>
+export type AgentPart = AgentTextPart | AgentToolCallPart | AgentToolResultPart;
+
+parts: message.parts as unknown as Json,</code></pre>
+          <p class="text-sm text-slate-600">
+            The last line is from <code class="font-mono">insertMessage</code> in thread.ts,
+            which writes the role and the parts JSON onto <code class="font-mono">agent_message</code>.
+          </p>
+        </article>
+
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/thread.ts — the id rule</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>async function openThread(supabase: Client, userId: string, text: string) {
+  const id = parseThreadId(uuid7());
+  if (!id) throw new Error("Unable to create agent thread");
+  const title = threadTitleFromUserText(text);
+  const created = await supabase.from("agent_thread").insert({ id, user_id: userId, title });
+  if (created.error) throw new Error(created.error.message);
+  try {
+    const userMessage = await saveMessage(supabase, userId, id, userText(text));
+    return { thread: { id, title, updatedAt: userMessage.createdAt }, userMessage };
+  } catch (error) {
+    await supabase.from("agent_thread").delete().eq("id", id).eq("user_id", userId);
+    throw error;
+  }
+}</code></pre>
+          <p class="text-sm text-slate-600">
+            The thread row exists only once you send. If the first message cannot be saved,
+            the row is deleted again before the error reaches you.
+          </p>
+        </article>
+
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/chat-state.ts — the title rule</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export function threadTitleFromUserText(text: string): string {
+  const collapsed = text.replace(/\s+/g, " ").trim();
+  // Code points, not UTF-16 units, so an emoji at the cut never leaves a lone surrogate.
+  return Array.from(collapsed).slice(0, TITLE_LIMIT).join("") || "New chat";
+}</code></pre>
+          <p class="text-sm text-slate-600">
+            <code class="font-mono">TITLE_LIMIT</code> is 80. The migration backfilled older
+            threads with the same rule in SQL.
+          </p>
+        </article>
+
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/chat-handler.ts — the body must name its thread</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>function parseTurnRequest(body: unknown): TurnRequest | null {
+  if (!body || typeof body !== "object" || !("threadId" in body)) return null;
+  const { text, threadId } = body as { text?: unknown; threadId: unknown };
+  const trimmed = typeof text === "string" ? text.trim() : "";
+  if (!trimmed) return null;
+  if (threadId === null) return { kind: "new", text: trimmed };
+  const id = parseThreadId(threadId);
+  return id ? { kind: "continue", threadId: id, text: trimmed } : null;
+}</code></pre>
+        </article>
+
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/run.ts — one id for LangSmith, no checkpointer</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>// LangSmith groups a conversation's traces by metadata.thread_id.
+const run = await agent.streamEvents(
+  { messages: toLangChainMessages(windowed) },
+  { version: "v3", metadata: { thread_id: input.threadId }, callbacks: input.callbacks },
+);</code></pre>
+          <p class="text-sm text-slate-600">
+            <code class="font-mono">windowed</code> comes from
+            <code class="font-mono">selectModelMessages</code>, the only place the model
+            window is cut. <code class="font-mono">run.test.ts</code> proves the chain, model,
+            and tool callbacks all see this <code class="font-mono">thread_id</code>.
+          </p>
+        </article>
+
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">supabase/migrations/20260927170000_agent_multi_thread.sql — ownership key</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>-- A message may only attach to a thread owned by the same user. RLS alone does
+-- not stop a caller from pointing their own row at someone else's thread id.
+alter table public.agent_message drop constraint agent_message_thread_id_fkey;
+alter table public.agent_message
+  add constraint agent_message_thread_owner_fkey
+  foreign key (thread_id, user_id)
+  references public.agent_thread (id, user_id)
+  on delete cascade;</code></pre>
         </article>
       </section>
 

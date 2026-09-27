@@ -148,6 +148,14 @@ export function IconSend({ size }: IconProps) {
   );
 }
 
+export function IconPlus({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
 export function IconMore({ size }: IconProps) {
   return (
     <Svg size={size}>

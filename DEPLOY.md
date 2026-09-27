@@ -30,9 +30,14 @@ configuration, that endpoint returns 503. See [Coach API](docs/COACH-REPORT.md#w
 for high-entropy token requirements, supported auth, privacy, and rotation.
 
 The AI Coach / agent keys are also server-only. Never prefix them with `NEXT_PUBLIC_`.
-Without a Gateway key (or OIDC token), `POST /api/agent/chat` returns 503. Apply the
-`agent_thread` / `agent_message` migration before dogfooding chat. Use the dedicated
-LangSmith project `lifting-app-agent`; do not share it with other apps.
+Without a Gateway key (or OIDC token), `POST /api/agent/chat` returns 503. Apply both
+agent migrations before dogfooding chat. `20260920181553_agent_threads.sql` creates
+`agent_thread` / `agent_message`. `20260927170000_agent_multi_thread.sql` allows many
+threads per user. It deletes threads that have no messages (Slice 0 left one whenever
+chat opened) and backfills thread titles. Thread inserts then need an app-chosen id and
+a title, and the app now writes both, so ship the migration with the app version that
+expects it. Use the dedicated LangSmith project `lifting-app-agent`; do not share it
+with other apps.
 
 Keep real values in ignored `.env.local` or Vercel environment settings. Configure Production
 and Preview separately; verify which database a preview uses before writing test data.

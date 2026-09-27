@@ -717,6 +717,37 @@ action, such as the Slice 1 confirm chip. Record gold stays on actual records.
 **Period data stays off-limits** until a separate opt-in, matching the Coach V1 export
 exclusion and Settings consent copy.
 
+## AI Coach threads (2026-09-27)
+
+Chat moved from one thread per user to many. The contract is
+[AI-COACH.md § Threads](AI-COACH.md#threads).
+
+**Threads are Postgres rows.** `agent_thread` / `agent_message` stay the transcript and
+the history list. Each thread carries a `title` and sorts by `updated_at`. The app picks
+the thread id (`uuid7()` from `langsmith`) and inserts the row with its first message, so
+a draft (New chat, or an account with no threads) has no row and opening chat never
+writes.
+
+**LangSmith groups by `metadata.thread_id`.** `runAgentTurn` passes the thread id as run
+metadata, which reaches the chain, model, and tool callbacks. That is how LangSmith
+threads a conversation's traces. There is no LangGraph checkpointer and no
+`configurable.thread_id`. A checkpointer would be a second transcript store beside
+`agent_message`, and the model window already comes from Postgres through
+`selectModelMessages`.
+
+**Ownership is a composite key, not a second policy.** RLS checks each row's own
+`user_id`, which cannot see whose thread `thread_id` names. `agent_message (thread_id,
+user_id)` now references `agent_thread (id, user_id)`, so the database rejects a message
+aimed at another user's thread, including an update that moves one there. A foreign key
+holds for every role, including clients that bypass RLS. A second RLS `exists` policy
+would only repeat the check for RLS-bound clients.
+
+**The migration deletes empty Slice 0 threads.** Slice 0 get-or-created a thread whenever
+chat opened, so some rows never held a message. `20260927170000_agent_multi_thread.sql`
+deletes those, backfills titles from each thread's earliest user text (whitespace
+collapsed, first 80 characters, `New chat` when empty), and drops the one-thread-per-user
+key. The delete cannot be undone, and the rows it removes have no messages.
+
 ## Station composition (2026-09-21, shipped)
 
 Approved / shipped. Open questions LOCKED. Source of truth:

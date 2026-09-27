@@ -125,8 +125,8 @@ and rotation live in [Coach report](COACH-REPORT.md#weekly-coach-api) and [deplo
 The in-app agent is a separate cookie-auth path: `POST /api/agent/chat` → LangChain loop →
 read tools wrapping `loadCoachUi`, `getActiveProgram`, Exercise review grouping, and
 `loadNextWorkout` + `sessionTarget()`. Tools use the user-scoped client only. Conversation
-rows live in `agent_thread` / `agent_message`. See [AI Coach](AI-COACH.md) and
-[ai-coach.html](ai-coach.html).
+rows live in `agent_thread` / `agent_message`, many threads per user. See
+[AI Coach](AI-COACH.md#threads) and [ai-coach.html](ai-coach.html).
 
 ## History and reporting
 

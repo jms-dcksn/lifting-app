@@ -85,7 +85,7 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/app/(app)/analytics/` — Track: 2-column compound scoreboard (catalog reference lifts; station defaults keep template keys and use family-latest numbers/href); Explore menu (this week's PRs, all-lifts search, month review, Coach, Body, Volume)
 - `src/app/api/coach/v1/weekly/` — private, no-store endpoint for the scheduled Coach check-in
 - `src/lib/agent/` — in-app AI Coach: policy, prompts, thread helpers, and read tools wrapping existing loaders
-- `src/app/api/agent/chat/` — auth-gated streaming chat; `src/app/(app)/coach/` is the full thread
+- `src/app/api/agent/chat/` — auth-gated streaming chat; `src/app/(app)/coach/` is the full-screen chat with chat history
 - `docs/COACH-REPORT.md` — exact v1 windows, metrics, trend rules, privacy contract, and limitations
 - `docs/AI-COACH.md` / `docs/ai-coach.html` — agent contract and Slice 0 teaching explainer
 - `src/lib/exercise-review-sessions.ts` — pure helper: groups finished sets by session, computes session-best e1RM, 21-day recent window, and chart point series

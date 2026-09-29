@@ -36,8 +36,12 @@ not recommend programming changes or mutate training data.
   phases). This field is additive on schema 1.0. When hard sets miss that count, the check-in
   and clipboard surface a one-line flag (`Hard-set shortfall: Hamstrings 5/6 · Glutes 6/7`).
   The flag does not rewrite the program.
-- **Fixed-load progress:** exact exercise and exact raw logged weight, comparing the best reps
-  in the current window with the best reps in the prior window.
+- **Fixed-load progress:** shipped code compares the best reps at an exact exercise
+  and exact raw logged weight in the current window with the best reps in the prior
+  window. **Proposed, pending James (Card 1):** ordinary-pound families share the template
+  movement key in
+  [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
+  Machine and cable stay exact.
 
 | Group | Included movement patterns |
 | --- | --- |

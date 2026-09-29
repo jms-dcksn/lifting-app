@@ -63,6 +63,10 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
 3. The bump test is reps-only. Coach effort reductions use first-set RIR; hard back-off
    sets must not lower an accurately loaded top set.
 
+Grouping by exact exercise stays. Card 3 of the
+[2026-09-29 rollup spec](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+would widen ordinary-pound families only on the word `family`. That card is not approved.
+
 `plateau.ts` owns Fluid detection, rep-band changes, and swap ranking; `fluid.ts` loads
 adaptation context. Manual swaps preserve rep ranges and reset plateau state, unlike coach
 `swap` interventions. Follow [swap persistence](EXERCISE-SWAPS.md). Coach, Fluid and monthly review share
@@ -130,6 +134,9 @@ rows live in `agent_thread` / `agent_message`, many threads per user. See
 
 ## History and reporting
 
+[2026-09-29 movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+is a proposal. The bullets below are the rule until James answers its cards.
+
 - In-session quick history uses `exerciseFamilyIds()` to include explicitly linked
   variants (machine, cable, bench, rack, platform) via `baseExerciseId`, returns ten
   latest sets from previous workouts, and loads only when opened.
@@ -150,6 +157,8 @@ rows live in `agent_thread` / `agent_message`, many threads per user. See
   Default-compound tiles keep template ids (`bb-bench`, `lat-pulldown`, …) and short
   names; numbers and the review href follow the latest finished family member.
   Pins on a specific variant stay exact-id. Do not merge PR numbers across family members.
+  Card 1 of the rollup spec proposes a merge for ordinary-pound families only.
+  Machine and cable PR numbers stay unmerged unless Card 2 is `rollup`.
   Volume and this week's full PR list sit in Track Explore. Weight trends live on Body.
   Coach lives on Track (`/analytics/coach`). The Track tab stays current on `/history/...`.
   Pattern-strength replay does not replay historical personal machine coefficients.

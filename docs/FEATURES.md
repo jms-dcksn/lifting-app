@@ -276,11 +276,18 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
   profile-specific copy (**Choose machine** / **Choose cable** / **Choose bench** /
   **Choose rack** / **Choose platform**). The program builder stores templates
   (`resolveStations={false}`). `logSet`, swap, planner saves, and extra-pin writes
-  reject unresolved station templates.
+  reject unresolved station templates. **Proposed, pending James:** a pin of a
+  `bench`, `rack`, or `platform` template is the movement pin. Logging that
+  template stays rejected.
+  See [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
 - **History policy** — leftover flat cable/barbell `set_log` rows are not
-  rewritten. Family browse groups the template with later variants; records,
-  progression, and calibration stay exact `exercise_id`. The first variant
-  session is a first exposure (cables calibrate; barbell stations ordinary lb).
+  rewritten. Family browse groups the template with later variants. Shipped
+  records, progression, and calibration stay exact `exercise_id`. The first
+  variant session is a first exposure (cables calibrate; barbell stations
+  ordinary lb). **Proposed, pending James:** ordinary-pound families
+  (`bench`, `rack`, `platform`, `none`) roll e1RM and PRs up to the template.
+  See [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
+  Cable and machine stay exact.
 - **Custom exercises** — fully user-defined exercises (name + pattern + equipment)
   via `createCustomExercise`; ids `custom-<slug>-<rand>`. Custom machine: brand +
   type. Custom cable: brand, type locked `selectorized`, `needs_calibration`.
@@ -304,7 +311,9 @@ valid. It does not swap in a monthly-history page. Invalid months are ignored.
 
 - **Exact identity** — finished working sets for this exercise plus equipment
   instance. Header shows a human instance label (or gym) when one exists. Multiple
-  instances get a text-link switcher; series never blend.
+  instances get a text-link switcher. Series never blend. **Proposed, pending James:** a rolling ordinary-pound family is one URL at the template id,
+  with a station chip per set, and `?equipment=` does not split that chart.
+  See [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
 - **Finished sessions** — working sets from sessions with `finished_at` (not in the
   future), grouped by `groupReviewSessions`. Dates use Chicago `dateKey`. Stored e1RM
   displays at 0.1 lb on this screen.
@@ -338,11 +347,14 @@ press, vertical press, horizontal pull, vertical pull). Each tile shows the cata
 lift when it has history (otherwise it stays hidden), current e1RM, signed delta or "held",
 a sparkline, and a `--record` flash when that lift earned a canonical record this week.
 Default-compound tiles keep the template ids and short names (`bb-bench`,
-`lat-pulldown`, …). Numbers and the review href follow the **latest finished
-family member** (`exerciseFamilyIds`) — a brand variant or leftover flat row —
-plus that member's equipment instance, not a blend of PRs. Pins on a specific
-variant stay exact-id. Extra pins and All-lifts rows still use the latest
-finished equipment instance for that exact exercise. Tap opens
+`lat-pulldown`, …). Shipped numbers and the review href follow the **latest
+finished family member** (`exerciseFamilyIds`), a brand variant or leftover
+flat row, plus that member's equipment instance, not a blend of PRs. Pins on
+a specific variant stay exact-id. Extra pins and All-lifts rows still use the
+latest finished equipment instance for that exact exercise. **Proposed, pending James (Card 1):** ordinary-pound tiles aggregate the family and variant pins collapse
+to the template. Cable tiles stay family-latest.
+See [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
+Tap opens
 `/history/{id}?equipment=...` (`none` when there is no instance). Pins are
 owner-scoped display preferences (`user_exercise_pin`, cap 8 in the server
 action): unpinning a default hides it; pinning an extra adds a tile.

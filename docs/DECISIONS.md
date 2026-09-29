@@ -153,6 +153,10 @@ remains the user's final decision. The session page's effective exercise-per-slo
 from the most recently logged exercise in that slot this session, so an in-session swap survives
 a page reload.
 
+**Proposed, pending James (2026-09-29).** Exact-exercise progression above stays.
+Card 3 of the [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+would widen it only on the word `family`.
+
 **Swap is same-pattern-first with a show-all escape hatch.** `ExercisePicker` gained
 `patternFilter` (already plumbed for swap) plus a "show all patterns" toggle, since a same-
 pattern substitute isn't always available or desired.
@@ -571,6 +575,11 @@ families are not record comparison scopes. Unresolved machine templates cannot e
 records. Leftover flat cable/barbell template rows stay eligible on that exact id;
 they do not merge with later variants.
 
+**Proposed, pending James (2026-09-29).** The paragraph above stays in force.
+[Movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+Card 1 asks to compare `bench`, `rack`, `platform`, and `none` on the template
+for records only. Reply `exact` keeps this paragraph. Do not implement from this note.
+
 Working sets require finite load, positive whole-number reps, and valid RIR (0–5).
 Legacy null RIR uses the canonical default of 2; missing load/reps is never zero-filled.
 Warmups, invalid sets, and nonpositive effective loads are excluded. Calibration working
@@ -787,3 +796,8 @@ profile-specific (**Choose bench** / Choose cable / etc.), not “Choose station
 Builder may keep storing templates; session/planner resolve before set-entry.
 Records, progression, and review stay exact `exercise_id`. AI Coach, bodyweight
 stations, and progression-math rewrites are out of scope.
+
+**Proposed, pending James (2026-09-29).** The lock above stays in force.
+[Movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+asks four separate questions. Card 1 is records and review. Card 3 is targets.
+Card 4 is stall and Fluid. None of them is approved by this note.

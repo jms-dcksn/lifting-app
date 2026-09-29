@@ -6,8 +6,8 @@ import {
 } from "@/lib/exercise-visual";
 
 const SIZES: Record<ExerciseVisualSize, string> = {
-  sm: "size-11",
-  lg: "size-[4.5rem]",
+  sm: "h-9 w-16",
+  lg: "h-16 w-[7.11rem]",
 };
 
 export function ExerciseVisual({
@@ -25,7 +25,7 @@ export function ExerciseVisual({
   return (
     <span
       className={cx(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-card border border-border bg-surface text-faint",
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-control border border-border bg-surface text-faint",
         SIZES[size],
         className,
       )}
@@ -35,7 +35,11 @@ export function ExerciseVisual({
       {src ? (
         // Static public URL — do not import the raster into client islands.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="" className="size-full object-contain" />
+        <img
+          src={src}
+          alt=""
+          className="size-full origin-center scale-[1.35] object-cover object-center"
+        />
       ) : (
         <IconDumbbell size={size === "lg" ? 28 : 20} />
       )}

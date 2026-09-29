@@ -52,7 +52,7 @@ export function WorkoutPlanner({ planKey, programName, dayName, week, slots, cat
         return <Card key={slot.id}>
           <CardLabel>Exercise {index + 1}</CardLabel>
           <div className="mt-1 flex items-start gap-3">
-            <ExerciseVisual exerciseId={slot.exerciseId} baseExerciseId={def?.baseExerciseId ?? slot.baseExerciseId} />
+            <ExerciseVisual exerciseId={slot.exerciseId} baseExerciseId={def?.baseExerciseId ?? slot.baseExerciseId} size="lg" />
             <h2 className="text-heading">{def?.name ?? slot.exerciseId}</h2>
           </div>
           <p className="mt-2 text-body tabular-nums">{p.targetSets} sets × {p.repMin}{p.repMin !== p.repMax ? `–${p.repMax}` : ""} reps · {rirLabel(p)} RIR</p>

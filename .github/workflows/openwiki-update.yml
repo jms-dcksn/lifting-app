@@ -2,8 +2,6 @@ name: OpenWiki Update
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 8 * * *"
 
 permissions:
   contents: write
@@ -43,10 +41,6 @@ jobs:
           # For extra workspaces, add OPENWIKI_LANGSMITH_API_KEY_2, _3, ... as repo
           # secrets and env entries here.
           OPENWIKI_LANGSMITH_API_KEY: ${{ secrets.OPENWIKI_LANGSMITH_API_KEY }}
-          # Optional: also trace this workflow's own OpenWiki run to LangSmith.
-          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
-          LANGCHAIN_PROJECT: openwiki
-          LANGCHAIN_TRACING_V2: "true"
 
       - name: Remove transient OpenWiki run state
         if: ${{ !cancelled() }}
@@ -72,7 +66,7 @@ jobs:
 
             When the result is `failure`, this PR intentionally preserves only the
             pages completed before the failure. Merge it to make that progress the
-            baseline for the next scheduled run.
+            baseline for the next manual run.
 
       - name: Annotate OpenWiki update pull request
         if: ${{ !cancelled() && steps.create-pr.outputs.pull-request-url != '' }}

@@ -34,6 +34,16 @@ describe("agent client tools", () => {
       type: "confirm",
       tool: "startNextWorkout",
     });
+    expect(parseClientAction({
+      type: "tool-result",
+      id: "c3",
+      name: "draftProgramFromIntake",
+      result: { action: "navigate", href: "/program/abc?mode=edit" },
+    })).toEqual({
+      type: "navigate",
+      href: "/program/abc?mode=edit",
+      tool: "draftProgramFromIntake",
+    });
   });
 
   it("collects client actions and finds the latest confirm call", () => {

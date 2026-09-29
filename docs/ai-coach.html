@@ -15,12 +15,13 @@
   <body class="bg-stone-50 text-slate-900 font-sans">
     <main class="max-w-5xl mx-auto px-6 py-12 space-y-14">
       <header class="space-y-3">
-        <p class="text-xs uppercase tracking-wider text-slate-500">lifting-app · Slice 0 · 2026-09-20 · threads 2026-09-27 · Slice 1 · 2026-09-29</p>
+        <p class="text-xs uppercase tracking-wider text-slate-500">lifting-app · Slice 0 · 2026-09-20 · threads 2026-09-27 · Slice 1 · 2026-09-29 · Slice 2 · 2026-09-29</p>
         <h1 class="font-serif text-4xl tracking-tight">How the in-app Coach talks to the ledger</h1>
         <p class="text-lg text-slate-700 max-w-3xl">
-          This page teaches the shipped Slice 0 agent, multi-thread chat, and Slice 1 screen
-          context plus navigation. The deterministic Track Coach still owns the numbers. The
-          agent is a talking layer on top of loaders you already have.
+          This page teaches the shipped Slice 0 agent, multi-thread chat, Slice 1 screen
+          context plus navigation, and Slice 2 program intake to draft. The deterministic
+          Track Coach still owns the numbers. The agent is a talking layer on top of loaders
+          you already have.
         </p>
         <p class="text-sm text-slate-600">
           Contract: <a class="underline" href="AI-COACH.md">AI-COACH.md</a>
@@ -547,10 +548,95 @@ if (streamEvent.type === "done") {
         </article>
       </section>
 
+      <section id="slice-2" class="space-y-4">
+        <h2 class="font-serif text-2xl">Slice 2 — Program intake → draft</h2>
+        <p class="text-slate-700 max-w-3xl">
+          A messy wish list becomes an inactive draft in the existing builder. Jev classifies
+          over a closed ontology (days, goal, style, equipment, emphasis, omissions). Low
+          confidence returns follow-up chips instead of guessing a split. Code assembles a
+          <code class="font-mono text-sm">PROGRAM_TEMPLATES</code> entry, prefers exercises you
+          have logged, honors omissions, and keeps machine generics as templates. Persistence
+          uses the same <code class="font-mono text-sm">save_program</code> path as
+          <code class="font-mono text-sm">createFromTemplate</code> — inactive unless the account
+          has no programs. The chat opens <code class="font-mono text-sm">/program/[id]?mode=edit</code>.
+          Saving in the builder still activates.
+        </p>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
+          <pre class="mermaid">
+flowchart LR
+  Chat["Chat or chips"] --> Classify["classifyProgramIntake"]
+  Classify -->|needs_intake| Follow["Follow-up + chips"]
+  Classify -->|ready| Assemble["assembleProgramDraft"]
+  Assemble --> Persist["save_program RPC"]
+  Persist --> Builder["/program/id?mode=edit"]
+  classDef sink fill:#0f172a,color:#f8fafc,stroke:#0f172a;
+  class Persist,Builder sink
+          </pre>
+        </div>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/program-intake/classify.ts — Jev Choice / Noul / Score</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export function classifyProgramIntake(input: unknown): IntakeClassification {
+  const partial = partialProgramIntakeSchema.safeParse(input).data ?? {};
+  const classification = { days: fieldScore(partial.days), goal: fieldScore(partial.goal), ... };
+  const ready = REQUIRED_FIELDS.every((key) => classification[key].value != null)
+    && classification.overallConfidence >= CONFIDENCE_THRESHOLD;
+  if (!ready) return { ...classification, followUp, chips };
+  return { ...classification, ready: true, intake };
+}</code></pre>
+        </article>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/program-intake/assembler.ts — pick, patch, validate</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export function assembleProgramDraft(input: {
+  intake: ProgramIntake;
+  recentExerciseIds: string[];
+}): AssembledProgram {
+  const template = pickTemplate(input.intake);
+  const days = template.days.map((day) => ({
+    name: day.name,
+    slots: day.slots.map((slot) => patchSlot(slot, input.recentExerciseIds, omissions, catalog)),
+  }));
+  validateAssembledProgram({ ...template, days, style: input.intake.style });
+  return { templateId: template.id, days, style: input.intake.style, ... };
+}</code></pre>
+          <p class="text-sm text-slate-600">
+            <code class="font-mono">patchSlot</code> skips <code class="font-mono">stationProfile === "machine"</code>
+            templates, swaps omitted lifts within the same pattern, and prefers logged exercises
+            for barbell and dumbbell slots.
+          </p>
+        </article>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/tools/draft-program.ts — draft, never activate on generate</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const activate = await shouldActivateFirstProgram(supabase);
+const tree = buildProgramTreeFromDraft(draft, { programId, isActive: activate });
+await persistProgramTree(supabase, tree);
+return {
+  status: "draft",
+  programId,
+  isActive: activate,
+  action: "navigate",
+  href: programEditHref(programId),
+};</code></pre>
+        </article>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/components/agent/agent-transcript.tsx — intake chips</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const intakeChips = intakeChipsFromParts(messages.flatMap((message) => message.parts));
+{intakeChips.map((chip) => (
+  &lt;button type="button" onClick={() => onChipSelect(chip)}&gt;{chip}&lt;/button&gt;
+))}</code></pre>
+          <p class="text-sm text-slate-600">
+            Chips appear when <code class="font-mono">draftProgramFromIntake</code> returns
+            <code class="font-mono">needs_intake</code>. Tapping a chip fills the composer; you
+            still send the message.
+          </p>
+        </article>
+      </section>
+
       <section class="space-y-3">
-        <h2 class="font-serif text-2xl">What Slice 0–1 will not do</h2>
+        <h2 class="font-serif text-2xl">What Slice 0–2 will not do</h2>
         <ul class="list-disc pl-5 text-slate-700 space-y-1">
-          <li>Write programs, accept Coach proposals, or change settings.</li>
+          <li>Activate a draft or replace the active program until you save in the builder.</li>
+          <li>Emit programs as free-form LLM JSON.</li>
+          <li>Accept Coach proposals or change settings (Slice 4).</li>
           <li>Start a workout without the in-chat confirm chip.</li>
           <li>Show the agent entry during an active session (<code class="font-mono text-sm">hideAppChrome</code>).</li>
           <li>Read period observations.</li>

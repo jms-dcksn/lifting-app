@@ -25,7 +25,7 @@ describe("agent policy", () => {
     expect(MODEL_CONTEXT_CHAR_BUDGET).toBeGreaterThan(1000);
     expect(TOOL_CALL_BUDGET).toBeGreaterThan(0);
     expect(LANGSMITH_PROJECT_NAME).toBe("lifting-app-agent");
-    expect(WRITE_TOOL_NAMES).toEqual([]);
+    expect(WRITE_TOOL_NAMES).toEqual(["draftProgramFromIntake"]);
     expect(READ_TOOL_NAMES).toEqual([
       "weeklyCoach",
       "activeProgram",

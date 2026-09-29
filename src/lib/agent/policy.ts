@@ -37,14 +37,17 @@ export const CONFIRM_TOOL_NAMES = ["startNextWorkout"] as const;
 
 export type ConfirmToolName = (typeof CONFIRM_TOOL_NAMES)[number];
 
+/** Server writes. Slice 2 drafts inactive programs; saving in the builder still activates. */
+export const WRITE_TOOL_NAMES = ["draftProgramFromIntake"] as const;
+
+export type WriteToolName = (typeof WRITE_TOOL_NAMES)[number];
+
 export const AGENT_TOOL_NAMES = [
   ...READ_TOOL_NAMES,
   ...CLIENT_NAV_TOOL_NAMES,
   ...CONFIRM_TOOL_NAMES,
+  ...WRITE_TOOL_NAMES,
 ] as const;
-
-/** Slice 1 still has no server writes. Confirmed session starts run on the client. */
-export const WRITE_TOOL_NAMES: readonly string[] = [];
 
 export const PERIOD_TOOL_NAMES: readonly string[] = [];
 

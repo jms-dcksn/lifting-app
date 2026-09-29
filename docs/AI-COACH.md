@@ -23,7 +23,7 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 | Build order | Slice 0 first, then 1–5 in order. |
 | Runtime | TypeScript in this Next.js app. No Python service. |
 | Library | LangChain TypeScript for the agent loop and ecosystem. Tools and prompts are plain TS so the loop can change. Deep Agents is out until Slice 5. |
-| Writes | None in Slice 0. Drafts in Slice 2. Confirm-chip `startNextSession` may land in Slice 1. Live mutations wait for Slice 4. |
+| Writes | Slice 0 was read-only. Slice 2 drafts inactive programs via `draftProgramFromIntake`. Confirm-chip `startNextSession` shipped in Slice 1. Live mutations wait for Slice 4. |
 | Surface | Persistent entry + `Sheet` on Lift / Track / Program / You. Full screen at `/coach?thread=`. Both carry chat history and New chat. No fifth tab. Hidden wherever `hideAppChrome` is true. |
 | Jev | Skip in Slice 0. Slice 2 uses it to classify program constraints, not to emit a program. |
 | Models | Vercel AI Gateway, server-only. LangSmith is the trace sink. |
@@ -207,6 +207,8 @@ session.
 the same screens a tap would, and a session route still has no agent entry.
 
 ### Slice 2 — Program intake → draft
+
+**Status.** Shipped 2026-09-29. Teaching walkthrough: [ai-coach.html § Slice 2](ai-coach.html#slice-2).
 
 **Intent.** First product bet: messy wish list becomes an inactive draft in the existing
 builder.

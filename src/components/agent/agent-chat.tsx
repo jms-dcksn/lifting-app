@@ -177,6 +177,7 @@ export function AgentChat({
               setConfirmedCallIds((current) => new Set(current).add(callId));
               onNavigate?.();
             }}
+            onChipSelect={(label) => setDraft((current) => (current ? `${current} ${label}` : label))}
           />
         ) : null}
       </div>

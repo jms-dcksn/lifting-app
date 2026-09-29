@@ -11,10 +11,12 @@ import type { AgentPart } from "./messages";
 export { CLIENT_NAV_TOOL_NAMES, CONFIRM_TOOL_NAMES };
 export type { ClientNavToolName, ConfirmToolName };
 
+export type NavigatingToolName = ClientNavToolName | "draftProgramFromIntake";
+
 export type ClientNavigateAction = {
   type: "navigate";
   href: string;
-  tool: ClientNavToolName;
+  tool: NavigatingToolName;
 };
 
 export type ClientConfirmAction = {
@@ -58,8 +60,8 @@ export function parseClientAction(part: AgentPart): ClientAction | null {
   if (action === "navigate") {
     const href = (result as { href?: unknown }).href;
     if (typeof href !== "string" || !href.startsWith("/")) return null;
-    if (!isClientNavTool(part.name)) return null;
-    return { type: "navigate", href, tool: part.name };
+    if (!isClientNavTool(part.name) && part.name !== "draftProgramFromIntake") return null;
+    return { type: "navigate", href, tool: part.name as NavigatingToolName };
   }
   if (action === "confirm") {
     if (!isConfirmTool(part.name)) return null;

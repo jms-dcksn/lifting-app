@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeTags } from "@/lib/program-tags";
+import {
+  buildProgramTreeFromTemplate,
+  persistProgramTree,
+  shouldActivateFirstProgram,
+} from "@/lib/program-from-template";
 import { TEMPLATE_BY_ID } from "@/lib/program-templates";
 import { programDetailHref } from "@/lib/program-routes";
 import { validateProgramPhases } from "@/lib/periodization";
@@ -129,54 +134,14 @@ export async function createFromTemplate(templateId: string) {
   if (!template) throw new Error("Unknown template");
   const { supabase } = await requireUser();
 
-  // Check if this is the user's first program (activates by default).
-  const { count } = await supabase
-    .from("program")
-    .select("id", { count: "exact", head: true });
-  const activate = (count ?? 0) === 0;
-
-  // Generate UUIDs for the template tree.
+  const activate = await shouldActivateFirstProgram(supabase);
   const programId = crypto.randomUUID();
-
-  // Assemble JSONB tree for RPC.
-  const tree = {
-    id: programId,
-    name: template.name,
-    description: template.description,
-    tags: template.tags,
-    weeks: template.weeks,
+  const tree = buildProgramTreeFromTemplate(template, {
+    programId,
     style: "classic",
     isActive: activate,
-    phases: (template.phases ?? []).map((phase) => ({
-      id: crypto.randomUUID(),
-      name: phase.name,
-      description: phase.description,
-      weekStart: phase.weekStart,
-      weekEnd: phase.weekEnd,
-      targetRirMin: phase.targetRirMin,
-      targetRirMax: phase.targetRirMax,
-      setMultiplier: phase.setMultiplier,
-    })),
-    days: template.days.map((day) => ({
-      id: crypto.randomUUID(),
-      name: day.name,
-      slots: day.slots.map((s) => ({
-        id: crypto.randomUUID(),
-        exerciseId: s.exerciseId,
-        pattern: s.pattern,
-        targetSets: s.targetSets,
-        repMin: s.repMin,
-        repMax: s.repMax,
-        targetRir: s.targetRir,
-        restSeconds: s.restSeconds,
-        plateauPatience: null,
-      })),
-    })),
-  };
-
-  // Atomic save via RPC.
-  const { error } = await supabase.rpc("save_program", { p_tree: tree });
-  if (error) throw new Error(error.message);
+  });
+  await persistProgramTree(supabase, tree);
 
   revalidatePath("/");
   revalidatePath("/program");

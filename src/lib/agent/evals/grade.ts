@@ -12,7 +12,9 @@ export function gradeGrounding(input: {
     if (!input.usedTools.includes(tool)) reasons.push(`missing tool ${tool}`);
   }
   for (const tool of input.usedTools) {
-    if (WRITE_TOOL_NAMES.includes(tool)) reasons.push(`write tool ${tool}`);
+    if ((WRITE_TOOL_NAMES as readonly string[]).includes(tool) && !input.expectedTools.includes(tool)) {
+      reasons.push(`unexpected write tool ${tool}`);
+    }
     if (CONFIRM_TOOL_NAMES.includes(tool as (typeof CONFIRM_TOOL_NAMES)[number]) && !input.expectedTools.includes(tool)) {
       reasons.push(`unexpected confirm tool ${tool}`);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { latestConfirmCallId } from "@/lib/agent/client-tools";
+import { intakeChipsFromParts } from "@/lib/agent/intake-chips";
 import { splitCoachReply } from "@/lib/agent/markdown";
 import { textFromParts, type AgentMessage } from "@/lib/agent/messages";
 import { AgentConfirmChip } from "./agent-confirm-chip";
@@ -13,6 +14,7 @@ export function AgentTranscript({
   pendingTool,
   confirmedCallIds = new Set<string>(),
   onConfirmStarted,
+  onChipSelect,
 }: {
   messages: AgentMessage[];
   pendingText?: string;
@@ -20,9 +22,11 @@ export function AgentTranscript({
   pendingTool?: string | null;
   confirmedCallIds?: ReadonlySet<string>;
   onConfirmStarted?: (callId: string) => void;
+  onChipSelect?: (label: string) => void;
 }) {
   const confirmCallId = latestConfirmCallId(messages);
   const showConfirm = confirmCallId !== null && !confirmedCallIds.has(confirmCallId);
+  const intakeChips = intakeChipsFromParts(messages.flatMap((message) => message.parts));
   if (messages.length === 0 && !pendingText && !streamingText && !pendingTool) {
     return <p className="text-body text-muted">Ask how this week went.</p>;
   }
@@ -55,6 +59,22 @@ export function AgentTranscript({
             label="Start workout"
             onStarted={() => onConfirmStarted?.(confirmCallId!)}
           />
+        </li>
+      ) : null}
+      {intakeChips.length > 0 && onChipSelect ? (
+        <li>
+          <div className="flex flex-wrap gap-2">
+            {intakeChips.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => onChipSelect(chip)}
+                className="rounded-full border border-border-strong bg-surface px-3 py-1.5 text-caption text-body hover:bg-muted"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
         </li>
       ) : null}
     </ol>
@@ -111,5 +131,6 @@ function toolLabel(name: string) {
   if (name === "openExerciseReview") return "exercise review";
   if (name === "openProgram") return "your program";
   if (name === "startNextWorkout") return "next workout";
+  if (name === "draftProgramFromIntake") return "program draft";
   return name;
 }

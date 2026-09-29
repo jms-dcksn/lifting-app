@@ -430,6 +430,11 @@ Coach contract.
 - **`Stepper`** — the most-touched mid-workout control: 44px hit areas, press-and-hold
   auto-repeat, tick animation, select-all on focus; column and row layouts.
 - **`Card`** — `tone` prop (`default | active | done`) carrying hierarchy without color.
+- **`ExerciseVisual`** — shared leading illustration for an individual exercise. Seeded
+  catalog ids with art (`bb-bench`, `bb-back-squat`, `lat-pulldown`, `hack-squat`) show
+  `/exercises/{id}.jpg`; station variants inherit the template; custom / unmapped ids
+  use a dumbbell icon in the same frame. See [UI conventions](UI.md) and the
+  [2026-09-28 spec](superpowers/specs/2026-09-28-exercise-visuals-design.md).
 - **`Skeleton`**, **`Input`**, **`view-transition` helper**, classname utility.
 
 ## 12. Platform & PWA

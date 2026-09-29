@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { IconHistory, IconLastUsed, IconSwap } from "@/components/ui/icons";
 import { Sheet } from "@/components/ui/sheet";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card, CardLabel } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
 import { Stepper } from "@/components/ui/stepper";
@@ -501,17 +502,20 @@ function SlotCard({
   return (
     <Card tone={tone}>
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-heading">
-          <Link
-            href={exerciseReviewHref({
-              exerciseId,
-              equipmentInstanceId: slot.sets.at(-1)?.equipmentInstanceId ?? null,
-            })}
-            className="underline-offset-2 hover:underline"
-          >
-            {name}
-          </Link>
-        </h2>
+        <div className="flex min-w-0 items-start gap-3">
+          <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} />
+          <h2 className="text-heading">
+            <Link
+              href={exerciseReviewHref({
+                exerciseId,
+                equipmentInstanceId: slot.sets.at(-1)?.equipmentInstanceId ?? null,
+              })}
+              className="underline-offset-2 hover:underline"
+            >
+              {name}
+            </Link>
+          </h2>
+        </div>
         <div className="flex shrink-0">
           {lastUsedDef && !isTemplate && (
             <IconButton
@@ -653,7 +657,10 @@ function SlotCard({
                         })
                       }
                     >
-                      <span>{c.name}</span>
+                      <span className="flex min-w-0 items-center gap-2">
+                        <ExerciseVisual exerciseId={c.exerciseId} />
+                        <span className="truncate">{c.name}</span>
+                      </span>
                       {c.weight != null && <span className="tabular-nums text-muted">{c.weight} lb</span>}
                     </Button>
                   </li>
@@ -699,7 +706,10 @@ function SlotCard({
       {pickedSwap && !swapping && (
         <Sheet ariaLabel="Apply exercise swap" dismissible={!savingSwap} onClose={() => setPickedSwap(null)}>
           <div className="flex flex-col gap-3 px-4 pb-6 pt-2">
-            <h2 className="text-heading">Use {pickedSwap.name} for…</h2>
+            <h2 className="flex items-start gap-3 text-heading">
+              <ExerciseVisual exerciseId={pickedSwap.id} baseExerciseId={pickedSwap.baseExerciseId} />
+              <span>Use {pickedSwap.name} for…</span>
+            </h2>
             <p className="text-caption text-muted">Logged sets stay.</p>
             <Button type="button" pending={savingSwap} onClick={() => confirmSwap("workout")}>
               This workout only

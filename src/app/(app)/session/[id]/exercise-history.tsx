@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Sheet, useSheetDismiss } from "@/components/ui/sheet";
 import { getExerciseHistory } from "../actions";
 
@@ -39,7 +40,8 @@ function HistoryContent({ exerciseId, sessionId, name, isBodyweight }: {
   return (
     <div className="flex max-h-[80dvh] flex-col px-4 pb-6">
       <header className="flex shrink-0 items-start justify-between gap-3 pb-4">
-        <div>
+        <div className="flex min-w-0 items-start gap-3">
+          <ExerciseVisual exerciseId={exerciseId} />
           <h2 className="text-heading">{name} history</h2>
         </div>
         <Button variant="secondary" size="sm" onClick={dismiss}>Close</Button>

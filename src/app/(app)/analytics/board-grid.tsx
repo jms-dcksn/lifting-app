@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Sparkline } from "@/components/ui/icons";
 import { cx } from "@/components/ui/cx";
 import { PinButton } from "../pins/pin-button";
@@ -20,7 +21,10 @@ export function BoardTile({ lift, pinned, showPin = true }: { lift: BoardLift; p
         </div>
       )}
       <Link href={exerciseReviewHref({ exerciseId: lift.reviewExerciseId, equipmentInstanceId: lift.equipmentInstanceId })} className={cx("flex min-h-11 flex-col gap-1", showPin && "pr-10")}>
-        <p className="text-caption font-medium text-muted">{lift.shortName}</p>
+        <div className="flex items-center gap-2">
+          <ExerciseVisual exerciseId={lift.exerciseId} />
+          <p className="text-caption font-medium text-muted">{lift.shortName}</p>
+        </div>
         <p className="text-heading tabular-nums">
           {lift.currentE1rm == null ? "—" : `${Math.round(lift.currentE1rm)}`}
           {lift.currentE1rm != null && <span className="ml-1 text-caption font-normal text-muted">e1RM</span>}

@@ -13,6 +13,7 @@ import {
 } from "@/lib/exercise-review-sessions";
 import { reviewCompareDefaults } from "@/lib/exercise-review-months";
 import { reviewMonthSides, type ReviewMonthSource } from "@/lib/exercise-review-month-stats";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { PinButton } from "../../pins/pin-button";
 import { MonthCompare } from "./month-compare";
 import { ReviewChart } from "./review-chart";
@@ -32,10 +33,12 @@ export type ExerciseReviewProps = {
   equipmentChoices?: EquipmentChoice[];
 } & (
   | { status: "missing" }
-  | { status: "empty"; name: string; pin?: PinProps }
+  | { status: "empty"; name: string; exerciseId?: string; baseExerciseId?: string | null; pin?: PinProps }
   | {
       status: "ready";
       name: string;
+      exerciseId?: string;
+      baseExerciseId?: string | null;
       isBodyweight: boolean;
       sessions: ReviewSession[];
       pin?: PinProps;
@@ -62,9 +65,16 @@ export function ExerciseReview(props: ExerciseReviewProps) {
   return (
     <ReviewShell reviewMonth={reviewMonth}>
       <header className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-display">{name}</h1>
-          {equipmentLabel && <p className="mt-1 text-caption text-muted">{equipmentLabel}</p>}
+        <div className="flex min-w-0 items-start gap-3">
+          <ExerciseVisual
+            exerciseId={props.exerciseId ?? pin?.exerciseId}
+            baseExerciseId={props.baseExerciseId}
+            size="lg"
+          />
+          <div className="min-w-0">
+            <h1 className="text-display">{name}</h1>
+            {equipmentLabel && <p className="mt-1 text-caption text-muted">{equipmentLabel}</p>}
+          </div>
         </div>
         {pin && <PinButton exerciseId={pin.exerciseId} pinned={pin.pinned} name={pin.name} />}
       </header>

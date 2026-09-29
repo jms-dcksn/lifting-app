@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Input } from "@/components/ui/input";
 import { cx } from "@/components/ui/cx";
 import { exerciseReviewHref } from "@/lib/exercise-review-href";
@@ -51,11 +52,14 @@ export function ExerciseList({ items }: { items: ExerciseListItem[] }) {
               })}
               className="flex min-h-16 items-center justify-between gap-3 py-3 text-left"
             >
-              <span className="min-w-0">
-                <span className="block truncate text-body font-medium">{item.name}</span>
-                <span className="block text-caption capitalize text-muted">
-                  {item.pattern.replace(/_/g, " ")} · {item.sessionCount} session
-                  {item.sessionCount === 1 ? "" : "s"} · {shortDate(item.lastPerformedAt)}
+              <span className="flex min-w-0 items-center gap-3">
+                <ExerciseVisual exerciseId={item.exerciseId} />
+                <span className="min-w-0">
+                  <span className="block truncate text-body font-medium">{item.name}</span>
+                  <span className="block text-caption capitalize text-muted">
+                    {item.pattern.replace(/_/g, " ")} · {item.sessionCount} session
+                    {item.sessionCount === 1 ? "" : "s"} · {shortDate(item.lastPerformedAt)}
+                  </span>
                 </span>
               </span>
               <span className="flex shrink-0 flex-col items-end gap-1 text-right">

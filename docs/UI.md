@@ -24,6 +24,11 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   and constrains sizing for narrow Safari layouts.
 - `Card` tones distinguish current/completed work through border/opacity. Slot completion
   follows saved set counts and effective phase prescriptions.
+- `ExerciseVisual` is the only exercise illustration. Leading 44px (`sm`) on rows/tiles
+  and session/planner cards; 72px (`lg`) on Exercise review. Mapped catalog ids show
+  art from `/exercises/{id}.jpg`; everything else uses `IconDumbbell` in the same box.
+  Map by seeded / template id, not name. See
+  [exercise visuals](superpowers/specs/2026-09-28-exercise-visuals-design.md).
 - `Skeleton` supports route loading states. `withViewTransition` animates builder reorder
   with a plain-update fallback. All motion respects reduced-motion preferences.
 - `Calendar` supplies the shared date grid; [weight calendar](WEIGHT-CALENDAR.md) owns its

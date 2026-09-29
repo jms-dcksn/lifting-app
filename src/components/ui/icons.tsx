@@ -178,6 +178,19 @@ export function IconTrash({ size }: IconProps) {
   );
 }
 
+export function IconDumbbell({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path
+        d="M6 9v6M18 9v6M8 10.5v3M16 10.5v3M8 12h8M4.5 10v4M19.5 10v4"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
 export function Sparkline({ values }: { values: number[] }) {
   if (values.length < 2) return null;
   const min = Math.min(...values);

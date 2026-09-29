@@ -6,6 +6,7 @@ import type { ExerciseDef } from "@/lib/strength/coefficients";
 import type { Program } from "@/lib/program";
 import { validateProgramPhases, type ProgramPhase } from "@/lib/periodization";
 import { Button } from "@/components/ui/button";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
 import { Input } from "@/components/ui/input";
@@ -408,8 +409,14 @@ export function ProgramBuilder({
                   style={{ viewTransitionName: `vt-${slot.id}` }}
                   className="rounded-control bg-surface p-3"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-body font-medium">{exerciseName(byId, slot.exerciseId)}</span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="flex min-w-0 items-center gap-3">
+                      <ExerciseVisual
+                        exerciseId={slot.exerciseId}
+                        baseExerciseId={byId[slot.exerciseId]?.baseExerciseId}
+                      />
+                      <span className="min-w-0 truncate text-body font-medium">{exerciseName(byId, slot.exerciseId)}</span>
+                    </span>
                     <span className="flex items-center gap-1">
                       <ReorderButtons
                         what={exerciseName(byId, slot.exerciseId)}

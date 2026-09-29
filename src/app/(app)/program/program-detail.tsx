@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button-styles";
 import { Card } from "@/components/ui/card";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { cloneProgram, setActiveProgram } from "./actions";
 import { RemoveProgramButton } from "./remove-program-button";
 
@@ -97,8 +98,12 @@ export function ProgramDetail({
             <ul className="mt-3 flex flex-col gap-2">
               {day.slots.map((slot) => (
                 <li key={slot.id} className="rounded-control bg-surface p-3">
-                  <h3 className="break-words text-body font-medium">
-                    {defs[slot.exerciseId]?.name ?? slot.exerciseId}
+                  <h3 className="flex items-start gap-3 break-words text-body font-medium">
+                    <ExerciseVisual
+                      exerciseId={slot.exerciseId}
+                      baseExerciseId={defs[slot.exerciseId]?.baseExerciseId}
+                    />
+                    <span className="min-w-0">{defs[slot.exerciseId]?.name ?? slot.exerciseId}</span>
                   </h3>
                   <p className="mt-0.5 text-caption capitalize text-muted">
                     {slotMeta(defs, slot)}

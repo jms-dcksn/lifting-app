@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { iconButtonClasses } from "@/components/ui/icon-button-styles";
 import { IconHistory } from "@/components/ui/icons";
 import {
@@ -86,9 +87,10 @@ export function AchievementRecap({
                   exerciseId: group.exerciseId,
                   equipmentInstanceId: group.equipmentInstanceId,
                 })}
-                className="min-w-0 text-body font-medium underline-offset-2 hover:underline"
+                className="flex min-w-0 items-center gap-3 text-body font-medium underline-offset-2 hover:underline"
               >
-                {group.name}
+                <ExerciseVisual exerciseId={group.exerciseId} />
+                <span className="truncate">{group.name}</span>
               </Link>
               <div className="flex shrink-0 items-center gap-1">
                 <div className="text-right text-body tabular-nums text-record">

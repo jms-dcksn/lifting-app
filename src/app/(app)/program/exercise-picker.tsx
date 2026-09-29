@@ -17,6 +17,7 @@ import {
 } from "@/lib/station";
 import { createCustomExercise, resolveVariant } from "../exercise/actions";
 import { Button } from "@/components/ui/button";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Input } from "@/components/ui/input";
 import { Sheet, useSheetDismiss } from "@/components/ui/sheet";
 
@@ -243,6 +244,7 @@ function StationForm({
   return (
     <FormShell
       title={template.name}
+      exerciseId={template.id}
       subtitle={showType ? "Choose brand & type" : "Choose brand"}
       onBack={onBack}
     >
@@ -444,12 +446,14 @@ function StationFields({
 
 function FormShell({
   title,
+  exerciseId,
   subtitle,
   onBack,
   children,
   footer,
 }: {
   title: string;
+  exerciseId?: string;
   subtitle?: string;
   onBack: () => void;
   children: React.ReactNode;
@@ -461,6 +465,7 @@ function FormShell({
         <button type="button" onClick={onBack} className="px-2 py-2 text-body text-muted">
           ← Back
         </button>
+        {exerciseId && <ExerciseVisual exerciseId={exerciseId} />}
         <div className="min-w-0">
           <p className="truncate text-body font-medium">{title}</p>
           {subtitle ? <p className="truncate text-caption text-muted">{subtitle}</p> : null}
@@ -553,10 +558,13 @@ function ExerciseRow({
         onClick={() => onPick(e)}
         className="flex min-h-11 w-full items-center justify-between border-b border-border px-4 py-3 text-left active:bg-surface"
       >
-        <span>
-          <span className="block text-body font-medium">{e.name}</span>
-          <span className="block text-caption capitalize text-muted">
-            {e.pattern.replace(/_/g, " ")} · {e.equipment.replace(/_/g, " ")}
+        <span className="flex min-w-0 items-center gap-3">
+          <ExerciseVisual exerciseId={e.id} baseExerciseId={e.baseExerciseId} />
+          <span className="min-w-0">
+            <span className="block text-body font-medium">{e.name}</span>
+            <span className="block text-caption capitalize text-muted">
+              {e.pattern.replace(/_/g, " ")} · {e.equipment.replace(/_/g, " ")}
+            </span>
           </span>
         </span>
       </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { IconButton } from "@/components/ui/icon-button";
 import { IconPin } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
@@ -101,7 +102,10 @@ function Section({
       <ul className="divide-y divide-border">
         {items.map((item) => (
           <li key={item.exerciseId} className="flex items-center justify-between gap-3 py-1">
-            <span className="min-w-0 truncate text-body">{item.name}</span>
+            <span className="flex min-w-0 items-center gap-3">
+              <ExerciseVisual exerciseId={item.exerciseId} />
+              <span className="min-w-0 truncate text-body">{item.name}</span>
+            </span>
             <IconButton
               variant="ghost"
               aria-label={pinned[item.exerciseId] ? `Unpin ${item.name}` : `Pin ${item.name}`}

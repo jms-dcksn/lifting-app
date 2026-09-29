@@ -139,6 +139,8 @@ export default async function HistoryPage({
       <ExerciseReview
         status="empty"
         name={name}
+        exerciseId={exerciseId}
+        baseExerciseId={def?.baseExerciseId}
         reviewMonth={reviewMonth}
         pin={pin}
         equipmentLabel={equipmentLabel}
@@ -173,6 +175,8 @@ export default async function HistoryPage({
     <ExerciseReview
       status="ready"
       name={name}
+      exerciseId={exerciseId}
+      baseExerciseId={def?.baseExerciseId}
       isBodyweight={isBodyweight}
       sessions={sessions}
       reviewMonth={reviewMonth}

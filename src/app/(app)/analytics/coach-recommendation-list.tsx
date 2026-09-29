@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { InfoButton } from "@/components/ui/info-button";
 import type { CoachRecommendation } from "@/lib/coach-recommendations";
 import {
@@ -174,12 +175,15 @@ function RecommendationItems({
       {items.map((item) => (
         <article key={item.key} className="border-t border-border pt-4 first:border-0 first:pt-0">
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-heading">
-                {item.programDayName ? `${item.programDayName} · ` : ""}
-                {item.exerciseName ?? "Overall review"}
-              </p>
-              <p className="text-body">{item.action.label}</p>
+            <div className="flex min-w-0 items-start gap-3">
+              {item.exerciseId && <ExerciseVisual exerciseId={item.exerciseId} />}
+              <div className="min-w-0">
+                <p className="text-heading">
+                  {item.programDayName ? `${item.programDayName} · ` : ""}
+                  {item.exerciseName ?? "Overall review"}
+                </p>
+                <p className="text-body">{item.action.label}</p>
+              </div>
             </div>
             <span className="shrink-0 text-caption uppercase tracking-wide text-muted">
               {item.confidence}

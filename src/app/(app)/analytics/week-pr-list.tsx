@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { recapLines } from "@/lib/strength/records";
 import { sessionRecordSummary } from "@/lib/board";
 import { sessionRecapPath } from "@/lib/session-paths";
@@ -31,9 +32,10 @@ export function WeekPrList({ sessions }: { sessions: WeekRecordSession[] }) {
                       exerciseId: group.exerciseId,
                       equipmentInstanceId: group.equipmentInstanceId,
                     })}
-                    className="min-w-0 text-body font-medium underline-offset-2 hover:underline"
+                    className="flex min-w-0 items-center gap-3 text-body font-medium underline-offset-2 hover:underline"
                   >
-                    {group.name}
+                    <ExerciseVisual exerciseId={group.exerciseId} />
+                    <span className="truncate">{group.name}</span>
                   </Link>
                   <div className="shrink-0 text-right text-body tabular-nums text-record">
                     {recapLines(group).map((line) => (

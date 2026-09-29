@@ -2,6 +2,7 @@ import { liftHref } from "./lift-detail";
 import { PeriodPerformanceCard } from "./period-performance";
 import Link from "next/link";
 import { Card, CardLabel } from "@/components/ui/card";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { buttonClasses } from "@/components/ui/button-styles";
 import { Button } from "@/components/ui/button";
 import { InfoButton } from "@/components/ui/info-button";
@@ -31,9 +32,9 @@ export function MonthlyReview({
 }) {
   const improving = report.lifts.filter(l => l.state === "improving");
   const repOnly = report.lifts.filter(l => l.state !== "improving" && l.repGains.length > 0);
-  const recordGroups = new Map<string, { name: string; equipment: string | null; records: { sessionId: string; date: string; record: MonthlyReport["achievements"][number]["records"][number] }[] }>();
+  const recordGroups = new Map<string, { name: string; exerciseId: string; equipment: string | null; records: { sessionId: string; date: string; record: MonthlyReport["achievements"][number]["records"][number] }[] }>();
   for (const a of report.achievements) for (const record of a.records) {
-    const group = recordGroups.get(record.key) ?? { name: record.name, equipment: record.equipmentInstanceId, records: [] };
+    const group = recordGroups.get(record.key) ?? { name: record.name, exerciseId: record.exerciseId, equipment: record.equipmentInstanceId, records: [] };
     group.records.push({ sessionId: a.sessionId, date: a.date, record });
     recordGroups.set(record.key, group);
   }
@@ -105,12 +106,12 @@ export function MonthlyReview({
           Ranked by monthly best e1RM change. Each machine is compared separately.
         </InfoButton>
       </div>
-      {improving.length > 0 && <ul className="divide-y divide-border">{improving.slice(0, 5).map(lift => <li key={lift.key} className="flex min-h-11 flex-wrap items-baseline justify-between gap-2 py-3">
-        <Link href={liftHref(lift, report.month)} className="min-h-11 py-2 font-medium underline">{lift.name}</Link>
+      {improving.length > 0 && <ul className="divide-y divide-border">{improving.slice(0, 5).map(lift => <li key={lift.key} className="flex min-h-11 flex-wrap items-center justify-between gap-2 py-3">
+        <Link href={liftHref(lift, report.month)} className="flex min-h-11 items-center gap-3 py-2 font-medium underline"><ExerciseVisual exerciseId={lift.exerciseId} />{lift.name}</Link>
         {lift.percent != null && <span className="text-caption text-overload-up">{lift.percent > 0 ? "+" : ""}{lift.percent}%</span>}
       </li>)}</ul>}
       {repOnly.length > 0 && <details><summary className="min-h-11 cursor-pointer py-2 text-body">Rep gains without a higher monthly best ({repOnly.length})</summary><ul className="divide-y divide-border">{repOnly.map(lift => <li key={lift.key} className="py-3">
-        <Link href={liftHref(lift, report.month)} className="min-h-11 py-2 font-medium underline">{lift.name}</Link>
+        <Link href={liftHref(lift, report.month)} className="flex min-h-11 items-center gap-3 py-2 font-medium underline"><ExerciseVisual exerciseId={lift.exerciseId} />{lift.name}</Link>
         {lift.repGains.map(gain => <p key={gain.load} className="mt-1 text-caption text-overload-up">{gain.priorReps} → {gain.currentReps} reps at {gain.load} lb effective load</p>)}
       </li>)}</ul></details>}
     </Card>}
@@ -126,7 +127,7 @@ export function MonthlyReview({
           exerciseId: stall.exerciseId,
           equipmentInstanceId: stall.equipmentInstanceId,
           month: report.month,
-        })} className="min-h-11 py-2 font-medium underline">{stall.name}</Link>
+        })} className="flex min-h-11 items-center gap-3 py-2 font-medium underline"><ExerciseVisual exerciseId={stall.exerciseId} />{stall.name}</Link>
         <p className="mt-1 text-body">{stall.stalledExposures} stalled exposures across {stall.stalledSinceDays} days</p>
         <p className="text-caption text-muted">{stall.repMin}–{stall.repMax} reps{stall.phaseName ? ` · ${stall.phaseName}` : ""} · Last improvement/baseline: {dateKey(new Date(stall.lastImprovementAt!), report.timeZone)}</p>
         <details className="mt-1">
@@ -143,7 +144,7 @@ export function MonthlyReview({
       <CardLabel>Achievements</CardLabel>
       <p className="mt-1 text-caption text-muted">{report.current.repPrs} rep PRs · {report.current.e1rmPrs} e1RM PRs · {report.current.topWeightPrs} top-weight PRs · {report.current.workoutsWithRecords} workouts with records</p>
       {recordGroups.size === 0 ? <p className="mt-3 text-body text-muted">No records this month.</p> : <div className="mt-3 divide-y divide-border">{[...recordGroups].map(([key, group]) => <details key={key}>
-        <summary className="min-h-11 cursor-pointer break-words py-3 text-body">{group.name} · {group.records.length} record workouts{group.equipment ? ` · Equipment ${group.equipment}` : ""}</summary>
+        <summary className="flex min-h-11 cursor-pointer items-center gap-3 break-words py-3 text-body"><ExerciseVisual exerciseId={group.exerciseId} /><span>{group.name} · {group.records.length} record workouts{group.equipment ? ` · Equipment ${group.equipment}` : ""}</span></summary>
         <ul className="space-y-3 pb-3">{group.records.map(({ sessionId, date, record: r }) => <li key={sessionId} className="text-caption">
           <Link href={sessionRecapPath(sessionId)} className="inline-block min-h-11 py-2 underline">{date} · Workout recap</Link>
           {r.repRecords.map(rep => <p key={rep.load}>{rep.weight} lb {r.isBodyweight ? "added/assist" : ""} × {rep.reps} reps{rep.improvement != null ? ` · +${rep.improvement} reps` : " · improved within workout"}</p>)}

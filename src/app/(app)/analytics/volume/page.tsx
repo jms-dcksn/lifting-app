@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCatalogMap } from "@/lib/catalog";
 import { getCurrentBodyweight } from "@/lib/current-bodyweight";
 import { Card, CardLabel } from "@/components/ui/card";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { InfoButton } from "@/components/ui/info-button";
 import { VolumeChart, type VolumeChartPoint } from "../volume-chart";
 import { VolumeExercisePicker } from "./volume-exercise-picker";
@@ -110,7 +111,8 @@ export default async function VolumePage({
       <h1 className="text-display">Volume</h1>
       <Card>
         <div className="mb-3">
-          <div className="mb-1 flex items-center gap-1">
+          <div className="mb-1 flex items-center gap-2">
+            {selectedId && <ExerciseVisual exerciseId={selectedId} />}
             <CardLabel>{selectedName ?? "Total volume"}</CardLabel>
             {(selectedId || excludedSets > 0) && (
               <InfoButton

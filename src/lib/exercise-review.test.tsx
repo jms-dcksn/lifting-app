@@ -65,6 +65,7 @@ function ready(
   return createElement(ExerciseReview, {
     status: "ready",
     name: "Barbell Bench Press",
+    exerciseId: "bb-bench",
     isBodyweight: false,
     sessions,
     reviewMonth: extra.reviewMonth ?? null,
@@ -88,9 +89,11 @@ describe("exercise review", () => {
     const html = renderToStaticMarkup(createElement(ExerciseReview, {
       status: "empty",
       name: "Barbell Bench Press",
+      exerciseId: "bb-bench",
       reviewMonth: null,
     }));
     expect(html).toContain("Barbell Bench Press");
+    expect(html).toContain('src="/exercises/bb-bench.jpg"');
     expect(html).toContain("No working sets logged yet.");
     expect(html).not.toContain("Exercise not found");
     expect(html).not.toContain(">Last</h2>");
@@ -102,6 +105,8 @@ describe("exercise review", () => {
   it("keeps the unfiltered review when a month query is present", () => {
     const html = renderToStaticMarkup(ready(oneSession, { reviewMonth: "2026-09" }));
     expect(html).toContain("Barbell Bench Press");
+    expect(html).toContain('data-exercise-visual="image"');
+    expect(html).toContain('src="/exercises/bb-bench.jpg"');
     expect(html).toContain(">Last</h2>");
     expect(html).toContain("150.0 lb");
     expect(html).toContain("100 lb × 10 @ 1 RIR");

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card, CardLabel } from "@/components/ui/card";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
 import { chooseStationCopy } from "@/lib/station";
@@ -50,7 +51,10 @@ export function WorkoutPlanner({ planKey, programName, dayName, week, slots, cat
         const chooseCopy = chooseStationCopy(def?.stationProfile);
         return <Card key={slot.id}>
           <CardLabel>Exercise {index + 1}</CardLabel>
-          <h2 className="mt-1 text-heading">{def?.name ?? slot.exerciseId}</h2>
+          <div className="mt-1 flex items-start gap-3">
+            <ExerciseVisual exerciseId={slot.exerciseId} baseExerciseId={def?.baseExerciseId ?? slot.baseExerciseId} />
+            <h2 className="text-heading">{def?.name ?? slot.exerciseId}</h2>
+          </div>
           <p className="mt-2 text-body tabular-nums">{p.targetSets} sets × {p.repMin}{p.repMin !== p.repMax ? `–${p.repMax}` : ""} reps · {rirLabel(p)} RIR</p>
           <p className="mt-1 text-caption text-muted">Rest {slot.restSeconds} seconds between sets</p>
           <div className="mt-4 flex flex-wrap gap-2">

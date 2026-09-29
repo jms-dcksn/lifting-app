@@ -1,28 +1,36 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:5262ac1cf6bde3cd73f6177e1c771b41160bddf88b1e5cc02415a84b5872c704",
+  "pageVersion": "sha256:40498d399a27973a20401c46811c20a0f656934aa543789ca03b82cefbcca411",
   "claims": [
     {
       "id": "claim_1c9ad075a92e4f79bc77059a80f7d633",
-      "statement": "Vitest is configured with environment \"node\" by default and discovers only src/lib/**/*.test.ts and src/lib/**/*.test.tsx, so unit tests are co-located next to the modules they cover rather than living in a separate test directory.",
+      "statement": "Vitest defaults to the node environment and discovers only src/lib/**/*.test.ts and src/lib/**/*.test.tsx, so unit and component tests are co-located under src/lib rather than in a separate test tree or outside that directory.",
       "evidence": [
         {
-          "resource": "repo://vitest.config.ts",
-          "version": "repo-file-v1:sha256:7bb689176ab7ac3f3d67cbc40030b2bf81160001d299fd34132d72e5d970cb65"
+          "resource": "repo://package.json#L10-L11",
+          "version": "repo-lines-v1:sha256:292a91d6898558f59a41a6cdbb07fd4a5fb4e27991e3d1c3b4f71a6071db0fd0:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjQxZmMyNDllZmE3MWIwZTdhOTdmN2Y0ZWI4Yjg5NDk0YTU5Y2IzZjg3ZDcxYmU2YWFkNjNhYTNiYTVlM2QzYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGNkYmQ3Y2EyZDEzYWQzNTFkMjBkNzYzOTJjNDI3MzI3NzdmYjU3MmVlZmRjZmI5NTU1ZjcwYjQ0NDQ5MTIyNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWQ0ZDVmNWYzZDIyMTVkNTkwYTJjNjYzMjFhZTc3MWY5OWFkNmNmZTFlMTkzMzY0Yjg2ODcwY2QzYzM0ZGMzYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2YyNmYwMjE0ZjkwYTgxNDIzNzI2ZGE3YzIyZDEzMjkwYzBhYmVkMDNmZDIyZTJkNjY2YWU1ODY3OWEzOTY5YiJ9"
+        },
+        {
+          "resource": "repo://vitest.config.ts#L10-L13",
+          "version": "repo-lines-v1:sha256:e0e988fec5e7bc019a85f548252d2f0680f25e7743ad388d6d6a662aae7b2b5b:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTkzNmRmN2E1YTNhYWYxODBjZmZkMWQ2NWM2NDZlZjZhZWEzNTJjYzI3Nzc0Njg2MTk5Y2Q4ZmIzZTg5OWM3YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGQ1Y2QyZmI0ZjNkZjg4NDUxNTI1NWIzOTUyM2YyZjhiNTQ3MmJlZWE5ZjU2NmZmY2EyMDRkYjgwMjU2MTA0MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWE5YmIyZTdhNzQ5Nzc5ZmU0YjZlMDkzOWZmNDM2MTIyNThhYTYwZDE3ZjVhZjgzYTNmNzEwNTFmOTNjYzA0MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjZmNWI0MGIxNTg0NTdkMTc4NjRmMjE3OTA3ODZkZDVhMmVjZGI2NGI2NmE2NTFmNzg4ZDRlMjVjZDMzMDNkMiJ9"
         }
       ]
     },
     {
       "id": "claim_5019076b1f094c75b27f4f36e4ae09eb",
-      "statement": "Component tests that need a DOM opt into jsdom per-file via a \"// @vitest-environment jsdom\" pragma instead of switching the whole suite's default environment.",
+      "statement": "Component and DOM tests keep the suite default on node and opt into jsdom with a per-file // @vitest-environment jsdom pragma, including info-button.test.tsx and the non-component copy-text.test.ts.",
       "evidence": [
+        {
+          "resource": "repo://src/lib/copy-text.test.ts#L1-L1",
+          "version": "repo-lines-v1:sha256:8e517231884f5aee75dd3b0509f10b318c87d19f7f3d49a452f86ec583b381cb:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGU1MTcyMzE4ODRmNWFlZTc1ZGQzYjA1MDlmMTBiMzE4Yzg3ZDE5ZjdmM2Q0OWE0NTJmODZlYzU4M2IzODFjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGU1MTcyMzE4ODRmNWFlZTc1ZGQzYjA1MDlmMTBiMzE4Yzg3ZDE5ZjdmM2Q0OWE0NTJmODZlYzU4M2IzODFjYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGFhNTZkOWVlYzYzZTc0MTBhNjQxNjBmOTVhYjY2OGU2MTI5YjU5YmIwZmU5YWE0YTMzNWY4M2YyZDBjMGYxZCJ9"
+        },
         {
           "resource": "repo://src/lib/info-button.test.tsx#L1-L1",
           "version": "repo-lines-v1:sha256:8e517231884f5aee75dd3b0509f10b318c87d19f7f3d49a452f86ec583b381cb:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGU1MTcyMzE4ODRmNWFlZTc1ZGQzYjA1MDlmMTBiMzE4Yzg3ZDE5ZjdmM2Q0OWE0NTJmODZlYzU4M2IzODFjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGU1MTcyMzE4ODRmNWFlZTc1ZGQzYjA1MDlmMTBiMzE4Yzg3ZDE5ZjdmM2Q0OWE0NTJmODZlYzU4M2IzODFjYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODZlYjZhNjg4NTRkMzgxNTZhNjAzNDU2NDY1MTBhODJhMzUxNWIwYjIzNjJlZmZjZTk4NTMxZjk4YzdhMzA1NiJ9"
         },
         {
-          "resource": "repo://vitest.config.ts#L1-L9",
-          "version": "repo-lines-v1:sha256:3c560dc4dc6dae836f8920069dcff6cf4d669200f06e7439bbcfb35d4d18d8d2:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODE3NGU5ZTkwMDM4ZWIzYTBkZDM0ZDMxMzNmODg4ZmEyZWU1MTNkMjI3Y2Y5OTNlMzZlM2M1NzVkNWU5OGRjMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGQ1Y2QyZmI0ZjNkZjg4NDUxNTI1NWIzOTUyM2YyZjhiNTQ3MmJlZWE5ZjU2NmZmY2EyMDRkYjgwMjU2MTA0MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjZmNWI0MGIxNTg0NTdkMTc4NjRmMjE3OTA3ODZkZDVhMmVjZGI2NGI2NmE2NTFmNzg4ZDRlMjVjZDMzMDNkMiJ9"
+          "resource": "repo://vitest.config.ts#L3-L13",
+          "version": "repo-lines-v1:sha256:92ef2912d694a9f5b686c3e1e2c71106a072d08514b0b6a9bf76179d7d3aa4c9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3NDhiYmY4ZDE4NzljNTAwZDQ4ZDkyOGVjOTNmNTg3MDVjMjQxM2Y3NDRlYzc2YzQzNWY5OTU1NzdlNGNkZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkNWNkMmZiNGYzZGY4ODQ1MTUyNTViMzk1MjNmMmY4YjU0NzJiZWVhOWY1NjZmZmNhMjA0ZGI4MDI1NjEwNDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoyLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEwNmQ1NjlkMTVkZjJlMGU3NTI1MmRmNWIxZjRmZGRlOTI1MDM0NjE2OTVhYjMwYzY0ZTEwYTVhYTExMGRkNGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIifQ"
         }
       ]
     },
@@ -179,10 +187,136 @@
           "version": "repo-lines-v1:sha256:338bb45a7b216aef809be9a5f669184ad532960d0f3ab8d1fd168e46bc56cb41:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmVlNjg1YTg2MTE2YjU0N2UyZDEwMjhiMjI4NDk4NzE1YTNjYWE0MzVjMjAzMDlmNzM0MWE4MjZjMDY2MDI5OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmNmYzBkZjAzMWI0MDUxYWY2MWE4NmJmMTFhOGVlMzUxNmYyZWIwYjUzOGUxMmUwYzIxNTI0OWQ5YjhiZjM1NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjAyMmFkM2NhYWEwMWFkOTc3OWZmYTFiYTk4NTdjY2RmYWU4ZjgzYmQ1Y2ZhNDQ3NGRjYThlN2E4YzM4Njg5MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2Q1ZDNmNmVhN2I0MWJkMTAzODU2YmY0YjIzMTE1MjI4MWYxMDEzMmI2NjJiZjA2YjE2ZTEzZTUwMGIxOTgyNCJ9"
         }
       ]
+    },
+    {
+      "id": "claim_7d71627e15634353a136160e7de683ec",
+      "statement": "Vitest aliases server-only to Next's empty server build so server-only modules such as the agent thread loader can be imported in unit tests; the alias does not make those modules client-safe.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/agent/thread.ts#L1-L1",
+          "version": "repo-lines-v1:sha256:0c0f48e38fbdb6c0efe987c984521ed07432755b6baaccf45d977e57db7cbad4:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGMwZjQ4ZTM4ZmJkYjZjMGVmZTk4N2M5ODQ1MjFlZDA3NDMyNzU1YjZiYWFjY2Y0NWQ5NzdlNTdkYjdjYmFkNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGMwZjQ4ZTM4ZmJkYjZjMGVmZTk4N2M5ODQ1MjFlZDA3NDMyNzU1YjZiYWFjY2Y0NWQ5NzdlNTdkYjdjYmFkNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTI1MTczYmI3OTM0Zjc5ODllMWE0ZGE2ZDA4MzlhYzM4N2Q4MjdhM2QyNDdiYTNhNWMxMjFhMDIwMDM2ZDgyYSJ9"
+        },
+        {
+          "resource": "repo://vitest.config.ts#L4-L9",
+          "version": "repo-lines-v1:sha256:df33bbc8777435a2e77c29e41467627aabdc472579904ef0c8873e44b62fb6f7:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzc2MTBjMmNiZWU3ZjBjNWNkNmI3MzY0YjU1YmY2MjZjODAxMDcwY2Y3ZTVhZjQzYTBhYjcyYjNiNmRiOWFiNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGQ1Y2QyZmI0ZjNkZjg4NDUxNTI1NWIzOTUyM2YyZjhiNTQ3MmJlZWE5ZjU2NmZmY2EyMDRkYjgwMjU2MTA0MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTdlMTk0ODYxZDMyOGE4OGJiNjk0ZWZjZTNlNjMyOTAzZTc0Y2YzMTNiYjEzN2E0NjUxODBjOTIyMDc1ZDlkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGFkOWJjZjI0MTFhMTAyNTlkNzk0NTA2MTU4MjM3ZmI3NjgwYjIxOTgxYTEyNTE0ODZmMjQ4MDcxNDIwOTZhOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_52c0a1f9bb0945fc9c4f8e4e97049611",
+      "statement": "Agent unit tests run in the ordinary Vitest suite and do not call the live gateway: chat-handler tests inject auth and runTurn over an in-memory store, while runAgentTurn tests inject a scripted chat model.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/agent/chat-handler.test.ts#L137-L143",
+          "version": "repo-lines-v1:sha256:8a421cc63abc569234b430c7ae378519cad8e2bbd7fef4a759a5ac252d9cc5a3:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmJiZmZkMTA4NTBhMWYxOGU4N2Y3NjNlODk1ZmY3NTM1YzMxNWQwODAyYmUzMjg3M2I5M2U5NzRhZDFmODY3YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODUxNDUzMzZiMTNmZTY3M2RhOGM1ODhjMTA2OGM5YmQ5NWYyMmQ2Y2ZjOWM0MjlhM2VjZmZkYTZmOTRlY2UxYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzA4YzJmMmRmZTYxNmFmZTM3YjRhMTY1Y2RlZjkwMjZkOWE5ZWNlODBiMzg0MDFlNWFmNTI4NDI5MTMzYWQ3ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGU3MDYyYTA3MDU1NDA0YjFlOWMyZTA5NTRkZWQ3YzVjNzg1NjgyY2NhOTI1NDc5ZDZkMDgyMjUwZjhhMTJkMCJ9"
+        },
+        {
+          "resource": "repo://src/lib/agent/chat-handler.test.ts#L172-L203",
+          "version": "repo-lines-v1:sha256:9d2ae01833ec662cacd3e94dfc7128c68a90a1979c104e0828da8ff22e6a4d8a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0YWQwMjU0YmVmMzZmOTBmM2Y5YWY2NDBmMDVmNDFiNzZkOTUwYzFhYmNkMTdkYzVmZWYxZDdmY2U5ZjBjZDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkwYzgyYzEyODU1MWI2N2E3Y2U1YWM3M2Y0MTA4NGRkMjE5NGI2YWU2Y2ZkM2RiYjc4YjU4ZTljNTVkZDA5OGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdmYjVhYWEzMmJiMDA4MDNjYjIzM2MxOWM0NjU4NTdjYzY3MGUyOTYwMTkwOGIwYTM2YjUyMzkzNmNjNjZlMmEifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/run.test.ts#L55-L80",
+          "version": "repo-lines-v1:sha256:b170cf4915de2a91470e7bf177afcaa541bb94416051ea7ade81ceb6e471537a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxZjc2NGM0ZTA0ZDNkZTEzYjVlOGE4M2I0ZWVlMjU3NjdmMmQ1ZWUwMjI5ZGY1ODNiMzVlNzY1YTQ5NTNhOTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyZDExY2FmNDNlOTdlZjM2OWU2YmVlZDFhMjY4YmQwNTgzOGYyOWI5ZGQyNTRiZjY5YmE2NDg4NDE0NzIzNGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5YWYwOTY4OWZhZWZlZDVjNTAyYWZiMjRlMjUyZjk1MzI3YmUwZThmNDVmYTVjOWM5YTY1OTVlNDZmOWExYzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0MDc5NDA4YTE4ZGEzNzQ2MDQ1NjkwMDMwNzJmNWRkMDIzZmU3YTZiZTg5YjgxOGE1MWE0NzA2ZjZhNTNmMTEifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/run.ts#L32-L41",
+          "version": "repo-lines-v1:sha256:15d76eddc5f3cf74d591ffce87a90f73592010e07ab55fdf840dc6f306079265:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBhYjQxZTY3ODEwODMzNDM4OGYxYTUwNGNhODU0YjI4MGUzMzRlZGMxNDI0OTllZGYyYTJjYzM2MWYxZjE5YTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlMDYzYjAyYzcxYWFmMDZjMjQxNGYzYTUxOGUxNWZjZWY1MTBjODk4Njg1ZjYxZGViNWM5ZTkzMjgwYWM1MzMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkMGYyZDNhM2FhZGEyNzU4NjQ1NzhkMGE0MzkxNTYzOGQ1NDNmZWNhMmM5NDg1OGRiOTQxMjExZTg2Y2VmMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxOTdlNzEyMDhlZDhhODI1YWRhYTBhMDhjZTkxOWZmOTEzMmM4MjAxMzA2OGExNTNmY2ZmMWFjZGQyNGE5MmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d449affc174c4ecabfcb0871ae6c9a11",
+      "statement": "The agent chat handler tests lock unauthenticated, invalid, missing-key, cross-user, and failed-insert behavior: 401 before tools, 400 with no writes, 503 before insert when no gateway credential is set, 404 without running the agent for another user's thread, and removal of a new thread when its first message insert fails.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/agent/chat-handler.test.ts#L172-L260",
+          "version": "repo-lines-v1:sha256:684fc4a356aad5f71839c588a71e21e7eeaa60f491c0f4f12d2d9d9c6ab6a711:eyJzZWxlY3RlZExpbmVDb3VudCI6ODksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0YWQwMjU0YmVmMzZmOTBmM2Y5YWY2NDBmMDVmNDFiNzZkOTUwYzFhYmNkMTdkYzVmZWYxZDdmY2U5ZjBjZDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkwYzgyYzEyODU1MWI2N2E3Y2U1YWM3M2Y0MTA4NGRkMjE5NGI2YWU2Y2ZkM2RiYjc4YjU4ZTljNTVkZDA5OGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM4NTIxY2MzYjc3NjNmYjJjMDZhMTc5MjBlNmJhYzU3MzdjYjhkNzMxNzViMTY1ZmNhZjQwNmQzZWM3Mzc2OGYifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/chat-handler.ts#L33-L43",
+          "version": "repo-lines-v1:sha256:559e6c6527036faa879483c0e0b859b5dfac7b90b40f28f926b1089978582967:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiOGY5MzcwNGYyY2M1MDg4NGJiYTJlNWFkNmM4YzNkNjA2ZTIxMjA2MDgwYmZiZmVjYmNkOTZiNmM2MjdlMWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3ZGFjM2E1MmRiNDU5NTAyY2U0Mzg2OGUzNDc1YzdjYjU5NDc3N2U1MjMxNjBjYTNiNGVkOWYxNDI4MWE0YWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJhY2NmZjcwZDdiNDc2M2JiZjQwMmM1YTA0ZjAxNmZmODAxNTAwZDUzMWEzYThlN2MxZDMwYzEzYTZkMDg0OGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjYjAwODllNzUzNDNlMDllYjdkNTJiYmM0OWIyY2RjMTZmOGQ5NTUzOWQ0ZDI5YzBiM2VkM2FlYTcxOTZlOTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ec52aa17a43247a9b42ad91df1706570",
+      "statement": "Agent evals are an in-Vitest grounding rubric, not a live model run or separate CI job: gradeGrounding fails missing expected tools, write tools, unexpected tools, and missing citation values or sources, and grade.test.ts checks gold answers, an invented answer, and a write-tool rejection.",
+      "evidence": [
+        {
+          "resource": "repo://package.json#L10-L12",
+          "version": "repo-lines-v1:sha256:97e5534a4f5f92c84f7d1ae80e2990eaa476e79fb6c3295a59b06ccd94c8637b:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjQxZmMyNDllZmE3MWIwZTdhOTdmN2Y0ZWI4Yjg5NDk0YTU5Y2IzZjg3ZDcxYmU2YWFkNjNhYTNiYTVlM2QzYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWQ0ZDVmNWYzZDIyMTVkNTkwYTJjNjYzMjFhZTc3MWY5OWFkNmNmZTFlMTkzMzY0Yjg2ODcwY2QzYzM0ZGMzYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTlhOTIzODBkOWJkMjVmNjM4MDA1NDNmYWMyMDBjMTY1YjZiYjI0OWMwYjI4NGNmYWYxMDcyODJhYTk2ZGJjMiJ9"
+        },
+        {
+          "resource": "repo://src/lib/agent/evals/cases.ts#L13-L22",
+          "version": "repo-lines-v1:sha256:ffd9a6f73d9168334712c8cf535d79e397256f0d033eb650b72cb43fbb65eec9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiODU5ZTcxMWU0ZDdjZjY1ZmIwOGFjY2QzODJjODk5Zjk0MDNlZjIzNGIzOWY1YmNmMzZjYWQzYmFhMThjMjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ0MzViYjQ2YTY1MzBmNDE5NTE3NzFhNjFmMWY4YjkxNTlmYzQyOTM2ZTA4ODFiZDVjZDk1ODFhNTY0NmQwMzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlOWNiYjhmNDk5MWRkMzRhNDhmMDhiM2Q4YzI0ZTEyYmNmZTNjYTE2ZWJmOTk2YzMyZGZhZTMzMzgxZTJiNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE4NWJmMWI5YWZkMmIzYzQ5NzlhYWQ4YjkyNTA4YTRhOGE0NTIwMGVjYjAwYzA4MjY3ZjA1ZTU5YWZiZjJlNzQifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/evals/grade.test.ts#L6-L45",
+          "version": "repo-lines-v1:sha256:dcedc1a9e401055056639e9fbb19db936499650c7e552a366f79f83697f79ee9:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYjFlMWUzMDI1NmZhMzQwODdiNzk3Yjc3NGQxNzdjNjg2MTFiY2ViNjVlNDI3MWI4OWY2M2Y0NDA5MDQxYTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0MjkwY2FkYWQ3ZWI0MGFjMzBiNDVhMDBjNDIxNzkzMDQzOWZmNDRlNTM0YjMwYzZiZDJiMTNjZDM5NWQxMjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/evals/grade.ts#L4-L48",
+          "version": "repo-lines-v1:sha256:0a4f700ecad9b811c4b45daba82ace962196d3cc8739b5de25caa8b5e98d8388:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4ZjE0NDRjOTQzYTAzMDlkMWRlYzZhOTMyN2Y3ZTAzMTg5NGE3OGY3N2UzZWE4NDViYjFmYjdlMWYzMDQxMGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiOGY2MjIxYWNjMjMxODEwZDA4NmY1M2I1NWIwY2FkNmI5NjJiOGJhNGM3OTYxODA2ZmI1YTkzNDVmOGE1YjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4900e4dcc91e423d9090d9f8c9fd5fc4",
+      "statement": "npm run test:db runs supabase test db against the supabase/tests/*_rls.sql glob only, so agent_thread_rls.sql is part of the CI ownership suite while non-matching SQL files remain manual psql -f scripts with no TAP plan.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L50-L54",
+          "version": "repo-lines-v1:sha256:e3bdffe5fa3ba72dc89212873bd55089bd225d2370f51a29a62dc3cb35557720:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzUxMGYxZTUzNTczZmIzMWU0ZGYwNTEyYzFmYmFhYjk2NTU2NmU1NmM2MWJkN2RlN2JlZDQwMjM3ODI1YWRkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTY1YzBiOGMyYTIzMzJlM2I0MDUxZDNhNmIwMTY5MzQwNmI3Mzg0OWYwMWM4NGZiZjI5NWY3MTQ4NTA4ZjY0ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGJjMTMzMjEyMzEzMTFlOWIwMTBjNjk4YmRhZWI5M2ZlYTA3NTI5YzgwZjcxNTZjZDA1YjBhN2RmMTU4NzIwMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzA4NzkzYzFlYWIxNzBhZTNhM2RmNTNhNDY3ZjA3ZWFjN2FjZTI1NGMyZmQ4ZTNiZjU2MGM2MWI5N2Q2NzE2MiJ9"
+        },
+        {
+          "resource": "repo://AGENTS.md#L40-L41",
+          "version": "repo-lines-v1:sha256:35c96bfb525ff5d68852608aca15b07eeef6ca3248f4208c2d69471d5dbe3896:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzMzNzM0OTdlZDJlYTM5YmU2ZDllYWY1NjhmZDIxODYxYmQzNjBlZDQxNDk0ODVkYjEwNjk5NDRkOGI1MWFiMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmU0YzU2Y2MxMDAyOTM0YmZkZmFmOGM5NGIxODUxZDNjOTc5YmUyZTJmZWM1NmI2MDIyZWU5MDhlMjI5ODZkMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTNhMDYwYjVlMTRkNzgzNDQ0ZTZmN2E4NDdmMTM5NzQzYTI4NDNlNzg1ZTUwYzEwZDM4ODkxOTY2NzZjM2M1NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDI5NGQwMjE4ZTI4NGRhM2U1N2ExYzFjNjYzODQ5NTc5ZTA0Y2VhMDBlMzQ1MjkyNGFhNmQ4YjY2NGIyOGQxNSJ9"
+        },
+        {
+          "resource": "repo://package.json#L12-L12",
+          "version": "repo-lines-v1:sha256:d62a5cd60fbdce25eb0594cd1824aa4b408ff15296e29d06995b38ddf72bd69e:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODBiNTdhNTNjNzM1NWEzYzMzMDBmNjFjZmI4ODAzNDBkN2ZlM2ZjZGMxZTg5MGVkNTBiZTI3OGFmZGM4YjFjMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTlhOTIzODBkOWJkMjVmNjM4MDA1NDNmYWMyMDBjMTY1YjZiYjI0OWMwYjI4NGNmYWYxMDcyODJhYTk2ZGJjMiJ9"
+        },
+        {
+          "resource": "repo://supabase/tests/agent_thread_rls.sql#L1-L4",
+          "version": "repo-lines-v1:sha256:62f2d149229126dd748364106ddc0007034f92a30846cdba03f5a3afaf4dee10:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTJjNWU3N2I5N2U3Njk1NDZkOTg4MTU2MGNmYTMyNmVjMjFkZDJhM2Q2ZTA2NDRlM2U2MjkxNzQ2ODFmMDdhNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTk5YzVhMzJjM2YxMTgzNDM2OTllOWZmMTc0M2ExZWYxODg4YjYwMDQ2MmRjYTA4MWQzNTU5NDU2OTAxMjgyYyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_0dd1ad5773ae4b8ea323d78d4135a85f",
+      "statement": "agent_thread_rls.sql proves owner-only thread and message visibility, rejects cross-user inserts with 42501, requires an app-chosen thread id (23502), and rejects attaching or moving a message onto another user's thread with 23503 from the composite owner foreign key.",
+      "evidence": [
+        {
+          "resource": "repo://supabase/migrations/20260920181553_agent_threads.sql#L26-L41",
+          "version": "repo-lines-v1:sha256:cf63da975301555dfb730d405531378a4797ed2216a52c1c6e868a7796c3efc4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ZjIzZjE5M2ZlODA3NGI3Mjc3N2Q2OGMwNTQxODYzMzg5OGE1MDgzNTkxOGM1YWMyM2E3NTFhNTFjYzg4MzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhMWRlZDRkYzIwNjExMzkwZWM5MWFlYzk0YTUxODUyNmRmYzhhYTFhMzc4Mzk1Y2U0MDJhOWUzZWMyYWIyOWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1OWE3MTA4NzhlZmQ4Y2UzMzk1OTk1NDU3YWRhM2MwMzc1ZjU3Y2ZmYzkzMjM4NDE1YWNmODZiZmViMjNmY2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0MzgwM2IxMWYxNjJmMTRhMTEwMGEyZmFjOTY5OTYzYTEzMTU2MmVlYzg2NmUwOGRiN2NhMDBjNGY3ZTI1NjgifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260927170000_agent_multi_thread.sql#L27-L40",
+          "version": "repo-lines-v1:sha256:4cc0426edc9880188485e17d8b3daeb312896d74eb134c7c502e2be339fe7dd5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3NjUxMGVhYmU5MzE3YWFlNTZlZjZkMDAwMjNlOGM4YmI5ZTg4ZGE3MjJiODRlOWJiMDUzZGE0NWZmYzRhYjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5MjYzNTZkYjYyYTEyN2Y3MjFjM2Y4MzU4ZTU2MWU2YjZlNTZmMzA1YjRmMjRkNjMxODQ1MDE0NzJiZDE2NWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNmYTcxYmY5ZGM4ZWQ1ZDEyYmQyNGY1MmI1ZDQ1ZjI3ZDFlNjg0ZjA3ZjU0OWJlMzhiYmQ3MzM2ZDY4MWI4MmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE5NjJmZTkxNzUxN2UxMTQ2YmRkYjI2YWUzMTcwNzY1NzY5NWI4MzcwMTQ2YzFkMzI1MTk3MmYwY2RkNzE0ZjIifQ"
+        },
+        {
+          "resource": "repo://supabase/tests/agent_thread_rls.sql#L32-L118",
+          "version": "repo-lines-v1:sha256:0ea6162d4ca5497969387f351188c6c07e3d3adf6a9485a089f2eed5e9ec408e:eyJzZWxlY3RlZExpbmVDb3VudCI6ODcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyNThiODdlYjc1NWI2YTA2MmVjM2U2ZjJmNzMwOWYyNzQxNWFjOTExOGE5ZWQwNmQ2ZGJiYTUzNGI0ZmI0NmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ4MjlhYzU3MjI5ZDY2NTA2ODhlMTY4YWY4MDEwMjFmNTdkYWQ5ZDlkNjRlZjk5OTRiYWNlODQ4Yjk1ZGRjODMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5ODA5MjAxN2NjZDI5NTVlNWQ5NDlhOTYzNTc0MjE2MTQwNDkwMDE5Y2ZmNjQzYTEyMDg5ZWFkMzc2MmNkYzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIzOGU5NDdmMzYxNGY0YmFiM2JmN2IwODM5OGFmMjBiM2ZiOTc5YzlkZTA0MzY5M2Y4YmFlMDgwNTQzMTlkMmUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7f06b496452f48699bac71f1171fcb46",
+      "statement": "CI has two verification jobs and no browser or end-to-end runner: app runs lint, tsc --noEmit, npm test, and a build with placeholder public Supabase env vars, while database starts a local stack and runs npm run test:db.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L8-L57",
+          "version": "repo-lines-v1:sha256:7e282fe6a0f9ecb96715da0faad3053dd2a82945785b97a2d6256ab0d08097e9:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ZDgwMTU0ZWQ0MmZjNWM3NzliMTMzMTU3OGI1OGI4OWM4MDFlYWNlNzRmMjRjZDQ4ZWI0YTIzNTc5NDBhOTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZTI0OGYzYjEwN2RmMDI4YjAwNTA0YjQ5YzVjNDI3YjJkMGRkNWU2ZDBlOTY5YmY4NTQ2YmQxNWNmNDQ1OTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjOWJkYTZmMzNiOGM3ZTIzZTE3OGMxNjhjN2NjMmU0M2YwNzU0MGRiMDVlNmEzM2NhNzEwMTc5Y2U4OGJhM2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk3YmZhMmQ3MDk3MWJlNWEwMmVhODU5MTEwNzM2YzJmN2JiNmI4NjE1NGJhNjY4MDExM2U1ZjI5MWZhYTg0NDIifQ"
+        },
+        {
+          "resource": "repo://package.json#L5-L12",
+          "version": "repo-lines-v1:sha256:f661279f3c1420bdfb66016cc97e5c91f5bd9768e9af9a3d52b6126876a570a4:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQ4MzNkNTk0OWMwM2E0MGNhOTUyNDkxNjEwYTY2NTk2NDRiM2FhNDY2MzYyZjc5OTAyMGRiZjE5ODE1NDdkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGViMThjZmViNzc5ZjU2ODNiNjFhMjA4MWRkY2QxNGYzMDMyNmZiNWYyYmQwODViMmIxNDkyZTk1MzliMTFiNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTlhOTIzODBkOWJkMjVmNjM4MDA1NDNmYWMyMDBjMTY1YjZiYjI0OWMwYjI4NGNmYWYxMDcyODJhYTk2ZGJjMiJ9"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.6.0",
-    "at": "2026-09-25T19:18:52.086Z"
+    "at": "2026-09-29T00:58:03.170Z"
   }
 }

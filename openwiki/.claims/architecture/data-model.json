@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:2497d87cdf13efbd704e86e377ad7fa5d1be8edd9a5f66e3f7d0f7e3f9efe006",
+  "pageVersion": "sha256:94dc4fca1039b1ace94d99963f82031b64f2b35713d5e259c0ebcdad351f9512",
   "claims": [
     {
       "id": "claim_02b8758872ad4b31bfb5b04c0b8584e3",
@@ -225,10 +225,116 @@
           "version": "repo-lines-v1:sha256:7914526640afce00f07ded0b5ea4e14981713858906f148f9f3f35af552843ea:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmNzVjMDVhZDU3YTA5MGQ4NDNmMTgxMTJjZjlkMDFlNjM0NzhmNjk1ODJjZjhjZmI4MTNkYWIzY2RjYjlmNzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiZDQ2OGIzY2JkYTc3Mjk1MWY0YzIzMDJmNmJjODk2MGY1MDMwZTkwZjY0Yjg1YjYxYjY4YTJiNWUyNzJmMjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
+    },
+    {
+      "id": "claim_06681428c5324e8d86c12bab49f4af9d",
+      "statement": "agent_thread and agent_message are shipped owner-scoped Postgres tables, not a planned schema. The first migration created one thread per user; the later migration allows many threads per user, requires an app-supplied id and a non-null title, and is mirrored by generated Database types.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/supabase/types.ts#L17-L75",
+          "version": "repo-lines-v1:sha256:f17c3d07fe3fe186648f4f02acb4f744d386f731126b2fd5e8d0a52f73bd65ed:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzYjhlYjcwODZjNzYyZTJiOTM1MmFmYmRmYjliNGIwYjljNmUyZmIxMTYxODFhMWI3YWFlNzQzN2E0ZTExNDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliNjJmNjBkODU5MGE1NzljZjQ2ZjhkNjczNzhjNGM1NzJiOTYyY2VjY2RiOTBjN2E1ZjdiNDJiOTYwNzgyYTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYwMDcyZmM3Y2VhMGFiOGQ3MDJkMGE4NjRhYWZkYzQyMjFkZTEyMGRkYmE5MjVkYTg2NDEzNzMzZDMzMDM0NjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkOGFjODhmMjNlODVlN2QwNTQ2YjE4YjNjYzQ4ZjM1MmM4Y2U0OWUzYjk2ZjlhZGYxNjA1OWZiZjJjNjM2ODYifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260920181553_agent_threads.sql#L1-L44",
+          "version": "repo-lines-v1:sha256:05a04459949c0983ae6a66d87767232e656c9373752b889861c65b3312599261:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmNWY0NjUwMWNlNjBiMjlkMDgyNzkzYjY4MTM2ZTQ3M2JmNWQwZTM2YTZlMGI1ZDYwMDA1YTgzMjhjYTVhZTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5MmEwNGIxNjYzNTVlYWJmNmE3OTA2YzhjNTJmOWRhNDE3YjZkMDA0MjM5YTYzMTUxZTYwOWYyYThhMDhkZTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260927170000_agent_multi_thread.sql#L1-L43",
+          "version": "repo-lines-v1:sha256:a17e15e5ebead3e65e0b4f79222511f51ff63ce5f67bc0daf57fc9620bbd72ee:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3N2JjZGNjMGFhMzQyNzlhZTIyMjk0M2ZjZjZlNDAwNTUxZTA0NWNhNmVhOGJlMWRmNjQ5NzQ5N2YwNjllOTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxZWZmZGIwMjk1ODVlM2NlYjUxMzlkMWUxZjQ4ODgwMGY1YjAxNjhjZWM0YzIzNGVmMzExMGIzMTMyMTk2ODAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_db67d004d19b40f7a77dc1defc466d8c",
+      "statement": "agent_message (thread_id, user_id) references agent_thread (id, user_id) on delete cascade. RLS only checks each row's own user_id, so the composite foreign key is what rejects a message attached to or moved onto another user's thread, including for roles that bypass RLS.",
+      "evidence": [
+        {
+          "resource": "repo://docs/DECISIONS.md#L738-L743",
+          "version": "repo-lines-v1:sha256:aece68478e490ca053d672e3561c50ef10f89342d5aee1790a6a5bcde08891f8:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWVmYzVlM2JmYTRmMzhkMWI2ZjgxZjFmMzM5NWIyZDAwOGM4NjIwNmE4ODFhMmQ1NjIyMzgyMzRmYzA2NWMzOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWIzMDc5MjI4YzkyMTc2MjNlNmYyODQ2Mjc1MTNlYjYyM2ViYjE5ZjFlYzkzOTA5YzRkN2U0OWIwNGRjMmViOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzVjZjg1MjZkMzFmNDFlMGM5YzAwYmMyZWI3MzRjMDI3NThiYTg0ODdlNWQ0M2YzZDMxM2U1ZTNkNzVmZDhlNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjE0Nzk0YmQ3YTllMzJkNTFmODUwMTE4OTNkZmU0YTU0NzczNGIxYThkNDI4NTZjZTVhOGRjOWEwZWM3MWY4OSJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260920181553_agent_threads.sql#L26-L41",
+          "version": "repo-lines-v1:sha256:cf63da975301555dfb730d405531378a4797ed2216a52c1c6e868a7796c3efc4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ZjIzZjE5M2ZlODA3NGI3Mjc3N2Q2OGMwNTQxODYzMzg5OGE1MDgzNTkxOGM1YWMyM2E3NTFhNTFjYzg4MzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhMWRlZDRkYzIwNjExMzkwZWM5MWFlYzk0YTUxODUyNmRmYzhhYTFhMzc4Mzk1Y2U0MDJhOWUzZWMyYWIyOWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1OWE3MTA4NzhlZmQ4Y2UzMzk1OTk1NDU3YWRhM2MwMzc1ZjU3Y2ZmYzkzMjM4NDE1YWNmODZiZmViMjNmY2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0MzgwM2IxMWYxNjJmMTRhMTEwMGEyZmFjOTY5OTYzYTEzMTU2MmVlYzg2NmUwOGRiN2NhMDBjNGY3ZTI1NjgifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260927170000_agent_multi_thread.sql#L29-L40",
+          "version": "repo-lines-v1:sha256:e4f399bd018b37b7330b12741478361c591b688d0fdf23a94994f2fe747fa24e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1NjY1ZTVlMWVmNDY4MWRmMWVhYWUyNmNiOWNkYjVlMTE1YTFhZjVhODA0NTZiYjEwNjI5MzlmMWM5MTkwODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5MjYzNTZkYjYyYTEyN2Y3MjFjM2Y4MzU4ZTU2MWU2YjZlNTZmMzA1YjRmMjRkNjMxODQ1MDE0NzJiZDE2NWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5Mzc4MjMxNmViNDFjOWY5MzJjN2RiZjVjNzc4MDhjYWM3YTdhZmFhY2QyM2FkZjJhYmFhNDc0NzYyZTdmZWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE5NjJmZTkxNzUxN2UxMTQ2YmRkYjI2YWUzMTcwNzY1NzY5NWI4MzcwMTQ2YzFkMzI1MTk3MmYwY2RkNzE0ZjIifQ"
+        },
+        {
+          "resource": "repo://supabase/tests/agent_thread_rls.sql#L81-L100",
+          "version": "repo-lines-v1:sha256:bd8637be3b3ed1717f8edbc382ada269d0a0f501eb96ce626fb8a39e98b07f61:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzN2ViMjVmZDdmZjJhNGY4YWQ5M2IxMTk0MTNlNGJiNzgxYWY0MjMzNzFlYzVkZjE3ZjM5M2I1OWFhODg0MzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliYjQxN2MzZDZiNjQ2ZTI5ZDM4ZTFmY2NjYTc1NDJmMWRkZjEyYTkyMDZkZTc4Y2JhNzE2NWE0MWFmNjVkNGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBkNjVkZjlmNThhNTNlYWFlOWY5MmNkOWI2NWE5OWVmZDI0YWJiMGNlNjczMjQzYjk3MTAwMWMwZDYxYTlkNzAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d33aa37fbf404b24b0a5cb19efbacccc",
+      "statement": "Thread titles are required text derived from the first user message with whitespace collapsed and cut to 80 characters, or New chat when that text is empty. The multi-thread migration backfilled existing threads the same way after deleting empty Slice 0 threads.",
+      "evidence": [
+        {
+          "resource": "repo://docs/AI-COACH.md#L81-L96",
+          "version": "repo-lines-v1:sha256:bd61086fc441bd3d59904f849fd2755c92998659780bafa712c1ddf385d77196:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmNDJmZDIxYjViYTBhMGE3YjFiYTAxYTQ2ODAwNDQ4ODc5Zjg5YmZiYzFlYzg4OTQ1M2MzZGNjNTczZjM2NmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMwYWM4NmRiODM2NTE2MTliYTJjMGYyN2RjZGRlNWQ3NmE1YmQ0ZTQ4YmE0NzIwMmNiMzkwNTAwMzdkZjZmYmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEyOGVmN2YxZDNmZTAzNmEzNzI4YTY5ZDRhZjRjMGU3Mjg0NzJlYmQyYTY4MGU5ODRmMWRjNjBiNjhhMTYzZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlNmUzMzk0OWIxZTBlNzU0NzBmOGM1YzkxMWVhMjc1ZWQ1NTE1MmEyM2RhZjM3OWIxMTU5MjAwZWEzNjU3OWEifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/chat-state.ts#L69-L73",
+          "version": "repo-lines-v1:sha256:2945587b3a52272e63c9cb58674f519041550199e9be4805845ff9ba8d183a1a:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjA2NmVkMGQyYTA5NmU2MTU1YjlmNmQ0ZDU3NTY5OGI5NTQwNjNhNGM4ZGE0ZWU4OWM1YjdmYjIwNjY5MzVlMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2MzODhhMDNkZjMxYWY5ZTUzN2RlNDhkZDBjNzEyYzJjYThlMDNlMWNiNjM4MWMxZGU0MDljZmU5YjlhN2U4NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmI3ZWJmMWY2M2Q3OGNiOGFlZWMxZjdlN2FjNjgyNTM2Y2VjNjY5MzQ5MzZjYjRhODFlNDg1YjY4ODI0NTc4YiJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260927170000_agent_multi_thread.sql#L1-L26",
+          "version": "repo-lines-v1:sha256:998de62155e033228f2a9b0ae7dcb0665cf0c4220ec70f059fbd8ea060bebd8e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3N2JjZGNjMGFhMzQyNzlhZTIyMjk0M2ZjZjZlNDAwNTUxZTA0NWNhNmVhOGJlMWRmNjQ5NzQ5N2YwNjllOTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFjZTVmZjY0YmU1ODQ4M2VjNDg1M2E1NWQwZDU1ZjdiMzFjMTFjZGQxYTI0YjU3YmM0OTYzOTM4NGU3MzBiNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMzMjk5MTFlMzZkZDFkOTg5NWUyZjRlNWQzYjkyZGI4NzNjZDU4OTkzZTRlN2I1OWRkOGViMzdhZmUxYzk5YTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2d696ab2106c451c9e00693305164daf",
+      "statement": "History order is agent_thread.updated_at descending, backed by agent_thread_user_updated_idx. Each persisted message stamps the thread's updated_at to that message's created_at, and the history list returns the latest 50 threads.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/agent/thread.ts#L111-L117",
+          "version": "repo-lines-v1:sha256:588285769b842183ccf707fddded36b5185c59aa4bcfb4091c7a697d6450485a:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjc2ODBlZmE3Mjc3ZmU4YzFhY2E0ZmFiNTIxOTUzYWUwN2NlZWJkZjIxZjAwNDNiM2JiYjljMTM4MjE1OTlhMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWI3MTdjMTMwYWQ1NGU0YzA0YjI3YWI2MjQ0MjU1OTk3YTAzOWVmYzZmY2IzYWQ3NmQ5MGJiZGIzNWE0ZjJmZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDY2ZmRjZmU4NzYwMmRiM2YzODE2YWMwZjI0MmEzOWIzMWIxNjdlODRiNTA2MTlhMmYzNDEzNjQ1MDI2ZmE2NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzQyYmFhZGMyNGQ2Y2E1Mjc4ZDcyMWVhNWI3MjViNmU0MjBhOWY3Y2E5NjI4YTU4MzE0MTk4MGZjNjhkNzAxOSJ9"
+        },
+        {
+          "resource": "repo://src/lib/agent/thread.ts#L156-L202",
+          "version": "repo-lines-v1:sha256:8daa77063912ffe964ff694dad3b68f23740c4ff1ec319460f4ef4bb28db5c56:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjNGEzZWNmMGI0NzY1ODQ3YWNiMjQ0NTU2NmY1N2RmODBiYjcxMmI3OTc3MmRiMmY4NDQxNzVlMTFmYjk3MjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlMjk3MGFkMmM1MGRiMzVjYmVjNjU0MWUxNWJmNzE3MjA5ZmMyOGIwZmNjOWI0Yjk4YTM5OWI2YjI5OGJjMzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkMGYyZDNhM2FhZGEyNzU4NjQ1NzhkMGE0MzkxNTYzOGQ1NDNmZWNhMmM5NDg1OGRiOTQxMjExZTg2Y2VmMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImExMWMwNDBjZjdiNGY0NWU3ZDRmZjNhYjU2YzY3ZWQ4Mzg0NjE3NDgxNTBhNWEzMTgwOWFmNzA2OGUzYTFiOWEifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/thread.ts#L26-L27",
+          "version": "repo-lines-v1:sha256:e422b410759018df5c2641f4d2efb0e4e3bc8bb8ae56c17482b37db9f82b4e43:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmJmMWE3NjNjNmQ2NmJlZjYwYmZhZjZiYWY4MWRkOTIzYjEyYjg5ZGUyYmJmNGM0ZTJmOTRlYzAxMDBmYjA2ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjNjMzMzZDRjMGRiYTAwNzIyMGY3NjliMDFmMDNhMTc0YWJmZGJhNTVkYWM3NWFlZDkzZDliYTIwODcwZmJmNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDYyMTE1OTkyY2YwMGE3MjQ0NWNhOTYxNTMwYWM5OWU1MzI3ZWYxYzJjYzM5NDIxMzZiNmJlY2I2Mzc5Y2ZjZSJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260927170000_agent_multi_thread.sql#L42-L43",
+          "version": "repo-lines-v1:sha256:3b64ed805bc9db6b612ab533567212936514f82f0954b747086aa1190eda95ae:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTJlMTA3OGZiMTViZDZkMzE4NzgxMGNiMzUzMDczYWY0NjdmZDVjMDhkMzE1OTliM2MxNDAzOTc2NGI0ZTIxZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDFlZmZkYjAyOTU4NWUzY2ViNTEzOWQxZTFmNDg4ODAwZjViMDE2OGNlYzRjMjM0ZWYzMTEwYjMxMzIxOTY4MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDEzNDBjOGJmZjc5ZWZhMjA5OTZjOTU3ZThkOGFhZDYyYjJjMjM4NDljOWFlZTVjMDE1MGJmNGJiZTM1Y2Y4YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1b58fe68e6ed4cf6bd4f899e55126a77",
+      "statement": "Agent conversation rows are independent of the training ledger. They do not reference program, session, or set_log rows, are not rebuilt from set_log, and writing a message does not mutate training data. A new chat has no row until the first send, which inserts the thread and then its first message and deletes the thread if that message insert fails.",
+      "evidence": [
+        {
+          "resource": "repo://docs/AI-COACH.md#L29-L32",
+          "version": "repo-lines-v1:sha256:94eca5f153f892d6a7365d28bf5454c5688b312be3e099ee6903ca8529f7c611:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODNiOTUyMzY4OGI4YmU4MzM2ZjhjZDdhYzlmNjU5ODMzY2E1Yjc0ZDFhZDZhOTNhNmNjMGYwYTY4MmEyZmMwZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTMwMjZlYzZmZGUxYjM3YjNlNWFlYzIwMWFiMzc4OTQzMjk5YzVkMTVkZjc0MDllM2E4OGU1ZTY2ZjNjMjU1OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTAzYjM1MGY5OWUzYzVlMDYwZTM1MWU1ZTg1ZTE1MmY5YTBhYzI5ZmQ1NGNjNjU5MTYyMzE4YWE5NzI3YjAxYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDVkZDYxMzIwMTg2ODU4YTk0ZWVhNjc4OWE2NmVjYzA1MDFiN2Q3OTc4Mzk5NjliMDY2ZmNkYzFhZTMwNDY2NyJ9"
+        },
+        {
+          "resource": "repo://docs/DECISIONS.md#L725-L729",
+          "version": "repo-lines-v1:sha256:60be17ae400ab2cb44e2ad8a74510701ad430aef34e185443d03cc9e0c5aa9da:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjI1NjBkYzE5YWYwM2FjNThhYzYyNzE3ZWFmYzRhNjk3YWRlN2I2ZTFhOWQ4YTE3NjZmMmQ0MWE3MTM5OTE5OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGYxOGQ1NmJlNzE0MGFjMWQ1ZjRjYzFlZDk1ZmI3ZWMzOGUwMTQ5MzIxZDBlMjg4MTAwNDA2ZDA2YTFhNGRlNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWJlYjg4ZDg1MzA3NTM5ZmQ5YWQ2NzM0ZjJmZGQwYWQyNGJjZjA1NzljMTgwNThhYWZkYjljYzdmYmM2NTZmMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDAyZjNkZDcyZTYwMTA2ZWQxZDc2YzBjY2ZiZDk3MDBjOWEwY2ZmMjE2OThiNjgwNWE2MTAwODI2YTQ0MGU0MSJ9"
+        },
+        {
+          "resource": "repo://src/lib/agent/thread.ts#L89-L101",
+          "version": "repo-lines-v1:sha256:72b1a5b55ca8c87d2d8c896a4be4d8e60ec337081428ac4404fedc0815d9faec:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1NDZlZGIzZmQwM2JiMWFiMTExMWFjMjQxM2JkYjYwYzg4MGYzZmFlODk2ZDg1Y2MwNjkyNDdiYmJhNWJhOTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFhZjUzZDhmYjg5YTFiZWY4NjU4MGQxOGFhOTM2YWNiMmFhMjg4NmNiNWIzNzA2MzA5ZThmYzFkMjM4M2VjMGUifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260920181553_agent_threads.sql#L4-L21",
+          "version": "repo-lines-v1:sha256:05be21799072072c73d2f1c2f3615ab847b466cc3c7a1b3186003e58022d791e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlYTFiNTlkMTM2ZTU1YmFkZjlmNjIxY2I0MzBlNWU0ZTMyZGU5NmZhZDFkN2VhZDQwYTU5NTBjYTE0NTcyYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdiNDUyZjJiYmQwZjU3MzkxYWYyYjgwMTRiN2RmZGZiYzIxOGQ0ZTQ5N2M5YTAxOGMzMzBiMTJlOWM0NTU3N2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczMTUzZDliMWEyYjIwYzg2YzI3N2FlZmYyOWZlMjIyOGYzMzI2ZTcyNGVjMzMyOGFlZjFjZjM1NTJlMzA3MzEifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260927170000_agent_multi_thread.sql#L33-L40",
+          "version": "repo-lines-v1:sha256:7e9be438a73d8833ca0a6a7086d6dec89218850859ec572a91f2069fe0d8df41:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODhlNTkzZWJlYTMxNTg4ZjFhM2I0OWMyMzU2ZGZkN2ZjNjE0NGI2MDg3NDE3ZDllMzgzZTA4ZjYzMWExZTRhMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjkyNjM1NmRiNjJhMTI3ZjcyMWMzZjgzNThlNTYxZTZiNmU1NmYzMDViNGYyNGQ2MzE4NDUwMTQ3MmJkMTY1ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjc1MjdjNzc1M2QwNzM2ZjNhNmE4NGI5NzNjZDhmNGNkYmYxZjdjMDdlMWM2Y2Q0NjBmODk5Y2I4OGM0Y2IxOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTk2MmZlOTE3NTE3ZTExNDZiZGRiMjZhZTMxNzA3NjU3Njk1YjgzNzAxNDZjMWQzMjUxOTcyZjBjZGQ3MTRmMiJ9"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.6.0",
-    "at": "2026-09-25T19:18:52.086Z"
+    "at": "2026-09-29T00:58:03.170Z"
   }
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:b4752b2f13d4fc5b7acc147d7091e3cb2c48578a4a11c51383c87c72286b907e",
+  "pageVersion": "sha256:94eaa0a3267e64ac1efbefacb5a417c3e69260a94269cf96d38783fcae4cccfe",
   "claims": [
     {
       "id": "claim_abb6459621054ee39c84a7f149c464fa",
@@ -231,10 +231,108 @@
           "version": "repo-lines-v1:sha256:82ad6b876edbc78077d6ee44f0aab80fccb881d1902e21919a64a6b4c451594d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxNjQ2ZThiNzljYzdmNmY1MmExMzdjNGJhZDRkNzE5OGIxMmQyYWMyOGRkNTRkMmFkMWEzZTIyNDBmZGE3MWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2NDdiNmNiOGJkNWViMjMwNGQyNTFjZDEyODQzYTVlMmRlYjY1ZmFlMDI4OWMwODEzN2VhMDk0OWM2MmZmZGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzZTEwOTFjMWU5ZGFkNzA0NzY0MTY2YTAwMzA3NWY4NmM5NDRiYTA2NTgxZjQ4ODI4MzFkNTVhMzA3NTQxMTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2ZTg1YTJjYWY1MjU3N2VmZjc3YmY4NGYwOWU5MWQwMjk0NTUzYWNhYjUxM2I5ODFmODRiMzZlM2RkYTljYjkifQ"
         }
       ]
+    },
+    {
+      "id": "claim_309dce8a36db496a94d6a83ea5131cdb",
+      "statement": "The agent chat route authenticates with the cached publishable-key server client and getClaims(), then passes that same client and claims.sub into thread persistence and read tools. It never uses SUPABASE_SECRET_KEY or the Coach secret client.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/api/agent/chat/route.ts#L1-L17",
+          "version": "repo-lines-v1:sha256:2a065a43445ac2c4b51a036bb531f9621fd4f1db1f7c7458f4a357c9f166b346:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwNDkxYmViMjQ4ZGIyN2YwYjJjNzAwMDE4YWExZGUyMjg4MWUzMWQzMTA0M2EzMDE1ZjNmMTAyOGVkM2M0MTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyODcxYzIyMGU1ZTQ0YTUxZWI2ZGViM2ViYzEwOWNkNDM0ODM4NjgxYzIzN2QwNmI3MTA2MDgwMmFlYzlhOGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/chat-handler.ts#L17-L58",
+          "version": "repo-lines-v1:sha256:f6851aca95f1c09e107352046c1a85369348cbb431a5a0054f787a18612f17e5:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5NmFjODBiYWZkYTA4ZDliMmFmYmVhZjk4ZDBhOTRkNzAxZjdhNDhjZjU5MjllZjdmNzNjODQ2NzYyZTg3NDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhMzdlM2MwOTQxZDE1NzdjMDM5OGUzYjY3ODRlZjNiM2YwMTI4OGJjZGVjOWE0YmJhMWFiZmFhNzQwYWI2ZjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjNGQ5ZjNmMDYzYmQ3MWNhYzZjMjA5ZDExZGQ0NzYzMDE5MjAwYjMyODU5ODllYTYxNTAwMmFhOWM4YzUxZGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwNjdhMTdkMjYwMGYyOGFhNjJmZDE4NTVjNWVkNmVkMTNmNDI1MTg3ZDVjNzAyYjk1ZWYwZDczZTNlYTg5YTAifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/tools/index.ts#L16-L56",
+          "version": "repo-lines-v1:sha256:7a7de60c29281cf738a11443185ccf301a658f6f135d3fe76749b7746cfb0cab:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyZjU1YWM2NDgxOGY0NjQwYzFiOWM0ZDg0YTcwNzdhNjE3MzdkNWQwNTMwNGRhZTFiZTBmM2FiNzdlNzIxNTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA0MDE5MGEzMDU4ZDliMWU3NmIzYzU1MzdlNzI3YjViYzM2ZGIwNTU0Yjg3MWU1MGRiYjhkYzk1Yjg2OTgyNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFhMjkyMmI1ODYyZTgwYTljOWNkZDBkZjk0YTkzOTY0ZWFjNjU4MTNiN2FjYTZkYWNkNmI2YTJjNWI5YzA4MmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMzNzdhZWRlMDE4MjVkYzI2ZDQyYzM1OWNlMzFlOTViNGVkMzgzNmRiYjdiNWI0YzdhOGVhZTY1Y2E4MmY4ZTEifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/tools/weekly-coach.ts#L7-L15",
+          "version": "repo-lines-v1:sha256:863937e4c94a4a43c396cecea5f98b9fca7f7cc3eb1e12920936198c12ea1aea:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2E2M2U3YTlhNzk5YjlhNmE0ZTNhMDkyYjliMjM0NzljYzcwYWVmMjljZDQwYWFkOThjZjU2MjYzZDVjODAwNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDJhMmNiMjVhMTIyYjQ0MjIxYTYyMzRlYzY2MGE3YjVmYjdmOWJkZTdiM2I5ZTJiM2M1NTlhMGQ5NmZhYzczOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWFiNjRmNTVlNjJlYWYyOTE0ZDBjMWE2YzRhNDEzMDAzYWNhYjQ5NGU2NDU5ZWZjZGVmZGNlZGE1MmM5YzVhMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://src/lib/coach-weekly-data.ts#L196-L204",
+          "version": "repo-lines-v1:sha256:db2169a1705da05f3999c7f7854c4fd28d03f910f01425ee6bd8d3911c2dd9b9:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDUyMzZiNjM0ZGQxYWNjNTEyMTVkMTBhNjA4YTVhNGRiZmJhMzQ1OGZkZDdhNzc4YmVjOGE1MGYyZGRhZTgwNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTY4NDc5N2QxNDcwYThiZmY3YmQ1YTZhMDIxNGU5NWI5ZjMzMzA3ODgxZTY2YzM1ZmY3MDA1ODFjNzIwOGJkZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_5142ca524d7e40c8bc6766cb0c5cc82a",
+      "statement": "agent_thread and agent_message enable RLS with authenticated-only owner policies and grants. A user may own many titled threads; thread ids are application-supplied because the database default was dropped and the one-thread-per-user unique key was replaced by unique (id, user_id).",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/agent/thread.ts#L89-L117",
+          "version": "repo-lines-v1:sha256:a842cdffdc15e46614fad8e74fd8ed134a8210870a6f9d1424b30f61ef695f0c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1NDZlZGIzZmQwM2JiMWFiMTExMWFjMjQxM2JkYjYwYzg4MGYzZmFlODk2ZDg1Y2MwNjkyNDdiYmJhNWJhOTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiNzE3YzEzMGFkNTRlNGMwNGIyN2FiNjI0NDI1NTk5N2EwMzllZmM2ZmNiM2FkNzZkOTBiYmRiMzVhNGYyZmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM0MmJhYWRjMjRkNmNhNTI3OGQ3MjFlYTViNzI1YjZlNDIwYTlmN2NhOTYyOGE1ODMxNDE5ODBmYzY4ZDcwMTkifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260920181553_agent_threads.sql#L26-L44",
+          "version": "repo-lines-v1:sha256:b0f79f7c514b57b8cbd2f8c20d4ad0d2d5cbf126c3ac8b318c8a58a75a025ff0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ZjIzZjE5M2ZlODA3NGI3Mjc3N2Q2OGMwNTQxODYzMzg5OGE1MDgzNTkxOGM1YWMyM2E3NTFhNTFjYzg4MzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5MmEwNGIxNjYzNTVlYWJmNmE3OTA2YzhjNTJmOWRhNDE3YjZkMDA0MjM5YTYzMTUxZTYwOWYyYThhMDhkZTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1OWE3MTA4NzhlZmQ4Y2UzMzk1OTk1NDU3YWRhM2MwMzc1ZjU3Y2ZmYzkzMjM4NDE1YWNmODZiZmViMjNmY2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260927170000_agent_multi_thread.sql#L26-L43",
+          "version": "repo-lines-v1:sha256:4f9737c4e2bcbe67209181f581798916c9d5d44bd537797f4727a8f86eb29cf1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFjZTVmZjY0YmU1ODQ4M2VjNDg1M2E1NWQwZDU1ZjdiMzFjMTFjZGQxYTI0YjU3YmM0OTYzOTM4NGU3MzBiNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxZWZmZGIwMjk1ODVlM2NlYjUxMzlkMWUxZjQ4ODgwMGY1YjAxNjhjZWM0YzIzNGVmMzExMGIzMTMyMTk2ODAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYyZDdiOTFmM2Y4ZWMzZDMxNWYzMzFkMmM3MDJjZTEzMTJlZDI5NmQ4MTU1ZGUzYTlmZmU3ZjIwZTcwYWNjZTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3c1363d5ccbf44cdabe5dccc7cd77284",
+      "statement": "agent_message_thread_owner_fkey is a composite foreign key from (thread_id, user_id) to agent_thread (id, user_id) with on delete cascade. RLS alone cannot stop an owned message from naming another user's thread id; this constraint rejects that attach or move with 23503.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/supabase/types.ts#L42-L49",
+          "version": "repo-lines-v1:sha256:eb54ddc2580a4d1153a2379466bab3460ede66bc1023abc07ac81e60b468e3d8:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTFjMTliOGE5Y2IxNzk2MTA2ODJlNTEzZTkzYjRkZGQ0MTIxNTljZDk4MWFkNWYxMGQzY2JjMThkMTI3NmU2YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzExZTFlZDgwZDJhMjU0NmQwODlhNjZiMjY0MTVkMGEyYzVlOWNiYjkwODY2ZmVlZmEzMmQ1Y2ZlOWM2NTc5MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWExMGI5M2UwOWJjZDMxOTY0Y2IzMTg2OGMzMTAxODU1MzRhZTAzNGNhZjcxNDdiZjU0ODNkMDI3YTRkNDZkZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTk2MmNlNTdlOWQzNjM5ZDA5Yzk1ZDIyNDQ1YWU2NjIxZDI4NDE0OTg2YjMyZWQ5NjljYmY0MDlmN2JjYWY4MiJ9"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260927170000_agent_multi_thread.sql#L33-L40",
+          "version": "repo-lines-v1:sha256:7e9be438a73d8833ca0a6a7086d6dec89218850859ec572a91f2069fe0d8df41:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODhlNTkzZWJlYTMxNTg4ZjFhM2I0OWMyMzU2ZGZkN2ZjNjE0NGI2MDg3NDE3ZDllMzgzZTA4ZjYzMWExZTRhMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjkyNjM1NmRiNjJhMTI3ZjcyMWMzZjgzNThlNTYxZTZiNmU1NmYzMDViNGYyNGQ2MzE4NDUwMTQ3MmJkMTY1ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjc1MjdjNzc1M2QwNzM2ZjNhNmE4NGI5NzNjZDhmNGNkYmYxZjdjMDdlMWM2Y2Q0NjBmODk5Y2I4OGM0Y2IxOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTk2MmZlOTE3NTE3ZTExNDZiZGRiMjZhZTMxNzA3NjU3Njk1YjgzNzAxNDZjMWQzMjUxOTcyZjBjZGQ3MTRmMiJ9"
+        },
+        {
+          "resource": "repo://supabase/tests/agent_thread_rls.sql#L88-L100",
+          "version": "repo-lines-v1:sha256:018c50b9d27d26e80bf5135f6b4177b67a886e1d07ce4e28949395b4d3b14f27:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzN2ViMjVmZDdmZjJhNGY4YWQ5M2IxMTk0MTNlNGJiNzgxYWY0MjMzNzFlYzVkZjE3ZjM5M2I1OWFhODg0MzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjljZDMxNTlkOTBlM2ZkZTJhMjQyYWE1OGMxOTI5YTkxNDg1MmVjODkyYWMzYzk3NmNkN2EzM2M3NGEyMjVjZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBkNjVkZjlmNThhNTNlYWFlOWY5MmNkOWI2NWE5OWVmZDI0YWJiMGNlNjczMjQzYjk3MTAwMWMwZDYxYTlkNzAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_77f400520a8141abace305c85eaadb21",
+      "statement": "startTurn opens a thread by inserting an app-chosen UUID v7 and its first user message, deleting the new thread if that message insert fails. Continuing a thread the caller cannot see returns null, which the route turns into 404 without running the model, and each saved message stamps agent_thread.updated_at.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/agent/chat-handler.test.ts#L248-L259",
+          "version": "repo-lines-v1:sha256:0bb5a9e36a05062587e6fdc0229513d160be82472092ff03c939fe0571dd6737:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyMmZjY2M1ZGJkZWU2ZGIyMGNkNGNmOTcxOGE3YzQxYzU1MWEzMWRjYjMzMDM5NzhiY2FhODRmZjk1MTJmZDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4YWRjMzZlZmU4Y2YzNDgwZjQ1YWNkZGRjZDZlNzY5YWZiNDFiMzk0MDVkMGYxMTFkZjVhZDM2OGFmNTA1ZGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4ODNjZWQyZjg5N2RkNDhmNjBlZTY1MmI4MDBkNjg4Y2Y5ZmY3NDQ3OTBmOGJkNGRjODU2YmM0OWNmYTk1MDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3NzlkMTE4ZDZlM2NiZjQ1MDUzOTc0OGRlZTdhNDMwN2FjYmU2NDQ2Y2JhMjk3ZjI3NjBmYTVkMGJiYTFiYzIifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/chat-handler.ts#L33-L43",
+          "version": "repo-lines-v1:sha256:559e6c6527036faa879483c0e0b859b5dfac7b90b40f28f926b1089978582967:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiOGY5MzcwNGYyY2M1MDg4NGJiYTJlNWFkNmM4YzNkNjA2ZTIxMjA2MDgwYmZiZmVjYmNkOTZiNmM2MjdlMWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3ZGFjM2E1MmRiNDU5NTAyY2U0Mzg2OGUzNDc1YzdjYjU5NDc3N2U1MjMxNjBjYTNiNGVkOWYxNDI4MWE0YWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJhY2NmZjcwZDdiNDc2M2JiZjQwMmM1YTA0ZjAxNmZmODAxNTAwZDUzMWEzYThlN2MxZDMwYzEzYTZkMDg0OGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjYjAwODllNzUzNDNlMDllYjdkNTJiYmM0OWIyY2RjMTZmOGQ5NTUzOWQ0ZDI5YzBiM2VkM2FlYTcxOTZlOTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/thread.ts#L156-L202",
+          "version": "repo-lines-v1:sha256:8daa77063912ffe964ff694dad3b68f23740c4ff1ec319460f4ef4bb28db5c56:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjNGEzZWNmMGI0NzY1ODQ3YWNiMjQ0NTU2NmY1N2RmODBiYjcxMmI3OTc3MmRiMmY4NDQxNzVlMTFmYjk3MjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlMjk3MGFkMmM1MGRiMzVjYmVjNjU0MWUxNWJmNzE3MjA5ZmMyOGIwZmNjOWI0Yjk4YTM5OWI2YjI5OGJjMzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkMGYyZDNhM2FhZGEyNzU4NjQ1NzhkMGE0MzkxNTYzOGQ1NDNmZWNhMmM5NDg1OGRiOTQxMjExZTg2Y2VmMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImExMWMwNDBjZjdiNGY0NWU3ZDRmZjNhYjU2YzY3ZWQ4Mzg0NjE3NDgxNTBhNWEzMTgwOWFmNzA2OGUzYTFiOWEifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/thread.ts#L59-L101",
+          "version": "repo-lines-v1:sha256:acf5733cdfeeb4f245cd05b7c057e514cb11c9c5f04a248a01a7038622a88c57:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwZjMyNjg3Yjk3MmQ4MTBmZTE4YWZmNDVhYzU0ZTVhYWE0Yzg1OTgyNDRhYjQzZjBjYjMzOTk2Y2U3NmQ5OGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxNzhkZjJjYzNiOWViNzNlNDNiMzY0ZmRlNzI0Yjc5MWZmZmY3NGE0NzBmM2YxMjNiODYyYzY2YWI5YWM3YjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFhZjUzZDhmYjg5YTFiZWY4NjU4MGQxOGFhOTM2YWNiMmFhMjg4NmNiNWIzNzA2MzA5ZThmYzFkMjM4M2VjMGUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_dbd2793da90e4be6859ae6a466336a31",
+      "statement": "agent_thread_rls.sql is a pgTAP ownership regression in the test:db glob. It asserts the authenticated owner sees only their own rows, can insert and update their own message, can start a second thread, cannot write another user's rows, must supply a thread id, and cannot attach or move a message onto another user's thread.",
+      "evidence": [
+        {
+          "resource": "repo://package.json#L12-L12",
+          "version": "repo-lines-v1:sha256:d62a5cd60fbdce25eb0594cd1824aa4b408ff15296e29d06995b38ddf72bd69e:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODBiNTdhNTNjNzM1NWEzYzMzMDBmNjFjZmI4ODAzNDBkN2ZlM2ZjZGMxZTg5MGVkNTBiZTI3OGFmZGM4YjFjMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTlhOTIzODBkOWJkMjVmNjM4MDA1NDNmYWMyMDBjMTY1YjZiYjI0OWMwYjI4NGNmYWYxMDcyODJhYTk2ZGJjMiJ9"
+        },
+        {
+          "resource": "repo://supabase/tests/agent_thread_rls.sql#L32-L116",
+          "version": "repo-lines-v1:sha256:9a755e0037a0d1849ad5acb67cac6d604c4a42fb0751aea72512b1741c98e816:eyJzZWxlY3RlZExpbmVDb3VudCI6ODUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyNThiODdlYjc1NWI2YTA2MmVjM2U2ZjJmNzMwOWYyNzQxNWFjOTExOGE5ZWQwNmQ2ZGJiYTUzNGI0ZmI0NmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5ODA5MjAxN2NjZDI5NTVlNWQ5NDlhOTYzNTc0MjE2MTQwNDkwMDE5Y2ZmNjQzYTEyMDg5ZWFkMzc2MmNkYzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0NjAwYWI3YTRjMzlkZDEyZWQ0M2RlZjMzZTJiYWRlNTYzZWFiOThiYmIwM2RhMjgwZmI0NzE2ZDE3ZTE5ODQifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.6.0",
-    "at": "2026-09-25T19:18:52.086Z"
+    "at": "2026-09-29T00:58:03.170Z"
   }
 }

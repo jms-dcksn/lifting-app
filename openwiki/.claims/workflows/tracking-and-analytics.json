@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:075bc9080e28c2115ce20319b7653947a9d8be9002e694b86749e62d59dbe631",
+  "pageVersion": "sha256:f69484a23a86fb93b03c935417fcec503e9b958a997be6955abbf44a7728ee13",
   "claims": [
     {
       "id": "claim_ca4e9339787f4eb5bf9b8c935954f68f",
@@ -308,13 +308,69 @@
       "evidence": [
         {
           "resource": "repo://src/app/(app)/analytics/month/review.tsx#L32-L153",
-          "version": "repo-lines-v1:sha256:860b8f2e10de9b34c5ae9a02b9d6b0a6e938ce21e16c40c6f45d060e66af2e64:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjYmEyYzQzMWM4ODUzMzBiZTMxOWZjMWNjOGQyYTMyODkzYjMyNzM1MjUzZTEwNTBjM2ViYmUxY2RlYTFhOWM4IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJjYWM3ZDNjYjY3ZWEzNGQ0YjI5ZjliNzIwZDM1ZDczOTUyNmZhZTQzZjlhMDIyNzFhZmQ3Zjc3MzA3MGQxNmJlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwZWIwMWMzYjVkN2Y1ZTQyMTNhZjQ2ZThjNDIzNjM0MjdkMjIzNDk3M2U1NzVmY2YwODdmMTgyMmEyM2YwZjgyIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4YmQ5MzFkNzc4MjMxYzJiN2Q5ZmEzZmE3MDJlOTUzZTk4ZGE1ZTlkNDRlMzE5ZWEwNmNlYTY5NTZlNDViYWIxIn0"
+          "version": "repo-lines-v1:sha256:7ee15933a6ae5d7a85d74de1c57b6e41f09c05e5b6928c274b8a813cb1867b4d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjYmEyYzQzMWM4ODUzMzBiZTMxOWZjMWNjOGQyYTMyODkzYjMyNzM1MjUzZTEwNTBjM2ViYmUxY2RlYTFhOWM4IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJjYWM3ZDNjYjY3ZWEzNGQ0YjI5ZjliNzIwZDM1ZDczOTUyNmZhZTQzZjlhMDIyNzFhZmQ3Zjc3MzA3MGQxNmJlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwZWIwMWMzYjVkN2Y1ZTQyMTNhZjQ2ZThjNDIzNjM0MjdkMjIzNDk3M2U1NzVmY2YwODdmMTgyMmEyM2YwZjgyIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4YmQ5MzFkNzc4MjMxYzJiN2Q5ZmEzZmE3MDJlOTUzZTk4ZGE1ZTlkNDRlMzE5ZWEwNmNlYTY5NTZlNDViYWIxIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_f73f292f276a4db1928a775a5dcd8dc8",
+      "statement": "Track volume (/analytics/volume) reuses the owner-scoped non-warmup set join and exerciseSummaries, but filters by exercise id across every equipment instance and sums current-bodyweight effective load times reps into Monday-Sunday UTC weeks. It reads the current bodyweight and does not store bodyweight or period observations, and it is not an e1RM, PR, or stall input.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/analytics/volume/page.tsx#L48-L143",
+          "version": "repo-lines-v1:sha256:9ad869e63725cd51e71cc37352b79e85bcc50dbf410bc3f37c9603f4e4d157e4:eyJzZWxlY3RlZExpbmVDb3VudCI6OTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjZDVmYTNiNGIxN2UxNzNiNTk5ODAxNjVkOWQ3ODVlYmE3OWMzMDdmMzk3NDM0MTc5NDQ5MTM2ZWU0ZWM3ODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5YWUxMGI0M2ZmOGRlMDdjODEwMjA5NDhhOTJjYTJhZmFiNjk3MDAxMzU3OTY3NTcxMTRiZWQ4MjA3OGI2NjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkzYWJjNzU3NjJmOGFmMWJlNWE3NjRlNWM0NmNlODg2ZmM4OTVjNmFhZmZmY2Y1MTBiZmE5Mjg1M2NhNWIzNmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwODY3YTYzODc0ZDM0YTJhMDAyNGMzYWRjYzdjNzExMmM2NjUyMzNiNzZhODQ1YTYxNmNmYjNmZmQzNDQ1OTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/analytics-volume.test.ts#L32-L50",
+          "version": "repo-lines-v1:sha256:93cb0f3a2a47572de0c348d2b3ad93efdb1e047f2ce8bc998b89584dc26f1da8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1ZTBlMmZmNWJjZDM1MjU5ZTQ3ZGI0ZmRmNmQ1ZTQzNWU5YWEwZTQ1Yzk3ODI5ZjM2M2RhNTk1NDg2NDkxNTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwOTNlMTI5MDZhNjFmZDVjMDg5ZmVlOGZjYWZkOTUyZTU3YTU5MDlhMjQ5ZGQxMjUwOTQ5OGQyNzFhNzFjOTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlkZWI2YThlMWRmYjM3NzYwMGIzYjk5NTU5MmM0ODk3N2JkMmFmZDdjZDc2YjZjMDA1YWNlM2NiNDMyNTllOWYifQ"
+        },
+        {
+          "resource": "repo://src/lib/analytics.ts#L84-L171",
+          "version": "repo-lines-v1:sha256:6d08a98328926971b2bb8d8ccfa77c89fb29231b3f06a12040177f39d6566ae7:eyJzZWxlY3RlZExpbmVDb3VudCI6ODgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhZGEzMDY1YmFiZDJjMmYzMDQ0ZTBiZjMyMjk5M2QwM2VlYWZhMzYwZDU0OTU0NTgzNWFlOGY4ZThmOGE0NzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ2NjVkYzYzMTllYTNkNDgzZTA2M2ZiZTE2MWEwMjE3YTZhNjU4ZDkxNmU2ODM1MjQ3MWUwYmQxZDJmY2QxNTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1ZTQyY2FlY2M0OTM2YTY4ZWRlOWE0MjU2NDg0OWY2M2QyZmM0NGJkYTA4MGMzOGFlNjgzNjgwZmI4NjI4MzYifQ"
+        },
+        {
+          "resource": "repo://src/lib/current-bodyweight.ts#L4-L24",
+          "version": "repo-lines-v1:sha256:660475f7eeb8db61b75b9d601ee40ca94d4c52fa7a3fb00e31496946d5476173:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzODIxZTBlMGY1ZTliZWRkZGExOTBiYjhkY2U1ZGRmNTVkYmY3M2U2MWQwNDNhMDY1M2U3MjAzY2VmZWI4YzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzNTM2ZTBhNTRmN2Q1Y2RjNGU0MzNhZjkwOGU5MzJhZDE3YmQ4YWRmZmNlMzMzYWU5NmY4ODRlNDMzOTlkMGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRkNWFlNzUyYTQ0ZTViNzk4ZjVjOWFmNmVmYjAwMDgzYTc2YmYxNGMxNTEyMWJhMTg3ZmFiMmQ4NWY1MTM0ZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5bc26c38551c42ac8702858f545a3d2f",
+      "statement": "ExerciseVisual is a decorative identity illustration used on board tiles (the tile exercise id, not the family review id), week-PR rows, All-lifts rows, the volume card and picker, the Exercise review header, and monthly improvement, rep-gain, stall, and achievement rows.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/analytics/board-grid.tsx#L23-L26",
+          "version": "repo-lines-v1:sha256:000ffab82165fe94b7410a8d558013ca8a6f40c27f2761974f6cfbe9e184aa33:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzJhZDE2MGUwNDMwMmYwZmQxZTQ0NzFkZjI2NWE1NThkNDI1ZWFkYTY3MmJkMmRjNTA0MzMzMDU2YTgzOTkwYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2Y4ZmZkMzkyOTAyYWJjMzc4NDZlMjYyYzdlZjg4MDI3NDM2ZGYxMzEyNzI0OTIwODg3ODBmY2U0YmEyODhkYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzQxOTY4YmIzMDdkNjYxZmRiMTQ2YjUzMmEzYWM3MDFjMTc3ZGRjNTEwM2I4ZWZkNTc2MGYyNDVlYjYwNDE5MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2M0MGFmNjRmNDllYjQ1ZDczZjhlYWE4NGRmMzg4Njg2MDlkZjM2ODhmOTgzNDE2OWJlZDIyNjI1NjI4MGJiOSJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/analytics/month/review.tsx#L109-L147",
+          "version": "repo-lines-v1:sha256:cba011b78827e9a9363841cb0db84a4adf51faba00f919192a74229a109d435f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwNjMyMTZkODE4ZWNiZDhlY2JiMmIyMWZhYTY3ZGQ2ZDRjMzM4MzkwOTEwYzJiMDk4NDFlMjEyZjZhNGM1ZjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5Y2U2OGQ1ZjM1MTY2ODFlMjJkNjgyZmQ0MjI0ZmI5NzRmNmM3ZjNiYWJlMDNmZTgzNTM1M2JiYmY3YWY0NzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlMTg0YzE1OGY0N2QxOTE4YzJiNWNmOWUxYWUxZDg2NzdmMzE5MTBkMTZjOTY2OWYzMmRhMjdjNTQ3ZWM4NWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM4ZmI4YjYyMDZjYmEyNDM1ZDA5ZTllNmZkYWQwY2UyMmYyMjI4ZTZhMTcxMzk3ZDdiMTc2YjY2MzU0ZGYzMGUifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/analytics/volume/page.tsx#L112-L116",
+          "version": "repo-lines-v1:sha256:944b50dc5880bf0562681740f89578cfb870c118981d1979433395c18b4dffc6:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjJkZTFlOWQ5ZWNjYjk1ZGQyNzJhZjVhZDUwZWZlY2RmNmVhNDAzYWIxOTdhOWNkZDJjZjVmYWYxOGRmZGE2NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGFjZTVlMTY5YWYzMTA5ZDk3YTQ0ZGE5N2U2Zjg3ODZiNDRiOTg5MDU0YWQ2MmU4Y2Y1YTQwNTczMmI5Y2M5YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWU5YjM0MDU0YjYxNGEyMzk1YTNiZTg3Mzk5ZDNkMjc1ODQ0MDE5ZmY0YmE1MTcxN2QwNDEyOTJlYjI5NzllYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmJiNDI3Y2UwZTgwYmYzYzM3ZmRiNmM5NGE4MjZiMWU2YTIwOTQzMzE5OTliNGM5MTYxNzYzMjU5YWRjMmMxYiJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/analytics/week-pr-list.tsx#L30-L38",
+          "version": "repo-lines-v1:sha256:3fa54f96d6fe21e799fc3ae5013c9b3e8f569cbd54f47d43c113052620a023e2:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmFkMjliNDA0NTBlM2FmZmIyOTViZjc2ZTM1YzQxY2YxYmUxNDZkZWU4YWM3MWQxYmQzMWNlZWVlNTY3MmZmMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiN2MzYzA5NTc2NjA5YTk0OWMwNjUzMDE3Mjc3ZDU1Zjk2NjNlZDM5NWIzMjZiYzNmNzQ2M2Y4MzcyM2ZmOWU0MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWQxNmJiNmYzNWJiM2UyMjFiZDA0OGMwYTU1NDg5ZDVjZDgwY2M2MGMzMTgwNTczMGRmMjBhOGIwNDI1Yjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDFkM2VhOGNjYjc2Nzc1ZmFlYzIxODYzOWMyYjJhYTllMjE0NjU4YTY3NGUxNmI3ODAxMDhmOTg5MDg4YTQzOSJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/history/%5BexerciseId%5D/exercise-review.tsx#L67-L73",
+          "version": "repo-lines-v1:sha256:ee408dbd3bef9abc066fbe55a7d92a5d332c134d7f310785f6b878bb7858d78d:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTZhNjRiM2JiOWQ1MjAzMmZiNGZjOWYwMGYyMTFlMTE3M2FmMWM2ODU5YzI2MmFmMzMyMDY2ZGJiMWEzNDVkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGI1OTJlMDdiNGNmNTNhODM4NmM1NjgwY2ZiN2YzZTRlNzU0Mjk2OWM4NzI2YWM1ZWQzMjc1M2Y4Y2E5NTk3NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmVmYzFlOTYwZmI4ZjZhZjhhOWU0ZGEyNDFiMmVhZjBiMmRlOTdlZjNiZjYzMzA1ZDdkMGU0NDgzNDcyZGMzZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODQ4ZjIwNDk2MWNiNWYxOTA3ZDU4MzI5ZTVkZGU1OTViNGVjOWVkOWJjOTNlZmIzMmE3NmZhMDkzZjU3MmNlNiJ9"
+        },
+        {
+          "resource": "repo://src/components/ui/exercise-visual.tsx#L13-L46",
+          "version": "repo-lines-v1:sha256:596dde08cb078deee45dc41ce7775536290d10f3ef89417991560f1bf3f0b814:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdjYWIxMDY4ZTNiZjg1MzFkMzdiYjkxZWIwODFlM2Q4NjE3Yjk4MDA2YTZiZDdmNzVhMDQ2MmY2NWRjMzQ0ZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjZmRkODhmNzZjNzAxMTE5MWNkOWIyNGE1YmM2M2FkYTRjNmUwYzlkOGFiZTg4OGU5NmU1ODQzMGU3M2ZlMDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3ODVhMWU1NWNlYjdhNGZmNTFlMzNjMWQyN2Q2M2IyMjUyMWU4ZjAwYjZmNGI1M2FlY2NjOTczOTkyMGE3NmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiOGI2MDBhNWI0NDhiMWU0ZDAyZGYwOTc0NmVkM2NhMzE3MmY3NWM0YWFiYjAxZGRlMDgwZTM2Y2FiMDc0YjQifQ"
+        },
+        {
+          "resource": "repo://src/lib/exercise-visual.ts#L15-L31",
+          "version": "repo-lines-v1:sha256:1d960c17c0174d33b172253dae7cc8a0fa3ca1ad6ca3e6704d4392ea0086ac51:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkYzYyOGI1YmYwZjlmYzZiNzRhYmJkNmE3MDg4NDM5YzlkMjVmMzgxYmZkZDM1NTllMWEwNDNiYTA0ZTNiYzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUyNmM2NDc1ZjllNzNmYjEyZmY3YjFlYTdkNWJlNDhjNjM1OWU1ZmY0ZWNjOGEyYzRlY2FlNjRiNmFmZjc3ZjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiYTgyMzdlNzAyMzc4NGJmMTc2MTdhMWZjZjVlM2I4YjE5ZGJhNDkxN2EzMmZiZWZlODUzNDllNTk4M2I4NjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJlNWQ3ZjAxZmYxNmE1MDc0ZGFmZGNhN2IwNzRhNjAwZjM5OGFiNzZmNzQ5NjUwNGMxN2ZlYTdmOWNiNGVlMmUifQ"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.6.0",
-    "at": "2026-09-25T19:18:52.086Z"
+    "at": "2026-09-29T00:58:03.170Z"
   }
 }

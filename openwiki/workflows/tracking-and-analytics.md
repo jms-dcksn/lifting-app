@@ -1,33 +1,88 @@
 ---
 type: workflow
 title: "Track: analytics, exercise review, and monthly progress"
-description: How the Track tab's board, per-exercise Exercise review, and the monthly progress dashboard are computed — analytics.ts summaries, board.ts pin/default-compound logic, exercise-review-months/-sessions helpers, buildMonthlyReport's workout replay, and the shared stall contract they all consume.
-tags: [track, analytics, monthly-progress, exercise-review, board, stall-report, plateau, e1rm, records]
+description: How the Track tab's board, volume chart, per-exercise Exercise review, and monthly progress dashboard are computed — analytics.ts summaries and tonnage, board.ts pin/default-compound logic, exercise-review helpers, buildMonthlyReport's workout replay, ExerciseVisual placement, and the shared stall contract.
+tags: [track, analytics, monthly-progress, exercise-review, board, volume, stall-report, plateau, e1rm, records]
 verified:
   - by: openwiki/0.6.0
-    at: 2026-09-25T19:18:52.086Z
+    at: 2026-09-29T00:58:03.170Z
+sources:
+  - id: openwiki-source-13f2957e90818ed61bd292dd
+    resource: repo://docs/MONTHLY-PROGRESS.md
+  - id: openwiki-source-c77c19e79d762703c7c57bfd
+    resource: repo://src/app/(app)/analytics/board-grid.tsx
+  - id: openwiki-source-0642482609aaeba9ff0d5226
+    resource: repo://src/app/(app)/analytics/month/review.tsx
+  - id: openwiki-source-8f8cf33e9bca7a4ea7c0dbbf
+    resource: repo://src/app/(app)/analytics/page.tsx
+  - id: openwiki-source-db1927c5abecc986aef7cce5
+    resource: repo://src/app/(app)/analytics/volume/page.tsx
+  - id: openwiki-source-9e15ae7bbea1d3e7d04df4cd
+    resource: repo://src/app/(app)/analytics/week-pr-list.tsx
+  - id: openwiki-source-56e13671e74815b56f5d735c
+    resource: repo://src/app/(app)/history/%5BexerciseId%5D/exercise-review.tsx
+  - id: openwiki-source-f192c4cf6d9815c3dfca59e6
+    resource: repo://src/app/(app)/history/%5BexerciseId%5D/month-compare.tsx
+  - id: openwiki-source-533337faff731c42d0f81cf4
+    resource: repo://src/app/(app)/history/%5BexerciseId%5D/page.tsx
+  - id: openwiki-source-2ef4ceffa105706ea5eda03e
+    resource: repo://src/app/(app)/history/%5BexerciseId%5D/review-chart.tsx
+  - id: openwiki-source-7d89b07c51141b7483bcfa4d
+    resource: repo://src/components/ui/exercise-visual.tsx
+  - id: openwiki-source-6b907faf6042180fbd586a1b
+    resource: repo://src/lib/analytics-volume.test.ts
+  - id: openwiki-source-e6dc86c16191c144044fdee3
+    resource: repo://src/lib/analytics.ts
+  - id: openwiki-source-64aab5327bdc2f506b470fec
+    resource: repo://src/lib/board.ts
+  - id: openwiki-source-05227b989b0dc31eec9eb475
+    resource: repo://src/lib/current-bodyweight.ts
+  - id: openwiki-source-79f63144bf22da18d8901d6b
+    resource: repo://src/lib/exercise-history.ts
+  - id: openwiki-source-45e6c1e5a6745f4af060b7a0
+    resource: repo://src/lib/exercise-review-href.ts
+  - id: openwiki-source-4472372ea82775d1b07bba33
+    resource: repo://src/lib/exercise-review-month-stats.ts
+  - id: openwiki-source-c02ed20036dc844c5456cf8b
+    resource: repo://src/lib/exercise-review-months.ts
+  - id: openwiki-source-1cda0f3a1164c6430b499878
+    resource: repo://src/lib/exercise-review-sessions.ts
+  - id: openwiki-source-998b98b33ef04cec9cc24afb
+    resource: repo://src/lib/exercise-visual.ts
+  - id: openwiki-source-7f9c2767b8865c8a933303e7
+    resource: repo://src/lib/monthly-progress-data.ts
+  - id: openwiki-source-25f165df98b9bae58c38d9f7
+    resource: repo://src/lib/monthly-progress.ts
+  - id: openwiki-source-959a3e1205d23f6d4cfee298
+    resource: repo://src/lib/review-equipment.ts
+  - id: openwiki-source-51069c3f851f139e436f987a
+    resource: repo://src/lib/stall-report.ts
+generated: { by: "openwiki/0.6.0", at: "2026-09-29T00:58:03.170Z" }
 ---
 
 # Track: analytics, exercise review, and monthly progress
 
-The Track tab (`/analytics`) is the home for three related but distinct data
-flows, all reading from `set_log`/`workout_session` and all owner-scoped:
+The Track tab (`/analytics`) is the home for related but distinct data flows,
+all reading from `set_log`/`workout_session` and all owner-scoped:
 
 1. **The board** (`/analytics/page.tsx`, `src/lib/board.ts`, `src/lib/analytics.ts`)
    — a grid of tiles (default compounds plus user pins) with current e1RM and a
    trend sparkline.
-2. **Exercise review** (`/history/[exerciseId]`, `src/lib/exercise-review-sessions.ts`,
+2. **Volume** (`/analytics/volume`, still computed in `src/lib/analytics.ts`) —
+   weekly effective-load tonnage for all training or one exercise across every
+   equipment instance.
+3. **Exercise review** (`/history/[exerciseId]`, `src/lib/exercise-review-sessions.ts`,
    `src/lib/exercise-review-months.ts`, `src/lib/exercise-review-month-stats.ts`) —
    a single exact exercise/equipment history: Last card, 21-day window, e1RM chart,
    month-to-month comparison, equipment switcher.
-3. **Monthly progress** (`/analytics/month`, `src/lib/monthly-progress.ts`,
+4. **Monthly progress** (`/analytics/month`, `src/lib/monthly-progress.ts`,
    `src/lib/monthly-progress-data.ts`) — a dashboard replaying a calendar month
    of workouts against the canonical recap engine, plus the shared "stall" /
    plateau contract also consumed by Coach and Fluid.
 
-`docs/MONTHLY-PROGRESS.md` is the canonical, terse contract for #2 and #3 and is
-the primary source for this page; read it alongside the code for exact edge-case
-wording.
+`docs/MONTHLY-PROGRESS.md` is the canonical, terse contract for Exercise review
+and monthly progress and is the primary source for those sections; read it
+alongside the code for exact edge-case wording.
 
 ## 1. The board (`/analytics`)
 
@@ -70,8 +125,21 @@ it to `exerciseSummaries` in `src/lib/analytics.ts`.
 - The pin editor (`PinEditorButton`) is fed `pinItems` built from
   `defaultCompoundIds` (group `"compound"`) plus any extra pinned or logged
   exercises (group `"extra"`, filtered to `isLoggableExercise`).
+- Explore Track opens week PRs and All lifts in-sheet, and links out to Month
+  review, Coach, Body, and Volume. Bodyweight and period storage stay on the
+  body-tracking page; Track only reads the current bodyweight where volume math
+  needs it.
 
-```mermaid
+Each board tile renders `ExerciseVisual` with the tile's own `lift.exerciseId`
+(the default-compound or pinned id), not the family member used for the review
+link. Week-PR rows and All-lifts rows use the exact logged `exerciseId`. The
+component is decorative (`aria-hidden`): it shows a static catalog illustration
+when `exerciseVisualSrc` resolves the id, `baseExerciseId`, or the id prefix
+before `__`, otherwise a dumbbell icon. Only the review header passes `size="lg"`
+and an explicit `baseExerciseId`.
+
+<!-- openwiki: mermaid parse failed and this diagram was converted to a text fence so it does not break rendering. Fix the diagram source and restore the mermaid fence. Parser error: Parse error on line 5: ... P[pins-data: PinRow[]] -> D W[loadWe Expecting 'SQE', 'DOUBLECIRCLEEND', 'PE', '-)', 'STADIUMEND', 'SUBROUTINEEND', 'PIPE', 'CYLINDEREND', 'DIAMOND_STOP', 'TAGEND', 'TRAPEND', 'INVTRAPEND', 'UNICODE_TEXT', 'TEXT', 'TAGSTART', got 'SQS' -->
+```text
 flowchart TD
   A[set_log + workout_session rows] --> B[normalizeRows]
   B --> C[exerciseSummaries: group by exact identity, keep latest per exerciseId]
@@ -89,7 +157,32 @@ flowchart TD
 - `defaultCompoundIds` deliberately skips `stationProfile === "machine"`
   references so the six default tiles represent free/barbell-style compounds.
 
-## 2. Exercise review (`/history/[exerciseId]`)
+## 2. Volume (`/analytics/volume`)
+
+`VolumePage` loads the same owner-scoped, non-warmup `set_log` join as the
+board, plus `getCurrentBodyweight` (newest `bodyweight_log` row, else
+`profile.bodyweight`). It does not store bodyweight or period observations.
+`exerciseSummaries` supplies the picker; `resolveVolumeExerciseId` accepts
+`?exercise=` only when that exact id has a summary, otherwise the page shows
+all training.
+
+`rowsForExercise` keeps every equipment instance of the selected exercise and
+drops other lifts and warmups. `sessionTonnage` then sums `effectiveLoad ×
+reps` per finished-or-unfinished session using that **current** bodyweight.
+Sets with no definition, or a non-positive load (including bodyweight sets
+without a usable reading), increment `excludedSetCount` and contribute nothing.
+`weeklyVolume` buckets those session totals into Monday–Sunday **UTC** weeks by
+`performedAt`. That is intentionally not the Chicago calendar window used by
+`identityVolume` and monthly review; a set just before Chicago midnight can land
+in the next UTC week and the previous Chicago month.
+
+The chart needs at least two week points. The header shows rounded lifetime
+chart tonnage and the latest week versus the previous week. The selected
+exercise gets an `ExerciseVisual` beside the card label, and each picker row
+gets one too. The mixed-equipment note is explicit: every machine for the
+selected exercise shares one series. Volume is not an e1RM, PR, or stall input.
+
+## 3. Exercise review (`/history/[exerciseId]`)
 
 `HistoryPage` (`src/app/(app)/history/[exerciseId]/page.tsx`) loads the full
 finished-session history for one `exerciseId` (all equipment instances),
@@ -254,20 +347,38 @@ flowchart LR
 ```
 
 ### Monthly dashboard UI (`review.tsx`)
-Renders four compact summary cards (workouts, rep/e1RM/top-weight PRs, each
-with the prior-window count) plus a "lifts improving" count; the top-5
-percentage improvers as name+percent links; a collapsible list of rep-only
-gains (name + "`priorReps` → `currentReps` reps at `load` lb effective load");
-a "Worth reviewing" list of supported plateaus (linking to Coach's next steps,
-filtered to that exercise, only while the month `inProgress`); and expandable
-"Achievements" grouped by exact exercise/equipment. It never lists every lift
-or renders an SVG trend line on the month page itself (that lives in Exercise
-review). Improved/rep-gain/stall names all link to
-`/history/[exerciseId]?month=...&equipment=...` via `exerciseReviewHref`, with
-`equipment=none` meaning no equipment instance. A period-tracking overlay card
-(`buildPeriodPerformanceOverlay`, gated on `sex = female` and
-`period_tracking_enabled`) can appear above the summary metrics; see
-`docs/MONTHLY-PROGRESS.md` for its Monday–Sunday week/purple-day-mark contract.
+`MonthlyReview` renders five compact cards: workouts, rep PRs, e1RM PRs, and
+top-weight PRs, each with its prior-window count, plus a "Lifts improving"
+count of identities whose monthly best is higher. It does not print internal
+states such as `new`, `not_trained`, or `unavailable` as row labels.
+
+The "Where you improved" card lists at most the first five `improving` lifts as
+name-plus-percent links. A separate collapsible list, "Rep gains without a
+higher monthly best," shows identities that are not improving but have
+`repGains`, each as a name link plus "`priorReps` → `currentReps` reps at
+`load` lb effective load." "Worth reviewing" lists only `state === "plateau"`
+stalls, with exposure/day evidence and expandable supporting workouts. Its
+Coach link (`/analytics/coach?exercise=...#coach-next-steps`) renders only while
+`report.inProgress`. Achievements are always present as an expandable list
+grouped by exact record key (exercise/equipment); an empty group says "No
+records this month." The page never dumps every lift and never renders an SVG
+trend line (that chart stays in Exercise review).
+
+Improved, rep-gain, and stall names link to
+`/history/[exerciseId]?month=...&equipment=...`. `equipment=none` means no
+equipment instance. Each of those rows, and each achievement group summary,
+renders `ExerciseVisual` for the group's exact `exerciseId`.
+
+`MonthPage` passes period eligibility, observations, and weight entries into
+the review, but the weight card itself stays in a sibling `#monthly-weight`
+section owned by body tracking. The overlay is built only when `eligible` is
+true (`sex = female` and `period_tracking_enabled`) and is placed above the
+summary cards. `buildPeriodPerformanceOverlay` joins the current window,
+observed period dates, weight entries, `currentWorkouts`, and achievement PR
+counts into Monday–Sunday weeks clipped to the month. Purple marks are observed
+days only; the card does not infer a cycle or change PR or stall totals. See
+`docs/MONTHLY-PROGRESS.md` for the full overlay contract.
+
 There is no persisted monthly cache — every visit rebuilds from current saved
 sets, and finishing/editing/deleting a workout or a weight entry revalidates
 both the monthly and Track routes.
@@ -324,14 +435,15 @@ including unfinished work).
 ## Cross-cutting invariants
 
 - **Owner scoping and pagination**: every session/set/slot/phase/adaptation
-  read across all three flows uses explicit owner predicates and UUID keyset
-  pagination that continues until an empty page (even when a page returns
-  fewer rows than the requested limit). Failed reads surface an error rather
-  than a partial report.
-- **No caches**: none of the board, Exercise review, or monthly dashboard
-  persist an aggregate; every request recomputes from current `set_log`/
-  `workout_session` rows. Weekly Coach report contracts and schema/version
-  remain independent and unchanged by this work.
+  read uses an explicit owner predicate. Monthly history and stall metadata
+  use UUID keyset pagination that continues until an empty page, even when a
+  page returns fewer rows than requested. The board and volume queries are also
+  owner-scoped and non-warmup, but they are single selects rather than that
+  keyset loop. Failed reads surface an error rather than a partial report.
+- **No caches**: none of the board, volume page, Exercise review, or monthly
+  dashboard persist an aggregate; every request recomputes from current
+  `set_log`/`workout_session` rows. Weekly Coach report contracts and
+  schema/version remain independent and unchanged by this work.
 - **Stored estimates over live recompute**: monthly trend/e1RM-PR comparisons
   intentionally use *persisted* e1RM values (never regenerated from today's
   bodyweight or the current strength formula), so if an old persisted estimate

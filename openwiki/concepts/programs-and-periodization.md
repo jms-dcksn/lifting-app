@@ -6,6 +6,33 @@ tags: [program, periodization, program-builder, templates, classic, fluid, rpc, 
 verified:
   - by: openwiki/0.6.0
     at: 2026-09-25T19:18:52.086Z
+sources:
+  - id: openwiki-source-fb1cc746577598e99fdf5cef
+    resource: repo://docs/PROGRAM-TRANSACTIONS.md
+  - id: openwiki-source-9066dc3aa4defdc7582923ed
+    resource: repo://src/app/(app)/program/%5Bid%5D/page.tsx
+  - id: openwiki-source-9b078944e359e129154c3dc0
+    resource: repo://src/app/(app)/program/actions.ts
+  - id: openwiki-source-f4b42771b7a9eed5ba64ca19
+    resource: repo://src/app/(app)/program/new/page.tsx
+  - id: openwiki-source-af700e5e8d217c4588975b83
+    resource: repo://src/app/(app)/program/program-builder.tsx
+  - id: openwiki-source-8dc112106562f8c0bf7d689b
+    resource: repo://src/lib/next-workout.ts
+  - id: openwiki-source-f5a77efb12cfe8d7887b81de
+    resource: repo://src/lib/periodization.test.ts
+  - id: openwiki-source-51f3f54f740a13ad855a4ee7
+    resource: repo://src/lib/periodization.ts
+  - id: openwiki-source-0437ce9e4abca60cbe497cf5
+    resource: repo://src/lib/program-day.ts
+  - id: openwiki-source-7ed082483c20db0d7a603fa0
+    resource: repo://src/lib/program-summary.ts
+  - id: openwiki-source-5efc558ca746ab2bbda69060
+    resource: repo://src/lib/program-templates.test.ts
+  - id: openwiki-source-e652e9327dda034350d61e48
+    resource: repo://src/lib/program-templates.ts
+  - id: openwiki-source-a7c5ce87a23bfd843d9cb343
+    resource: repo://src/lib/program.ts
 ---
 
 ## Overview

@@ -1,0 +1,464 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:76738a413ab02f6c74ff8d2411dd3cabd4248359b797e418f07a4e3a067bb148",
+  "claims": [
+    {
+      "id": "claim_bd11cd92c07c429cba7d48f1df3470e0",
+      "statement": "startNextSession and startPlannedSession resume the most recently performed unfinished session of the active program when it has a program_day_id, otherwise insert a workout_session stamped with the derived program_day_id, week_index, and cookie exercise swaps, then delete the plan cookie only after the insert succeeds.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L120-L157",
+          "version": "repo-lines-v1:sha256:feb085b0f6687c0575b4e74a75fc224bb8094acf3b1f5be8602f9c4a202525de:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlZmU0M2M1MmM3N2JmMzcyNWM0MDcwZDI5MzRhZDIzMGEyMGNlMWUwZmYxNTg2ZDRhZjM1Mzc4ZmRjY2VjYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5NGZjMGMxNzNkMWVjM2ZjNTAxZDdkZmE5Mjg1NTAxYzUyN2NmYjQ3MTI1ODNkYTNjYzM2MTgwNTY2YjRiZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAyYTkxZTNhNDY0ODExYjRhNDEyYzU5NWZiNGFjMTQ5YmI4ODcwMmRiYTZjNTkzMzk4ZGVhNTRiYzVmYTZjN2EifQ"
+        },
+        {
+          "resource": "repo://src/lib/next-workout.ts#L9-L49",
+          "version": "repo-lines-v1:sha256:ca6413da52d9e884b1f9f50635445bb1a6607bd62acb70bd151bf081ad534ada:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyMjhiMjRjZDgyN2Q1M2VmMmExMGNlYjIyNjM0YmVhNGM1YTlkOWFkYTdmN2I4YmQ3YTYxNWY1MjlkNzZiYzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyNDI2OWJiMjgyZWFhNzk3ZjgxMTViYWFhNTIwYjgzNjIyZTAzZjA3YjI1OWUwMzY3MWUzMjVmOWViMmNjOGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhODc5Y2Q0MThlMDQ4ZjU4ZjEyN2Q2ODVkNzdmMzM4MjgyNWZjY2FkYWY2YmRkMDcxOWU1MTgwYmRkYjRkMjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_21ba7a8c0bb9463c8add3e18991134d8",
+      "statement": "Session day and week are derived from the count of finished sessions for the active program, not a stored cursor: week is floor(completed / days.length) + 1 and the day is days[completed % days.length]. The session page later reads the persisted week_index and program_day_id rather than recounting.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/page.tsx#L254-L266",
+          "version": "repo-lines-v1:sha256:db17c8642eb07abc5120aa68a55ce3206a1be4c5430385b2ad3403b26c8b4855:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliZjZlYzhiYWYyMTdhYmFkOWU1YzFjYzkxMjQ5Mjc1MTFmMGY4OGJiM2Y1NTQ2NzVmN2EyNzI5ZDZiOTMzNTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4MDA4N2UxZDIyZTcyNzY3MjVmYWZkMzNiNTcxODljOGNjY2ExNDlhNzNlODI1ODM3NWYwYzlhZjUxY2YzMWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk3ZDg2MzJlNTRlOTI5OGFiYjk1ODcyN2UyZDUxNDA4YWJhZjEzNjYwMzUzNzkxMDE0MGFiZjY1YjMwYWI2MTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5ZjkxMWI4MTExMGIzYWUxODNmZmI1OGM2MmIzNzVjYWUwNzI4YzYyY2RiZjczMzU3MDM0ZTRlMWQ2ZDQzNWIifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/page.tsx#L46-L52",
+          "version": "repo-lines-v1:sha256:23360c9d3b9cabb33c18a664a9acfc6ca98dc4d69b26a3714958ad3d5a0ead74:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjRmNmIzOTllYzI5YjZmYzA1MTRhMjFkYjQ3NGM2YWZkMDExZTAyMmRjNDM1MGU0ZjRlY2Y2NjI3NTNkYmE2NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDRmNDNiOGExN2NkODdmYjNiN2RmMjdlZGU1ZjMxYmMyNWI1NDgzZjIxMzU4ZWViYjUzOTEwOTM3Y2QzY2IyYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjVlZmE4YzQ2MjYzNzBiY2Q5NmE2NzBjMjk5YmNlMGMxNzc3MjNkZGM2ZjAwZjk4MzgxOTNiYWQwM2MyOGRhYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjc2Nzc5NjUwZmNmNTUwOGRiYTA2NmEzNjg3YWUxYTVmYjdkOGJmMGQyMDYxM2RhMmJhZTJiNWI2MTNlNTMxNyJ9"
+        },
+        {
+          "resource": "repo://src/lib/next-workout.ts#L14-L29",
+          "version": "repo-lines-v1:sha256:78811aecbbc434aa3f86192082d80252b120251d1ddf8ab6d7e5e0a631322db4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlZDZmNmZlZmYwYzkwYzYyYmI2MzU5Njk5ZGRiMzJiYWNlMzFmZjBiOGE0YjFlZmVkNDI1NTQ0NmYzMDJhYjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0NzQyOWEwZmQ4NTljM2JiYWVmNGIzNTJhMDE2NWYwMGExMDBlOGI0MDZlZjAzZTZlNjE4YTRhNmY2YWMyYWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiZGRmMDlmYTc3OTRmMGEzMjZkZWY1MGY1NDMwMjk4ZDc5NjQ2NzdlZjc3YjYzMTEzN2I5ZDZiZDM5NjRlNmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBhNTA5MDQ1MTY1OWYwODJiNzFiM2I2OTBkMzAyNjIzN2Y1MjQ1YjRiNmRhYWExMzJhYjc4YjA5ODMyMDEwNDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d11751a634f64723a8e5476b2c98a337",
+      "statement": "A planned start whose planKey no longer matches the derived next workout redirects to /workout/next instead of inserting a session from a stale plan.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L130-L139",
+          "version": "repo-lines-v1:sha256:6270b09edd1df9f3fa41f215ecf35b89e2734a5305e3bf4a2467bc89d8595b06:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxMWRlOTI5ZTA5ZmU5YzdjNzE0OTYyZTNlNGY5ZDZmYWZmMjI4NWI3OWNiMjA0NzAyNmUxMzk4ZWJlMjk0YWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyNWRhNTdlM2IzNDMxYWZmNmJhMjc3ZjcyM2Q3MTRkOTE3N2M1ZTk0MzRlMTkxZmFkOWM0YTFhYmUzZjVhOTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdmODBiYjIwZmFiZDZmZjJiNjY0MTgxM2FkNDBiM2UxMDU2OTY1YjRhYWU1Mzg3NGY3ZWFjNWFkYzg0ZjA3ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2MDQyNGRhYzFiNWVjY2VjMTM2OTNmZjE3NWQxNzk5YWUxYjJiZjBmOTVhZjNhMzhiOTJlMjIzZjg1NTkwNzQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1964872606864c2ea6dc8aa84ea56856",
+      "statement": "SessionPage hydrates slot exercise identity as the explicit exercise_swaps entry when present, otherwise the most recently logged exercise for that program_slot_id, otherwise the folded Fluid prescription, so an in-session swap survives reload before the first set is logged. Sets are grouped by slot, not exercise.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/page.tsx#L176-L195",
+          "version": "repo-lines-v1:sha256:32cb7ec35dfa52b30da9cfad4651603e8493b101558e86772c2bba86413c2207:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmOTRlZDg3ZDZkMWM1ZmU2M2M0ZTg4YzQyZmI4NjExNDBmZmE5M2FmYWVjYzA2MDZiYjg1NjkxNjdlM2ZiMGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkwYzU3YzZmYzcyOGM2M2IxMTVjMWI3YTU0ODFmMDg2ZTYyMDcwZmQ5ZjE4N2UyZDkyZDQ1MDJhZWMwNWI4ZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE4ZDM5YzAzYmM3ODk1N2EyZjU0NGQ3NmQzYTJiMmQ4NjNlYWI4NjNjMzUwY2Y5YjkwOGVmODQ1N2FlMTE3ZjEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/page.tsx#L268-L299",
+          "version": "repo-lines-v1:sha256:82bd078407458b4ce6d232504f92e21a25a94c50be32872afce0bbadba2a736a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxZTA3YjMwN2I3N2NmMzAyMGJiNDYyZTg3YWEwMmI4ZTEyNWY3MGUxMjYyNGRjMDIyNDI3OGIzMjVlNDg3OTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkOWUxMjU0NjQyNTU3NmQzZGVhZThjOWI5ZGJmMTI4ZDVkNmRkYWY1ZDdmZTg1NzkzNDkyN2RlZmZhM2I5ZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmY2VkMTAzZTExYTYxMDUyMTcwMWEyMzAzNjExMmY5NzdiNmVlNzgyZDgzZTJmMmRjMmI2YWIwNmU3Y2RjMDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM1ODRhNTQ1MDU2MzkxNDY4MjM2MGI5NjEyOGUyMDMyYTI1NDdlMTY2ZjhjMDBjZjdhZTUwNGE1MDIzZTE2MzcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c70f8741f9a34366a0f4571e6cb836fc",
+      "statement": "SessionPage does not await record history. It streams recordsPromise and catches a load failure as null so a PR-history failure or the first-set history page does not suspend the session page or remount the layout-scoped rest timer.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L181-L184",
+          "version": "repo-lines-v1:sha256:7a4d37658770742128c0ca066581f5bc0aaae5780265e24332e3208dc99a2676:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjIyZjRmZTZhNDA2OTI4NTc4ODUxODlkOWQwOGNlMzNlZGZiYmRhMGUzNWNkMzc3NDk4MDkwNDU4ZGI1NWU0MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWRiZDNlZDA3OTdhNzliNjM3MDhlYjA2NDI3ZjkxNjNmMWNkNzlhZjdlM2E1ZTg3YjkwYmVlYTk3MDhmOThhZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGZiMGEyNzM0ZjA1NDY1NGQ4MWEyOGI3MDE4ODg2NjgzNjU5M2RiMzVmNDYyNjBmODI5NzU4ODA5NmRkYWYwYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTE3YTNlMzc0ZGM4Yjk1NWZkOTUyOWJjMzFlMjhkZmMzZWVjMTFkMTdmMTQ1MjQ3ZjgxNzI0MGZmZDkwZjFlMSJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L55-L67",
+          "version": "repo-lines-v1:sha256:055b31b6421fb8a95c4856766e0270e7732e33d8aba058b708684a6dc3231564:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdjNjlmYjkwNWMyZDVlODNiYTQ4NWNmMWM0MjI0MjU0NGY0MTQwZTJmN2Y5M2Y1NmU0OWJhNTJlNDBiN2NmZmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVjZmUwYWM5YzczNDU2YjUxNWYxNWIxM2YzOTkyZDlhMmNmNjA2MzI2ZTY1M2JiNjYyMGE4OTJhYjBjYjU2NWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyYWUwNmJlMTk1YWU1ZWIzMzg5M2JiZTRjMjM2MGZjMjhlN2Y4YWY3MDg1M2E1MDdmZjQ4YWI1NGNlYmYzZWEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/page.tsx#L98-L104",
+          "version": "repo-lines-v1:sha256:b43767cb1c6ac411ac372d225e204d5339a579ca4dbbdd54a047082a9886ac11:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTNlMjliMDMyZDE4YjMzZTNlNDdlOGMwNjNlOTA5NzE4ZGJmMGQwZmZhMGQ5NDhhMjNiOGQzMzc4MTZlYjFlMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDgzMWQ0ZGFkODlkZDRmMmQ5OTJhZGVlODMxYzA3NGRmYmUwNTM3MzExNTU1MWIwYTY5YzRjZDJhNmQ0MzRmYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTA3MGM0YTU2MzUyYzRjOWM3MjMyMGVjYjhmMmM3NzYwNDExM2U5OGY0MjZjYWU0OTg5M2U2NGUyMTY3NmE4ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzkwNmE4ZjRiNGM4MDA1ODc5ZmE4NGZkZjdiMjFmOGQwYzJlNmIzOGQ0ODIxNDNmMTVhMjY5ZTMxNWJjMzg3ZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e2a46e31dfcd4dafa40ae1d5ce4c4dfe",
+      "statement": "Every session server action gates on getClaims and redirects to /login when claims.sub is missing. logSet and finishSession additionally require an owner-scoped session row, while deleteSet selects and deletes by set id and relies on RLS for ownership.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L193-L211",
+          "version": "repo-lines-v1:sha256:a06c14e623f5263a1e4e323a4df03a0f9805236d04c5c49501ce940dfbb80fbc:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0MTQ4OTkxYjUwNjk1OTYyOTk5MjI1ZjYzZWMzYTM3MzAzMjcyODAyNDdiNDk3NThjZGEzOTQ1YmI5NTUzODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmZjVkNWEwMzRmOTU5ZDk2NDRlY2FmYWYxODdlMWM1NDJiNjNiM2Y3YTRhMDc2MGNlNjFlNzE2MTZmMjY1ODMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFmMTg5MmFlY2I3MDIzNDU0ZGJkMWIwZjM3MjVkYjA0MjE3YjZlNjdmOTgxNDIzZDllMjgwMWY3NDFmZjVlZjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcwYTM0NTkzYzliYjIzZGI0NWEwYmU2ODNmZWUxYmEzZDdjYmIxZTk3NzM5MGEyZmE3ODY2N2RiYTA4NWQxOWMifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L28-L35",
+          "version": "repo-lines-v1:sha256:adb52486998e47f6463fafbbc50d70da3391d8be3e03ee3bd7ba2dd6d696005d:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDdlNGRkY2Q5Mzc0M2QwNWQzNTc4ZmYwNDI5ZDk1YzM3NDVmZDZiODI5MDA4MjEyOTc3N2VjMGEwYjQzNjhhOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjE0ZDlmMjRlMDZlYzI1ZTRiNWQzNGY3OGNlNjE0NWM5ODRjYTk5ZmY4M2RlMTRiNWZhN2U4NjhiOTliNWM0MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGVkNDAxZDk1ZmE2ZjBjYWJmYjhkNzYyNTM0ZTFjZmE3YjlkYWIyMDRiNjc3N2VjNmNkZTUzMjgwZWRlNDE2NiJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L314-L325",
+          "version": "repo-lines-v1:sha256:be8812aad84ddf7fd924a43edb7a455c257c2c42028b0b67218d51f0a23d9d8a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjMjM4OTJhMjNlM2M0ODZhN2E0NGVlYzA4NGRhYzdkYmEzY2NiNjA3ZGQyZTE0NzRjYjAwNDg3NDQ5NzZlZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmMGViYjRkOGJiMmU0NjhjNzVjODlkOWZhMDFmZGJhZjc3MTBlMDI1MWFlZmM1MTM0N2ZmZGYyYTU2NjUzOTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0ZGQxMmFiYmZjMjMzYzUyZDRiODYxMDA0ZjRiYWI1OGY5NmYyYTA2ZGQ1ODRjMzdmOThjZDlmY2ZjMTg4NjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAxMjdkYTJjN2U2NGI3Yzk0NjE4OTg1NmQ3Mzg4MmJlOWI5ODIzYWYxNmM3YzNlMTdhYWRhMmJhNDgyOWUwM2IifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L433-L439",
+          "version": "repo-lines-v1:sha256:5e604850eaee44dde488e369770c9b1635a4f918b9a5af0efe6d47abee6a9036:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjRmNmIzOTllYzI5YjZmYzA1MTRhMjFkYjQ3NGM2YWZkMDExZTAyMmRjNDM1MGU0ZjRlY2Y2NjI3NTNkYmE2NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGZmNWQ1YTAzNGY5NTlkOTY0NGVjYWZhZjE4N2UxYzU0MmI2M2IzZjdhNGEwNzYwY2U2MWU3MTYxNmYyNjU4MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjg1OWQ3NWY0YThiNThhOGViZWMyY2I2ZjBmYjc2NzkzODAwNmQxOTcwYzM1ZjZiNTI4M2RmNGE3NTU4YmI2MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjUyZWQ1MDlkN2FmMzQ0YmQ4MzM5NjBhYzA3OTEwZmM3MWM1ZTgxYWNmNDY1MThhNzBlMTdlNTEwYzM4YjI0NiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_13b244d2343445299e601198e8620418",
+      "statement": "logSet rejects unresolved station templates, invalid weight/reps, and missing RIR before insert. It does not require the session to be unfinished. set_index is a count scoped to (session, program_slot_id) or, for ad-hoc sets, (session, exercise_id).",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L795-L812",
+          "version": "repo-lines-v1:sha256:82a650dc2d55d5db1826450d58e14d46a76824f90ab3bc2e7df893e6c1b5602c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzNjVkZjk0ZThiZGIxMGI4ZGIxYTI5ZGQ2MjQ1ZDEwNmYzMWM1MzY5MjE2Nzk4YzQ3Zjc4YjJhNGEzZDE3NDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiNTkyZTA3YjRjZjUzYTgzODZjNTY4MGNmYjdmM2U0ZTc1NDI5NjljODcyNmFjNWVkMzI3NTNmOGNhOTU5NzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY1YmI0NzIxMzcxNzExNjM1YzM3YzA0ZmVmYWUzMThjZWNkMDZhZjI2M2JjY2M0N2IxNmY5NzM3MDM2Yjk3MzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVhY2FhZDczOWMwOTA0OTcyYzljZTllYWNjMDlhMDU5ZTFkMzNhN2QwMGVlNzI0NjQ4ODAwMjczOTMzNzdlMWEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L170-L211",
+          "version": "repo-lines-v1:sha256:efc6bc9b05722ebf52420fe93f1ac9788bb374803ea061fd3494d8b9c47a54eb:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyOWFjM2UyYzM1YmJlZjY5MWQ0MmZiYjg3OGM4Y2U5NmYyYWFkMjI5ODViNGRhODU5ZDFiOTUwODIzOGNmMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmZjVkNWEwMzRmOTU5ZDk2NDRlY2FmYWYxODdlMWM1NDJiNjNiM2Y3YTRhMDc2MGNlNjFlNzE2MTZmMjY1ODMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmNzZiMjA1NmMyYjg5NjNmZDMyYTM0ZDI0MzliOTUxMzBjOWJkZmIxOTVlZjJmOGMzZDM4M2ZlMjljOTMwNzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcwYTM0NTkzYzliYjIzZGI0NWEwYmU2ODNmZWUxYmEzZDdjYmIxZTk3NzM5MGEyZmE3ODY2N2RiYTA4NWQxOWMifQ"
+        },
+        {
+          "resource": "repo://src/lib/record-actions.test.ts#L199-L205",
+          "version": "repo-lines-v1:sha256:73e2e11dc30e21a53cdfebb1ea60f84327db8f68889b8aeeb3f5b5065ec621b4:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjczOGNiYzZiYWFjYmU5MTI5YjBlMjY2MmZkN2M3NmZjMGQ0MWIxMGFiODk0MzAwZjY5NTkyZjBiZjU4MWZiNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTVlZjAxYmMwOGRiYzNiNjNlNGU3NWVhM2QyNmE1Yjk0MTg5MTg3N2UyN2FkODkxMzI5Yzg0MTFkN2Q4ZGM0ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjE2YmVkNjM1NzY4YTU3ZWI0YzdmMmRiOWM1MzhiZjQ4Yzg0NjhlODE2ZjY1NmVkYzZiMWJmNTM5NmUzMmJjZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDljM2M2YjU5MDYwMjkyMWZhN2U2Zjc0YTllZGJlMjk3OTg1MDY3ZjFkYzBiYzg2MWRlZDk3ZmE5YWNlNDJmOSJ9"
+        },
+        {
+          "resource": "repo://src/lib/record-actions.test.ts#L270-L274",
+          "version": "repo-lines-v1:sha256:a8325cec85e2efe5182601919fb4be7858d9b5319da77d0ae5d2fd71d62dede3:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjA1OWRiMGM4NTAwNDlmM2YxM2YyZTk3MGY5ODNhOWQzNjIwYjExNzBjMjZkYzgyYTRhNWE3NGU2OGVmMzA3YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODY3NTFiYTg5M2E3NTFlNjVjMmU3NTVjMGZlNWZjZDJjMTcyZjI4ZmZlZjhkMzAwNDYzNTI1M2NlZjFmZTJjYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjNjNGEzMTYwMDMxZTNhYTNjN2Q2NDBiNWY4MTE4NDA5M2UxODk3MGJhMzkzY2YzZDliN2Y1NzhiMDVlOWY3NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDgxN2ZiYjczYzkyYjM2ZDVlNDg5NmZmNTFjMWI1OGVlYzMzMGJiZTk2MWJhMDVmYzYyMDVmODY3ZWExYmNmNiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_2279535c42174dcfa5c4faf1a773a614",
+      "statement": "A new set is marked is_calibration only when the exercise needsCalibration and this is the first exact-id set ever. A later set of that variant is not a calibration set, barbell-station variants are not calibrated, and leftover template rows on a different exercise_id are not rewritten.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L204-L231",
+          "version": "repo-lines-v1:sha256:824e45d991380c5dd0293b1af441e916c7bb3199e21f4a51be35f59d1fac07cf:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyYzI1ZDE0MDg1NmUwNmQ0YWYzNTllMGYxZDhiZmM3MjcwOWFlOTY1OTAyNzkyZWUxYmVlY2QwZTgxYWFiNmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0NzVlOTRhOTA0YWM0OWIzMTU0ZDQ2NzJhNjZlODYyOWI4NmRhYzc0ZTNlMjkzN2JlNjkyN2FlM2RhMTFjNTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMyOWVjOGE0NWViMjBiYWU5YmI5ZjVhNTUyM2EyNDQ1Y2I2N2FkZjVlMWZjNDE1ZmRkYjI0MjgxYWU0ZjkyN2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYxZDcxYTMxNzMzZGM5ZTgyYTZjYWI1YTg4Y2Y5MjI2ZGQwZjliOWQ3NWRkYTMxMGU2MzVmNWEwYzA1OGY3NzQifQ"
+        },
+        {
+          "resource": "repo://src/lib/record-actions.test.ts#L207-L256",
+          "version": "repo-lines-v1:sha256:dfd7f0d59fda21e75eb3066edcf33cf412cf4989779d7738c6dbc3cd9efea69a:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwZWEzN2Q3MzJlODFiNGZhZTM0MGJlZDI0YjBhNTRhYTIwYzI3YjQ0YmI5YTJkZjk0MzU2MDAwZTEzMzlmODUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3ZjA2OTkxZmU2NWI3ODBiNzg5ODQ1MDRmOTA0MzczYTc3NDEwZTc4OGEwZTQzYWVmNmRiMzg3MTU0MDRkOGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzMGM1OGE5MTcwNWFhODYzZTdmZDIzOTJkZGE0ZGNhYzM0YjQwODQ0ZjQ2NzgxZGNjOWI2M2VlYTM3ZmRjMmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA4MmQxNmM2NGIyMGNlOGI4MjBmMzU1OTYzMTcwOTdlZTAxNGI3ZDcxOGRhMTFiYjY0ODJhZTc5YjY1Njc0OTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9f0335579125416787cb6a1799308021",
+      "statement": "logSet is idempotent per (session_id, idempotency_key) via a partial unique index. On Postgres 23505 with a supplied key it re-reads and returns the existing row with recomputeWarning null and does not recompute stats. The client generates one UUID per log intent and reuses it across retryServerAction attempts.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L405-L430",
+          "version": "repo-lines-v1:sha256:ccc75f3a0bb852be64c343e20e7085a6fc7d93a5c30c14520aa190bd14f5c88e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZDM3NmZkNTJhZTVlYjhhOTA3YzBhOWNhMjAyZTg3ZWUxZDZkNGI4ODJkY2M2NWJkNGNjYjA0YzgyZWM2ZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlNzVjNzBkOTQ2MzYyNWUxMDc5ZmQ4ZmM4ZWU2MmFkMmU5MmM0MmJlYWFiZmQ4NWI3OGQ4ZTBhNDk3OWI5NGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUzMDU1ZmQyYTc0ZjQ1NGRkYjQ0NzQ3Mzk4MjcxMjkyMzg5MGY0ZTY4MmU4N2ZmYmFmNjczZmQxZGY4YThkOGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNjMDM0NmNmOWQxYWE5OGQ0NDJiMjQxMTU3MWY5OWVlY2VmZjQ4N2RkMDAwMTE5ZTQwNDNjNDkwNzY5ZTFmZmEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L51-L53",
+          "version": "repo-lines-v1:sha256:d825ea360941338a9123e1bd446274e96ada71784d24c141e70f2d2ad0cb1fc3:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWQ4ZDc2NTI0YWNkY2NlZDZlM2NkZDQyZjU4YjNhMDVlNTk0ZWEyMTBmMWUxMzhmMGE3ZmFiZTVhMDg3NWYwZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGEzMzlhYWRkYTI3Y2JiOWRjODg5NGNjMWYzNThjZDYyMWY3NzQ2NDE5ZGRlMmZhNDE0ZTQ2NDk1ZTk2YTc4MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWUzOGFkY2Y1ZjY3NTdiYTBjNmZhMTgxNjMyMGU3YTFjMjMzZTllOWM2OWZkZTBlMTE1OTg1MWZlMThlYTgxOSJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L217-L247",
+          "version": "repo-lines-v1:sha256:f08deb77bb1418fd47f42a8226fa8dac7d506dabc71b3a9c4f571197f7993c82:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdkMjFkNzY2ZTU0Njk5ZDIxZjA2YzY0YWE0ZThjZjJlMmVmNzEyODAyMTkzOTJmZmQwMWFhMjJjM2M2NjYyN2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY0NjI4MTZlM2NmODZlODYxNWYxZjgyYTAzOTliOGY3OWUxMTgxYjFkNTcyODg1MDQ2YmZkYTBjNDI5NTJiZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY3Nzc3ZmMyNmYxMDI0NzlmNzE3YWM0NGQzMzlmNzVhMjY1NGU4YzM1ODczMjE1MTYzMTRhZTQ5NDZlMjQ0MjAifQ"
+        },
+        {
+          "resource": "repo://supabase/migrations/20260916000000_idempotent_logset.sql#L1-L14",
+          "version": "repo-lines-v1:sha256:f0fdcf6ed1c4020717d5c8c37e14ad4571a8264d12a0335fc7231f43255c834f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5YzdkYzMzZjhmMmVkOTk4N2ZjMDIwNmJhMzA4MWUyMzI5MGU2MzRiNTM0ZDMzYzJlNjc5NGZlMTY5MTZiMjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1ZjU4ZmQ1NmMxODMzZTUwNWNlZjIyMjk0YmU2ZDU2OWU2ZGNmYTY5ZTJiNjdhMTA4Yjc3M2JmM2U5MDA5MjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5f682e21ce3e4e16bd2dea85244fb844",
+      "statement": "If recomputeAndUpsertStat throws after a successful log, edit, or delete, the set mutation still succeeds and returns a recomputeWarning. SlotCard shows that warning with a Retry stats update action that calls retryRecomputeStat and does not insert another set. This warning is distinct from a failed set write, which reverts the optimistic row and shows a danger error.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L405-L440",
+          "version": "repo-lines-v1:sha256:6f460c168219870a633434bbd416e0da1d99e4361bce11d859445a3248932d0e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZDM3NmZkNTJhZTVlYjhhOTA3YzBhOWNhMjAyZTg3ZWUxZDZkNGI4ODJkY2M2NWJkNGNjYjA0YzgyZWM2ZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyZDExY2FmNDNlOTdlZjM2OWU2YmVlZDFhMjY4YmQwNTgzOGYyOWI5ZGQyNTRiZjY5YmE2NDg4NDE0NzIzNGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUzMDU1ZmQyYTc0ZjQ1NGRkYjQ0NzQ3Mzk4MjcxMjkyMzg5MGY0ZTY4MmU4N2ZmYmFmNjczZmQxZGY4YThkOGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2ZTA1NjlhZmRjMGNkYWNhODc1OTQ2MTkyMzhiODQ5MDY1ZGIxYTRkODkwNDgxMGExZWVmZTk5ZjY2NGUxYzcifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L491-L499",
+          "version": "repo-lines-v1:sha256:cd7a84aa3d43006fdcb83f889d03944a77de00427785a45bae75c56ee9367fc0:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjhlMWU1MmYyZjU1MTA2NjY3NmYxNjBjZTQ5YmQ1MjgwNzZhYjY5MTU1N2MzNzIwZWZmMTVmMjZlZDllZWJhYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjJkMTFjYWY0M2U5N2VmMzY5ZTZiZWVkMWEyNjhiZDA1ODM4ZjI5YjlkZDI1NGJmNjliYTY0ODg0MTQ3MjM0YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWUxMmI2MTE4OTQzZTMwYzAwNjgzM2U3ODE2MzBhNTNiMzJmNDE3ZWY1Zjk3OTVjM2YxMmYzMzA4MDI0YzVkOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjMzMDJmYjk0MTFjNTg0ZWUwZTAwMDcwOWE3NjMwNjM1OTQzZGY4YTFjMzgyNjMwYWQ2MjUzOThhMDI0YmM5NCJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L778-L792",
+          "version": "repo-lines-v1:sha256:56d715a2effdb05d4e2729f7bebf45ea83d056149395f72ec2306848dde4026d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5NjMzMDlmMTAyNDJkYTAxZDIxODhmMGUzZTJmZTQ3OGI4N2RlODY5Mzg0ZWVjNTY2NjhlNjYyODBhNzBlYzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmMjE1ZmQwM2NmYzJiZWViZjgwNGExN2FjNWU5NDc5NTFmN2NkMmRjMDU2MDUyMjQ5OWM2MDZmZGJjZDcxODUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZhOTZkNjA5ZDg4NjM2Y2ZhMTdlMzMxZjM2N2Q2NDI1NGJlZGQ4NjMzZDIzNjM0ZWZlYTE4YzYzMjY3MzhkMWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjNTFhYjcwNzlkYjVmNmIzYzYyN2M0YTUyNGY4NDdjZGM2NjcxNTIyYzExM2JmNmE2M2UyZmNhMjFjNzU3MDAifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L249-L259",
+          "version": "repo-lines-v1:sha256:7c94c6eca2eb1a51b71707897f221bceb573428e59c29483a5333fb829ebff14:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3ZDc1NmYxMDFkOWZjZTliMzU4NGJiNzk5ODA4Mzg1MDkxOTA4ZjU1N2FmNmJmNDk2MmI4ZDZkMzU1M2U1N2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU4OWI5ODA5MzRhMTk1MWRlNGJjMDRjYTQ1ZDc1ZDQ5NGQxMDQ3MmVjZTEwYjU2YzFkNjRmMWMyZmM5ZGZjMjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ2ZDg4YjA0YjU5MjliN2Q3ZjA5MTNjMzZlMWM1OTcwN2ViZTMyYjE0ZWRmMmFhMjM0ZWY5MmQyYmRlYjAwM2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlNzRkYzkwYjQwMjY5YWNlMjkyMjljMmFiN2E5Mzk0NTRmM2Q1ZGY2M2EyNmU5MWU3OTU2ZTljMDZlYTQ5M2QifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L299-L311",
+          "version": "repo-lines-v1:sha256:eeb33910b46b99136af39ba2398910df837cb066f469271f3d17159f192c0a5f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwYTVlMzA4OTA3NGVlOGI4YjQ1ZjNkYWY5ZTlmNDNkZjk4NTgxZGQyMTU4N2Y3YzE4ODU5ODI0ZTMwMDE3N2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyNDQwM2NlZjc3Zjk5ZDM1MzkwZTgxYzNjNzA4OTRhOGRhYTVjYjk0YmE0ZTRjZTA1ZDJmYzY3ZDcxZjgwY2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiN2VkMzZlMDg2YjRlOTQ2NjJjNDU3YzI5ZDg0ZTNhNTY5YWY4Zjc2MGRkODk3ZDYwMjI2ZjIzNGRlMGVmNmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEzZDU0ZjJiYzMzMmQ0ZGFhNDEzZTA1ZTdkNmQwOWE1MTAxNTNkYzBlNjA3NjgzYTVkMzg3ZjdlZWM5ZWMzYzUifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L327-L355",
+          "version": "repo-lines-v1:sha256:dbc9ca2554d09a8a4c9b7bc6845c138c73c918b39c42dfe4364916603e9e0a7c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwMjU5YTMwNmY3OWQyNjIyY2NlN2YzODA1N2Y1OTFmZWRkYzM2OTRhOWMxZDllNDBkZmFiNTM0YjBhMzNkODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmZmY4MDZjNGZmODVlMWY5ZjJmNDI3YzEwOTVjYmU3ODEzOGNkOTA5N2FiMWNhZTU3YmY2YWRmZmE0MGM2MTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyMTczMTUxMWUwZDU5ZjJlYzE1OTI2MmI1ZTE0NTU1YjU0NjdmOTgwNTA1MjE5NTBhZDY3OTlmOTJkZmYzODEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c83b8acfd0a64693b99a27599692e6dc",
+      "statement": "The rest timer is one layout-scoped instance per session. It stores an absolute end timestamp in memory and sessionStorage, recomputes remaining from that timestamp every 250ms, treats an expired stored timestamp as absent, and is rendered by both the session loading and error fallbacks so a logged-set refresh does not clear it.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/error.tsx#L6-L23",
+          "version": "repo-lines-v1:sha256:539929bf955d5b0a1a14701a584e3eabd42c64d0341110ad47e179eddb8dae41:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0M2JiMmEzMmRlNDIzNDYyMzU2Y2FhNzlmMjk5Y2UwNWJkNWI2MDEyODFiY2M1ZjY1MGRmYjg1YWYwYzdiNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwNTYzMDRiMGVlYWJkODhhZDRjYmRkNjBiZGY0NjY1MWFkODU3YWQxZTAxMDRlNDJhYmZmNmIwNDNhZThlYTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjZWYxZGJmYzgyOWM4NTI3MmQzNjIzYWNlOWMwZmM2ZTZjY2Y4YmEwODI3YjllYWY4ZGVjYzNiZTQ5YWUxNjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiOGI2MDBhNWI0NDhiMWU0ZDAyZGYwOTc0NmVkM2NhMzE3MmY3NWM0YWFiYjAxZGRlMDgwZTM2Y2FiMDc0YjQifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/layout.tsx#L16-L37",
+          "version": "repo-lines-v1:sha256:5dc55c59ff015d5b595c57868a959f1fd0ef04f596b831c78f9fa7e78c55559f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE5NmNkZGQ0MWI5ZWQ4Zjc0NDRiZmE3NmM5Zjk1NGQ4N2ExZDllNTBhOGM5NzUyMTMyMTVjMGIwNjIxMzg0NjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjNGQ3YzUyYWE4NTg2Yzc0MDkyY2JlZWQxM2ZkMGJmMTIxYjIwNThkNDFhMGJlOGU2MjcyYWY1NDNiZWY0MGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/loading.tsx#L4-L15",
+          "version": "repo-lines-v1:sha256:f8df3ddc9925edc8960e4a8bab9f9cd14a059844b76a77094edc176dd7c99d45:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVkMDFkZjMwNzljYTRhMzI2NGE3YzFhMzc1NzU4NTNhZjM3NTA3MWZhMmI5OTZhYmE1ZDdkZGU1NmZmYWI1ZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwNTYzMDRiMGVlYWJkODhhZDRjYmRkNjBiZGY0NjY1MWFkODU3YWQxZTAxMDRlNDJhYmZmNmIwNDNhZThlYTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxNzkxZWYyNDQ5OWIxMDNkYjY5ZjhiMTVlZGEyNzVkNDg2ZGY4OTIxMmUwMzg3YTYxOTMxMjU0MWE5MDQ5N2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiOGI2MDBhNWI0NDhiMWU0ZDAyZGYwOTc0NmVkM2NhMzE3MmY3NWM0YWFiYjAxZGRlMDgwZTM2Y2FiMDc0YjQifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/rest-timer.tsx#L29-L125",
+          "version": "repo-lines-v1:sha256:78c841a46b9cfb7ba31efef26c22be407c65b2ceedc21f75c48381d9eb0997eb:eyJzZWxlY3RlZExpbmVDb3VudCI6OTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzNjk5ZmU2ZmZlZDBjODM5NDYyYjU5OTcxOTg1NWE0NzY0YWViYzUwYmI3YzE5MjNlNmUxNWMwOTY4NjVjNDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUxYTJiNjZmY2RmOTE4YjZhMDNmZGJlNTk0YjQxYzA3NDZlNWU0MTI0YTUzYTA5OTZmZDhiZDgzMGU0YTA0ZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFkMjBmNzUxMzI4MWUwMTQyNzQ5ZTQwMzA2MjI2YmZmN2IxMzM5YWJhZTVhZmJhZDcyZDBhMzZhYzQwZDc1MjcifQ"
+        },
+        {
+          "resource": "repo://src/lib/rest-timer-state.ts#L6-L85",
+          "version": "repo-lines-v1:sha256:cd1a4678af9ffb3658f71bba61fa014458c9dd147ba56ee143bb86e75a4b70e8:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3NTc2NjQzM2I2Y2FkNTA0OGJmZmJjZTI5ZDNhNmEyMDcyYjA5ZWUzMTY0MjdlZjgwYjVkNWY0ZGJmNjliZTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMwZTJmZjZhN2M3YTRlZDZkNGNiYzMwMGQ0M2VhNjNlMjRlODcxMGI3OGZmODU2NmU3MjQ4ZmQ0YmVlYTAxZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5M2VkNWQxOGQ4NzZhMTExZjhiZGQ0ZjRhMDcyZTNkNmMzYmNlMmY2YmM4M2YwMmMwYjk5OGZjMjhmM2Q2MGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d44ea609671f43fca6ffb8dd9422e280",
+      "statement": "Rest starts optimistically when a set is logged, before the server write resolves, using the slot rest_seconds or the profile default. A failed write does not roll the timer back. Finishing or viewing a finished session disables the provider, clears the stored end timestamp, and cancels the scheduled notification.",
+      "evidence": [
+        {
+          "resource": "repo://docs/DECISIONS.md#L409-L413",
+          "version": "repo-lines-v1:sha256:f0088af522b858c645c98719291a0abfb2bbb5e8d22b69c669e57db028db3731:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjA0NjFhMjA3ODgwMjgzYTcwODYwYTViYjczZjYxYzg2ODEzODhmZDRmZDA5YTcwNjMwNjJjY2Y1MDZhZWMxYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTljMTc5NTY2NGQwMmJjMDMyYTc3MzU2MGY0MGU1MWFhZTVmMjkwYTVlMTdiN2Y3ZGMzYzYzZDYwMzJjM2M1YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzUxYjBmYmUyMzVhYzIyNDhhZTZlZmU5MDg3MjEzNjIxZmNiZjcxMThhZjYyZmUwMWQxYmUxZjljODRhNjczNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWU1MTM1NGYzMjVmMzc4Yjg5ZDc2NzA5MTNlNDRlZmNiZTc0MTMyMTczZTEwNzM2YzY0OTY1N2EzZTQxZGZiNCJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L146-L157",
+          "version": "repo-lines-v1:sha256:c6f470a037e183bdfa0b8b85ddd09073cdbbe2d443c3e1fafcb63e844b3ca01c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2YTgxYmYyODVkZDFiMWU5ZmJjN2EwMTQwMDY4YjM0YmY2YmE3ZDcyN2U3YmJiMmIzN2MzNTQ5ZTRjZWNiZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NWE1YzFlMDM3ZTQwNDVmZTM3ZjUwOTY0NzdkZmZkZDE1ZTg5MTE5NGRlZjBlYTc4OGUwMzk4ZTZmNjFiMmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkNWVjZTBlMDBhZGE0ZGMwMGVhZDcwMWJmMThhOGVkODllY2NiMTI5MDZkMzFlY2E0ZGRhN2Y3YzQ4NjgxMGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVhNjg3NWEwZjdhN2M5NTQ3M2UxNmM1NmQ2M2IyMjcyYWZkNDJmYmNkYjgxNmYxZWZjYWRkMTJlNTNiMzZkNWMifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L228-L228",
+          "version": "repo-lines-v1:sha256:7556ae52014e7f903d0e8798703c9f746f75b33e85fd1dc8ac685f09c2319687:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzU1NmFlNTIwMTRlN2Y5MDNkMGU4Nzk4NzAzYzlmNzQ2Zjc1YjMzZTg1ZmQxZGM4YWM2ODVmMDljMjMxOTY4NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzU1NmFlNTIwMTRlN2Y5MDNkMGU4Nzk4NzAzYzlmNzQ2Zjc1YjMzZTg1ZmQxZGM4YWM2ODVmMDljMjMxOTY4NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTNkYmMyZDkyNmM4OTg0YWRiNmVjNWY0NzYzZTFkNjViN2ZjMGU1NzZjM2ZiZjBiY2FlOTA0OTk2NmQzNDQ0YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjk2MmFjOTFmYjU0NTA0MGE2MzAzNGY5ZDgyYzQ4MDViYzk2NDU1MzZhMGI0ZWE5ZGQyODA2ZTI4ZDFmZTY3OCJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L405-L412",
+          "version": "repo-lines-v1:sha256:97d3eb577a54f78c3b61e51132440a9596026d430bd97caea6bc3555b13ff9aa:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDVkMzc2ZmQ1MmFlNWViOGE5MDdjMGE5Y2EyMDJlODdlZTFkNmQ0Yjg4MmRjYzY1YmQ0Y2NiMDRjODJlYzZmOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzIxMTZiM2Q3MWU3NDFiOGI2ZjMwYzU0ODliODk5MjE0NGRmMWM3NWVjYjI3NjBiNzcyY2UxNjcyNDRmZmQ4ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTMwNTVmZDJhNzRmNDU0ZGRiNDQ3NDczOTgyNzEyOTIzODkwZjRlNjgyZTg3ZmZiYWY2NzNmZDFkZjhhOGQ4ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWJlNzE2NWI3YzA5ZjNkMzY5ZmU4ZDg2NDk5MzlhMmQ2ZjIzNGJkNjZlM2M5N2U5YzQzZTljOTU1NmQ3NGY0NyJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/layout.tsx#L28-L34",
+          "version": "repo-lines-v1:sha256:53f5cec9ff1a1ca60a059e01207b42d5c8bb20b7156926cee5704f3cca65c11e:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTcyMTZlOGU5YzBhMWE2OGQwNmMyZmJhYTVmZDIxMzk0ODJiOGVmZDBhMTkzMTViOTE1ZTZjY2U4NDlkODlkYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjkwNmM4MTJlZGEwMTdlZTAzNzA2Y2ZmNDQ3Y2YyODZiZjMxOWQ4YzNhMThlMGU3OGU3MjgyYWM2NjczOTgxOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2U2M2IzMWJiNDFjZjE2YjU3Mzg2NDZlN2VjMGZkMjE0NTQ5NzhiOTI3MzQ3NjJjMTNjZjZkMTk3ZjRjM2UxZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWYwNDI3MWNlM2Y5YWE1Yjg2MDZlMzUwN2NmZGYxOGU4NDE1MmExMWIxM2VjNWI1MTZiZGUwNzJmMGNkNGU5NCJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/rest-timer.tsx#L76-L80",
+          "version": "repo-lines-v1:sha256:927f935f66592879c858a3043974cef39f02175bec9ff3c23469a7ae7416dbcf:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTk2NmZiZmE4ODk5OGRhNzQ2NTZjNTAxOTQ5NTZjMjVmMDg0OTQ1NzY2MGMwMDlmZTYzZDFlOWZhOWRjOTMxYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODFlZjE5MmI1ODRkMDQwMThhY2QwNjdiYmUzNTQzZDM4MDU5M2EzZDVlYTRmNzRlZDk4MTk4Yzc3ODdmYjc5NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjIzM2VkMjE1MWI2NmQ5MzRmZDBiMTAwMTY2ZjUxOWRiMjU1MDRjOWE3NTYxY2RmM2ExZmI4ZTAxMWJiNWU1ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDBmMGEwYzViYTEwMDM3MmVkMjZmOTBmMTkwZDhiZDViMzI3ZGJkODBlYTQ3MjhiZDQ2MGY4YTA3YzAwM2I0NCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_368ea610eff24edb9d7b90e923bdddc5",
+      "statement": "Rest completion vibrates unconditionally, plays Web Audio beeps only when profile.rest_tone_enabled is on, and shows a system notification only when Notification permission is granted. Permission is requested at rest start. The rest service worker schedules that same end timestamp and does not cache documents or add offline sync.",
+      "evidence": [
+        {
+          "resource": "repo://docs/DECISIONS.md#L451-L469",
+          "version": "repo-lines-v1:sha256:2acb7ceaf417fe116e5405e1290034364f9ca9377ab91ab73005831f08667e8e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyNDIzZTdhOGQxMjdkNGJkZTMzMmQ0YzhmODZjMmEzZDc1M2I2ZTM0YjZhMzY5ZGE2MTA3MDI2MjU1M2RiZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhZTdkOGZjYzNmOWQxYTA3ZThkNjNkNGQyZGI5NGIwYjBjNWM3NDJlZWM3ZWMxNTY5ZGFhNWVlOGRjOTk0YjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdjZGU5Y2VhYWI5YTg4YzA2NDZjMDZiYzc3YzFiOWJmZGJkNzNjNDVmZGU2YTc4NDliZWZjYmE3OTk3MjA0NGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE4ZWU5MThlMzBkZWUzZDU4NDAzMDNmYmVhMmQzMWYzMzFiMzE0MjY0ZGM2ZjRkZDk5MTUyOTZiYjI5OTUyYzYifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/rest-timer.tsx#L72-L104",
+          "version": "repo-lines-v1:sha256:8ce37a3eec0f54e9fc542d8f77cf43f85e21bbbb9865ef0f8bf8baaae6c60911:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5NjZmYmZhODg5OThkYTc0NjU2YzUwMTk0OTU2YzI1ZjA4NDk0NTc2NjBjMDA5ZmU2M2QxZTlmYTlkYzkzMWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyZDExY2FmNDNlOTdlZjM2OWU2YmVlZDFhMjY4YmQwNTgzOGYyOWI5ZGQyNTRiZjY5YmE2NDg4NDE0NzIzNGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhhMzVjYWE2NGFkMWRkY2NiODBlM2MyN2EyMzEyNjg2YmE2N2JkYzFkY2VmNDg5MWU5NDBmNjQ1MzdkMGY4NDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMyYTMyZGVmNTQyNjc0NjEzNDU4YTRjODY0ZjU5MmU1Yjc3ZmM5MmI1NDM3MmVkMjMyYmUwODRmMTcyZTkyY2EifQ"
+        },
+        {
+          "resource": "repo://src/lib/rest-notification.ts#L59-L113",
+          "version": "repo-lines-v1:sha256:f0289b4b0607a9cc48f244d7aee2c5c425045a7c1ae01b75b45225ded00ac9e8:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzOTZlYTNlN2QyZWU2NGU4ZGUxNWVmZTA3YTA4ZDFlZGRkYmY3YWI5NjcwOGY0ZGI3MmI5ZmIzNWQ0YjdjMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMyZGZjZGVjZmM0MzhlMTVmYmRiMDY0ZDU3OTcwNWU5NTJhYjU5MzU4YjlkM2NlMmI3YWZhMDcyMDUxNjQ4NWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://src/lib/rest.ts#L16-L25",
+          "version": "repo-lines-v1:sha256:93f92ef83794033706f492c4db51c12cbd7c9dbb960cc1c4a42a3adad9f01ed5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxODQxMTU1NzhiMzBjMDIyYmEwNjZmZmY2NGE5OTFhNTRkNjAwMGJhYmU5ZjgzYzUyOTE5OTFlZjFkMWUxMWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmM2UwMzkzYTZmOGRmOWJmNjUzYzY1ODI0M2FmMDlkZDVjYTg0OTk2ODYzYWNhNDQzZGJlOGY2YzE3ZDBiMDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4YmEyYzE1ZWFjY2QyMDNmN2ZlYWYwYWE0ZjE3ZTQ5YTFmOTllOTI0MTU3ZWVjZTFhNDdiMjA3NGFmZGQyZGYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fae8520488ff40e2a1638eec26deda9b",
+      "statement": "Readiness is a 1-5 integer that the UI prompts only before any hydrated set exists on an unfinished session. saveSessionReadiness rejects a finished session and any session that already has a set_log row, so readiness cannot be retconned after training starts.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L206-L208",
+          "version": "repo-lines-v1:sha256:bf5e15eb1a33b78f358903f38f31dc1dba00aa652d86cd3ab5d4d8ba77d94ccb:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzFkNzllMmQ0ODBkMzNmOGNkZWU5NTE3MmY2NTBlNTg3NzRjMDIxYWVhY2JjY2JhODA2ZjJhMzE2MWMwOTA5MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTAwOGVhYzc1MDI1OTk4OTBkM2RhZWYyMjc4NTg4YTNlMjBhNWVhYmJhMDdhNmQ1NTYyNDRiM2RiOGQ5ZmVkMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTliN2Q4ZDVhZTdlM2FlYzE4MGQ4ZTdmNzhjYzc0YTI0YjM2YWU4Zjg0YmNlOTQ2YTQwMzE3NGUyYTViNzA3MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGI0NmNhOTc3Y2NhNGFmNTNhMGZmNjllOTYxZjc2OWQ5YmM3MTJjMzk4OWE3YWIzOTZhMjU1OWQ2MWZjNGRkNyJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/session-feedback.tsx#L15-L64",
+          "version": "repo-lines-v1:sha256:987770bcdce41066504d20a3353f32c0e2f1ba720de5875cb865d72d95eeb813:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVkZDY2YmZiYjQ1MWVkN2EzMWZkNjc5ZmI0Yjk1ZDIxN2IwOWFlZGE5YmE5Yzc4MzczODU3MDYzNGZhMWQ1NzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2ZTJkMTcwZjMxZDljODhmZDhjNGFiNGJlYzJmZGRiOGU0OWZlOWFlMTRiZjExZTQ1NDg1YmE5NGQwMjdiYTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI0OGI0MjM3NTg3MjUzNGU3MmQ1MzVhZGUxZDM1NzZkODVmZjZjZmJlYTJlZDQ0ODcyZjFlODcxMThjYzgxYzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5NGZjMGMxNzNkMWVjM2ZjNTAxZDdkZmE5Mjg1NTAxYzUyN2NmYjQ3MTI1ODNkYTNjYzM2MTgwNTY2YjRiZTMifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L366-L398",
+          "version": "repo-lines-v1:sha256:d4e8f31adaaaafacbd3d2ea283e5a5b318af18bda9ebc7b584a726bf9ce4d1a2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhY2NkMzZlNmFjOTcxODM4YzIyY2Q0Zjk5MTEzZDE3ZTliNjE5ZjZiYzRkY2VmYjVhMmZlZTA0NzllZjc2OTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5NGZlNTAxYjYwZGMxZTIzN2ZkZjdlODNjYTNiODZmMWU2ZTAxMDdkZTlmZmU5YjI5MDE4MDBjMTBkODM1MjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlMzc2NmM3MjIxMDI2NTdhMTljN2FiNGRiN2FmNzg5ZTFhYzBiNmNiMDI4ZTdmZGQ3Yzg5NmJjMTUwM2QzNzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjliMGNjZmRlZWQ3YWYxMDQzNmU4ODg4YTVjOTEyYWE0OTRmZDdkZmFlMmU2OTg2MWE0Y2QzOTZmZDdkMTg5MWUifQ"
+        },
+        {
+          "resource": "repo://src/lib/session-feedback.ts#L12-L17",
+          "version": "repo-lines-v1:sha256:73eb815e00e12a598c3a809bf5f1f1c295628ea228fce4eb6ab20bc34bcf7c07:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTM5OTBmZWMyZGY5ZmUyYjEwNDQ2MWY3NjI0NWE2NGI4NjkyMGZiN2FjNTQ4NDk2Yjg1YTQ0ZWJhMjhjMmVhNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2JjNDFhMGE5NTY0OTY0N2I3M2M0YmZlOTkwYjcyODBlZjBmY2U0MTMzNjliYzk0ZDg1ZWU4MDBjNTdmYWY5YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmZiY2MyMzBlZWY5NTQ4NjIzYzM2Y2U0MTgyMzRhZDY3M2RlNmE3MzU2MWIxZWQ1YzZlOGZiOTAzMmRhMjYyMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1311ee03845c4da8986d3b98d589b287",
+      "statement": "Joint pain and the session note are optional fields on workout_session. finishSession can persist them in the finish call. Later edits go through updateSessionFeedback, which writes joint_pain and notes only and does not change finished_at.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/session-recap.tsx#L28-L35",
+          "version": "repo-lines-v1:sha256:5865c693cb57c625569f15d9dadebc8db35332752fe7786a44f48ef525301604:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGNkOTUxYTcyNmY1MzE3NGMxMzAwYmRhMWVlMjQ0ZDNhYTNhMjZlMTE1YzllZjUwMzljZTMyNDdkOTBkZDRkNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllYmJjYzVlOTAzODYwYjI4ODczNjBlNmQ2YjMxNTIzZDkyMzRmOWM0YTkzYjRiM2MwMTM3YjdiNTMxMzk1NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTMxNGFlNmQ4OTg3NmU0OGU1NjJhZDZmN2ViOTgyNmU0NjIwYzhiZTMxZDQ5ZTcxYWU2ODhiNzkxMjI1M2Q0ZiJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L401-L422",
+          "version": "repo-lines-v1:sha256:e02f0169bf648332802d124d705451c38039fda745805be58ac085af40780959:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0ZWUzMzI5OWU4MzA5YjA1NDRmODk1M2ZkMDk0NDJkNmQ5MzQwYzU3ZTk3ZTE5OWZjYTNlOTE0MTJhMmQ1MTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5NTM1NzY0ZGM3YjdkOWVhZDQyMzdmNzMyYmViY2FkMmNlMThmYmJhNjA2ZGQ3NWRjMWI5MmFkZTMyZTA1YTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY2OTVmYzM4Y2VlZDlhOTA3MGI2YTVhOTZlMmU4Yjk5NmM3MGE0MzY0N2FlZjg3NmM5NDU1YzgxMTMyMDgwNjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ3MWZhNDAxYTdhYWMwNTJhNDdlZWRmM2Q1OTJmYjA0NmJiZjA0MzYwYTQ0NTUzMDQ1ZDcyNWM1YThjNjAzMDkifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L426-L455",
+          "version": "repo-lines-v1:sha256:7e5f13be3a83e6a80585804518b5aaf3d5051edfd6e1ea94c158a657a6875f8f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwYzVkZDE4OWRmMDU0NzA4NTkzNzg1MjQwZTIwODNlNzhlNjQyMTI5YTk2YzZlMzMxOGU2ZTM3ZWVjZTdmMjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ3MWZhNDAxYTdhYWMwNTJhNDdlZWRmM2Q1OTJmYjA0NmJiZjA0MzYwYTQ0NTUzMDQ1ZDcyNWM1YThjNjAzMDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkNTJkZDZkZGEyMmEyZjE3YjMxNjUwY2JlZDAzMjdhNDkyZjY5YzgzYWZmOTYyYjBjMTk4YThhMDYyNWExMTEifQ"
+        },
+        {
+          "resource": "repo://src/lib/session-feedback.ts#L1-L34",
+          "version": "repo-lines-v1:sha256:d79b10d0755cfc3d8bdc9a0ae790174d0b5bdcbf561943b66db422cf2d0980a4:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4YjBmYjkxY2E0YzEwOTVhMDUwMjBjMzk5MTM5NDYwZWRjMjRlNzg2ZTNjZDIzMTdhN2NkZmI5ZjI5NmZkMzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_296d234fad304f7a80c4f7f03338d125",
+      "statement": "finishSession loads the record replay before writing finished_at. A failed history read or finish update leaves finished_at null and does not return a success summary. The finished_at update is guarded by is(finished_at, null), so reopening the summary does not move the original finish time.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L426-L464",
+          "version": "repo-lines-v1:sha256:c2f84211f0e76a606d6f06a0c08fb266ca0c1d190ab10ac3647f63c694910740:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwYzVkZDE4OWRmMDU0NzA4NTkzNzg1MjQwZTIwODNlNzhlNjQyMTI5YTk2YzZlMzMxOGU2ZTM3ZWVjZTdmMjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmMGViYjRkOGJiMmU0NjhjNzVjODlkOWZhMDFmZGJhZjc3MTBlMDI1MWFlZmM1MTM0N2ZmZGYyYTU2NjUzOTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ3MWZhNDAxYTdhYWMwNTJhNDdlZWRmM2Q1OTJmYjA0NmJiZjA0MzYwYTQ0NTUzMDQ1ZDcyNWM1YThjNjAzMDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUxNmY0YmU0MTQwMDBiOTIyMmY3ZjZhOGMwYTYyNjU1YzJmMDgxMDEzN2Y3OGY5OWY5ZWE1YzY0N2IyYzRmZWUifQ"
+        },
+        {
+          "resource": "repo://src/lib/record-actions.test.ts#L117-L131",
+          "version": "repo-lines-v1:sha256:d1887576c7e2a0baad70d820bc18325cb21d9dd991548b18524f15128599e7dd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwMDk1NjJlYzNhZmVhMWUxNmM3YjgwOWQzYzVhMmFiZTlhNDFjYTRlYWZjMWM1ZWIzZTg2ZDZmN2Q4YzFmY2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzY2IzZTBkYWU5ODM3M2IwZGEwN2Q2NDZlNDQzNTNjMmFlODUyZWU4YWNkOTE1NzBkYTUyNGVhM2I5YjMwYjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlkMjI1ZDY0NjQ4ZmQ3ZmJlNWQwZGExZjRmN2NmODAwZDE1Y2JhOWMyNzBkOTJiOTZiMWE4YWVmOWY1MzU4YTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEzZGFhYTI2OWQ1MmVkZDA2YWY5NzE0OTJhNGM1NDNlMzMyOGUyYzFjNGI2YzA1ODM4Mzg3NjkyYmI2Y2E3OGQifQ"
+        },
+        {
+          "resource": "repo://src/lib/record-actions.test.ts#L186-L197",
+          "version": "repo-lines-v1:sha256:701fdf1a666ae49cdef2c15a52d61c9916a258745a77458ad48e774da012ec27:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3NWI2MDAxZjdlMDg1ZjVlZWI2OWZlYTg0YzljMjk1NDYxNGUyYzk5ZjVjNDAxZDgzNzYyOGU4ZjI4OWIxYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ1Mjg2ODEyMmE4YmE4YzYwNjE3NDZhYWE3Njk5MDMyNmFkYWI4NjVjZjM1ZDcyNTc5YjcyNDNmZGM3ZjVjYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY0ZjZjOTVmYmMyOWYzMjM3NGJlMDcxNmFmMTA5ODQ0MjBkNWFkMmExNGRjMDk0OTVlOWQ1MTkxZWM3ODA4YTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a4a45f4d45ee4042915cac96d4fd6df6",
+      "statement": "After a successful finish, the client skips rest and router.replace navigates to the recap route. The recap page redirects to the live session when finished_at is null and notFound when the session row is missing. The recap route loads records itself and does not render the finish action's topE1rm payload.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L146-L158",
+          "version": "repo-lines-v1:sha256:c60e0e8709548a2c8377d30f8dc6843c41c6494fe19dcf88ad24c23fc1ee67c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2YTgxYmYyODVkZDFiMWU5ZmJjN2EwMTQwMDY4YjM0YmY2YmE3ZDcyN2U3YmJiMmIzN2MzNTQ5ZTRjZWNiZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1YjI1NTM2YTlkM2U2NjA0M2RmYTNlNDVlZDA1M2M0NGQzMzI4NDdhOGMxZDQ3ZjYxNGM5MDljMDEyODUyZTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkNWVjZTBlMDBhZGE0ZGMwMGVhZDcwMWJmMThhOGVkODllY2NiMTI5MDZkMzFlY2E0ZGRhN2Y3YzQ4NjgxMGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5MjhkOWU5Mzg2OTk3ZTI4NWQxNWQ4ZGJiM2Q2NjAxOWI3OTkzYTBkZTI1MjlkZGNlNGY0NGQ5Y2M5YzVmNzMifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/recap/page.tsx#L20-L48",
+          "version": "repo-lines-v1:sha256:9726c6bd259fc460dff339bb5afb6f49448b317c0db0725604f8e38952389831:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0ZjZiMzk5ZWMyOWI2ZmMwNTE0YTIxZGI0NzRjNmFmZDAxMWUwMjJkYzQzNTBlNGY0ZWNmNjYyNzUzZGJhNjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3YWQ2YTdiYWFkYjcwODAzNDU3NGVlMDQwY2I4ZjA1ZTc5OTVjZTUwNDk0ZTIyZjUyMDZlOWEwYTE2N2ZiZGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY1ZWZhOGM0NjI2MzcwYmNkOTZhNjcwYzI5OWJjZTBjMTc3NzIzZGRjNmYwMGY5ODM4MTkzYmFkMDNjMjhkYWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiOGI2MDBhNWI0NDhiMWU0ZDAyZGYwOTc0NmVkM2NhMzE3MmY3NWM0YWFiYjAxZGRlMDgwZTM2Y2FiMDc0YjQifQ"
+        },
+        {
+          "resource": "repo://src/lib/session-paths.ts#L1-L7",
+          "version": "repo-lines-v1:sha256:efeff870c105cef33c36e4335077d75730c594bd43be1c83ffe898453fe598af:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTEzMzVlNmRjY2Q4MmMzMzA4NzIxYzlmYmE5NDRjMjk2NjExODQxY2FhZDhkZDk4NmJmZGQwY2FlNTM0ZTkzMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_91cbb14655654541a2c551220f4fce67",
+      "statement": "Editing or deleting sets after finish is allowed and recalculates the recap through the same replay, but does not change finished_at. A failed edit or delete preserves the previously valid records.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L269-L341",
+          "version": "repo-lines-v1:sha256:64e18a3176b63af90b0a35875ddd7e8ad37c4d0efae47b64200d1368b730e6d2:eyJzZWxlY3RlZExpbmVDb3VudCI6NzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkYjYwYWY0ZTJmOWRkNTQ4MjJkMDkwZjVjNGY0ZTc2OGE1MmJlMjlhNjkwNDczYzhiYmY1N2NmZDQ3NDg4ZmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyNDQwM2NlZjc3Zjk5ZDM1MzkwZTgxYzNjNzA4OTRhOGRhYTVjYjk0YmE0ZTRjZTA1ZDJmYzY3ZDcxZjgwY2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdjOTk5OWRiY2Q4ZTQ3Y2E4ZDgxOWQ2MGYxNmY2ZDEwNDExM2NmNGE3NWRhNzM5NDJiMTY1ZGMxN2ExZTczNGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkwMzhjM2EyZTBlZDc5Y2IxYzQzMzlhOTUwYTE5M2Y2OGMyOGU1Y2RiZjIyZDgwYTkyNjE2NmU4MWFkOWY1NjEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L457-L463",
+          "version": "repo-lines-v1:sha256:53d372e642ab5cd43750d08113beba3336e276b44a899d10e6a374dc10474d17:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjAxZDZiMmZjYjFhOTIwNDliZTc5OGE1M2QzYTYwMzc1MTEzMWE0MTQ4MmNlZmEzYjU4ZDc4YzAzNDRlNTg0MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGNjY2YyNzY1NjE1OGRiZDQ3NzFjNzlkMGViZWE1ZWMwYTk0OGRkZDAwYjEwNTg3ZDZhYjQ1Mjc0ODljMDdiMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjU3YjYxZjE4MTI4YzFmNDgwZmExYWJmOWYyZTQ3YzRlNjg4OWM0ZDcyOTIxMmU1MTU3MzVhNzRkN2QxZGEzMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmVkOTJkNzdjNWVkNmUyOTcyNDQ0ZTliMzVmZmZkZDNkMGU0ZmM4NDlhN2YwNzI1OWRkNTg0MWVkNjA5MWNjMyJ9"
+        },
+        {
+          "resource": "repo://src/lib/record-actions.test.ts#L151-L171",
+          "version": "repo-lines-v1:sha256:534b6ebfca204ef39636c63d06abcaa11a5460996bbc5d7f0e63979f4a08f8d7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwOTM3ZWNiNmNmZDQ5Y2E4YThjNGVhZjZlZTRiODg2ZmM2ZTkyOTI0NzZkNDdkYWFiMDE3MzVlOGQ2MWVhOTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0YTgzOWY2ZWI2YWQ0ZGZlYjQ0NzI3NmNlYjE2ZTNlMGYxYTJhYTQxMzU5Nzc3MmVmYWVmYzZmMzc1ZDUwNWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFiNmMwYzc0NDZjMmFjNzY4MGM1NTgyMGRmYjk4ZmQ0NmZiOGMyMjg3OWQ3MjEwODE3Mjg0NzAyZTNlYmRlZWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1cc3b5c415294dbf9dfca0d144565046",
+      "statement": "workoutRecords is a pure replay of persisted sets. It emits rep, e1RM, and top-weight records only when a current eligible set beats a prior baseline at display precision. A first observation is not a record; a later within-workout improvement can be, with a null improvement so no historical delta is invented. Machine templates, warmups, and invalid sets are ineligible.",
+      "evidence": [
+        {
+          "resource": "repo://src/lib/strength/records.test.ts#L54-L58",
+          "version": "repo-lines-v1:sha256:6b62364e111b5c41a33e7e4ea10b28e25ea0c00bb64f0a4c9050f946d3f9a340:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmM0ZDAyN2JkN2E5NDU2OTQ2NzJjZjAxZGJjNzA1ZjI3Mzc4MWUwN2U3ZGRhZTMyMzA5YjQwOGVkM2Q0YzcwYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2Q0YWYwOGM4ODUxMTQ3ZDBmODMwODdjNDc2ZGJiZDg0NzYxYjc4YzFiZjY4MzhmMjZiM2Y4ZGFlZTNjOTQxNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTA3M2Q0NWE0OTA5NDQyOWQ0Y2NhNGI0MTA1MDBlNjJmNzZjMjM0NGNiODcxYzBjNjY5MzdiOGZmYmE1ZjQzYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDU4MjM4NjE5MDQyM2E0YzE0ZTdjODZmMzA3YTZhZTA5MTM2NTA5ZGYyYjM3MDM0NmMxYjdiYzljMjM0MmVmOCJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/records.ts#L187-L218",
+          "version": "repo-lines-v1:sha256:b85f11d1039f609a3565934af44e1af02f1d4a2e180e55b04b873c4f149d266a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1NWU2MWY1OTUwNTVlYzZhMGY1NTBlYjA5ZWRiMTY5M2UxMGM3NmUxYTkxYTliMzg5N2IyMTJiYTRkODNkMjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3N2YzNjM1OTcwNzRmY2Q5OTA1MTM4NzU3N2E1MGFkNzI3YzBhNDcxZGZmMmZhMmEyOTZiNzFjNTY5MThlNDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBkMDU5OTBkNjgyNjJhOTk5ODk4MjY1NzliMzI5NWIwNTAwNjhlMjNkZTZmZDgzOTY5Mzg2M2Q3ZGYwZmVlMGIifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/records.ts#L73-L169",
+          "version": "repo-lines-v1:sha256:8b4e2caab86f59884b5d9cf6cb3bb1eb440f4257d32373602d55f0ebff954e46:eyJzZWxlY3RlZExpbmVDb3VudCI6OTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzMzM3ZTA5NjY3NDcxNDNlNzY4NTk4NmQzZWJhMWUyNTAwYWFlMWUzOGIxODJjMzBiODhmMTczZDRhYWNlNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3MzBhNjVlNjg3N2Q2MmI4N2VmYjUzMjkzMDg0MmFiNTY3NDBhM2YxZTg3MTE3NDYyOWE3ZDg1MDk5ZTI1OGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5YzFlYThlYjg5OTdmZWEwOTE5OTdlNmE3MTVjNWUxZmNlZWUxYzAwMzRlNDBjMDdhNDE2ZmMzZGM0ZmUyMjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU4YjVlM2Y2ZDc2NDVkMTEwODlkNTMzZTNhOGVjYTNkZjQ0NWI5M2Q2OGEwZmRjMGYwZTJlZjI0YjIyYzIzMzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5b73f62223454915bf1f214fd0eacd43",
+      "statement": "loadWorkoutRecords pages current sets and prior finished history in 500-row chunks ordered by created_at then id, scoped to exercises touched in the current session. It throws on a read failure instead of inventing a baseline, and does not query history for an empty workout. Live pills, finish, and the recap all consume this loader.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/page.tsx#L98-L104",
+          "version": "repo-lines-v1:sha256:b43767cb1c6ac411ac372d225e204d5339a579ca4dbbdd54a047082a9886ac11:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTNlMjliMDMyZDE4YjMzZTNlNDdlOGMwNjNlOTA5NzE4ZGJmMGQwZmZhMGQ5NDhhMjNiOGQzMzc4MTZlYjFlMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDgzMWQ0ZGFkODlkZDRmMmQ5OTJhZGVlODMxYzA3NGRmYmUwNTM3MzExNTU1MWIwYTY5YzRjZDJhNmQ0MzRmYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTA3MGM0YTU2MzUyYzRjOWM3MjMyMGVjYjhmMmM3NzYwNDExM2U5OGY0MjZjYWU0OTg5M2U2NGUyMTY3NmE4ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzkwNmE4ZjRiNGM4MDA1ODc5ZmE4NGZkZjdiMjFmOGQwYzJlNmIzOGQ0ODIxNDNmMTVhMjY5ZTMxNWJjMzg3ZiJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/recap/page.tsx#L29-L35",
+          "version": "repo-lines-v1:sha256:f7f90fc285c13752b80049cdfa4b2445f4d3bc8b95e8743454f8f304822901b2:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjAyNTlhMzA2Zjc5ZDI2MjJjY2U3ZjM4MDU3ZjU5MWZlZGRjMzY5NGE5YzFkOWU0MGRmYWI1MzRiMGEzM2Q4MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWY5ZGJjN2YyZjI0YjUyODQzNTdmOTg2MzA2ZmVmMDQxN2NjNmY4MWE4M2EwMmJmODE1MGY3MTEyZjg4M2IwOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTM5N2M5MjQ3MzYwYjRlY2RkMmU4YmRkNDk2MWZmNzdkZWYyMjRmYzM5ODg3OTY1M2RhYTU2NTQxYTJhNDhhZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTU1ZTVlNjAwNTgxODFhYzkzMDc3YzVlYTI1YzYwZTJiZmI0OWUwOTYwYzk2NjQ1ZTIwMTdlYTBlOGZhMDZjYiJ9"
+        },
+        {
+          "resource": "repo://src/lib/workout-records.test.ts#L19-L56",
+          "version": "repo-lines-v1:sha256:d2162f97d83540771b87bc842753b3529176c72eb42bc34641d3706446436bad:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2MWYyOTQ2ZjA2NmFhMDBjN2Y4Yzg2ZjY5M2UxYjljM2NmNjUzMzA0MTdhNWQ0YzFlYzE3NWQyMjUxZWMwMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5MTExZTgzODE3Y2RiZjRmZWQ3ODM1NzUwNzgyNWU0ZDI2NGEwYzQ5ODZlNmNkZTE1NGFmOTljNjE1OWY3Y2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIifQ"
+        },
+        {
+          "resource": "repo://src/lib/workout-records.ts#L5-L42",
+          "version": "repo-lines-v1:sha256:a9a21a50ee41e12ab0608d3d203c24b6f90c6d291bf85103baf458d4d17a5e86:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0ZGZmZjZlY2ZhZmMwOThkMWVjY2FlMDg2MzMzYzA4MzYyOTRhZjU0OTEyNzIyZjNjNjFjYzc1NDM2OGRhNDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiMjdlOTEyZmMyY2QxN2FhOTU4ZWZhM2Q2NTFiODg0NWVlMDk2MGE3ZWVkZmYwYWI5ODFiZDQ1YTFiODNlMWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyYjE0ZmIwMGNjYjBlZjUxY2EwOWU1ZjIzOGNiZmE5OWQwYTJlMTg2ZWFiYTM3NzcxZGU0ZTBkNDFhM2JjMWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3c1f8f78d67843edaf0089b3f23c1281",
+      "statement": "Live achievement pills are slot-filtered from the streamed replay via recordsForSlot and never include optimistic rows. The recap headline uses a single N PRs count only when every record is the same kind; mixed kinds stay a joined string.",
+      "evidence": [
+        {
+          "resource": "repo://docs/DECISIONS.md#L421-L428",
+          "version": "repo-lines-v1:sha256:81689b73a4037ae90e0a7c2edc3cfc1eb8709eabbcfe9940c9bb34db87c56b47:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjYyYTZmNDEyNjU0MjkwY2I1NGFkMTlkYzhkZGNkN2MxOWFlZThhMjhkMjhlNWM1YjVhN2ViMjViMjZkM2NkOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDQzNGM0ZDUxNDc5OWVhMjkwM2ZiMzk4ZmRjNDZkNzYyY2RjMWU3NWMyODM0ZDRkMjUyZGZkMzhhZWEwMGM0MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGI4MTQwNjE0NjBhZDQ4YzNlODE3MzAxNWE4NjY5NDhkZWJhNWEzMmJmOWRlNjY5NjA3NTk4M2E5MDg5NTlkYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGUzYmEzMTZmYjY4N2UxZjllMTU5MTNmOTFjZDY1ZTNjZDhkYmMwYTJiNjk4N2M4YTA3YTJiYTdkMzQ4OGFhMSJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/achievements.tsx#L13-L47",
+          "version": "repo-lines-v1:sha256:dc96c2f8d812408281a9fb9021fabd32cb89b66e7fdfaff3b42d50ab36f668bf:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlYzMzZDVjNjQzZjY0YTM1OTZhZmU5MzY2MGU1NGEzMmMxNjk4NGU0ZGExNTJmY2Y4MmYzOTI4NjA1OTg4NGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyZWU0NGViN2QxNzMxZTFiNDgxZWNkZDE2ZDExNzFkZGE4ZTE3ZDdiYTgzZTMxMjg3YTI4ZDMyOGY1ZDViYzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE1NzZlODIwYzFjNWJmNDg4OTc5YTJmMzJkZjI3MmE2NjVkZmY3YmYyZGUzMzk3MWQxNDQzZmQ1ZTc1ZmQ0YjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ0YmQxMjUzODI5MWQ3MTQ0ZGU1ODZkZDExNjIwZDg1ZDI1NWM1ODY5NmE2ZDQ2ZjIxZjA4NmZkZTY4NzAyNjkifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L214-L221",
+          "version": "repo-lines-v1:sha256:b49bcee3fa95130d67e7f680db62d2700012a4a35dc064874eb2e87a28ecf69f:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjJhY2EzYTQyMWU3MzA2NTAzYjEzMjhlZDIzMGIzZTIzZDc5N2I2YzYwYTQyMzhhODA2MGMwZmY1MjRlYTAwOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2E3OGUwYTk5Y2RiNDE2OTE4MWUxNTg1YzRlMGY4NDQ3YzVhNDViMjM0NGMzM2Q0NGRmZTcyMDFlMGQwMmRjMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2Q0OGVkZTdjNTBhZWQ3NDk3MTczNmNlZDY2MzE5NjkxZjMxODhkMmQ3MWY0YWM1YTJhOWRmMTY0YzI5ZWJkZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzdlYWI0OTlkZDg2NGNjMjE4NWJhNGQzMTBiZjQyZmM5YWM2NzMyZWY3ZWI0YjIyZWVlODU1Y2FjNWZjOWQ3MiJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/records.ts#L187-L226",
+          "version": "repo-lines-v1:sha256:954d0bd2352f1ef84645f203de1dd2c327202518fc90e79424d62919752b4e89:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1NWU2MWY1OTUwNTVlYzZhMGY1NTBlYjA5ZWRiMTY5M2UxMGM3NmUxYTkxYTliMzg5N2IyMTJiYTRkODNkMjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkY2IzZTA1YzFkNTRjYWQ1NjlhNWNjZDI3MGY5ZDhiMjE1MWMyNWNmZTYwOTQxNjA4ZTdmNjA5NDc0ZDZlNTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3N2YzNjM1OTcwNzRmY2Q5OTA1MTM4NzU3N2E1MGFkNzI3YzBhNDcxZGZmMmZhMmEyOTZiNzFjNTY5MThlNDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7f02784e12f44ea2b258d68bfbebceed",
+      "statement": "recomputeAndUpsertStat rebuilds user_exercise_stat.current_e1rm as the max working-set e1RM for one exact exercise_id. For needsCalibration exercises it anchors personal_coefficient on the first working session, re-anchors while only one session exists, then holds the coefficient. Deleting every working set clears the coefficient and sets coeff_confidence_n to 0.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L50-L117",
+          "version": "repo-lines-v1:sha256:5d375bb7f2ecffe910d85f2a4ef7bcb8635e18a89ef518f65c49ada69495d552:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzZjdhZmY5MTFmYTdlMmM0MTljMzU4YjM3ZmVmZGVlMGQxMjYxYzM3YzI5NGU5ZDg5NGU0NzFiZWJiNDkyMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYzZDExOWRkOWQyYzAwY2ExYWY2N2RjYWJjNDAxMzkwYzJmOGYwMzM5MzEzMWIzZWY0ZDk4ODkwMzM0MDkxODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNmZjM4NzFjMjI0YWI4NzE4ZWMwNGIxZGI4MDY2MDE0YmRlNGRjOTcxMDE2MGU1NjY3Mzc3YWNlZjYzOTE0YzYifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/recompute.ts#L30-L50",
+          "version": "repo-lines-v1:sha256:0d16e9b1d95968242e12e443ea70a5c13b757b6424b607743fdf0a13192c29f1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5YjA1ZDg5Y2Q2OTFjNTFhODgwMWQ0YTFiMDAxOTU1NzczYTEzNjUwZWQ0YmFjMTA0YjI1OTBhNTY5NDgxZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4NGIwNTRmOTNkZjA3NjA5NWMwNTQ0NDNmOWQ1YTAxZjk4OWY1MGI2Y2M2NTUzMzBiZTdlMGRkMDI1MWY2MjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM1MDAyNWNiZjhhMTM2MThlYjZjYzE3YzFiNDRkNGQ4NzZhODM2Yjg2ODY5YTdiZTgzZTA2Y2YyNDFhYTcxMjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_32e44ae0d1814e08a1be943504c35974",
+      "statement": "editSet preserves the bodyweight implied by a bodyweight set's originally persisted e1RM. If that historical bodyweight cannot be recovered, the edited e1RM stays null instead of substituting today's weigh-in.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L281-L290",
+          "version": "repo-lines-v1:sha256:c2987247a7f302803f8d61c659dcc12880360e28596824c68c930faf884ac586:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwMjU5YTMwNmY3OWQyNjIyY2NlN2YzODA1N2Y1OTFmZWRkYzM2OTRhOWMxZDllNDBkZmFiNTM0YjBhMzNkODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViM2QxODZjY2EzZWFjM2NlYjZmNzkyMTkzNmVmN2M3ZTg5YWY0NjViY2IyN2QyOTAyYTVjZjJhZDczZmJlMWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjExMGYzMzUwZjk3YjBmYTMyMGYyNzk1ZTQxMjM5Y2JlZDc1ODk2NzkwYWQ3MmFhZjZmMzg2MDEzNTRhYzhmNTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNkZTIxNDJhZDZhNmI2MWJkMmM2N2FjNDZlYjBmOThmYzU4ZDA4OWRkOGNmNGY2Y2VmNDM1MTYzNTZjODJhYTYifQ"
+        },
+        {
+          "resource": "repo://src/lib/record-actions.test.ts#L173-L184",
+          "version": "repo-lines-v1:sha256:506d5d71bb1467a85b7587adb4d9a2c2c8cc59b5b335253c0183859b93fc882e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiOGJiMzlhZWE1ZmQ1YTkwMmNhYmQ2MTllMTQ5MGUyYWRkMTQxNWEyZTZjNmJjY2Y1NzQyZjU1ZDg1ODU3ZDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRlYmYxOWI3ZDkxM2E5NmE5MThmNWRmMzJhYjZiMmFiMTEzODcyOWY3NGZjMzRiZjhmYzVkNzI1ZDQwNGJhNTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNjZTBlZDc3NzM3NmJkNzI5NTVhNmE2MDVmOGY1NjI0YTRmYjcxMTI4MzZkYzBiNTgyNzFlZjNmZmE2MzNhNWIifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/records.ts#L65-L71",
+          "version": "repo-lines-v1:sha256:8d982906c16371ee0e7acf49628befe05baa081fa7e5921f75eeb77c6adc4916:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTAyYTI5NzU3MGZhNjlkYjdiYmEzMWNmMmI4MzYwYWM5ZTAxOTQwZDI3OWVhMjQ3ZGM2Y2NkMmFiZTlmM2EzYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2M4ZjUzM2UwNzJjOWU4MzRjN2NjYTEzMWIxNDVkNGU3OTdkMDQ3YmJmODk1ZDVhNGYzZWI2ZmFkODFkNzNhZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjM4YjIxMjFmZjFiNmY2NDg4NDBmOTM5ZTE1NTEzZmY1ZGQxMzFiOGVlNzdlOWU3MDE2YzJiZDA2M2VlYmI0MCJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-29T00:58:03.170Z"
+  }
+}

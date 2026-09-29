@@ -6,6 +6,35 @@ tags: [exercise-catalog, exercise-identity, station-composition, calibration, st
 verified:
   - by: openwiki/0.6.0
     at: 2026-09-25T19:18:52.086Z
+sources:
+  - id: openwiki-source-e8e61d605125cac4d909755e
+    resource: repo://docs/ARCHITECTURE.md
+  - id: openwiki-source-16826a784a13b6e7cfd5bb4d
+    resource: repo://docs/superpowers/specs/2026-09-21-station-composition-design.md
+  - id: openwiki-source-4345f9d7dff0d0e3d589a5ac
+    resource: repo://src/app/(app)/exercise/actions.ts
+  - id: openwiki-source-22257651a9ea4709d87db3b4
+    resource: repo://src/app/(app)/pins/actions.ts
+  - id: openwiki-source-fb6e3956308b6521741fac74
+    resource: repo://src/app/(app)/session/actions.ts
+  - id: openwiki-source-5341550d8b0ccdae243b6dc4
+    resource: repo://src/lib/catalog.test.ts
+  - id: openwiki-source-d2647d60f789b9509ceb9eda
+    resource: repo://src/lib/catalog.ts
+  - id: openwiki-source-79f63144bf22da18d8901d6b
+    resource: repo://src/lib/exercise-history.ts
+  - id: openwiki-source-1058f7dcdc7a2d225294fa3a
+    resource: repo://src/lib/exercise-id.ts
+  - id: openwiki-source-3073362db0986e6c0619a25c
+    resource: repo://src/lib/station-calibration-records.test.ts
+  - id: openwiki-source-8a8878acaab0ee392c5d2b6b
+    resource: repo://src/lib/station.ts
+  - id: openwiki-source-b528d7a3cbc7763aea8d4c6c
+    resource: repo://src/lib/strength/coefficients.ts
+  - id: openwiki-source-c171a80224ab8da0fa309e42
+    resource: repo://src/lib/strength/records.ts
+  - id: openwiki-source-1a2d3e630b48fc2b6783bed1
+    resource: repo://supabase/migrations/0008_machine_variants.sql
 ---
 
 ## Responsibility

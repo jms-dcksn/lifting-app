@@ -1,6 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getCatalogMap } from "@/lib/catalog";
 import {
+  movementId,
+  movementMemberIds,
+  movementTemplate,
+  rollsUp,
+} from "@/lib/strength/movement";
+import {
   groupReviewSessions,
   reviewChartPoints,
   reviewRecentWindow,
@@ -31,14 +37,19 @@ export async function exerciseReview(
   const catalog = await getCatalogMap(supabase, userId);
   const resolved = resolveExerciseIdentity(catalog, input);
   if (!("exerciseId" in resolved)) return resolved;
-  const exerciseId = resolved.exerciseId;
-  const def = catalog[exerciseId];
+  const requestedId = resolved.exerciseId;
+  const requestedDef = catalog[requestedId];
+  const template = requestedDef ? movementTemplate(requestedDef, catalog) : undefined;
+  const rolling = template ? rollsUp(template) : false;
+  const exerciseId = requestedDef && rolling ? movementId(requestedDef) : requestedId;
+  const def = catalog[exerciseId] ?? requestedDef;
+  const memberIds = movementMemberIds(exerciseId, catalog);
 
   const { data: rows, error } = await supabase
     .from("set_log")
     .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, program_slot_id, is_warmup, workout_session!inner(performed_at, finished_at, program_id)")
     .eq("user_id", userId)
-    .eq("exercise_id", exerciseId)
+    .in("exercise_id", memberIds)
     .eq("is_warmup", false)
     .not("workout_session.finished_at", "is", null)
     .order("created_at", { ascending: true });
@@ -61,10 +72,12 @@ export async function exerciseReview(
   });
 
   const now = new Date();
-  const identities = reviewEquipmentChoices(history, now);
+  const identities = rolling ? [] : reviewEquipmentChoices(history, now);
   const requested = input.equipmentInstanceId === undefined ? undefined : input.equipmentInstanceId;
-  const selectedEquipment = resolveReviewEquipment(requested, history, now);
-  const selectedHistory = rowsForReviewEquipment(history, selectedEquipment);
+  const selectedEquipment = rolling
+    ? null
+    : resolveReviewEquipment(requested, history, now);
+  const selectedHistory = rolling ? history : rowsForReviewEquipment(history, selectedEquipment);
   const grouped = groupReviewSessions(selectedHistory, now);
   const programIds = [...new Set(grouped.map((session) => session.programId).filter((id): id is string => id != null))];
   const programNames = new Map<string, string>();
@@ -99,6 +112,7 @@ export async function exerciseReview(
     equipmentLabel,
     identities,
     sessions,
+    rolling,
   });
 }
 
@@ -109,6 +123,7 @@ export function summarizeExerciseReview(input: {
   equipmentLabel: string | null;
   identities: Array<string | null>;
   sessions: ReturnType<typeof withProgramNames>;
+  rolling?: boolean;
 }) {
   const last = reviewToday(input.sessions);
   const recent = reviewRecentWindow(input.sessions);
@@ -119,7 +134,9 @@ export function summarizeExerciseReview(input: {
     exerciseName: input.exerciseName,
     equipmentInstanceId: input.equipmentInstanceId,
     equipmentLabel: input.equipmentLabel,
-    identityNote: "Exact exercise plus equipment instance. Instances are not blended.",
+    identityNote: input.rolling
+      ? "Movement scope across every station in this family. Machines and cables stay exact."
+      : "Exact exercise plus equipment instance. Instances are not blended.",
     last: last
       ? {
           dateKey: last.dateKey,

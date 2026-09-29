@@ -158,12 +158,9 @@ Build in order. A later slice may add tools; it may not weaken an invariant.
   - `weeklyCoach` → `loadCoachUi` (report + proposals + formatted text).
   - `activeProgram` → `getActiveProgram`.
   - `exerciseReview` → the same finished-session grouping as `/history/[exerciseId]`
-    (`groupReviewSessions` and the Last / 21-day / chart summaries). Identity is exact
-    exercise plus equipment instance.
-    Card 1 of the [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
-    would widen review for ordinary-pound families after approval. Card 3 (`family`)
-    would widen `nextWorkout` with it. Either slice updates `docs/ai-coach.html`.
-    Until then this identity stays exact.
+    (`groupReviewSessions` and the Last / 21-day / chart summaries). Ordinary-pound
+    families load `movementMemberIds` and resolve to the template id. Machine and cable
+    stay exact exercise plus equipment instance. See `docs/ai-coach.html`.
   - `nextWorkout` → `loadNextWorkout` plus the same `sessionTarget()` hydration the
     session screen uses, so “why is this target X?” matches Home / planner / Start.
 - System prompt: answer from tool results; name the source once on a final `Source:` line; decline medical

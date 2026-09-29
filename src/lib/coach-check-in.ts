@@ -5,6 +5,7 @@ import {
   type ExerciseDef,
   type Pattern,
 } from "./strength/coefficients";
+import { movementId, movementTemplate, rollsUp } from "./strength/movement";
 
 export const COACH_REPORT_VERSION = "1.0" as const;
 export const COACH_REPORT_TIMEZONE = "America/Chicago";
@@ -646,10 +647,13 @@ function buildFixedLoadProgress(
     .flatMap(([key, currentSet]) => {
       const priorSet = prior.get(key);
       if (!priorSet) return [];
+      const def = context.definitions[currentSet.exerciseId];
+      const exerciseId = def && rollsUp(movementTemplate(def, context.definitions))
+        ? movementId(def)
+        : currentSet.exerciseId;
       return [{
-        exerciseId: currentSet.exerciseId,
-        exerciseName:
-          context.definitions[currentSet.exerciseId]?.name ?? currentSet.exerciseId,
+        exerciseId,
+        exerciseName: context.definitions[exerciseId]?.name ?? exerciseId,
         weight: currentSet.weight,
         currentBestReps: currentSet.reps,
         priorBestReps: priorSet.reps,
@@ -677,7 +681,11 @@ function bestRepsByLoad(
     ) {
       continue;
     }
-    const key = `${set.exerciseId}:${set.weight}`;
+    const def = context.definitions[set.exerciseId];
+    const exerciseKey = def && rollsUp(movementTemplate(def, context.definitions))
+      ? movementId(def)
+      : set.exerciseId;
+    const key = `${exerciseKey}:${set.weight}`;
     const prior = best.get(key);
     if (!prior || set.reps > prior.reps || (set.reps === prior.reps && (set.rir ?? -1) > (prior.rir ?? -1))) {
       best.set(key, set);

@@ -8,8 +8,10 @@ import {
   defaultCompoundIds,
   isExercisePinned,
   nextExtraPosition,
+  pinDisplayKey,
 } from "@/lib/board";
 import { needsStation } from "@/lib/strength/coefficients";
+import { movementTemplate, rollsUp } from "@/lib/strength/movement";
 import { loadTrainedExerciseIds, loadUserPinRows } from "@/lib/pins-data";
 
 const EXERCISE_ID = /^[a-z0-9][a-z0-9_-]{0,79}$/i;
@@ -44,13 +46,16 @@ export async function toggleExercisePin(exerciseId: string): Promise<
   const def = catalog[exerciseId];
   if (!def) return { ok: false, error: "Choose a loggable exercise." };
   const defaults = defaultCompoundIds(catalog);
-  // Default-compound tiles keep template ids (Slice 4 family-latest). Hide/unhide
-  // those keys; extra pins still require a resolved, loggable identity.
+  const displayKey = pinDisplayKey(exerciseId, catalog);
+  // Rolling templates are display masters. Machine and cable templates stay unresolved.
   if (needsStation(def) && !defaults.includes(exerciseId)) {
-    return { ok: false, error: "Choose a loggable exercise." };
+    const template = movementTemplate(def, catalog);
+    if (!rollsUp(template)) {
+      return { ok: false, error: "Choose a loggable exercise." };
+    }
   }
-  const pinned = isExercisePinned(pins, defaults, exerciseId);
-  const isDefault = defaults.includes(exerciseId);
+  const pinned = isExercisePinned(pins, defaults, displayKey, catalog);
+  const isDefault = defaults.includes(displayKey);
 
   if (pinned) {
     if (isDefault) {
@@ -87,7 +92,7 @@ export async function toggleExercisePin(exerciseId: string): Promise<
     const { error } = await supabase.from("user_exercise_pin").insert({
       user_id: userId,
       exercise_id: exerciseId,
-      position: nextExtraPosition(pins, defaults),
+      position: nextExtraPosition(pins, defaults, catalog),
     });
     if (error) return { ok: false, error: "Unable to pin. Please try again." };
   }

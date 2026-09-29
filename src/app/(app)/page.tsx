@@ -64,7 +64,7 @@ export default async function Home() {
   ]);
   const nextWorkingSets = next.slots.reduce((total, slot) => total + slot.prescription.targetSets, 0);
   const totalSessions = program.days.length * program.weeks;
-  const summaries = exerciseSummaries(normalizeHomeRows(setRows ?? []));
+  const summaries = exerciseSummaries(normalizeHomeRows(setRows ?? []), catalog);
   const preview = buildBoardLifts({
     catalog,
     pins: [],

@@ -1,5 +1,12 @@
 import { dateKey } from "./bodyweight";
 import type { ExerciseDef, Pattern } from "./strength/coefficients";
+import {
+  comparisonKey,
+  comparisonScope,
+  movementId,
+  movementTemplate,
+  rollsUp,
+} from "./strength/movement";
 import { effectiveLoad } from "./strength/recompute";
 import { estimatePatternStrength, type ExerciseStat } from "./strength/recommend";
 
@@ -80,6 +87,20 @@ export interface PatternStrengthPoint {
 const HARD_RIR = 2; // RIR <= this counts as a hard (stimulating) set
 
 type ExerciseDefs = Record<string, ExerciseDef>;
+
+function feedExerciseId(row: AnalyticsSetRow, catalog: ExerciseDefs): string {
+  const def = catalog[row.exerciseId];
+  if (!def) return row.exerciseId;
+  const template = movementTemplate(def, catalog);
+  return rollsUp(template) ? movementId(def) : row.exerciseId;
+}
+
+function summaryIdentityKey(row: AnalyticsSetRow, catalog: ExerciseDefs): string {
+  return comparisonKey(comparisonScope({
+    exercise_id: row.exerciseId,
+    equipment_instance_id: row.equipmentInstanceId ?? null,
+  }, catalog));
+}
 
 export function rowsForExercise(
   rows: AnalyticsSetRow[],
@@ -170,41 +191,43 @@ export function weeklyVolume(
     .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
 }
 
-export function e1rmPrFeed(rows: AnalyticsSetRow[]): E1rmPr[] {
+export function e1rmPrFeed(rows: AnalyticsSetRow[], catalog: ExerciseDefs = {}): E1rmPr[] {
   const bestByExercise = new Map<string, number>();
   const prs: E1rmPr[] = [];
 
   for (const row of chronologicalRows(rows)) {
     if (row.isWarmup || row.e1rm == null || row.e1rm <= 0) continue;
 
-    const prior = bestByExercise.get(row.exerciseId);
+    const key = feedExerciseId(row, catalog);
+    const prior = bestByExercise.get(key);
     if (prior == null || row.e1rm > prior) {
       prs.push({
         id: row.id,
         date: row.performedAt,
-        exerciseId: row.exerciseId,
+        exerciseId: key,
         e1rm: row.e1rm,
         delta: prior == null ? null : row.e1rm - prior,
       });
-      bestByExercise.set(row.exerciseId, row.e1rm);
+      bestByExercise.set(key, row.e1rm);
     }
   }
 
   return prs;
 }
 
-export function weightPrs(rows: AnalyticsSetRow[]): WeightPr[] {
+export function weightPrs(rows: AnalyticsSetRow[], catalog: ExerciseDefs = {}): WeightPr[] {
   const bestByExercise = new Map<string, WeightPr>();
 
   for (const row of chronologicalRows(rows)) {
     if (row.isWarmup) continue;
 
-    const prior = bestByExercise.get(row.exerciseId);
+    const key = feedExerciseId(row, catalog);
+    const prior = bestByExercise.get(key);
     if (!prior || row.weight > prior.weight) {
-      bestByExercise.set(row.exerciseId, {
+      bestByExercise.set(key, {
         id: row.id,
         date: row.performedAt,
-        exerciseId: row.exerciseId,
+        exerciseId: key,
         weight: row.weight,
       });
     }
@@ -213,7 +236,7 @@ export function weightPrs(rows: AnalyticsSetRow[]): WeightPr[] {
   return [...bestByExercise.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export function exerciseSummaries(rows: AnalyticsSetRow[]): ExerciseSummary[] {
+export function exerciseSummaries(rows: AnalyticsSetRow[], catalog: ExerciseDefs = {}): ExerciseSummary[] {
   const byIdentity = new Map<
     string,
     {
@@ -227,11 +250,14 @@ export function exerciseSummaries(rows: AnalyticsSetRow[]): ExerciseSummary[] {
     if (row.isWarmup) continue;
     if (row.finishedAt === null) continue;
 
-    const equipmentInstanceId = row.equipmentInstanceId ?? null;
-    const identityKey = `${row.exerciseId}\0${equipmentInstanceId ?? ""}`;
+    const identityKey = summaryIdentityKey(row, catalog);
+    const def = catalog[row.exerciseId];
+    const rolling = def && rollsUp(movementTemplate(def, catalog));
+    const equipmentInstanceId = rolling ? null : (row.equipmentInstanceId ?? null);
+    const exerciseId = rolling ? movementId(def) : row.exerciseId;
     let identity = byIdentity.get(identityKey);
     if (!identity) {
-      identity = { exerciseId: row.exerciseId, equipmentInstanceId, sessions: new Map() };
+      identity = { exerciseId, equipmentInstanceId, sessions: new Map() };
       byIdentity.set(identityKey, identity);
     }
 

@@ -71,7 +71,7 @@ export default async function AnalyticsPage() {
     loadWeekRecordChips(supabase, userId, catalog),
   ]);
   const analyticsRows = normalizeRows((rows ?? []) as AnalyticsQueryRow[]);
-  const summaries = exerciseSummaries(analyticsRows);
+  const summaries = exerciseSummaries(analyticsRows, catalog);
   const listItems: ExerciseListItem[] = summaries.map((summary) => ({
     exerciseId: summary.exerciseId,
     equipmentInstanceId: summary.equipmentInstanceId,
@@ -90,17 +90,17 @@ export default async function AnalyticsPage() {
     weekExerciseIds: week.chips.map((chip) => chip.exerciseId),
   });
   const defaults = defaultCompoundIds(catalog);
-  const pinnedIds = pinnedExerciseIds(pinRows, defaults);
+  const pinnedIds = pinnedExerciseIds(pinRows, defaults, catalog);
   const historyIds = new Set(summaries.map((summary) => summary.exerciseId));
   const pinItems: PinEditorItem[] = [
     ...defaults.map((exerciseId) => ({
       exerciseId,
       name: catalog[exerciseId]?.name ?? exerciseId,
       group: "compound" as const,
-      pinned: isExercisePinned(pinRows, defaults, exerciseId),
+      pinned: isExercisePinned(pinRows, defaults, exerciseId, catalog),
     })),
     ...[
-      ...extraPins(pinRows, defaults).map((pin) => pin.exerciseId),
+      ...extraPins(pinRows, defaults, catalog).map((pin) => pin.exerciseId),
       ...[...historyIds].filter((id) => !defaults.includes(id) && isLoggableExercise(catalog[id])),
     ]
       .filter((id, index, all) => all.indexOf(id) === index)
@@ -108,7 +108,7 @@ export default async function AnalyticsPage() {
         exerciseId,
         name: catalog[exerciseId]?.name ?? exerciseId,
         group: "extra" as const,
-        pinned: isExercisePinned(pinRows, defaults, exerciseId),
+        pinned: isExercisePinned(pinRows, defaults, exerciseId, catalog),
       })),
   ];
 

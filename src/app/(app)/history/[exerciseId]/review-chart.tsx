@@ -18,10 +18,12 @@ export function ReviewChart({
   sessions,
   periodEligible = false,
   periodDates = [],
+  rolling = false,
 }: {
   sessions: ReviewSession[];
   periodEligible?: boolean;
   periodDates?: string[];
+  rolling?: boolean;
 }) {
   const [range, setRange] = useState<ReviewChartRange>("last8");
   const windowSessions = range === "last8" ? sessions.slice(-REVIEW_CHART_SESSIONS) : sessions;
@@ -36,8 +38,9 @@ export function ReviewChart({
       <div className="mb-2 flex items-center gap-1">
         <CardLabel>e1RM chart</CardLabel>
         <InfoButton title="e1RM chart">
-          Each point is the best stored estimate in a finished workout. Last 8 workouts is the
-          default. All history is every finished workout of this exact lift.
+          {rolling
+            ? "Each point is the best stored estimate in a finished workout across every station in this movement. Last 8 workouts is the default. All history is every finished workout of this movement."
+            : "Each point is the best stored estimate in a finished workout. Last 8 workouts is the default. All history is every finished workout of this exact lift."}
         </InfoButton>
       </div>
       <div className="mb-3 grid grid-cols-2 gap-1" role="group" aria-label="Chart range">

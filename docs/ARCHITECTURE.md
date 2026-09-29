@@ -135,7 +135,8 @@ rows live in `agent_thread` / `agent_message`, many threads per user. See
 ## History and reporting
 
 [2026-09-29 movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
-is a proposal. The bullets below are the rule until James answers its cards.
+shipped Card 1 on 2026-09-29. Cables, session targets, and stall/Fluid keep their
+Card 2–4 defaults unless James reverses them.
 
 - In-session quick history uses `exerciseFamilyIds()` to include explicitly linked
   variants (machine, cable, bench, rack, platform) via `baseExerciseId`, returns ten
@@ -155,10 +156,9 @@ is a proposal. The bullets below are the rule until James answers its cards.
   (`/analytics`) uses `analytics.ts` summaries plus `board.ts` for default compounds and
   pin visibility; those summaries pick the latest finished instance per exact exercise.
   Default-compound tiles keep template ids (`bb-bench`, `lat-pulldown`, …) and short
-  names; numbers and the review href follow the latest finished family member.
-  Pins on a specific variant stay exact-id. Do not merge PR numbers across family members.
-  Card 1 of the rollup spec proposes a merge for ordinary-pound families only.
-  Machine and cable PR numbers stay unmerged unless Card 2 is `rollup`.
+  names. Ordinary-pound tiles aggregate session-bests across movement members; cable
+  tiles still follow the latest finished family member. Variant pins collapse to the
+  template at read time. Machine and cable PR numbers stay unmerged.
   Volume and this week's full PR list sit in Track Explore. Weight trends live on Body.
   Coach lives on Track (`/analytics/coach`). The Track tab stays current on `/history/...`.
   Pattern-strength replay does not replay historical personal machine coefficients.

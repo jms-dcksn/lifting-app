@@ -33,7 +33,7 @@ export type ExerciseReviewProps = {
   equipmentChoices?: EquipmentChoice[];
 } & (
   | { status: "missing" }
-  | { status: "empty"; name: string; exerciseId?: string; baseExerciseId?: string | null; pin?: PinProps }
+  | { status: "empty"; name: string; exerciseId?: string; baseExerciseId?: string | null; pin?: PinProps; rolling?: boolean }
   | {
       status: "ready";
       name: string;
@@ -42,6 +42,7 @@ export type ExerciseReviewProps = {
       isBodyweight: boolean;
       sessions: ReviewSession[];
       pin?: PinProps;
+      rolling?: boolean;
       now?: Date;
       periodEligible?: boolean;
       periodDates?: string[];
@@ -103,6 +104,7 @@ export function ExerciseReview(props: ExerciseReviewProps) {
           periodDates={props.periodDates}
           monthSource={props.monthSource}
           reviewMonth={reviewMonth}
+          rolling={props.rolling}
         />
       )}
     </ReviewShell>
@@ -136,6 +138,7 @@ function ReadyBody({
   periodDates,
   monthSource,
   reviewMonth,
+  rolling = false,
 }: {
   sessions: ReviewSession[];
   isBodyweight: boolean;
@@ -144,6 +147,7 @@ function ReadyBody({
   periodDates?: string[];
   monthSource?: ReviewMonthSource;
   reviewMonth: string | null;
+  rolling?: boolean;
 }) {
   const today = reviewToday(sessions);
   const previous = sessions.length >= 2 ? sessions.at(-2) : null;
@@ -164,6 +168,7 @@ function ReadyBody({
           session={today}
           previous={previous}
           isBodyweight={isBodyweight}
+          rolling={rolling}
         />
       )}
       {recent && <RecentCard recent={recent} />}
@@ -171,6 +176,7 @@ function ReadyBody({
         sessions={sessions}
         periodEligible={periodEligible}
         periodDates={periodDates}
+        rolling={rolling}
       />
       {monthSource && (
         <MonthCompare
@@ -195,7 +201,7 @@ function ReadyBody({
                 </span>
               )}
             </div>
-            <SetList sets={session.sets} isBodyweight={isBodyweight} />
+            <SetList sets={session.sets} isBodyweight={isBodyweight} rolling={rolling} />
           </Card>
         ))}
       </section>
@@ -207,10 +213,12 @@ function LastCard({
   session,
   previous,
   isBodyweight,
+  rolling = false,
 }: {
   session: ReviewSession;
   previous: ReviewSession | null | undefined;
   isBodyweight: boolean;
+  rolling?: boolean;
 }) {
   const delta =
     session.bestE1rm != null && previous?.bestE1rm != null
@@ -222,8 +230,9 @@ function LastCard({
       <div className="mb-2 flex items-center gap-1">
         <CardLabel>Last</CardLabel>
         <InfoButton title="Last">
-          This is the last finished workout for this exact exercise and equipment. Estimated 1RM
-          uses the stored value from that day, not today&apos;s bodyweight.
+          {rolling
+            ? "This is the last finished workout for this movement. Each set names the station it was loaded on. Estimated 1RM uses the stored value from that day, not today's bodyweight."
+            : "This is the last finished workout for this exact exercise and equipment. Estimated 1RM uses the stored value from that day, not today's bodyweight."}
         </InfoButton>
       </div>
       <p className="text-body">{reviewDateLabel(session.dateKey)}</p>
@@ -233,7 +242,7 @@ function LastCard({
           {delta != null && <DeltaText delta={delta} />}
         </p>
       )}
-      <SetList sets={session.sets} isBodyweight={isBodyweight} />
+      <SetList sets={session.sets} isBodyweight={isBodyweight} rolling={rolling} />
     </Card>
   );
 }
@@ -286,15 +295,23 @@ function RecentCard({ recent }: { recent: NonNullable<ReturnType<typeof reviewRe
 function SetList({
   sets,
   isBodyweight,
+  rolling = false,
 }: {
   sets: ReviewSession["sets"];
   isBodyweight: boolean;
+  rolling?: boolean;
 }) {
   return (
     <ul className="mt-2 flex flex-col gap-1">
       {sets.map((set, i) => (
         <li key={set.id} className="text-body tabular-nums">
-          <span className="text-faint">{i + 1}.</span> {set.weight} lb
+          <span className="text-faint">{i + 1}.</span>
+          {rolling && set.brand ? (
+            <span className="mr-2 rounded-full border border-border px-2 py-0.5 text-caption text-muted">
+              {set.brand}
+            </span>
+          ) : null}
+          {set.weight} lb
           {isBodyweight ? " added" : ""} × {set.reps}
           {set.rir != null ? ` @ ${set.rir} RIR` : ""}
         </li>

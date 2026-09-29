@@ -77,14 +77,21 @@ describe("toggleExercisePin", () => {
     expect(writes).toEqual([]);
   });
 
-  it.each(["seated-cable-row", "bb-incline-bench", "bb-hip-thrust", "machine-chest-press"] as const)(
-    "refuses to pin unresolved station template %s as an extra",
+  it.each(["seated-cable-row", "machine-chest-press"] as const)(
+    "refuses to pin unresolved machine or cable template %s as an extra",
     async (id) => {
       const result = await toggleExercisePin(id);
       expect(result).toEqual({ ok: false, error: "Choose a loggable exercise." });
       expect(writes).toEqual([]);
     },
   );
+
+  it("allows pinning a rolling station template as the display master", async () => {
+    stats.push({ exercise_id: "bb-incline-bench__flex-fitness__bench" });
+    const result = await toggleExercisePin("bb-incline-bench");
+    expect(result).toEqual({ ok: true, pinned: true });
+    expect(writes[0]).toMatchObject({ type: "insert" });
+  });
 
   it("hides a default compound by writing a pin row", async () => {
     stats.push({ exercise_id: "bb-bench" });

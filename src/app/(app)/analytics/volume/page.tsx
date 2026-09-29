@@ -71,7 +71,7 @@ export default async function VolumePage({
 
   const catalog = await getCatalogMap(supabase, userId);
   const analyticsRows = normalizeRows((rows ?? []) as AnalyticsQueryRow[]);
-  const summaries = exerciseSummaries(analyticsRows);
+  const summaries = exerciseSummaries(analyticsRows, catalog);
   const selectedId = resolveVolumeExerciseId(
     query.exercise,
     new Set(summaries.map((summary) => summary.exerciseId)),

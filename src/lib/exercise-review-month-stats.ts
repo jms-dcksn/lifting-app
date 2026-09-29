@@ -13,6 +13,7 @@ export type ReviewMonthSource = {
   userId: string;
   exerciseId: string;
   equipmentInstanceId: string | null;
+  memberIds?: string[];
   catalog: Record<string, ExerciseDef>;
   sessions: MonthlySession[];
   sets: RecordSet[];
@@ -26,10 +27,12 @@ export function reviewMonthSide(
   timeZone = "America/Chicago",
 ): ReviewMonthSide {
   const { current } = monthlyWindows(month, now, timeZone);
-  const identitySets = source.sets.filter(
-    (set) => set.exercise_id === source.exerciseId
-      && set.equipment_instance_id === source.equipmentInstanceId,
-  );
+  const members = source.memberIds ?? [source.exerciseId];
+  const identitySets = source.sets.filter((set) => {
+    if (!members.includes(set.exercise_id)) return false;
+    if (source.memberIds) return true;
+    return set.equipment_instance_id === source.equipmentInstanceId;
+  });
   const report = buildMonthlyReport({
     userId: source.userId,
     month,
@@ -41,13 +44,10 @@ export function reviewMonthSide(
   });
   const lifts = report.lifts.filter((lift) =>
     lift.exerciseId === source.exerciseId
-    && lift.equipmentInstanceId === source.equipmentInstanceId,
+    && (source.memberIds ? lift.equipmentInstanceId == null : lift.equipmentInstanceId === source.equipmentInstanceId),
   );
   const groups = report.achievements.flatMap((achievement) =>
-    achievement.records.filter((record) =>
-      record.exerciseId === source.exerciseId
-      && record.equipmentInstanceId === source.equipmentInstanceId,
-    ),
+    achievement.records.filter((record) => record.exerciseId === source.exerciseId),
   );
   const counts = recordCounts(groups);
   const sessionIds = new Set(

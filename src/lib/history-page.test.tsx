@@ -117,10 +117,25 @@ describe("HistoryPage route", () => {
     expect(mocks.periodRows).not.toHaveBeenCalled();
   });
 
-  it("scopes the set query to the path exercise id, not a station family", async () => {
-    await render("bb-bench__flex-fitness__bench", { equipment: "none" });
-    expect(query.eq).toHaveBeenCalledWith("exercise_id", "bb-bench__flex-fitness__bench");
-    expect(query.eq).not.toHaveBeenCalledWith("exercise_id", "bb-bench");
+  it("redirects a rolling variant URL to the movement id", async () => {
+    mocks.catalog.mockResolvedValue({
+      ...EXERCISE_BY_ID,
+      "bb-bench__flex-fitness__bench": {
+        ...EXERCISE_BY_ID["bb-bench"],
+        id: "bb-bench__flex-fitness__bench",
+        baseExerciseId: "bb-bench",
+        brand: "Flex Fitness",
+        isReference: false,
+        stationProfile: undefined,
+      },
+    });
+    await expect(render("bb-bench__flex-fitness__bench", { equipment: "none" })).rejects.toThrow("redirect");
+    expect(mocks.redirect).toHaveBeenCalledWith("/history/bb-bench");
+  });
+
+  it("loads every movement member for a rolling review page", async () => {
+    await render("bb-bench", { equipment: "none" });
+    expect(query.in).toHaveBeenCalledWith("exercise_id", expect.arrayContaining(["bb-bench"]));
   });
 
   it("filters to the requested equipment instance instead of blending", async () => {

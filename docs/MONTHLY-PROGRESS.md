@@ -15,16 +15,15 @@ version 1.2 `buildMonthlyReport`. Track links to it. No migration or new secrets
   preserving its finish-before-start rules and historical bodyweight reconstruction.
   Rep PRs are final distinct workout/exact-exercise/equipment/normalized-load records;
   e1RM PRs are one best record per workout/exact identity; top-weight PRs are one best
-  max effective load per workout/exact identity. **Proposed, pending James (Card 1):**
-  ordinary-pound families use the template movement key from
-  [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
-  once `workoutRecords` does. Machine and cable stay exact. First observations and ties
+  max effective load per workout/movement or station identity. Ordinary-pound families
+  use the template movement key from `workoutRecords`. Machine and cable stay exact.
+  First observations and ties
   do not earn records. Later improvement within that first workout follows the existing
   recap contract and may earn a record with no historical delta.
 - Monthly best estimated 1RM is the maximum **stored** eligible working-set estimate
   per exact exercise/equipment identity within each window, rounded to 0.1 lb.
-  The same rollup spec moves ordinary-pound families onto the template key.
-  Machine and cable stay per exact id.
+  Ordinary-pound families use the template movement key. Machine and cable stay per
+  exact id.
   Session points and exposure counts support inspection. Missing stored estimates are
   counted as a quality limitation, not regenerated using current bodyweight.
 - The existing recap engine recomputes external-load e1RM from the canonical formula
@@ -61,11 +60,10 @@ shared threshold calculation and Fluid's intervention ladder.
   `performed_at`. Logging several workouts on one date does not collapse their exposures.
 - Identity includes the exact exercise and equipment instance. A swap away and back,
   a mixed-identity workout, a phase change, or a recorded adaptation starts fresh evidence.
-  **Proposed, pending James (Card 4):** the reset above stays. Reply `continue` on the
-  [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
-  to keep one series across brands of one ordinary-pound movement. A different template,
-  a machine, or a cable still starts fresh evidence either way.
-  See [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
+  **Card 4 default (not shipped):** the reset above stays. A brand change inside a
+  rolling ordinary-pound movement still starts fresh stall evidence today. Reply
+  `continue` on the [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+  to merge stall series across brands.
   Phase/rep-range/RIR/set-count context comes from the stored session week and adaptation
   history. Adaptation rows are ordered by timestamp with ID as a deterministic tie-break.
 - Deloads break the series. A latest deload is internally `deload`; the first subsequent

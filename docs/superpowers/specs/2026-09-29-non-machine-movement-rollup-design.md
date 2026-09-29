@@ -1,8 +1,8 @@
 # Non-machine movement rollup for e1RM and PR records
 
-**Status:** Design, awaiting James. Not shipped. Approving this PR does not answer the cards. Do not implement a slice until the card it depends on is answered. Do not merge.
+**Status:** Card 1 shipped 2026-09-29 (slices 1–3 and Card-1 monthly/Coach rows). Card 2 default: cables stay exact. Card 3 default: session targets stay per station (Slice 4 not shipped). Card 4 default: stall and Fluid stay per station (Slice 5 stall/Fluid not shipped).
 **Date:** 2026-09-29
-**Code on this branch:** pure key only (`src/lib/strength/movement.ts`). Nothing else imports it. If Card 1 comes back `exact`, delete that module. Do not wire it on the strength of this PR.
+**Code:** `src/lib/strength/movement.ts` is the comparison key; records, review, Track, pins, monthly lifts, and Coach fixed-load rows read it.
 **Locks still in force:** station composition (James 2026-09-21), including split PR chains, exact progression, and exact review. This spec proposes changes. It does not replace those sentences.
 
 ## Who this is for

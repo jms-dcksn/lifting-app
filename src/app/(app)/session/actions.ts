@@ -12,6 +12,7 @@ import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { isLoggableExercise } from "@/lib/station";
 import { loadWorkoutRecords } from "@/lib/workout-records";
 import { historicalBodyweight, validSetNumbers, type ExerciseRecords } from "@/lib/strength/records";
+import { comparisonKey, comparisonScope } from "@/lib/strength/movement";
 import { computeE1rm } from "@/lib/strength/e1rm";
 import { recomputeStat, effectiveLoad } from "@/lib/strength/recompute";
 import { estimatePatternStrength, type ExerciseStat } from "@/lib/strength/recommend";
@@ -463,36 +464,40 @@ export async function finishSession(
     .is("finished_at", null);
   if (error) throw new Error(error.message);
 
-  const best = new Map<string, number>();
+  const best = new Map<string, { e1rm: number; exerciseId: string }>();
   for (const set of sets) {
     if (set.is_warmup || set.e1rm == null) continue;
-    const cur = best.get(set.exercise_id) ?? 0;
-    if (set.e1rm > cur) best.set(set.exercise_id, set.e1rm);
+    const scope = comparisonScope(set, catalog);
+    const key = comparisonKey(scope);
+    const exerciseId = scope.kind === "movement" ? scope.movementId : scope.exerciseId;
+    const cur = best.get(key);
+    if (!cur || set.e1rm > cur.e1rm) best.set(key, { e1rm: set.e1rm, exerciseId });
   }
 
-  // Overload signal: best e1RM from each exercise's most recent earlier session.
+  // Overload signal: best e1RM from each movement's most recent earlier session.
   const prevBest = new Map<string, number>();
   if (best.size > 0) {
     const latestSession = new Map<string, { performedAt: string; e1rm: number }>();
     for (const row of prior) {
       if (row.e1rm == null) continue;
+      const key = comparisonKey(comparisonScope(row, catalog));
       const at = row.workout_session.performed_at;
-      const cur = latestSession.get(row.exercise_id);
+      const cur = latestSession.get(key);
       if (!cur || at > cur.performedAt) {
-        latestSession.set(row.exercise_id, { performedAt: at, e1rm: row.e1rm as number });
+        latestSession.set(key, { performedAt: at, e1rm: row.e1rm as number });
       } else if (at === cur.performedAt && (row.e1rm as number) > cur.e1rm) {
         cur.e1rm = row.e1rm as number;
       }
     }
-    for (const [exerciseId, v] of latestSession) prevBest.set(exerciseId, v.e1rm);
+    for (const [key, v] of latestSession) prevBest.set(key, v.e1rm);
   }
 
   const topE1rm = [...best.entries()]
-    .map(([exerciseId, e1rm]) => ({
+    .map(([key, { e1rm, exerciseId }]) => ({
       exerciseId,
       name: catalog[exerciseId]?.name ?? exerciseId,
       e1rm,
-      prevE1rm: prevBest.get(exerciseId) ?? null,
+      prevE1rm: prevBest.get(key) ?? null,
     }))
     .sort((a, b) => b.e1rm - a.e1rm);
 

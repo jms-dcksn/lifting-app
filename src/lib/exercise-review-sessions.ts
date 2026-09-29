@@ -14,6 +14,7 @@ export type ReviewSetRow = {
   performedAt: string;
   finishedAt: string | null;
   programId?: string | null;
+  brand?: string | null;
 };
 
 export type ReviewSessionSet = {
@@ -21,6 +22,7 @@ export type ReviewSessionSet = {
   weight: number;
   reps: number;
   rir: number | null;
+  brand?: string | null;
 };
 
 export type ReviewSession = {
@@ -72,7 +74,13 @@ export function groupReviewSessions(
       };
       bySession.set(row.sessionId, session);
     }
-    session.sets.push({ id: row.id, weight: row.weight, reps: row.reps, rir: row.rir });
+    session.sets.push({
+      id: row.id,
+      weight: row.weight,
+      reps: row.reps,
+      rir: row.rir,
+      brand: row.brand ?? null,
+    });
     if (row.e1rm != null && (session.bestE1rm == null || row.e1rm > session.bestE1rm)) {
       session.bestE1rm = row.e1rm;
     }

@@ -200,7 +200,7 @@ describe("buildBoardLifts", () => {
     });
   });
 
-  it("keeps default tile keys and short names while numbers and href follow family-latest", () => {
+  it("keeps default tile keys while numbers and href follow the movement aggregate", () => {
     const lifts = buildBoardLifts({
       catalog: familyCatalog,
       pins: [],
@@ -218,12 +218,12 @@ describe("buildBoardLifts", () => {
     });
     expect(lifts.find((lift) => lift.exerciseId === "bb-bench")).toMatchObject({
       exerciseId: "bb-bench",
-      reviewExerciseId: "bb-bench__flex-fitness__bench",
+      reviewExerciseId: "bb-bench",
       shortName: "Bench",
       name: "Barbell Bench Press",
       currentE1rm: 185,
-      delta: -8,
-      e1rmSeries: [193, 185],
+      delta: -25,
+      e1rmSeries: [280, 300, 205, 210, 193, 185],
       equipmentInstanceId: "pad-flex",
       recentRecord: true,
     });
@@ -252,7 +252,7 @@ describe("buildBoardLifts", () => {
     });
   });
 
-  it("keeps an extra pin on a specific variant exact-id", () => {
+  it("collapses a variant pin onto the default compound tile", () => {
     const lifts = buildBoardLifts({
       catalog: familyCatalog,
       pins: [{ exerciseId: "bb-bench__nautilus__bench", position: 1 }],
@@ -263,13 +263,10 @@ describe("buildBoardLifts", () => {
       weekExerciseIds: ["bb-bench__flex-fitness__bench"],
     });
     expect(lifts.find((lift) => lift.exerciseId === "bb-bench")).toMatchObject({
-      reviewExerciseId: "bb-bench__flex-fitness__bench",
+      reviewExerciseId: "bb-bench",
       currentE1rm: 185,
+      recentRecord: true,
     });
-    expect(lifts.find((lift) => lift.exerciseId === "bb-bench__nautilus__bench")).toMatchObject({
-      reviewExerciseId: "bb-bench__nautilus__bench",
-      currentE1rm: 210,
-      recentRecord: false,
-    });
+    expect(lifts.find((lift) => lift.exerciseId === "bb-bench__nautilus__bench")).toBeUndefined();
   });
 });

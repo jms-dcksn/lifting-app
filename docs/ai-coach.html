@@ -368,6 +368,38 @@ alter table public.agent_message
   references public.agent_thread (id, user_id)
   on delete cascade;</code></pre>
         </article>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">Movement rollup — exerciseReview (Card 1, 2026-09-29)</h3>
+          <p class="text-sm text-slate-600 max-w-3xl">
+            Ordinary-pound families share one movement story in review and in this tool.
+            The agent still must not blend machines or cables. Session targets stay per
+            station (Card 3 default); only <code class="font-mono text-sm">nextWorkout</code>
+            would widen with a <code class="font-mono text-sm">family</code> reply.
+          </p>
+          <pre class="mermaid bg-white border border-slate-200 p-4 text-sm overflow-x-auto">flowchart LR
+  URL["/history/bb-incline-bench__flex..."] --> Redirect["redirect to /history/bb-incline-bench"]
+  Redirect --> Query["set_log IN movementMemberIds"]
+  Query --> Chart["one e1RM series"]
+  Query --> Chips["station brand chip per set"]</pre>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const memberIds = movementMemberIds(exerciseId, catalog);
+const { data: rows } = await supabase.from("set_log")
+  .select("...")
+  .eq("user_id", userId)
+  .in("exercise_id", memberIds);
+
+return summarizeExerciseReview({
+  exerciseId,
+  rolling,
+  identityNote: rolling
+    ? "Movement scope across every station in this family. Machines and cables stay exact."
+    : "Exact exercise plus equipment instance. Instances are not blended.",
+  sessions,
+});</code></pre>
+          <p class="text-sm text-slate-600">
+            Source: <code class="font-mono text-sm">src/lib/agent/tools/exercise-review.ts</code>
+            and <code class="font-mono text-sm">src/lib/strength/movement.ts</code>.
+          </p>
+        </article>
       </section>
 
       <section class="space-y-4">

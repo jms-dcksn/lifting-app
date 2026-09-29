@@ -62,10 +62,10 @@ describe("workout records", () => {
     expect(detect([set({ id: "all-time", reps: 12 }), set({ id: "recent", reps: 8 }), current()])).toEqual([]);
   });
 
-  it("isolates exact exercises, machine variants, equipment instances, and users", () => {
+  it("isolates machine variants and users while rolling ordinary-pound families together", () => {
     expect(detect([set({ exercise_id: "hammer" }), current({ exercise_id: "hoist" })])).toEqual([]);
     expect(detect([set({ exercise_id: "db-bench" }), current()])).toEqual([]);
-    expect(detect([set({ equipment_instance_id: "machine-1" }), current({ equipment_instance_id: "machine-2" })])).toEqual([]);
+    expect(detect([set({ equipment_instance_id: "machine-1" }), current({ equipment_instance_id: "machine-2" })])).toHaveLength(1);
     expect(detect([set({ user_id: "someone-else" }), current()])).toEqual([]);
     expect(detect([set(), current({ user_id: "someone-else" })])).toEqual([]);
     expect(detect([set({ exercise_id: "hammer" }), current({ exercise_id: "hammer" })])).toHaveLength(1);
@@ -224,9 +224,9 @@ describe("workout records", () => {
     expect(groups[0].topWeightRecord).toMatchObject({ load: 120, setId: "heavier", improvement: 20 });
   });
 
-  it("scopes top-weight to exact exercise and equipment, including bodyweight total load", () => {
+  it("scopes top-weight to movement or station keys, including bodyweight total load", () => {
     expect(detect([set({ exercise_id: "hammer" }), current({ exercise_id: "hoist", weight: 110 })])).toEqual([]);
-    expect(detect([set({ equipment_instance_id: "machine-1" }), current({ equipment_instance_id: "machine-2", weight: 110 })])).toEqual([]);
+    expect(detect([set({ equipment_instance_id: "machine-1" }), current({ weight: 110 })])).toHaveLength(1);
     const previous = set({ exercise_id: "weighted-pullup", weight: 25, e1rm: computeE1rm(175, 8, 1) });
     const next = current({ exercise_id: "weighted-pullup", weight: 35, reps: 8, e1rm: computeE1rm(185, 8, 1) });
     expect(detect([previous, next])[0].topWeightRecord).toMatchObject({ load: 185, improvement: 10 });

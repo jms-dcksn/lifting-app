@@ -3,6 +3,12 @@ import { redirect } from "next/navigation";
 import { getCatalogMap } from "@/lib/catalog";
 import { defaultCompoundIds, isExercisePinned } from "@/lib/board";
 import { isLoggableExercise } from "@/lib/station";
+import {
+  movementId,
+  movementMemberIds,
+  movementTemplate,
+  rollsUp,
+} from "@/lib/strength/movement";
 import { dateKey } from "@/lib/bodyweight";
 import { getCurrentBodyweight } from "@/lib/current-bodyweight";
 import { loadUserPinRows } from "@/lib/pins-data";
@@ -47,18 +53,31 @@ export default async function HistoryPage({
   const reviewMonth = reviewMonthParam(query.month, now);
   const requestedEquipment = reviewEquipmentParam(query.equipment);
   const pinRows = await loadUserPinRows(supabase, userId);
-  const def = catalog[exerciseId];
-  const name = def?.name ?? exerciseId;
+  const requestedDef = catalog[exerciseId];
+  const template = requestedDef ? movementTemplate(requestedDef, catalog) : undefined;
+  const rolling = template ? rollsUp(template) : false;
+  const reviewExerciseId = requestedDef && rolling ? movementId(requestedDef) : exerciseId;
+  if (reviewExerciseId !== exerciseId) {
+    redirect(exerciseReviewHref({ exerciseId: reviewExerciseId, month: reviewMonth }));
+  }
+  const def = catalog[reviewExerciseId] ?? requestedDef;
+  const name = def?.name ?? reviewExerciseId;
   const isBodyweight = def?.equipment === "bodyweight";
-  const pin = isLoggableExercise(def)
-    ? { exerciseId, pinned: isExercisePinned(pinRows, defaultCompoundIds(catalog), exerciseId), name }
+  const defaults = defaultCompoundIds(catalog);
+  const pin = rolling || isLoggableExercise(def)
+    ? {
+        exerciseId: reviewExerciseId,
+        pinned: isExercisePinned(pinRows, defaults, reviewExerciseId, catalog),
+        name,
+      }
     : undefined;
+  const memberIds = movementMemberIds(reviewExerciseId, catalog);
 
   const { data: rows, error } = await supabase
     .from("set_log")
     .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, program_slot_id, is_warmup, workout_session!inner(performed_at, finished_at, program_id)")
     .eq("user_id", userId)
-    .eq("exercise_id", exerciseId)
+    .in("exercise_id", memberIds)
     .eq("is_warmup", false)
     .not("workout_session.finished_at", "is", null)
     .order("created_at", { ascending: true });
@@ -85,9 +104,11 @@ export default async function HistoryPage({
     };
   });
 
-  const identities = reviewEquipmentChoices(history, now);
-  const selectedEquipment = resolveReviewEquipment(requestedEquipment, history, now);
-  const selectedHistory = rowsForReviewEquipment(history, selectedEquipment);
+  const identities = rolling ? [] : reviewEquipmentChoices(history, now);
+  const selectedEquipment = rolling
+    ? null
+    : resolveReviewEquipment(requestedEquipment, history, now);
+  const selectedHistory = rolling ? history : rowsForReviewEquipment(history, selectedEquipment);
   const instanceIds = identities.filter((id): id is string => id != null);
   const instanceLabels = new Map<string, { label: string | null; gym: string | null }>();
   if (instanceIds.length > 0) {
@@ -115,7 +136,13 @@ export default async function HistoryPage({
       }))
     : undefined;
 
-  const grouped = groupReviewSessions(selectedHistory, now);
+  const grouped = groupReviewSessions(
+    selectedHistory.map((row) => ({
+      ...row,
+      brand: catalog[row.exerciseId]?.brand ?? null,
+    })),
+    now,
+  );
   const programIds = [...new Set(grouped.map((session) => session.programId).filter((id): id is string => id != null))];
   const programNames = new Map<string, string>();
   if (programIds.length > 0) {
@@ -139,10 +166,11 @@ export default async function HistoryPage({
       <ExerciseReview
         status="empty"
         name={name}
-        exerciseId={exerciseId}
+        exerciseId={reviewExerciseId}
         baseExerciseId={def?.baseExerciseId}
         reviewMonth={reviewMonth}
         pin={pin}
+        rolling={rolling}
         equipmentLabel={equipmentLabel}
         equipmentChoices={equipmentChoices}
       />
@@ -153,9 +181,10 @@ export default async function HistoryPage({
   const monthlySessions = monthlySessionsFrom(selectedHistory, userId);
   const monthSource: ReviewMonthSource = {
     userId,
-    exerciseId,
-    equipmentInstanceId: selectedEquipment,
-    catalog: def ? { [exerciseId]: def } : {},
+    exerciseId: reviewExerciseId,
+    equipmentInstanceId: rolling ? null : selectedEquipment,
+    memberIds: rolling ? memberIds : undefined,
+    catalog,
     sessions: monthlySessions,
     sets: recordSetsFrom(selectedHistory, userId),
     bodyweight,
@@ -175,12 +204,13 @@ export default async function HistoryPage({
     <ExerciseReview
       status="ready"
       name={name}
-      exerciseId={exerciseId}
+      exerciseId={reviewExerciseId}
       baseExerciseId={def?.baseExerciseId}
       isBodyweight={isBodyweight}
       sessions={sessions}
       reviewMonth={reviewMonth}
       pin={pin}
+      rolling={rolling}
       now={now}
       periodEligible={periodEligible}
       periodDates={periodDates}

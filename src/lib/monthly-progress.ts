@@ -2,7 +2,15 @@ import type { StallAssessment } from "./stall-report";
 import { dateKey } from "./bodyweight";
 import { monthRange, shiftMonth } from "./weight-calendar";
 import type { ExerciseDef } from "./strength/coefficients";
-import { eligibleRecordSet, recordScope, workoutRecords, recordCounts, type RecordSet, type ExerciseRecords } from "./strength/records";
+import {
+  eligibleRecordSet,
+  recordComparisonKey,
+  workoutRecords,
+  recordCounts,
+  type RecordSet,
+  type ExerciseRecords,
+} from "./strength/records";
+import { movementId, movementTemplate, rollsUp } from "./strength/movement";
 
 export interface MonthlySession {
   id: string;
@@ -115,7 +123,7 @@ export function buildMonthlyReport(input: {
     if (!period || set.is_warmup) continue;
     const values = eligibleRecordSet(set, input.catalog[set.exercise_id]);
     if (!values) { quality.excludedWorkingSets++; continue; }
-    const key = recordScope(set);
+    const key = recordComparisonKey(set, input.catalog);
     const group = groups.get(key) ?? { row: set, current: new Map(), prior: new Map(), currentIds: new Set(), priorIds: new Set(), currentReps: new Map(), priorReps: new Map() };
     group[period === "current" ? "currentIds" : "priorIds"].add(set.session_id);
     const reps = group[period === "current" ? "currentReps" : "priorReps"];
@@ -136,8 +144,15 @@ export function buildMonthlyReport(input: {
     const delta = currentBest != null && priorBest != null ? rounded(currentBest - priorBest) : null;
     const state: MonthlyLift["state"] = g.currentIds.size === 0 ? "not_trained" : currentBest == null ? "unavailable" : priorBest == null ? "new"
       : delta! > 0 ? "improving" : delta! < 0 ? "declining" : "stable";
-    return { key, exerciseId: g.row.exercise_id, equipmentInstanceId: g.row.equipment_instance_id,
-      name: input.catalog[g.row.exercise_id].name, currentBest, priorBest, delta,
+    const def = input.catalog[g.row.exercise_id];
+    const rolling = def && rollsUp(movementTemplate(def, input.catalog));
+    const exerciseId = rolling ? movementId(def) : g.row.exercise_id;
+    const equipmentInstanceId = rolling ? null : g.row.equipment_instance_id;
+    const name = rolling
+      ? input.catalog[movementId(def)]?.name ?? def.name
+      : def.name;
+    return { key, exerciseId, equipmentInstanceId,
+      name, currentBest, priorBest, delta,
       percent: delta != null && priorBest != null && priorBest > 0 ? rounded(delta / priorBest * 100) : null,
       state, repGains: [...g.currentReps].flatMap(([load, currentReps]) => {
         const priorReps = g.priorReps.get(load);

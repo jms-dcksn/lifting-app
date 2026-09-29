@@ -1,5 +1,6 @@
 import type { createClient } from "./supabase/server";
 import type { ExerciseDef } from "./strength/coefficients";
+import { movementMemberIds } from "./strength/movement";
 import { workoutRecords, type RecordSet } from "./strength/records";
 
 const SELECT = "id, user_id, session_id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, e1rm, is_warmup, created_at, workout_session!inner(performed_at, finished_at)";
@@ -24,7 +25,9 @@ export async function loadWorkoutRecords(
     if (!data || data.length < PAGE_SIZE) break;
   }
   const history: RecordSet[] = [];
-  const exerciseIds = [...new Set(current.map((s) => s.exercise_id))];
+  const exerciseIds = [...new Set(
+    current.flatMap((s) => movementMemberIds(s.exercise_id, catalog)),
+  )];
   if (exerciseIds.length) {
     for (let offset = 0; ; offset += PAGE_SIZE) {
       const { data, error } = await supabase.from("set_log").select(SELECT)

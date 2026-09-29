@@ -1,5 +1,6 @@
 import { exerciseFamilyIds, latestFamilyMember } from "./exercise-history";
 import type { ExerciseDef, Pattern } from "./strength/coefficients";
+import { movementId, movementMemberIds, movementTemplate, rollsUp } from "./strength/movement";
 import { recapHeadline, recapLines, recordCounts, type ExerciseRecords } from "./strength/records";
 
 export const PIN_CAP = 8;
@@ -59,22 +60,66 @@ export function defaultCompoundIds(catalog: Record<string, ExerciseDef>) {
   });
 }
 
-export function hiddenDefaultIds(pins: PinRow[], defaults: string[]) {
+export function pinDisplayKey(
+  exerciseId: string,
+  catalog: Record<string, ExerciseDef>,
+): string {
+  const def = catalog[exerciseId];
+  if (!def) return exerciseId;
+  const template = movementTemplate(def, catalog);
+  return rollsUp(template) ? movementId(def) : exerciseId;
+}
+
+export function collapsePinRows(
+  pins: PinRow[],
+  catalog: Record<string, ExerciseDef>,
+): PinRow[] {
+  const seen = new Set<string>();
+  const collapsed: PinRow[] = [];
+  for (const pin of pins) {
+    const key = pinDisplayKey(pin.exerciseId, catalog);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    collapsed.push({ exerciseId: key, position: pin.position });
+  }
+  return collapsed;
+}
+
+export function hiddenDefaultIds(
+  pins: PinRow[],
+  defaults: string[],
+  _catalog: Record<string, ExerciseDef> = {},
+) {
   const defaultSet = new Set(defaults);
   return new Set(pins.filter((pin) => defaultSet.has(pin.exerciseId)).map((pin) => pin.exerciseId));
 }
 
-export function extraPins(pins: PinRow[], defaults: string[]) {
+export function extraPins(
+  pins: PinRow[],
+  defaults: string[],
+  catalog: Record<string, ExerciseDef> = {},
+) {
   const defaultSet = new Set(defaults);
-  return pins
-    .filter((pin) => !defaultSet.has(pin.exerciseId))
+  const hidden = hiddenDefaultIds(pins, defaults, catalog);
+  const seen = new Set<string>();
+  return collapsePinRows(pins, catalog)
+    .filter((pin) => !defaultSet.has(pin.exerciseId) && !hidden.has(pin.exerciseId))
+    .filter((pin) => {
+      if (seen.has(pin.exerciseId)) return false;
+      seen.add(pin.exerciseId);
+      return true;
+    })
     .sort((a, b) => a.position - b.position || a.exerciseId.localeCompare(b.exerciseId));
 }
 
-export function pinnedExerciseIds(pins: PinRow[], defaults: string[]) {
+export function pinnedExerciseIds(
+  pins: PinRow[],
+  defaults: string[],
+  catalog: Record<string, ExerciseDef> = {},
+) {
   return [
-    ...defaults.filter((id) => isExercisePinned(pins, defaults, id)),
-    ...extraPins(pins, defaults).map((pin) => pin.exerciseId),
+    ...defaults.filter((id) => isExercisePinned(pins, defaults, id, catalog)),
+    ...extraPins(pins, defaults, catalog).map((pin) => pin.exerciseId),
   ];
 }
 
@@ -85,9 +130,12 @@ export function visibleBoardIds(
   catalog: Record<string, ExerciseDef> = {},
 ) {
   const trained = trainedTileIds(historyIds, defaults, catalog);
-  const hidden = hiddenDefaultIds(pins, defaults);
+  const hidden = hiddenDefaultIds(pins, defaults, catalog);
   const compounds = defaults.filter((id) => !hidden.has(id) && trained.has(id));
-  return [...compounds, ...extraPins(pins, defaults).map((pin) => pin.exerciseId)];
+  const extra = extraPins(pins, defaults, catalog)
+    .map((pin) => pin.exerciseId)
+    .filter((id) => !defaults.includes(id));
+  return [...compounds, ...extra];
 }
 
 export function canPinExercise(
@@ -109,15 +157,55 @@ export function isExercisePinned(
   pins: PinRow[],
   defaults: string[],
   exerciseId: string,
+  catalog: Record<string, ExerciseDef> = {},
 ) {
-  const hidden = hiddenDefaultIds(pins, defaults);
-  if (defaults.includes(exerciseId)) return !hidden.has(exerciseId);
-  return extraPins(pins, defaults).some((pin) => pin.exerciseId === exerciseId);
+  const key = pinDisplayKey(exerciseId, catalog);
+  const hidden = hiddenDefaultIds(pins, defaults, catalog);
+  if (defaults.includes(key)) return !hidden.has(key);
+  return extraPins(pins, defaults, catalog).some((pin) => pin.exerciseId === key);
 }
 
-export function nextExtraPosition(pins: PinRow[], defaults: string[]) {
-  const extras = extraPins(pins, defaults);
+export function nextExtraPosition(
+  pins: PinRow[],
+  defaults: string[],
+  catalog: Record<string, ExerciseDef> = {},
+) {
+  const extras = extraPins(pins, defaults, catalog);
   return extras.reduce((max, pin) => Math.max(max, pin.position), 0) + 1;
+}
+
+function aggregateMovementSummary(
+  movementExerciseId: string,
+  catalog: Record<string, ExerciseDef>,
+  summaries: Array<{
+    exerciseId: string;
+    lastPerformedAt?: string;
+    equipmentInstanceId?: string | null;
+    currentE1rm: number | null;
+    delta: number | null;
+    e1rmSeries: number[];
+  }>,
+) {
+  const members = new Set(movementMemberIds(movementExerciseId, catalog));
+  const family = summaries
+    .filter((summary) => members.has(summary.exerciseId))
+    .sort((a, b) => (a.lastPerformedAt ?? "").localeCompare(b.lastPerformedAt ?? ""));
+  if (family.length === 0) return undefined;
+  const e1rmSeries = family.flatMap((summary) => summary.e1rmSeries);
+  const withCurrent = family.filter((summary) => summary.currentE1rm != null);
+  const latest = withCurrent.at(-1);
+  const previous = withCurrent.at(-2);
+  const latestSummary = family.at(-1)!;
+  return {
+    exerciseId: movementExerciseId,
+    lastPerformedAt: latestSummary.lastPerformedAt,
+    equipmentInstanceId: latestSummary.equipmentInstanceId ?? null,
+    currentE1rm: latest?.currentE1rm ?? null,
+    delta: latest && previous
+      ? latest.currentE1rm! - previous.currentE1rm!
+      : latest?.delta ?? null,
+    e1rmSeries,
+  };
 }
 
 export function signedDelta(delta: number | null) {
@@ -188,13 +276,21 @@ export function buildBoardLifts({
     catalog,
   );
   const byId = new Map(summaries.map((summary) => [summary.exerciseId, summary]));
-  const recent = new Set(weekExerciseIds);
+  const recent = new Set(
+    [...weekExerciseIds].map((id) => pinDisplayKey(id, catalog)),
+  );
   return visible.map((exerciseId) => {
     const def = catalog[exerciseId];
+    const template = def ? movementTemplate(def, catalog) : undefined;
     const summary = defaultSet.has(exerciseId)
-      ? latestFamilyMember(exerciseId, catalog, summaries)
+      ? (template && rollsUp(template)
+        ? aggregateMovementSummary(exerciseId, catalog, summaries)
+        : latestFamilyMember(exerciseId, catalog, summaries))
       : byId.get(exerciseId);
-    const reviewExerciseId = summary?.exerciseId ?? exerciseId;
+    const reviewExerciseId = defaultSet.has(exerciseId)
+      ? (template && rollsUp(template) ? exerciseId : (summary?.exerciseId ?? exerciseId))
+      : (summary?.exerciseId ?? exerciseId);
+    const movementKey = pinDisplayKey(reviewExerciseId, catalog);
     return {
       exerciseId,
       reviewExerciseId,
@@ -205,7 +301,7 @@ export function buildBoardLifts({
       currentE1rm: summary?.currentE1rm ?? null,
       delta: summary?.delta ?? null,
       e1rmSeries: summary?.e1rmSeries ?? [],
-      recentRecord: recent.has(reviewExerciseId),
+      recentRecord: recent.has(movementKey),
     };
   });
 }

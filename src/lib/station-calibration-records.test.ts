@@ -49,6 +49,11 @@ const flexIncline = variant("bb-incline-bench", "bb-incline-bench__flex-fitness_
   machineType: "bench",
   needsCalibration: false,
 });
+const nautilusIncline = variant("bb-incline-bench", "bb-incline-bench__nautilus__bench", {
+  brand: "Nautilus",
+  machineType: "bench",
+  needsCalibration: false,
+});
 const rogueSquat = variant("bb-back-squat", "bb-back-squat__rogue__rack", {
   brand: "Rogue",
   machineType: "rack",
@@ -70,6 +75,7 @@ const catalog: Record<string, ExerciseDef> = {
   [nautilusPulldown.id]: nautilusPulldown,
   [hoistPulldown.id]: hoistPulldown,
   [flexIncline.id]: flexIncline,
+  [nautilusIncline.id]: nautilusIncline,
   [rogueSquat.id]: rogueSquat,
   [eleikoDeadlift.id]: eleikoDeadlift,
   [hammerChest.id]: hammerChest,
@@ -168,7 +174,7 @@ describe("station calibration matrix", () => {
   });
 });
 
-describe("station records stay exact-id", () => {
+describe("station records", () => {
   it("keeps leftover template PRs on the template id", () => {
     const groups = detect([set(), current({ exercise_id: "lat-pulldown" })]);
     expect(groups).toHaveLength(1);
@@ -181,15 +187,28 @@ describe("station records stay exact-id", () => {
       .toBeNull();
   });
 
-  it("does not merge leftover template PRs into a new family variant", () => {
+  it("keeps cable leftover template PRs separate from a new variant and rolls incline bench together", () => {
     expect(detect([
       set({ exercise_id: "lat-pulldown" }),
       current({ exercise_id: nautilusPulldown.id, weight: 160, reps: 12 }),
     ])).toEqual([]);
-    expect(detect([
-      set({ exercise_id: "bb-incline-bench", weight: 185 }),
-      current({ exercise_id: flexIncline.id, weight: 205, reps: 6 }),
-    ])).toEqual([]);
+    const incline = detect([
+      set({ exercise_id: "bb-incline-bench", weight: 185, reps: 8 }),
+      current({ exercise_id: flexIncline.id, weight: 185, reps: 9 }),
+    ]);
+    expect(incline).toHaveLength(1);
+    expect(incline[0].exerciseId).toBe("bb-incline-bench");
+    expect(incline[0].repRecords[0]).toMatchObject({ load: 185, reps: 9, improvement: 1 });
+    const priorE1rm = computeE1rm(175, 6, 1);
+    const nextE1rm = computeE1rm(185, 5, 1);
+    const e1rm = detect([
+      set({ exercise_id: flexIncline.id, weight: 175, reps: 6, e1rm: priorE1rm }),
+      current({ exercise_id: nautilusIncline.id, weight: 185, reps: 5, e1rm: nextE1rm }),
+    ]);
+    expect(e1rm[0].e1rmRecord).toMatchObject({
+      value: Math.round(nextE1rm * 10) / 10,
+      improvement: Math.round((nextE1rm - priorE1rm) * 10) / 10,
+    });
     expect(recordScope(set({ exercise_id: "lat-pulldown" }))).not.toBe(
       recordScope(set({ exercise_id: nautilusPulldown.id })),
     );

@@ -93,7 +93,7 @@ export default async function SessionPage({
 
   const catalog = await getCatalogMap(supabase, userId);
   const pinRows = await loadUserPinRows(supabase, userId);
-  const pinnedIds = pinnedExerciseIds(pinRows, defaultCompoundIds(catalog));
+  const pinnedIds = pinnedExerciseIds(pinRows, defaultCompoundIds(catalog), catalog);
 
   // Do not await record history here. The first saved set of an exercise is when
   // loadWorkoutRecords starts paging prior sets for PR / e1RM chips; blocking the

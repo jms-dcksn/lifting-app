@@ -1,5 +1,11 @@
 import type { ExerciseDef } from "./coefficients";
 import { computeE1rm, pctOf1RM } from "./e1rm";
+import {
+  comparisonKey,
+  comparisonScope,
+  movementId,
+  movementTemplate,
+} from "./movement";
 
 export interface RecordSet {
   id: string;
@@ -86,8 +92,41 @@ export function eligibleRecordSet(set: RecordSet, def: ExerciseDef | undefined) 
   return { load: loadPrecision(effective), estimate: estimatePrecision(estimate), reps, weight };
 }
 
+/** Per-station scope for stall series. Rolling families keep exact exercise_id here. */
 export function recordScope(set: RecordSet) {
   return JSON.stringify([set.exercise_id, set.equipment_instance_id]);
+}
+
+export function recordComparisonKey(set: RecordSet, catalog: Record<string, ExerciseDef>) {
+  return comparisonKey(comparisonScope(set, catalog));
+}
+
+function recordDisplay(
+  set: RecordSet,
+  catalog: Record<string, ExerciseDef>,
+): Pick<ExerciseRecords, "exerciseId" | "equipmentInstanceId" | "name"> {
+  const def = catalog[set.exercise_id];
+  if (!def) {
+    return {
+      exerciseId: set.exercise_id,
+      equipmentInstanceId: set.equipment_instance_id,
+      name: set.exercise_id,
+    };
+  }
+  const scope = comparisonScope(set, catalog);
+  if (scope.kind === "movement") {
+    const template = movementTemplate(def, catalog);
+    return {
+      exerciseId: movementId(def),
+      equipmentInstanceId: null,
+      name: template.name,
+    };
+  }
+  return {
+    exerciseId: set.exercise_id,
+    equipmentInstanceId: set.equipment_instance_id,
+    name: def.name,
+  };
 }
 
 /** Pure replay of persisted sets. Never call this with optimistic rows. */
@@ -115,7 +154,7 @@ export function workoutRecords(
   for (const set of prior) {
     const values = eligibleRecordSet(set, catalog[set.exercise_id]);
     if (!values) continue;
-    const key = recordScope(set);
+    const key = recordComparisonKey(set, catalog);
     const loadKey = `${key}:${values.load}`;
     priorReps.set(loadKey, Math.max(priorReps.get(loadKey) ?? 0, values.reps));
     priorEstimates.set(key, Math.max(priorEstimates.get(key) ?? 0, values.estimate));
@@ -129,7 +168,7 @@ export function workoutRecords(
     const def = catalog[set.exercise_id];
     const values = eligibleRecordSet(set, def);
     if (!values) continue;
-    const key = recordScope(set);
+    const key = recordComparisonKey(set, catalog);
     const loadKey = `${key}:${values.load}`;
     const previousReps = bestReps.get(loadKey);
     const previousEstimate = bestEstimates.get(key);
@@ -138,9 +177,13 @@ export function workoutRecords(
     const estimatePr = previousEstimate != null && values.estimate > previousEstimate;
     const loadPr = previousLoad != null && values.load > previousLoad;
     if (repPr || estimatePr || loadPr) {
+      const display = recordDisplay(set, catalog);
       const group = groups.get(key) ?? {
-        key, exerciseId: set.exercise_id, equipmentInstanceId: set.equipment_instance_id,
-        name: def.name, isBodyweight: def.equipment === "bodyweight",
+        key,
+        exerciseId: display.exerciseId,
+        equipmentInstanceId: display.equipmentInstanceId,
+        name: display.name,
+        isBodyweight: def.equipment === "bodyweight",
         repRecords: [], e1rmRecord: null, topWeightRecord: null,
       };
       const source = { setId: set.id, slotId: set.program_slot_id };

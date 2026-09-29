@@ -64,11 +64,12 @@ describe("monthly report", () => {
     expect(r.current.e1rmPrs).toBe(0);
     expect(r.lifts[0]).toMatchObject({ state: "new", delta: null, percent: null });
   });
-  it("isolates equipment instances and exercises; skipped lifts are not declines", () => {
+  it("rolls ordinary-pound equipment instances together and keeps other exercises separate", () => {
     const sessions = [session("p", "2026-08-02"), session("c", "2026-09-02")];
     const r = report(sessions, [set(sessions[0], 8, { equipment_instance_id: "one" }), set(sessions[1], 12, { equipment_instance_id: "two" })]);
-    expect(r.lifts.map(l => l.state).sort()).toEqual(["new", "not_trained"]);
-    expect(r.current.e1rmPrs).toBe(0);
+    expect(r.lifts).toHaveLength(1);
+    expect(r.lifts[0].state).toBe("improving");
+    expect(r.current.repPrs).toBe(1);
     const other = report(sessions, [set(sessions[0]), set(sessions[1], 12, { exercise_id: "db-bench" })]);
     expect(other.lifts.map(l => l.state).sort()).toEqual(["new", "not_trained"]);
   });
@@ -117,7 +118,7 @@ describe("monthly fixed-load rep comparisons", () => {
   });
   it("does not compare reps across loads, equipment, or outside the comparison window", () => {
     const a = session("a", "2026-08-02"), b = session("b", "2026-09-02"), late = session("late", "2026-08-30");
-    const result = report([a, b, late], [set(a, 8), set(b, 10, { weight: 110 }), set(b, 12, { id: "machine", equipment_instance_id: "different" }), set(late, 6, { weight: 110 })]);
+    const result = report([a, b, late], [set(a, 8), set(b, 10, { weight: 110 }), set(b, 12, { id: "machine", exercise_id: "db-bench" }), set(late, 6, { weight: 110 })]);
     expect(result.lifts.every(l => l.repGains.length === 0)).toBe(true);
   });
   it("uses the best reps in each period and recomputes after a historical edit", () => {

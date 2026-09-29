@@ -575,10 +575,11 @@ families are not record comparison scopes. Unresolved machine templates cannot e
 records. Leftover flat cable/barbell template rows stay eligible on that exact id;
 they do not merge with later variants.
 
-**Proposed, pending James (2026-09-29).** The paragraph above stays in force.
-[Movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
-Card 1 asks to compare `bench`, `rack`, `platform`, and `none` on the template
-for records only. Reply `exact` keeps this paragraph. Do not implement from this note.
+**Shipped (James 2026-09-29, Card 1).** Ordinary-pound families (`bench`, `rack`,
+`platform`, `none`) compare on the template id via `comparisonKey` in
+`src/lib/strength/movement.ts`. Machine and cable keep `(exercise_id,
+equipment_instance_id)`. Stall series still use per-station `recordScope` (Card 4
+default). See [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
 
 Working sets require finite load, positive whole-number reps, and valid RIR (0–5).
 Legacy null RIR uses the canonical default of 2; missing load/reps is never zero-filled.

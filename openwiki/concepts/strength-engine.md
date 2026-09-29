@@ -6,6 +6,27 @@ tags: [strength-engine, e1rm, rpe-rir, recommend, progression, coefficients, mac
 verified:
   - by: openwiki/0.6.0
     at: 2026-09-25T19:18:52.086Z
+sources:
+  - id: openwiki-source-e8e61d605125cac4d909755e
+    resource: repo://docs/ARCHITECTURE.md
+  - id: openwiki-source-8cc00b595f36ac50faf3d2e8
+    resource: repo://docs/DECISIONS.md
+  - id: openwiki-source-fb6e3956308b6521741fac74
+    resource: repo://src/app/(app)/session/actions.ts
+  - id: openwiki-source-b528d7a3cbc7763aea8d4c6c
+    resource: repo://src/lib/strength/coefficients.ts
+  - id: openwiki-source-286bbbdb9010171d875073c7
+    resource: repo://src/lib/strength/e1rm.test.ts
+  - id: openwiki-source-820ec2ea1d01797114b71923
+    resource: repo://src/lib/strength/e1rm.ts
+  - id: openwiki-source-16b9f2d8e5147eb1968883ef
+    resource: repo://src/lib/strength/progression.ts
+  - id: openwiki-source-6a839afd20941da01c71b6ae
+    resource: repo://src/lib/strength/recommend.ts
+  - id: openwiki-source-f93596676a7a7670b4f70ead
+    resource: repo://src/lib/strength/recompute.ts
+  - id: openwiki-source-c171a80224ab8da0fa309e42
+    resource: repo://src/lib/strength/records.ts
 ---
 
 ## Purpose and boundary

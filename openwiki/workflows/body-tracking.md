@@ -5,7 +5,63 @@ description: Explains the shared weight-calendar Sheet and its atomic save/move/
 tags: [bodyweight, weight-calendar, weight-trends, body-measurements, period-tracking, supabase-rpc, privacy, tracking]
 verified:
   - by: openwiki/0.6.0
-    at: 2026-09-25T19:18:52.086Z
+    at: 2026-09-29T00:58:03.170Z
+sources:
+  - id: openwiki-source-defe3149da370f2b3b20ad79
+    resource: repo://docs/BODY-MEASUREMENTS.md
+  - id: openwiki-source-bcc7231ee15b7e457b8e5aaf
+    resource: repo://docs/PERIOD-TRACKING.md
+  - id: openwiki-source-7a13832a8fdfe5c86c2bcd60
+    resource: repo://docs/WEIGHT-TRENDS.md
+  - id: openwiki-source-845394afcde79e76c2da7b44
+    resource: repo://src/app/(app)/analytics/month/page.tsx
+  - id: openwiki-source-54907cbc8f5d75a035806cfb
+    resource: repo://src/app/(app)/analytics/month/period-performance.tsx
+  - id: openwiki-source-0642482609aaeba9ff0d5226
+    resource: repo://src/app/(app)/analytics/month/review.tsx
+  - id: openwiki-source-9b50fd0e600e5512f018b2f9
+    resource: repo://src/app/(app)/analytics/weight-trend-card.tsx
+  - id: openwiki-source-b9b19ec0f78b1aaad5e43666
+    resource: repo://src/app/(app)/history/%5BexerciseId%5D/e1rm-chart.tsx
+  - id: openwiki-source-2ef4ceffa105706ea5eda03e
+    resource: repo://src/app/(app)/history/%5BexerciseId%5D/review-chart.tsx
+  - id: openwiki-source-5f14ae1affb27236c9999ad6
+    resource: repo://src/app/(app)/settings/actions.ts
+  - id: openwiki-source-9e66216b061b1a1cbf6c9171
+    resource: repo://src/app/(app)/settings/page.tsx
+  - id: openwiki-source-4025a316cb55867645e9b31e
+    resource: repo://src/app/(app)/weight/actions.ts
+  - id: openwiki-source-ab0652e830e7dd08f0b8d527
+    resource: repo://src/components/period-calendar.tsx
+  - id: openwiki-source-5fe9d9af42e368bf10813ba8
+    resource: repo://src/components/period-tracking-settings.tsx
+  - id: openwiki-source-9935638bc8e88bd0d2134b81
+    resource: repo://src/components/weight-calendar.tsx
+  - id: openwiki-source-4c53f871d95304ff881c3ed3
+    resource: repo://src/lib/body-measurements.ts
+  - id: openwiki-source-8823c36509e225d978ba5e8d
+    resource: repo://src/lib/bodyweight.ts
+  - id: openwiki-source-05227b989b0dc31eec9eb475
+    resource: repo://src/lib/current-bodyweight.ts
+  - id: openwiki-source-8452975c29cc5502b34aa7eb
+    resource: repo://src/lib/monthly-review.test.ts
+  - id: openwiki-source-b3ce921f173ae270cfa05650
+    resource: repo://src/lib/period-calendar.ts
+  - id: openwiki-source-441fd189c6f9b7ee499e6dd9
+    resource: repo://src/lib/period-performance.test.ts
+  - id: openwiki-source-3c3959baf6d0f96df66e1ae0
+    resource: repo://src/lib/period-performance.ts
+  - id: openwiki-source-c171a80224ab8da0fa309e42
+    resource: repo://src/lib/strength/records.ts
+  - id: openwiki-source-5e27e2dc2bf5255e20152b1f
+    resource: repo://src/lib/weight-trends.ts
+  - id: openwiki-source-7c7d167d2f6fb9b333f1efce
+    resource: repo://supabase/migrations/20260912143620_bodyweight_calendar_writes.sql
+  - id: openwiki-source-7cd2ccb4d8736797dc4a6c7e
+    resource: repo://supabase/migrations/20260915203212_period_tracking.sql
+  - id: openwiki-source-85dec5f688691099f5f7f995
+    resource: repo://supabase/tests/bodyweight_calendar_writes.sql
+generated: { by: "openwiki/0.6.0", at: "2026-09-29T00:58:03.170Z" }
 ---
 
 ## Overview
@@ -299,14 +355,45 @@ never as inputs to calculations:
   bands, matching the v1 scope decision to keep the default view clutter-free.
 - The monthly review's `PeriodPerformanceCard` (`src/lib/period-performance.ts`,
   `src/app/(app)/analytics/month/period-performance.tsx`) is a separate "period × performance
-  week" overlay: for each Monday–Sunday week touching the report window it lists observed
-  period days alongside that week's bodyweight-average change and canonical PR counts, so a
-  user can glance at "in a period week, what happened to weight and strength?" It reuses the
-  same eligibility gate and month-window clipping as the chart bands and never sends period
-  data anywhere.
+  week" overlay. `MonthlyReview` calls `buildPeriodPerformanceOverlay` only when its
+  `eligible` prop is true. The month page sets that prop from `isEligibleForPeriodTracking`
+  and loads `period_observation` only in that same case; passing observations while
+  `eligible` is false does not render the card. The builder itself is a pure join and does
+  not re-check consent.
+- For each Monday–Sunday week that touches `report.windows.current`, the card lists
+  observed period days beside that week's bodyweight-average change and canonical PR total
+  (rep + e1RM + top-weight, via `recordCounts`/`recordTotal`). Period marks, workout ticks,
+  and PR counts are clipped to the window, including out-of-window days of a spilled ISO
+  week. The week's weight average is not clipped the same way: `weekAverage` averages
+  entries from the week's Monday through the clipped end, so a reading on an earlier
+  out-of-window day of that Monday–Sunday week can enter the average and delta. The prior
+  week's average also looks at the full previous Monday–Sunday, which may sit outside the
+  report window. Missing averages stay blank. Gaps between observations are not filled.
+- The overlay is descriptive only. It does not change stall classification, monthly PR
+  totals, or training recommendations, and it is not a Coach or agent payload. `/analytics/body`
+  does not load period observations, so neither its weight card nor the tape chart shows
+  this overlay.
 - Cross-month periods are **not** stitched together: each monthly view only shows the
   observations that fall inside that calendar month's window; a period spanning a month
   boundary appears as independently clipped bands in each month's review.
+
+```mermaid
+flowchart TD
+  page["Month page"] --> gate{"sex female and tracking enabled"}
+  gate -->|no| empty["observations stay empty"]
+  gate -->|yes| load["loadPeriodObservations for the month"]
+  empty --> review["MonthlyReview"]
+  load --> review
+  review --> renderGate{"eligible prop"}
+  renderGate -->|no| hidden["no PeriodPerformanceCard"]
+  renderGate -->|yes| join["buildPeriodPerformanceOverlay"]
+  join --> card["Period x performance card"]
+  load --> bands["WeightTrendCard period bands"]
+```
+
+Month review loads and renders period context only after the eligibility gate.
+
+Eligibility is checked before period rows are loaded, and again before the week card is built. Weight history is loaded either way.
 
 ### Privacy invariants
 
@@ -317,9 +404,13 @@ These are enforced by the code, not just documented intent:
   data.
 - No auto-fill or prediction: only explicitly saved `observed_on` rows exist; there is no
   cycle-length calculation or future-day population anywhere in `period-calendar.ts`.
-- No external sharing: period observations are not read by the Coach API, exports, or any
-  AI integration code path — the loaders live only in period/settings/month/history
-  server actions and pages.
+- No external sharing: there is no later opt-in that feeds period rows to Coach or the
+  agent. `PERIOD_TOOL_NAMES` is empty, the bound read tools are only `weeklyCoach`,
+  `activeProgram`, `exerciseReview`, and `nextWorkout`, and the agent prompt forbids
+  discussing menstrual or cycle data. `weeklyCoach` wraps `loadCoachUi`; the exercise-review
+  tool reads finished `set_log` rows and returns Last, a 21-day window, and a last-8 chart
+  with no period dates. Settings may count the owner's `period_observation` rows to offer
+  hidden-history deletion, but that count is not a Coach or agent payload.
 - No training automation: period context never changes stall classification, "Best e1RM",
   monthly-change math, PR totals, or Coach recommendations; it is rendered purely as visual
   context on top of authoritative weight/strength data.
@@ -332,6 +423,11 @@ These are enforced by the code, not just documented intent:
 
 - `src/lib/period-calendar.test.ts` and `src/lib/history-page.test.tsx` cover the data-layer
   eligibility/CRUD behavior (the latter mocks `@/lib/period-calendar` to isolate the history
+  page).
+- `supabase/tests/period_tracking.sql` and `supabase/tests/period_tracking_rls.sql` are
+  rollback-only SQL tests covering schema constraints and RLS ownership isolation for
+  `period_observation`.
+calendar` to isolate the history
   page).
 - `supabase/tests/period_tracking.sql` and `supabase/tests/period_tracking_rls.sql` are
   rollback-only SQL tests covering schema constraints and RLS ownership isolation for

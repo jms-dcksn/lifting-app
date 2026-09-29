@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:1c1f8866f91aa5686170b7fea9d0f6c42fbc8dec4362624c8a45af1335a10c40",
+  "pageVersion": "sha256:cdc16d546e4c2f1b42e975dbaf9f0f7852dffccfc6295288e9aebca8acb6055c",
   "claims": [
     {
       "id": "claim_6baaff457c154f2fb8fa883aaed69147",
@@ -72,15 +72,23 @@
     },
     {
       "id": "claim_b66c83337025457784b9821342492ff2",
-      "statement": "In an active session, choosing a replacement exercise opens a non-dismissible-while-saving confirmation sheet offering 'This workout only' or 'Remainder of program' scope; Cancel leaves the selection unchanged and a failed save shows an inline error allowing retry.",
+      "statement": "In an active session, a replacement chosen in ExercisePicker, or the last-used alternate, opens a confirmation sheet only after the picker has closed. The heading shows ExerciseVisual beside Use {name} for… and offers This workout only or Remainder of program. While saving, Escape, scrim, swipe, and Cancel cannot dismiss it; otherwise Cancel leaves the selection unchanged, and a failed save shows an inline error so either scope can be retried. Logged sets keep their original exercise.",
       "evidence": [
         {
-          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L320-L336",
+          "resource": "repo://src/app/(app)/program/exercise-picker.tsx#L26-L31",
+          "version": "repo-lines-v1:sha256:ae2b0420970b0ecc38c64fc87a31edd0b79446304b5bbd437aabdc6ce67308e6:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWQ0NjM1M2UwYjI0ZGJmODdkZWU4YzdmMjQ5MjIyZjNiYjNlNGNkZGFkZTNiNmM3NTk5NGE2NjNjM2MyMDRmYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzgyZDkxMDBiYWFiNTdkZTA3N2M3N2I1MTg4ZTI2YmYwOTlmMTI4YmJjZTVlNWU3NDZhODIyYjY2NDZlNGQ0OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzg5YjViOTljYjcwNWQ4MWU0NzA1N2YzNGMxN2Q5MTUwMzdjMmMwOTA2NmJjYmZjODgxZjg5MTc4ODQzOWJiMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODRlMjIwMzQwMjhhMjRhNTk4NTRiZTNiOWM1NmMzZTkxNzRiMTNiOGU5Y2NmZjdjMmNkZWI2NzE2MWRhYWIxMiJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L321-L337",
           "version": "repo-lines-v1:sha256:3d434d4ad47bc04a3cff70839c22f59826cfd5dbdc982620f6f44bda73710029:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3YTA5MTRjY2Y4ZjZkMDYxYmJmZmU0Yjc3NWJlYzMxYmQ0OGIwYWVkNDhlNGVjYzAwNTk5ZjI1MTc2M2ViMzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNjOWZiYjA1NDVjZWFhMzk2NWRjY2M4ZGIyOTg2ZmNhMzMzMTA4MDBkM2I4Yzk1NGRhYTAwYTdiYzMzNDI0Y2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJkMDkzZDdkNzhhNTkyOGE0N2VjNjQ3OGIyMWE3NzY2OTE5NDU3ODNlZjgyNmFiNzc5OTAxZjY4ZDUxOGVkMjQifQ"
         },
         {
-          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L699-L714",
-          "version": "repo-lines-v1:sha256:6eb2e6ff2e494e52245b50cd48d05daf5b5a4090f2238a1fd1c9cf694fbce94e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MTU3ZTdkMzY2NThkZGFiYjQ5MTg0OTQ1OTk5MzZhYmUyMzdhNzJiZTU4MjQ2MzBkNTJjMjQyZmQ5M2Q1YmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxMzAwNDg0N2UwNGQ4ODQxMmY5NGVhYjZiMDU2NDlkNjJiMDQyM2QwNDliYjRiMzI3YTgxNjMxNmQ2NDQzY2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNjN2FiZTk3OTM0NWMyZDNmNDQwOGJiNjU3NGY2MTc5OWMzNjQyM2NiMjRjZWZhNDg1ZDFkODA4NDc0OGIzMjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkYWUwZWUxNGEyZTQ0OTdlN2Q5ZDA0ZDE0ODhlNTEwZmNhOWExZGI4ZWExMWJhNmRhMTZiMzQ4YWQyZTM1YzAifQ"
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L692-L724",
+          "version": "repo-lines-v1:sha256:52bf9ed695222084e3c9760b8d58981d4192bf422b33fc473cdc2dd5730756f8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkYjE4MjM3ZDlkMjRiM2Y2N2IwNjM0NThmYmYzZTEwNTQ4ZjY5OWM5ZTEyNjQ0Nzc2ZjUzOGY5YmRjNjIzZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxMzAwNDg0N2UwNGQ4ODQxMmY5NGVhYjZiMDU2NDlkNjJiMDQyM2QwNDliYjRiMzI3YTgxNjMxNmQ2NDQzY2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY1YmI0NzIxMzcxNzExNjM1YzM3YzA0ZmVmYWUzMThjZWNkMDZhZjI2M2JjY2M0N2IxNmY5NzM3MDM2Yjk3MzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkYWUwZWUxNGEyZTQ0OTdlN2Q5ZDA0ZDE0ODhlNTEwZmNhOWExZGI4ZWExMWJhNmRhMTZiMzQ4YWQyZTM1YzAifQ"
+        },
+        {
+          "resource": "repo://src/components/ui/sheet.tsx#L12-L55",
+          "version": "repo-lines-v1:sha256:574ae298c87095ed1dd01130d4306dc6048e8be850cc32f3f43a3c1250aabb7f:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYyODhjYWJmZmQ0ZmUxNmU3OTdiMzc4MWFhNWZhZTI4MGNlNDUyZjA5MjBhMmI4NTQ5Zjc3NjI3OGEwMDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0MWQ2NDZjMWYwNDI5YmRjM2UwODBiMTk3ZDk1NjNlYWI3MDlmZGI4NDkyY2QyNmE0MGNiNzNiNzQyNGYwZjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI5NmZhZWI3N2U0YjY2ZDJjMjlkMjg1YWY3ZTcyNWM0MTY0NjhiM2Y3MmY2MzQ5NmM4ODhiYjE5NmFlOGNjMTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5ZGMwNWI0NTBkMjkxZTUyOWZhNWE1OTAxNTQwYTYwZTQ1ZTRmN2U5Y2VmNGYxYzU2YjA3NDIwOTQyMzFhZDIifQ"
         }
       ]
     },
@@ -171,10 +179,24 @@
           "version": "repo-lines-v1:sha256:ddebe0d68818e651018273a12cf2d2400f84cd66d96daea5e924f2c571d43732:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlYzZhOGNhNGI3ZTMyMDY4NTZmZGZiMTE2NzM2YmEyNGUwNjg3MjkxMDY3ZDA3MzkyYjc4M2IzOWQxNmIwZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4ZjBmMTQ5ZjY2NDY1NTMyMjNhZGY3MTQ0ZDhlNWE3ZDA1ZTk3ZWEyNWZkNWYxZjQ3ODI1M2YwMWEwZGZhYjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZjNmYyNzlkNWYwYjk4NTFjNDNjNzUwNGJiZGFkMWZmNDY5Y2Y2NThjMWYxYzc1NWVmOGVjMTliMDA3ZmQ4YjAifQ"
         }
       ]
+    },
+    {
+      "id": "claim_931ab74f5ba74606934b08812035c41e",
+      "statement": "The next-workout planner no longer renders copy that planning choices stay in the current browser and do not sync across devices. A successful save only shows Saved for this workout, while the cookie itself remains an HttpOnly, same-site, 30-day browser-local draft.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/workout/next/actions.ts#L27-L33",
+          "version": "repo-lines-v1:sha256:3ebc19f1ce0c9fe4ab2ea12a1297b5a470107b7ded613a9b210842a9fe4087e8:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWMzYWViYTc3NTY4OWI4ZmFhMzMzMzU4MTNkM2RlNzQxZjEzZGIxMTUxN2Q4ZDQwZjE1YmZlZTg4NjQ4ZjlhZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWM4OTIzYzZiNjQ2OTJkMzY0YWEyZjM1MmRiMGIyOWY1MGYzMGNiZGI2MWI3NmFmYmEzNDkxZWQ4NTUzMjFlNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjc1ZGVlYWMyMjM5YzJkNmNlZDFlMzAxNDU0NDczYzRlZGM4ODI0MmU3M2ZkMTFjODhlZTRkZTRmOGRhYWQ1NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/workout/next/workout-planner.tsx#L27-L37",
+          "version": "repo-lines-v1:sha256:9493184fa374fc4eced2eafa47142102e6c5d5ac769779b0c3c4cbe62f4f4163:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkMzdlODAyMDZhYTYyYzUxN2I0MTBmNmQ0OGFhM2YzMWIyZmU4ZWZjMmQwODI5NzgyYjkxZWU1NmJhZGQ4ZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyZDExY2FmNDNlOTdlZjM2OWU2YmVlZDFhMjY4YmQwNTgzOGYyOWI5ZGQyNTRiZjY5YmE2NDg4NDE0NzIzNGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI0NDlmNWQxMmU4ZWNmNDgwNzJjZjVkNTljMmQxYzc4NGZmMDY0YTBjMjkwY2U3YmNkNGZmZmU0MDMxYmFmZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQzZmYzNzA3ODQwNGU2NjJhYzQ2MmIwMTZkZGFjYjg3YmIyZDc1NDViMzFmZmI2YWNkMzY0NWE0MmY1NTYyNmUifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.6.0",
-    "at": "2026-09-25T19:18:52.086Z"
+    "at": "2026-09-29T00:58:03.170Z"
   }
 }

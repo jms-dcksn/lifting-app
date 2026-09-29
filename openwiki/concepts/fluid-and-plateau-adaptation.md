@@ -11,6 +11,29 @@ tags: [fluid, plateau, adaptation, stall-detection, coach, strength-engine, exer
 verified:
   - by: openwiki/0.6.0
     at: 2026-09-25T19:18:52.086Z
+sources:
+  - id: openwiki-source-91008f8d7ce651abfb64be29
+    resource: repo://docs/EXERCISE-SWAPS.md
+  - id: openwiki-source-13f2957e90818ed61bd292dd
+    resource: repo://docs/MONTHLY-PROGRESS.md
+  - id: openwiki-source-fc53abe6e9d97193632f0a9b
+    resource: repo://src/app/(app)/session/%5Bid%5D/active-session.tsx
+  - id: openwiki-source-fb6e3956308b6521741fac74
+    resource: repo://src/app/(app)/session/actions.ts
+  - id: openwiki-source-5d1f2a8b385b5ec1f7ba7d3c
+    resource: repo://src/lib/coach-recommendations.ts
+  - id: openwiki-source-15cfc7c4944610d8a545c8b1
+    resource: repo://src/lib/fluid.ts
+  - id: openwiki-source-25f165df98b9bae58c38d9f7
+    resource: repo://src/lib/monthly-progress.ts
+  - id: openwiki-source-0c89fa86c4456cfd728a2ac2
+    resource: repo://src/lib/stall-data.ts
+  - id: openwiki-source-51069c3f851f139e436f987a
+    resource: repo://src/lib/stall-report.ts
+  - id: openwiki-source-ca252c962d5a187164292437
+    resource: repo://src/lib/strength/plateau.ts
+  - id: openwiki-source-d3f09bc8a0182a75769e32fe
+    resource: repo://supabase/migrations/20260911005629_exercise_swap_scope.sql
 ---
 
 ## Overview

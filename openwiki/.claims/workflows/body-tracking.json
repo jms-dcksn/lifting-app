@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:ade92e09f58140c78fb73d93a587be569cc7cee4bbb52298295d8b21d53687ff",
+  "pageVersion": "sha256:f7f24ab4e2c0bfed5b255e89834b23025e4f236505960d28c9d3c9e6f78d63a3",
   "claims": [
     {
       "id": "claim_7369f99913cc4baeb2bbe2e6e829e997",
@@ -306,15 +306,27 @@
     },
     {
       "id": "claim_f89b2b8b4b5d450395cae1ed3eca6960",
-      "statement": "buildPeriodPerformanceOverlay computes, per Monday-Sunday week touching the report window, the observed period days alongside that week's bodyweight-average change and canonical PR counts, reusing the same eligibility gate and month-window clipping as the chart bands; it is rendered by PeriodPerformanceCard on the monthly review and never transmits period data elsewhere.",
+      "statement": "MonthlyReview builds and renders PeriodPerformanceCard only when its eligible prop is true. The month page sets that flag from isEligibleForPeriodTracking and loads period observations only then; observations passed while ineligible do not render the card, and buildPeriodPerformanceOverlay itself does not re-check consent.",
       "evidence": [
         {
-          "resource": "repo://src/app/(app)/analytics/month/review.tsx#L1-L50",
-          "version": "repo-lines-v1:sha256:c5bc4a5a4410f29580b37a4fddd13f20ab214c7debe8e901f98cf4cd014d5609:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3YzFkOWZkZTc5YzZkOTNmYzg3ZTc3N2EwYzdjZDdhYjMwMTJmZDY0NWY3ZDQzNTIzZGI4YjUyZmY2NjExNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3NmJkMmFlYTcwMjhiN2JkMjM0YjBiNTcwZDE3NjZkYzg3MDZiMWU3MzkzYWViODE2MWZiOTk3ODYzNzk3ZjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2NmI4MDY1ODM4ODk1NTE0Y2IxMmI1Nzg3NjI3NmE1MWFmOWM0MmQ3MjQ3ZmNmM2FhYjZkZmNiN2VkMWU5ODgifQ"
+          "resource": "repo://src/app/(app)/analytics/month/page.tsx#L23-L48",
+          "version": "repo-lines-v1:sha256:525b3d22017524a7e928ee60cc9b65da40bce81374913fc0602b3e646a4207f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmNTlmYTRkYWZjMWY0YmNjNmZlMGFjNDZlN2QyNTQ0OTk5NzIxMzg1ZThlMGU0M2UwNWFjZTQ5OGVhOWNhMzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiMTA2M2M0ZGVhNjhhMzgxNjYxMTBiYWQyZDMzOGI0ZDcyZTAyZDM3YmUwODE1YTc4NDUxZTk5MzMyZDZkZmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM1MGZiYzBlZWYwNDQ2NDViNDAxZDk3MDQ0NGExZDI4MWU4OTc1ZTAyZDcwYWQ3NDg4OGJhNjZhZThhOGFjNzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE2NGY0NmIxNWY4MzE1M2U5YzMwZDVhODUwMTJiZDdmMmZmMzhjMTllYzQ0NDI0NjQ0N2IwZTQ1YjJhYjEwNmEifQ"
         },
         {
-          "resource": "repo://src/lib/period-performance.ts#L1-L100",
-          "version": "repo-lines-v1:sha256:b6de7df010d4b04476e9cc9498c47b2a23c67d4caf79ad1f72b4e51997a4a852:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJmMDZiOTIyZTYxOGZiYTM5MmQ5YTFiOTI0YjQ2OWEzNDI5YmI4N2I1NTlmZjJmYzRmNDIzMDc5OGY0M2E5ODg3IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJiMzQwYjBhZWUwYmZkNDJhOGVkYzc3ZmEwMDhkNTY2M2FlNjEwOGU4YTM1MWZmZWFhZWUzMzFmMmM0MmNiOTQwIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJkYWUxMGY4ZmE5NGIzYzA2MjU5YThlOTkyZjlmYmFiNGVkNjI4MThlY2YzMGI5MTNiZTE4NTkyMzI2YmMyYjQ2In0"
+          "resource": "repo://src/app/(app)/analytics/month/review.tsx#L22-L50",
+          "version": "repo-lines-v1:sha256:42cc1c5a5058f8c3bc703c9265df27b7385da246fa63e1e8a189f45527c2624a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ0YTVjZDc2Zjc3OTY3Y2ZkMWFlYWExZjY3OWNlYTU5YjMxM2NmZmM2OWViMzRhZjYyZWQ3MzZiNDE3MDhiZGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3ZmQ4ZWQ4OTBhOGRmZjFkZDkzYTViOTMzNDljZjc2NzMxMTZlYjIyYWYwZmM1OWI0MGZkZWY2NmQ4MzJlMTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBjOWFkMzNmMmEyODE1YmQ4OWE5YjU1MzI3NTMxNWVlNWY5NGI0MWM2NGM4MDU0N2RlY2E3MDRmZWJjMWViNTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMwNmJjMDYxODMyMjdmM2U0YWJlNjFlYzZjMjY2OTUwZWY1NTdhOTM1OWVkYWM3NDI2YTVjMjBkMTYzNmI1NjMifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/analytics/month/review.tsx#L84-L84",
+          "version": "repo-lines-v1:sha256:5db92f4fb77ae63ec35d7b3b4c5ce1556f536081d437e2452a35ff7cc2be158d:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWRiOTJmNGZiNzdhZTYzZWMzNWQ3YjNiNGM1Y2UxNTU2ZjUzNjA4MWQ0MzdlMjQ1MmEzNWZmN2NjMmJlMTU4ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWRiOTJmNGZiNzdhZTYzZWMzNWQ3YjNiNGM1Y2UxNTU2ZjUzNjA4MWQ0MzdlMjQ1MmEzNWZmN2NjMmJlMTU4ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjA5MzAyY2Q3ZjczM2IyZmQ5ZjM3Njk1OWIwYTA1YWMxODdkYWUzMTY5ODE0MTBmMGUxZDcyZTMzMDJlYzUyYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDFkYTM2MjZiM2MzYzVmOTM3NGY4MzBmZWFiMTVhMDFiMTMyYmUwMzI5NmZmZDVjZTA4OGIwZWRhMTBjNDRmOCJ9"
+        },
+        {
+          "resource": "repo://src/lib/monthly-review.test.ts#L57-L83",
+          "version": "repo-lines-v1:sha256:159d690179fa144aa85ee7ef4c07addfbb71e60b41b7514b41d631bfa34530fa:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2OWE0ZGNhODRiNTYzMzEwMzUwOTgwZGNmMTRhOTI1NjY5N2EwNjk1N2NiNDQ3NzRkMzE5OWM2ZWQ5Mjg2ZWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmYzMzMTY2NjdhMzM5M2E2ODRiOTc4YzczYmIwODE4ZWVhMjcwZjQyNmFiYjBhMjZiZTY4NjY0ZGY5MDUyZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlYjZkOTNmYmQ5YzViMTIxNGQ0YmU4MWJjYzVhZjU4NzcxZDJjMDYwNDhlZDk2ZGUwN2VjYzRhYmNmZmM2NTIifQ"
+        },
+        {
+          "resource": "repo://src/lib/period-performance.ts#L58-L66",
+          "version": "repo-lines-v1:sha256:7ac4e1dd7b192828177ce3cfb997b8d9ea33bfc153e6229fee7288beefc83ba8:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWU4MGQ1ZmEzNGY3N2JmYTdiNWRkOTEzM2RiYmYxNDU2NGE4YTcwMmM1YjUyNWNhNjc3NjkzMTMxMjA2NWY2ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjY4YzRkZmVlOTVmYTRkNGIxNWVjZGI5NjAyMjFhNTI1MDVhNjBiYWM1ZGE0ZjMxZjVmNmRlYTU3YjkyNjgyOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTIwNDBlMDk1YTk0ZTJhZGE3NGU0MjFmMzcxODc1MWE5MWE4MTBiZmQ2NmY0OGY0ZTkzOWM3Yjc0ODBlYjY3MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODgyOTVkZWE3N2VjMGQwZWJhODM1MWJhYWYzNjE1MTdiMjljYmU5OGE3ODA0NTFmZDM1ZDM4ZWQ1M2YwZjY1MiJ9"
         }
       ]
     },
@@ -335,10 +347,36 @@
           "version": "repo-lines-v1:sha256:465f7701bbf5786276f07785040a709ab5366b895c7cc330ba09b70174558dd2:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyMGY0ODkzM2U0M2ExYWI3ZmMwNmZjNzk5NzJkNDI0MTFhNWY5NmEyZDhkY2Q2NDA3ZWM2NjliZjc3NDc4MTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzY2Q5MzU5ZTY2Y2Y3ZDZiOTFiMTNjYjFlNzNjYmExYmUxOTdiNzEzODRhMmRhZjVlMzYwMmVmNWIyZDI0MTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
+    },
+    {
+      "id": "claim_41f8f1340b0c49c7b078859021b372a1",
+      "statement": "buildPeriodPerformanceOverlay joins Monday-Sunday weeks that touch the report window with observed period days, bodyweight-average change, finished-workout counts, and canonical PR totals. Period marks, workout ticks, and PR counts are clipped to the window, but a week's weight average can include an earlier out-of-window day of the same Monday-Sunday week, and the prior-week average is not clipped to the report window.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/analytics/month/period-performance.tsx#L27-L84",
+          "version": "repo-lines-v1:sha256:14b1ecfbf2163ec820cb03eedb98412f12cc2a962ad992e88dcc3e50ffe5d648:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3ZWRiNGNhN2VlYjdlYjY0ZGY1MmUyMWNjYWFmYzZkNDQwZTQyZjdiZmY0MGNiZjQ4ZGNjYzUwMmQ2NGE1ZmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2ZTJkMTcwZjMxZDljODhmZDhjNGFiNGJlYzJmZGRiOGU0OWZlOWFlMTRiZjExZTQ1NDg1YmE5NGQwMjdiYTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5NGZjMGMxNzNkMWVjM2ZjNTAxZDdkZmE5Mjg1NTAxYzUyN2NmYjQ3MTI1ODNkYTNjYzM2MTgwNTY2YjRiZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiOGI2MDBhNWI0NDhiMWU0ZDAyZGYwOTc0NmVkM2NhMzE3MmY3NWM0YWFiYjAxZGRlMDgwZTM2Y2FiMDc0YjQifQ"
+        },
+        {
+          "resource": "repo://src/lib/bodyweight.ts#L24-L57",
+          "version": "repo-lines-v1:sha256:92ca2165944377e875d28d06e9c18b209cd6f2ed21599fa508521a39f563d1d1:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3NWFiNjRlNzI5OTMzZjQ4NzdkZWE5MjhlMDhhMGIxN2ZjZDRhODkyYmJhNzdhMDg2ZGI4YjNiZmQxYWQ4N2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYTJjYjI1YTEyMmI0NDIyMWE2MjM0ZWM2NjBhN2I1ZmI3ZjliZGU3YjNiOWUyYjNjNTU5YTBkOTZmYWM3MzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg5Nzg0NGI5ZWY5MjMzMWZhNTIxY2MxOGMxZTkzM2VjOGNiZDg2N2I4NDlmODlkZGEwOTQ1OGM4NWU0NGMxMjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY5NzZiZmVkMTJiMzFlOGUwZjZjZjZkMTc4YTc3MTA4MjU0YWZmZjIyZWU4OTRmYzVmNWExZWMxMDY2MjE2ZDIifQ"
+        },
+        {
+          "resource": "repo://src/lib/period-performance.test.ts#L102-L123",
+          "version": "repo-lines-v1:sha256:076da5695aa7da27a1fdf6a90aaaa85709315063fdc4e9e09c5553be391d2d41:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjZGJmN2ZhOTMxNzEzNDAxYjJlZmRjZWQyZmMwOTBjNzZjMTQzZGEyMDliZjdlOTY1ZmU5MWY3Njk2ZGM5MmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImViMmQ4ZGI1N2Y0NGQwOWI4NTNmNDI5OTlkZTk2NWFmZmFjZmIxMWFmNzgxZDc2NDMwZTBiODczY2NhZWVhMmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyZDRhMjA4YmY3OWE0NTEzYTVkNzVlNzdmZjFkZmY5NDM5OGJmMDBmMjkyNDU0NjgxODg1NmQ4ZWY0Y2E2NmEifQ"
+        },
+        {
+          "resource": "repo://src/lib/period-performance.ts#L44-L113",
+          "version": "repo-lines-v1:sha256:f723a2eb4d54fc92e1ab8e6195bbf18d39d09f9776772d73ec7b4c168896cb9b:eyJzZWxlY3RlZExpbmVDb3VudCI6NzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwY2U5MTIxZjMxYWJlMDZkNTUzZTk3ODM4NjYxZTU0OTY5OTViMzlmMmJmYTk0NzU0Yjg5ZmM4ZDI4YWQ4MTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYTJjYjI1YTEyMmI0NDIyMWE2MjM0ZWM2NjBhN2I1ZmI3ZjliZGU3YjNiOWUyYjNjNTU5YTBkOTZmYWM3MzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMyY2U5MjM3M2U1ZTBlYjdmOTk5NmI4ODhhYzYzZGFmMzQxMGQwN2Y2ZTU0Mzk3YTNhNDA0NDczMTgyMDlkZTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/records.ts#L172-L185",
+          "version": "repo-lines-v1:sha256:7dccd6e952d74b89b1bb95443b492d5de271801ac1a107468863c1b6bf142cbb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwY2RjNzI2NzE4YmJhYTliN2I3Zjg0ZGViZDQzYjJkNTFlYTg1MTFiNDljNmU3NGI1NjZjNjJhYTkzZDE3NDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMwODIyZTVjZTE0MDBkYjhkNDczNTFkZjAzYzY0ODU1ZDc0ZGRlODNhOGFkNmQzMzVkNjZmY2M2MjFhMDY5MzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhNDljODExNTQ0ZmYzYTA2ODhiMzdmNzBhZWZjOTAwZWM0MzVmNWNlZWQxZDQ5MGUxMjg4ZmNkMjc0ZWEwNjgifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.6.0",
-    "at": "2026-09-25T19:18:52.086Z"
+    "at": "2026-09-29T00:58:03.170Z"
   }
 }

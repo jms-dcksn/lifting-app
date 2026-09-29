@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:94caf0ca83bd1f5de93d1b878962f8d37d7bf009b370277b520532b24e24f898",
+  "pageVersion": "sha256:cb9d4d2c47559d03ffcd13e2fcd9ba108b43f4c37698df3995f91f347e554fae",
   "claims": [
     {
       "id": "claim_80e3c8b4e96a40d493c3ea02a601e3cf",
@@ -164,11 +164,15 @@
     },
     {
       "id": "claim_a8cb4767d4094b87abf1db06745fb035",
-      "statement": "withViewTransition wraps a state update in document.startViewTransition (used for program-builder reorder) so elements with a matching viewTransitionName animate positionally between layout states, and falls back to a synchronous plain update when startViewTransition is unsupported or prefers-reduced-motion:reduce is set.",
+      "statement": "withViewTransition wraps a state update in document.startViewTransition and flushSync so elements with a matching viewTransitionName animate positionally; program-builder uses it for day and slot button-reorder (names vt-${day.id} and vt-${slot.id}), not phase reorder, and falls back to a synchronous plain update when startViewTransition is unsupported or prefers-reduced-motion:reduce is set.",
       "evidence": [
         {
-          "resource": "repo://src/app/(app)/program/program-builder.tsx",
-          "version": "repo-file-v1:sha256:b27bf213ac387807213c11485f51ec9ed955fe4cead0943f35aded36086022f9"
+          "resource": "repo://src/app/(app)/program/program-builder.tsx#L105-L172",
+          "version": "repo-lines-v1:sha256:fed7feaac775a1846404debfd8d5b4feca278cab6d7e2399f860c582edf631e9:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5OWMyMWRkYzQxYTE4MzY2OWRhNGIyN2Y4OTAxMDdmMTJkNWFmZTU5YmExZTQyMzhlMDEzMDM3ZTRjMjljZTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRhM2UzYjRlMmY1M2VhNDU5N2Q1YjgwZDU0Y2E3Mzg1NTE3NDBiMDBlOTc1ODA2MDcyNjlmZDk1N2U1OTk0MDMifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/program/program-builder.tsx#L381-L425",
+          "version": "repo-lines-v1:sha256:3c7b7dcb7e58c5501fcb27df75b907cf68d4876a2a13e7ef7d97da13643185bc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1NTE0MmI5NWM2YWE5NzFlODY4Mjk3OTBhYzdmYmFlNTBjOTVlMjZkNWUyMzE1M2FjNDNhOWZjYzgzNzlkZGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhYWJjZGY5YjIwYzk4NWU4NzVkZjM5ZGEwOWQwOTM4NWZmN2I0MmI1OTcyNGExMmEzMmNjMDg5NDMzYzE4NDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2MWQwMjQ2YzY1NGMwYThjNzRmYzA1YTFjMGI5MDk3YjZmMzgyMzIwZTY2Y2E4ODNlN2QyOTQ3NTE1M2FjNGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ3OTE2OTNmOWFiZGJiZWJiYTdmZTBhMzdkNjRiMzczOGQ2NTVhM2RlMWZjNTU3MDg4NWNmNjdlZTRmN2NlODEifQ"
         },
         {
           "resource": "repo://src/components/ui/view-transition.ts#L1-L16",
@@ -188,11 +192,11 @@
     },
     {
       "id": "claim_fb43d3983e194f91934ba2c4869facb7",
-      "statement": "src/app/(app)/layout.tsx is a Server Component that performs the app's auth gate (Supabase getClaims(), redirecting to /login if unauthenticated) and wraps the client-side AppShell, embodying the app's server/client boundary: data loading and auth stay server-side while pathname-aware chrome, charts, clipboard, and search are client components.",
+      "statement": "src/app/(app)/layout.tsx is a Server Component that performs the app's auth gate (Supabase getClaims(), redirecting to /login if unauthenticated) and wraps the client-side AppShell. AppShell reads usePathname and, inside Suspense, useSearchParams to decide chrome, embodying the server/client boundary: data loading and auth stay server-side while pathname-aware chrome, charts, clipboard, and search are client components.",
       "evidence": [
         {
-          "resource": "repo://src/app/(app)/app-shell.tsx#L1-L24",
-          "version": "repo-lines-v1:sha256:8cbe9f6fc585fdd8c15ac8dca5676bcd419a4dd0ffe9f9a72b935efbec2c766f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM0MWQ4ODdmNTk4MjE1MmM2MDc3NTkwYjhiODJiNDU4ZWM1NDk3NTU5N2RjY2UzYzczOThjODdlZjJkMDUyZTEifQ"
+          "resource": "repo://src/app/(app)/app-shell.tsx#L1-L53",
+          "version": "repo-lines-v1:sha256:de48d37e059c54e6f07904a51797594a3eb8259ff32e8ee6772447c66f300eb3:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1ZmFjNzY3MjUyOGM4OGJjMzkyYzkyYWVhZWRkZDlkYzFkNTgyMjJmN2E1YjBmYjQyNjU4ZjljOTU1YWMzYzgifQ"
         },
         {
           "resource": "repo://src/app/(app)/layout.tsx#L1-L16",
@@ -256,19 +260,31 @@
     },
     {
       "id": "claim_2efca0c9c49846ec807215728a507fad",
-      "statement": "Pins are a per-user display preference layered on IconButton and Sheet rather than a core data concept: PinButton is an optimistic, useTransition-driven ghost IconButton with aria-pressed calling the toggleExercisePin server action, and PinEditorButton opens an edit-pins Sheet listing compound/extra exercises with search filtering; unpinning a default compound hides its tile while pinning an extra adds one, and a cap of 8 pinned tiles is enforced server-side inside the toggle action.",
+      "statement": "Pins are a per-user display preference layered on IconButton and Sheet rather than a core data concept. PinButton and PinEditorButton call toggleExercisePin and update aria-pressed only after a successful result, showing the action error without flipping state on refusal. The editor Sheet lists Compounds and More lifts with search and a default-size ExerciseVisual per row. Unpinning a default compound hides its tile; pinning an extra adds one. A cap of 8 visible tiles (PIN_CAP) is enforced server-side by canPinExercise inside the toggle action, not by disabling the control in the editor.",
       "evidence": [
         {
-          "resource": "repo://docs/UI.md#L56-L59",
-          "version": "repo-lines-v1:sha256:f40d2dd8aac0a10f65fd1b45f61269dda83b5d2e74caf5618c80d4ab191f3ff2:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDM1NTc0YjE1N2I3NDQ4ZDIyYjI4OTk5NmUwYTQxMDM1NzcxNmRkNWM5MmY4OTdlZWZmMTAxNjJhZGY2OTEwOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBhNTJlNDA2NmFmMmQ2OWZiM2RhYmRlZTgyYTJlZjZkNjU4NThhN2U5NjEwNDY5MGQ4NTY1N2QxOWI0YTViMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmFiNzliYjZmZWQxMWU3MzUxNmI1YzU0NTQ4MzQxYjMyY2UwY2UzZDk1YzE5ZWZmYTBmNDQyNDM5OWY4OTI4NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjkyZmFkZDc4OTBlZjViMmE4NjUwMDVlZTU0MTNmNDg4MmNjZTQyNTkzODNlYTk3YjcxMDRlOTQ3YjczMzVmYyJ9"
+          "resource": "repo://docs/UI.md#L56-L66",
+          "version": "repo-lines-v1:sha256:b78a8242683c29a1a4aab268487f408b4eccf12e21eca470b700a2a2bcd61d6b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhNzg1MjhhYmFjYmJiYjExZmUxN2ViZWFkMGVmOTQ5NjU3NGE2NWM0NTFjM2QyNmYxYTdmZGVhZDI3ZDIwN2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5YWVmZjE3MzY4ZGMyYjE5NGRiYmQ3OTRiMjQ0MWY0MzQxOTllZjgyNDk2N2I1ZjliOThlYjRiOTMzYTFmMWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ1OGEwZWM3ZTZiZDRkNDIwNjM0Y2RhY2VjMmY2OGQ0OWU1MmJiZDdhOGVjNmZiMGMwOTFkNzgzYzI5M2YxNmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhZjUxNzljY2RiY2VjNTkzNzEyNjMyOWFiMmU3NWIxNDRmM2VmOTM5NjIwMDEyNmM4YzdhYzcyMTA1YzVlMTgifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/pins/actions.ts#L33-L96",
+          "version": "repo-lines-v1:sha256:86bc0869c462ff262c07fa7c3ccff95d9f38b68b8c29a589333a00d7380b47c4:eyJzZWxlY3RlZExpbmVDb3VudCI6NjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJkN2M2NWFhOTk3NmEyMmFjOGI4MGM5YWMyZTczNDEyMzRiMDg0MmFkNDk3ZDJiNjM0YmYzYjcxYTc5YzAyZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEzNDA0Mjc3Yjk1YjIzOGFjNmI4ZGUyN2IwYWM2ODhiOWM1MTlkZTdmNDQzYzhlYzA2ZDVhOTA0ZjQ1YzA2ZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         },
         {
           "resource": "repo://src/app/(app)/pins/pin-button.tsx#L1-L45",
           "version": "repo-lines-v1:sha256:82b324a0ecbba005e3251a85097ad0ad8a098315d8c7842bde0073b6e1d4308d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         },
         {
-          "resource": "repo://src/app/(app)/pins/pin-editor.tsx#L1-L60",
-          "version": "repo-lines-v1:sha256:e2b45de324c1927f4a9a5c5c84d4577c4c642b769c97eb6257675dbaf0d9bedd:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmYzZTg1ZDY3MTVhN2E5ZDBmNmMxYjMyZjMwY2Q4Y2IxNDRjYzc5YzhhYmFlOTUzZWExMzc4ODlmYWUyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ4NzY0OWJkMTBmNGEwMDY2MmM2MTg4MDg0NjQ1MDVjYTdlNTNkNjZjY2QzYTgwMTMxMTVjYzZkNWQyOGRmMjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlMTJiNjExODk0M2UzMGMwMDY4MzNlNzgxNjMwYTUzYjMyZjQxN2VmNWY5Nzk1YzNmMTJmMzMwODAyNGM1ZDkifQ"
+          "resource": "repo://src/app/(app)/pins/pin-editor.tsx#L19-L123",
+          "version": "repo-lines-v1:sha256:5310dd6052c78c50056cd77866932c84514ef63132bb617a26907f903a1d5287:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJiMGQ2ODc1NzFiMWQ0OTJjNjI4NmJjZjAwNjUyYzg5MDQ0NTg5NGQyNTdlNTlmYjIxOWM2ZDA4NTIxNjQxMmJhIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIyNDQ1OTJkNDc5OTgyMDZjMzM0YWUwMjBiNWM0MTg5NGNhZWYyNGM4NGVhMTE4YjUyOTgwNzAxMjExMzkxODAzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://src/lib/board.ts#L5-L6",
+          "version": "repo-lines-v1:sha256:fd94ce36b9d412596feea1bd6eec8e209d19175e271a98e2cd629c54f03ab4d7:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTZlZjlhZWFhZWJlNDNlYTc3MmVjZjQ0YWU0NWI5MTlkMDY2OWU1MWQxMTIzODQxMmMwNjZhMjRkMmZkMWRhMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzIxY2FkYjZkM2U1OWE3NzJlMWRlNmMwOTcxMDNmM2Q3NGU0YWE4OGNiMmQ1NDUyOTc3YzMwNDA1N2Y5MGNhMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDZmNjZmNzA0ODczZmRmNmFkZDE4NWY1OGFkNTFhZWY0YTM0ZjkwNjU0YzkyOTA3YTExNWYxY2VlOWU3NzVhMSJ9"
+        },
+        {
+          "resource": "repo://src/lib/board.ts#L93-L106",
+          "version": "repo-lines-v1:sha256:2accef64c8a4a6f6670bc28180f6e6a50af5e0e75e0544a144548443d4ffb3ac:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2NGM1NGZmN2JlNDQ4YmI3MTY1ZGYxYzFmMjFlZjVkMjMzNGIxZWUzMjA3NDQ1MzljN2YxM2NmNWE5NDJkZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEzNDJmOGQ4ZWJjMTY4OTgyMTBmYjhmNzA2Zjk1OTBjN2Q2ZWI4NTQzOTkzMzAxNGEzYWU1YjUyMjY5MTE5ZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRmYWExMzVmMzUxM2JmMmIxODNmYjEyOGY0NzIyYjQxOWNlODc4NDI0YWEzYWEwZWU4ZDFjNThjYjY1OWExMzMifQ"
         }
       ]
     },
@@ -319,10 +335,54 @@
           "version": "repo-lines-v1:sha256:e643f4561c84088aa7bddbf6a4b6e62bc32664a067ef7638b8dd53be17519866:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1ZThjMjcwYTA5YmY4NTMwNzM3ZTAyNjg3ZjliMDA3NzZlMzZmNTNhM2IyODVjYzQ2OTAxZDFkMTc1MjhkZmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk3ZDg2MzJlNTRlOTI5OGFiYjk1ODcyN2UyZDUxNDA4YWJhZjEzNjYwMzUzNzkxMDE0MGFiZjY1YjMwYWI2MTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwOGEyYjU2YzZjYWExNDUxZDAyMmJiMTJiNmZlOTRhOWI3ZWJmN2RiMWFmOWM5YWU2NjE2ZWVhMzNkZWVjNTQifQ"
         }
       ]
+    },
+    {
+      "id": "claim_97b9af2fae1b4a5db74f6814397945b8",
+      "statement": "ExerciseVisual is the only exercise illustration: a decorative 16:9 rounded-control frame (alt empty, aria-hidden) with object-cover and a 1.35 center zoom. sm is 36x64 on rows and tiles; lg is 64x114 on the session slot header, planner cards, Exercise review header, and in-session history. Art is looked up by baseExerciseId, then exact exerciseId, then the non-custom id prefix before __, never by display name; unmapped, custom, or empty ids render IconDumbbell in the same box instead of a broken image.",
+      "evidence": [
+        {
+          "resource": "repo://docs/superpowers/specs/2026-09-28-exercise-visuals-design.md#L39-L57",
+          "version": "repo-lines-v1:sha256:e4242168c79e520109bc312d161836603109b8d8acea76e980aa65b6baa93b5c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhMjg1YzU0MGU0Y2UxZmE4MGZkODdiNGI5NjI3MDEyN2QzZTI1YzA1YTVkNGYwOGEzMzljMDhmN2QwYTFjNDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE5Yzg0MzBiM2Y5YjNkZGQ5Mjg0NTlhN2RmNDM0ZDZjNWUxZmMwMDMxY2MyN2U5MWJiMmU2MGM2ODBiMzIwMTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkNzNkZmY1NGVkYmZlOTFjYjgxNTNlZDg1YTk5MDdhZmVmODBkNjBiNjA1N2RjMTYwZDRlYWZmYTkzNDMwMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyZmIyMzE5YjY1YWIwZjZmZDM2OGQwODc3ODVhMzhlMjgwYWI1ODU5ZmE3M2I2MDZmMmQ1NTYxNDNhZmRmYzQifQ"
+        },
+        {
+          "resource": "repo://src/components/ui/exercise-visual.tsx#L1-L48",
+          "version": "repo-lines-v1:sha256:a9f95f126024602cb0b7b023e1903a98d03c8fa21550b771a3bfa7107389d54b:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3ODNkYTdkNmNjODg2MDc4Mjc2Yzc4YzA5ZDA4MGYwNTNmZDc4Njk4YjI3NTFmYjM1NjNjNjQyYzI1MmEwNTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/exercise-visual-component.test.tsx#L12-L46",
+          "version": "repo-lines-v1:sha256:f2f2b4e12d63f27cc22ec95a6e4a326a79f7a0dcf87e1cdac69a11ee6748bc8c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlhOTE4Y2M4Y2ExOWIxOTY4ZTFiNmY5MjRhNzUzODA3NjIyYzM3Y2Y4NmY5Yjk3N2U4NmQ2MjA0MmUyZTE3M2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4MzRlNWNkNDY1ZTQzOTMwM2FkNDczZTI4Mzg3MTM1OWNjODVjYzRhMmQ1NGQwMzg3ZWY0NTFkOTRhMDc5MDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIifQ"
+        },
+        {
+          "resource": "repo://src/lib/exercise-visual.test.ts#L4-L29",
+          "version": "repo-lines-v1:sha256:10e59b076402774ae80ec833364006dfb65d87d4efafbaf55abc81bb86bae167:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2YWQzNzJjMGMyOWQ0Y2FmZjJlOTM4Yjc4ODI4NTA5NmU4MmJiNGFlMTY0YzdkNTRiOGU1OGE1MTZiYWJmYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkMTE2ZWQ2MDM1YmVmZTIzZGI3ZDE5ZWFlZGI2ZDJlZGM1OTA3NzdlNmZjODQ4YTNhNjk0NTIyNjkzNzcyODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIifQ"
+        },
+        {
+          "resource": "repo://src/lib/exercise-visual.ts#L1-L38",
+          "version": "repo-lines-v1:sha256:949a02df4f8aadc2f1d5c06e11c6cdc51c1d8608eaeeb7fc3323995170dd93b1:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdjMDVkY2VjOGU4ODAwYTE2N2QwZjI5M2RkODFjOWExYjUyYzcyZjk3Y2JhOGI0MmUwNmIyNDUxN2MwMTZmMTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d1cf8fe84b8c4ffdb84e7540960b0494",
+      "statement": "AgentEntry is shell chrome, not a tab: when hideAppChrome is false and the path is not /coach or /coach/*, AppShell mounts a fixed Coach IconButton above the tab bar that opens an AgentChat Sheet. Immersive routes hide it by the same hideAppChrome gate as the tab bar.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/app-shell.tsx#L33-L52",
+          "version": "repo-lines-v1:sha256:6bcfd6f2ab6ea73b661f5202967cc6b4a85b1098e003e5f85a7cb75fc6530ea4:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiYTllMzQwYzE0OTA5ZDk4Njg0OGU4NTc2MjY3ODJmZjczMjI3ZDFlOWI2Mzc1ZTU4Yzg0ZGZhYTI0MjMxYzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5MjhkODhjMDM0YjM3ZTdmMDBkZTI1NTY3YWZkY2RjNTQ1MzFhN2NiMjcxY2E2YThlNWUwZTZlOGYyYWMyZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFjNWU5YWM4NTZmZjQ3Y2RjN2Y2NzE1MTk2MTY5ZGI0NGRmNjNjOTZlZGI4NDEwOWU5MWI3ZTNhYjU5ZGQ0NTAifQ"
+        },
+        {
+          "resource": "repo://src/components/agent/agent-entry.tsx#L9-L28",
+          "version": "repo-lines-v1:sha256:1cf52a4a768b4162944b83507f50dbe433e35f626db3d04fe927466b61261973:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4YWE2MmVmOGZiNzFjZDFkMGNlMDQxNTY2MmZhZTRlNWMxNDEyMThhYWE3M2JjZWJmM2JkZjViZDgwYmQ5OGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiODA3MzAxMjYzN2VkMDIzYTU3MjY5NDFkMzhiMGFmOWYyOTkzOTVhZjJiNGJkZDIxYWE2OWM0MWYyNDFhMmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://src/lib/app-chrome.ts#L8-L17",
+          "version": "repo-lines-v1:sha256:d3d52787e90bcf6f888f411c1c51904f6027b161e6c2cf9e87ca18ef61dd91e8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlMTQ0ZGM4ODUzZTllODJlOTFiY2Y3YzkzMmJiZWU3YTc1YzMzYTg1YTY2N2Q2YmRjM2QyYTU2NzUzOGU0ODEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA1ZGFhMjkxNzkzZDczYWRkZjRjZDM1NWU3OTMwMmM0OGRjNGQ5MzEzMjQzNDE3NjdmNDcwYTdiOWY3NjM5M2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE2NDcxM2NmZTlkZDJjNzI1M2JjOTQ5OWZkMTFiZTFlM2I4ZjMyM2E1MGZiZTJlZWQ3Y2UzZjM5OTU2MDY2MDkifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.6.0",
-    "at": "2026-09-25T19:18:52.086Z"
+    "at": "2026-09-29T00:58:03.170Z"
   }
 }

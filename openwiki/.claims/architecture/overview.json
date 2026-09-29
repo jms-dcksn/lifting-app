@@ -1,17 +1,7 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:1ff6d79707c0fc3db2b1e1fdd52dffc5a3dd0a562f5fd2c4684ac911d94f5f5f",
+  "pageVersion": "sha256:4feb0a18d30d21898efb8b3f5179de7bbb2e9e88db2233ae1156792255206886",
   "claims": [
-    {
-      "id": "claim_dedce62370b045f28dbab1e2b3a85fa7",
-      "statement": "The app is organized in three layers: a framework-free strength engine (src/lib/strength/) with no Next.js/Supabase imports, server loaders and Server Actions that are the only code talking to Postgres, and an App Router UI layer where Server Components render hydrated data and a small set of Client Components handle interaction.",
-      "evidence": [
-        {
-          "resource": "repo://docs/architecture.html#L696-L745",
-          "version": "repo-lines-v1:sha256:dde19e21d64388463c507005933bf4010225fd26789a2d8bb5a65a7b2b590041:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlMTc3YjQxN2VlNTM0MzYyMTYxYmFiZGI5ZWU5MTIxYWIxMzQ0YWYzMDVlMjU1MWNkOTIxNTUwNjlmMDc3ZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyZjNjZmQxMWRhNjE1MDE5N2FjZWVkMDg0MDZhYzY0YjA1MDM0MGRlN2JjMDQxMjRhNGNiN2VmYTY3MTM0MGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0NTRmOGE4NjdjZDgxZDExMmU2MmFiOWY0MTQwM2UyZTQ0Zjc0NDVjZTg3M2ViMTIwNTU1MDMwOGQyNTMzNDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA1NzY1YTA2MTlmZjNkODNiMjk4ZjMyNjRjYzYzYmZlNmYwMmM1YTc1ZjY4NTUyYjZmY2ExNDdmZmJhZGVjOTkifQ"
-        }
-      ]
-    },
     {
       "id": "claim_f6c833f4ecf84c3fb76cd482f96757b2",
       "statement": "src/proxy.ts (the Next.js 16 replacement for middleware.ts) runs on every matched request except static assets/_next/HMR, calls updateSession() to rotate Supabase auth cookies, and deliberately does not redirect unauthenticated users.",
@@ -60,11 +50,23 @@
     },
     {
       "id": "claim_b2c09177afdb4bd19d3546ac477a50a6",
-      "statement": "React cache() memoizes by argument identity, so the shared, request-memoized Supabase client instance from createClient() is what allows getCatalogMap and getCurrentBodyweight to dedupe across different callers in the same request; if each caller built its own client the dedup would not occur.",
+      "statement": "React cache() memoizes by argument identity, so the shared request-memoized Supabase client from createClient() is what lets getCatalogMap and getCurrentBodyweight dedupe across callers in the same request. A fresh client at each call site would miss the cache, and a different user id is a separate entry.",
       "evidence": [
         {
-          "resource": "repo://docs/architecture.html#L503-L521",
-          "version": "repo-lines-v1:sha256:749649c4f89b8c4ad1340c574fec710e1e0e03c8c3f35dbc7eb4ec020ea2a966:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmMWMxZjQzYzQxYzViMWRmMGNlNWVkMjM0ZDMyNWE5M2Y4M2UyZGIzMjY4NGIxZmIyMWM3MTYwZWE1ZDhlOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyZjNjZmQxMWRhNjE1MDE5N2FjZWVkMDg0MDZhYzY0YjA1MDM0MGRlN2JjMDQxMjRhNGNiN2VmYTY3MTM0MGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzMmY4YzQ4MDEyY2ZiZmNhYzQxMDlmNGMxZmZkNGEzOTg0OGVjYzZjNzNiNTA4ZjczNTE2OGQ1YTMzZDM2NDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhYjU4MzZmY2EyODFmZjg0MDg4NGM5Mzc4ODg5YTIzNTA1ZTNlNjBhYmUyZjliZjBkODM2MGZiN2Y0OWRmNTUifQ"
+          "resource": "repo://docs/ARCHITECTURE.md#L111-L114",
+          "version": "repo-lines-v1:sha256:dc6b29903b6117b1af5533ac86736b96b8c8a9ad123ecf97373ffa394c2e74fa:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGQ0NzgwMzllNjIyNzE4MDBhOTNjMGNjOWI3ODM1MzhkNWRiZDkxNWZjOGRjNTc3ZmZiMWQ2YzJjNDE3ODhiMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWFmMDI3YjYxNjEwYjI5ZjVjODgwNDNjZmM5OTFjYTI3NTk4ZTFmM2Y1OWZjMmNjMmZiYzE5YjkyMTNiNWQxNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODNhZTgwZjkwZTNhZGE0MGVlNWIyNjFhMDExYTlmMTc3MWVhOTM0OTMyYTVjMzdjYzQ2N2FiZTc3Y2RiMWQ2YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWRmNzY3NDU0MzJkNjBjMjg0YzdkNjQwZWZhYzU1ZjA5YWY2MjU0NGQ0YzRkNWNkZTZjZjVhYTM2YTRhOGYzMiJ9"
+        },
+        {
+          "resource": "repo://src/lib/catalog.ts#L59-L66",
+          "version": "repo-lines-v1:sha256:57a2136ba9c5324af664c7c5d6d481cc5cbcfad4aed034f9ca12e7b4c79b2959:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmUyNDlkMDA2MjY4OWQzYTFlYjlkYjM0ZmI0NGNmMDBmNjg2MjE1MzdlNzdiYTE3NWEyMWIxNThkZGJkZTVlZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjZmNWI0MGIxNTg0NTdkMTc4NjRmMjE3OTA3ODZkZDVhMmVjZGI2NGI2NmE2NTFmNzg4ZDRlMjVjZDMzMDNkMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzIzZDhmMTFhYTNmZDUxZWE2NmMwYWE4NjU2M2I5Yjc4MjkyZTQ0MGIxOTE4ZWMyZmIwMjY2N2RkNTI0NDQ1YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDlmZTY0NGU2NDdiZGIzZmRjM2Y4OGIyZTBmM2Q4MDI0MzYxYTdkMmI1ZGNhZmQ4YTQ4NGMzNDhkNzQ2OGI4NSJ9"
+        },
+        {
+          "resource": "repo://src/lib/current-bodyweight.ts#L6-L24",
+          "version": "repo-lines-v1:sha256:e58f259d55fe27262d98ccbcb8d44c8a6cfa8dca3bead02dd2454506fd3c25c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZmY0MjE3MmQyZWRlNjA4OTc2OTBhYmYzNTYyZTAwYjM0Yzk5MjRkNjdiMjgyMzI3N2NmMDg4NWU4ODA4YzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzNTM2ZTBhNTRmN2Q1Y2RjNGU0MzNhZjkwOGU5MzJhZDE3YmQ4YWRmZmNlMzMzYWU5NmY4ODRlNDMzOTlkMGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdjMDhiYTQ0NTBlMzkzMjg2NTFlYTdmMTBmMWQyNzJmMWU2YzYyYjQzMDMzZWY2NWM4M2U5ODM0OTUwMDhkMmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIifQ"
+        },
+        {
+          "resource": "repo://src/lib/request-cache.test.ts#L72-L111",
+          "version": "repo-lines-v1:sha256:9a168a12054eabdb0f1f3a11708a48e2d15c0e7e67c61e8ce7baf4a04fb28ccb:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3OWM3YTM3OGRmMzA1NDVmMjgyMmYzYzk1NDk3OWUwODFmYzZjYmI3MjE2YjM2YjFjOTNlODQ2YTIyMmY3OGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlmZThiY2E5YzIxNTI3NjM3YTVjNzQ5YTdkNjY2YjM1Yzc1YTE3MzIwMWRlMGVmMWQyZTk2NmY2OTRlYjM3ZTcifQ"
         },
         {
           "resource": "repo://src/lib/supabase/server.ts#L6-L9",
@@ -74,29 +76,27 @@
     },
     {
       "id": "claim_e64ff300f84b4bab993104d73cd92084",
-      "statement": "The weekly Coach API (GET /api/coach/v1/weekly) is the sole elevated read path in the application: it has no browser session so it uses a separate server-held secret client that bypasses RLS, and every query on that path carries an explicit COACH_API_USER_ID predicate; the route is capability-token gated, read-only, and no-store/noindex.",
+      "statement": "The weekly Coach API (GET /api/coach/v1/weekly) is the sole elevated read path: it has no browser session, so it uses a separate server-held secret client that bypasses RLS, and every query on that path carries an explicit COACH_API_USER_ID predicate. The route is capability-token gated, read-only, and no-store/noindex.",
       "evidence": [
         {
           "resource": "repo://docs/ARCHITECTURE.md#L119-L123",
-          "version": "repo-lines-v1:sha256:d0480ece394fbcac9946ebafe5b033a595ad3c8c9284f7f43663fe940e0a0cac:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjgxNDU1ZTZmZDA5NzFhYmJlZTYxNGYwNWEzYzQ3NjU2NDIzNDMzY2MwMDk5MjkwNGVmNzIyMzk3NzUzY2Q4ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWQ0ODk5YmQ0MDY3ODYxNDEzYTQ1ODdjMDNlNTMwMDM1Zjg2ODMwMDZjYzZhYjZhYmFlZDY5ZDlkMzA2OTUzNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWU0NWY3MTRiYTBmYjVlYWNhMDljZDRjYmVkYjA0MmQ5ZmIyYTNkZjRhMTkxZjgxOWE4ZThhNGRiYjFmY2IzOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTE2ZDQwZjM3MTY4OTFjMzZmNDIwOTk2MjMxOWY5NTFjZDM4MWI5YmVhY2Q1Mjk3NjNlM2JjODhkNjhlNGI0YSJ9"
+          "version": "repo-lines-v1:sha256:d0480ece394fbcac9946ebafe5b033a595ad3c8c9284f7f43663fe940e0a0cac:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjgxNDU1ZTZmZDA5NzFhYmJlZTYxNGYwNWEzYzQ3NjU2NDIzNDMzY2MwMDk5MjkwNGVmNzIyMzk3NzUzY2Q4ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWQ0ODk5YmQ0MDY3ODYxNDEzYTQ1ODdjMDNlNTMwMDM1Zjg2ODMwMDZjYzZhYjZhYmFlZDY5ZDlkMzA2OTUzNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWU0NWY3MTRiYTBmYjVlYWNhMDljZDRjYmVkYjA0MmQ5ZmIyYTNkZjRhMTkxZjgxOWE4ZThhNGRiYjFmY2IzOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTc1OWU5NDljNTI3NzY2MTM4YzZlMzNiOTYzZDdkYzE1YWEyNzU1MWU5MWU5NTBkNDBmMGNkOTdmNjE2ZDRiNCJ9"
         },
         {
-          "resource": "repo://docs/architecture.html#L523-L531",
-          "version": "repo-lines-v1:sha256:51939578125add39f29fcb01739e799aea0a90a803712893a682c2a8edfa96b6:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTViN2RjZWJkNjBiN2M2MDlkMzk0ODlkNDA4ZDA5YTlmNjFjNzZhZWU3N2I4MGMzZWZkZjBmM2RhZTY4NjY4YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDNiMjY1NWFkMzU3NjM0ODkxNzY5ZThkNmY1OGE3ZWUxMjcyZDhiNDA3M2QyYWFlNmM3MjNmYjNmNzBlMGVkMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjdjMjUwMWJkMDA3YWU3MzZjZjhmOWE4ZWQyOThjNjcwNjIyODUwMzRmZTU3Zjg2NWM4NDZkNWE5YjU4ZmJiNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDZmY2Q1Y2ZkN2IzNjYyY2IzYTZiN2JjM2ViY2Q1N2M5Mjk4MjEwOWE5N2NhMzM2ZWZiMTJkOTU1MmJiY2U4ZSJ9"
-        }
-      ]
-    },
-    {
-      "id": "claim_e7f589ae046742eaaaf8423ea0f97b4c",
-      "statement": "The signed-in app shell lives under the src/app/(app) route group; AppShell is a Client Component that uses hideAppChrome() to hide the bottom tab bar on immersive single-purpose flows (active workout /session/[id], the /workout/next planner, and the program builder at /program/new or ?mode=edit), and isTrackPath() keeps the Track tab visually active while browsing /history/[exerciseId].",
-      "evidence": [
-        {
-          "resource": "repo://src/app/(app)/app-shell.tsx",
-          "version": "repo-file-v1:sha256:3ea1cb0b56691e74310a27ec9931dda3573cf95e25759aecb497fca80578f7a2"
+          "resource": "repo://src/app/api/coach/v1/weekly/route.ts#L1-L11",
+          "version": "repo-lines-v1:sha256:49fa0757be9165b735930cf91bd18423a29f20da0dd455241c923fcb8cf12a93:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlYzZjNDUxMDhjMzcyMjAzYTYwNWI1N2U4NDI4OGQwZjJjMDhkOGE2ZjcyNGZmYjY1MTQ1ZWNiNjg0ODQwNzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         },
         {
-          "resource": "repo://src/lib/app-chrome.ts",
-          "version": "repo-file-v1:sha256:189ae047963cf94275a297541fb3d881fe9e1061df92a4bcf2403e574e4a8fca"
+          "resource": "repo://src/lib/coach-api.ts#L19-L51",
+          "version": "repo-lines-v1:sha256:0f3f1ef624dd6eecacdc10ebfae610cc0a698f2305f8c3c2e9ef23a718a6749b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzNWYxOTc3ODUyMGYxOWE0M2JhZmE2OWVjMTgyN2E3MGI0ZDRkMGRmMDE4Y2Q5YmU1OTllZmYyOTc4ZmMzNTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYTJjYjI1YTEyMmI0NDIyMWE2MjM0ZWM2NjBhN2I1ZmI3ZjliZGU3YjNiOWUyYjNjNTU5YTBkOTZmYWM3MzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRkNjM1NTk4OTk4OGUzMWFmN2M0NjBiMWJlMjk0OTJjMmE0M2JiMzQyMWUxZjhlOGMyZTYyMGQxOWZjYmFkNDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFkN2M4N2VkZjNlNmQzYTM3NmY1YjkyNzIxMTU2ZGUzNzYwMThkYTI0MjI2NzE5ODQ0ZTQxZDc1YzI4NjIxMGEifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-weekly-data.ts#L196-L203",
+          "version": "repo-lines-v1:sha256:71d0301ccb9340b24b48561eec14d062551a6cfcf3e9828524a4b888c0235246:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDUyMzZiNjM0ZGQxYWNjNTEyMTVkMTBhNjA4YTVhNGRiZmJhMzQ1OGZkZDdhNzc4YmVjOGE1MGYyZGRhZTgwNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2EzZTQ2Zjk0Mjc2YjZmNmY0ZWQxZjAyYWY3OGJlZjZhMmVlMWM0MzlkZDU1ODRiOTczOTQ4MzEzMjE0ZDJiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTY4NDc5N2QxNDcwYThiZmY3YmQ1YTZhMDIxNGU5NWI5ZjMzMzA3ODgxZTY2YzM1ZmY3MDA1ODFjNzIwOGJkZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://src/lib/coach-weekly-data.ts#L23-L80",
+          "version": "repo-lines-v1:sha256:56f06d8613d9e6aad106fdda5b715e815e4b12551020e9c7d6ebbe8b5a970e6b:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjYmMyZWU4NWM1NDFiZTE3M2ViYWY3ZTE0MGY0NzhmOWVjY2NmZTIyMGI3YzE0ODhiZjI0ZWRlMTg1MDMzNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4ODQ4YWZhNDlkZjlmYmVhZWQxM2I2ZDBiNmMyNWUxOTA0YjBlMjIwNzE4M2JhODIxNTUwYzlhODMwMjRjZTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImExMDg2YWNiMDRjZTFlYTVlY2QxNjVmOGQwN2FkZmY4NDRhYzIxZDI4YjNlMWE3ZjEzNmI5OWEwZDI2ZmI5Y2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4N2MyZWU4NjU5NWM5NTFjYjU2OGJiYjk5YmZiMGFmMDA0MDllZmFmZjg2MGJiYTI1ZTU4NThjNzk1MGE4MWUifQ"
         }
       ]
     },
@@ -140,33 +140,31 @@
     },
     {
       "id": "claim_3d7ede87f22c42d48ba1d3836051b566",
-      "statement": "user_exercise_stat is a derived, rebuildable cache of each exercise's current e1RM and personal coefficient, rebuilt from set_log via recompute.ts's recomputeStat() after relevant writes; it is never the source of truth for PR/record eligibility, which instead replays directly from saved set_log rows through strength/records.ts.",
+      "statement": "user_exercise_stat is a derived, rebuildable cache of each exercise's current e1RM and personal coefficient, rebuilt from set_log via recomputeStat() after relevant writes. It is never the source of truth for PR eligibility, which replays saved set_log rows through workoutRecords().",
       "evidence": [
         {
-          "resource": "repo://docs/ARCHITECTURE.md#L50-L52",
-          "version": "repo-lines-v1:sha256:79e58352f8be95e3ccb51ef0742e4045333155bbfb4d15d7984bc87b751db6f6:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWI3Yzk5ZGNmMDMxNzFmMTRiZjNkNzUwNzhjYmFjMGM0N2Q4ZWM2ZjNmZmI0NTVhMWVhNmQ0NzJlZmRiYWZjMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzY1ODZjODUzNzhjZWZkNzUzZDU0ZmM1YTk4MjY1OWIwNDhhNmU1MWU4MGVjN2UyNGRlYjYyNWE2OGVhMmM5ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDU0MmVjNDY2N2I1MmJjNDBkODAxN2QyNjAwYzg0NWIwYWRjM2NkYTViOTI3N2I2ZDI1YjU3Mjg0MjUxZTYwYiJ9"
+          "resource": "repo://docs/ARCHITECTURE.md#L50-L51",
+          "version": "repo-lines-v1:sha256:ad1617270ebb9ad9e108494eb9c1a24750e5d6d2b070e52e647704be00da2135:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWI3Yzk5ZGNmMDMxNzFmMTRiZjNkNzUwNzhjYmFjMGM0N2Q4ZWM2ZjNmZmI0NTVhMWVhNmQ0NzJlZmRiYWZjMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODBkZDdmODI1ODg3N2FmMTUwYjQ4NDA4MjVkYmY4NzVkMzk4YzBlNzdiMGI5MTk4MGEwNzY1MmYyMWRhYzBkMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzY1ODZjODUzNzhjZWZkNzUzZDU0ZmM1YTk4MjY1OWIwNDhhNmU1MWU4MGVjN2UyNGRlYjYyNWE2OGVhMmM5ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2E2YjZmOWY5MGQzNGU0OTkwMmZkYzYyNDQxYzA4ZTk0YzIxMzY3Y2U1ZGRmN2M2OTU5MTQ5ZjJmODY5NmQ1NiJ9"
         },
         {
-          "resource": "repo://docs/architecture.html#L560-L571",
-          "version": "repo-lines-v1:sha256:b991618eaf6e2f9f08467409dbff89f2b8d445b9c9b4833d4e63ed2014f34d0f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhNDQ4ZmZiMTU1ZjI5MWM5ZWNhMTZjNTFhZDZjZTQ3MDRiNjQyNTc0NWZjNjE5NDI0N2MzNDUzODlkMWVlZTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlMDA2Mzk5NzZmYTc2MzFhNWRiZDI3ZTNlNGNjMjI3YmI0YzM3MWM3NTVlNjVlNzlkNDlkZDMwMGVkOGY0M2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY2NDFhNTQzYjgxNTcyMDQwMWVmODAxZWEzMmNjZjVhZjFhODA5MjMzYmMxMzdkYTBhMDdiYzNkYzgxNWQ2MjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlZDIwM2U3NDRjYTJlNjBhMWEzYjBmOTRiYTFjMzFmN2VlNzM5ZGZhZDg5MjEzYzUzNDA5YmMxM2M2ZmNkMTMifQ"
+          "resource": "repo://src/app/(app)/session/actions.ts#L50-L75",
+          "version": "repo-lines-v1:sha256:3cdd55db139507ff4e5099ab96e8008d6df557e94dcb6cfb632faf375c391957:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzZjdhZmY5MTFmYTdlMmM0MTljMzU4YjM3ZmVmZGVlMGQxMjYxYzM3YzI5NGU5ZDg5NGU0NzFiZWJiNDkyMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5Zjc4NDg4YzU2ZjA1YzAzYjg3YzFjMjNjZTI3M2VkMDIyNmY2NjlhYmY2NzJhM2NhMWM3ZDM3OGFhNTc4ZjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYzZDExOWRkOWQyYzAwY2ExYWY2N2RjYWJjNDAxMzkwYzJmOGYwMzM5MzEzMWIzZWY0ZDk4ODkwMzM0MDkxODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiYzhjNWVlZDUwMzZlOTRmN2Q3OTY1YTcwY2E3OTViMzIzYmFkYjk2ZmQ5ODliMDg2Njc2YjBlNTYxODFhNWIifQ"
         },
         {
-          "resource": "repo://src/lib/strength/recompute.ts",
-          "version": "repo-file-v1:sha256:b2fe99d05ec07f93644cc7b23069d7c7b6c575cfe32c4b2f30d788e7d7d59e81"
-        }
-      ]
-    },
-    {
-      "id": "claim_27d5b150e65d46aa83fe708ac48a12ca",
-      "statement": "The app keeps no parallel analytics schema or materialized views: set_log is the sole authoritative ledger, and Track, Coach, month review, and PR pills are pure TypeScript functions computed over that ledger at read time, with any needed time window (e.g. 21 Chicago days, last 8 session-bests) applied in the loader or a pure helper rather than a new cached table.",
-      "evidence": [
-        {
-          "resource": "repo://docs/architecture.html#L587-L611",
-          "version": "repo-lines-v1:sha256:f5a05d6ff969769bd02db082cab293e8a7b672d287b15d54ec755ef632e3d7d5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2YzZmYjNlODRhZDc3NGFjOTNlZjdmYTBlMmUwMDRlOWI2OWYzNjFhNzQwYTBlNmE3OWM4ODQxZWUxNGNiOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIwMThmODA0MDdkMTZiZWU2OGRjODU5MzU5MDEyYTViMTk2NmQzNzFlMWIwZjljZDliMDdkOWFhM2E3MzQyYTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4NzQ2ZmYwZWY2Y2E0MTA2NjkwYjVlZTEzNWMxNWRkYjJiNDJiN2NlYmYxMWY3ODA4MDQzZjBhMDk4MDUxNjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2MjNlMGMyODA0NDUwOTFiZGUyNmM5ZDgyMTVhMzRjYmZkNDg4NjM5ODA1OTBjMGEyNDg3ZTQ2YjdkMjEzN2MifQ"
+          "resource": "repo://src/lib/strength/recompute.ts#L1-L8",
+          "version": "repo-lines-v1:sha256:003b700364274ccc80d908059b8cd794578ee414813d219eea55800b37bca20b:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2Q2OWE5MjZmOWUwNmQwMjg4NzBjOGNiYmJhMjNkYzgwYjRiMTkwZmZhM2YwYTQ2ZmU5NzZiYmU5N2ZiNjQ0OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzNkMTliM2QyNmUyM2QxYjdlNzY4OTJlNzlkNTI2MGQ5YWRjZGFhN2NhODAyMzI3YWNkYjdlYThmNDZjYzU4NyJ9"
         },
         {
-          "resource": "repo://docs/architecture.html#L792-L804",
-          "version": "repo-lines-v1:sha256:bd649160c97c0ea6f271484f4a0f510dc7c4a330d40a122859ddfabcc0c63362:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzMjcyYjZkM2IyNDgxM2RmYjY2N2MxY2NmNGI2NTdmMmFmZjRmODljMmE3MDNmZDEwMTI4MTg3NWFkYWIzOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5OGYwNzUzYzc3YzljYWMzNjU5YTgwMjRmNTFhMDNiNmU2NmIwNDAwZmZmNWMwNGU5NGI0ZWNkMWZlOWQyMjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmNGIzNjU4NjU2N2YwYmI2MTYxMDI5Y2JlMmJhYmVlMTZhNGEyNmFjZTJkNjZmMTM5ZDI2NmQ5MzQxODk3Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmYWUxNDM4YzgzY2Q1YWMwZTU5MGU3NTZjZjI1NWEyZjk1NDU5NTg3ZmJlMWRmZTY2ZmRmZTA0ODcxZjU4YmQifQ"
+          "resource": "repo://src/lib/strength/recompute.ts#L34-L50",
+          "version": "repo-lines-v1:sha256:e16bdc8fb7872413e2faa5864c424a3f89d87787df97e30c49cd3387773b7d9c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2ZjQzMDMxYTIzOWI3YjQxMWIzMzgxN2VhMDg5MjljNDBhYzc1M2ExYjA0M2ZmZTYxOTdhNzhhODFhZmEyMDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4NGIwNTRmOTNkZjA3NjA5NWMwNTQ0NDNmOWQ1YTAxZjk4OWY1MGI2Y2M2NTUzMzBiZTdlMGRkMDI1MWY2MjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwNGM1MjIyYzkwOWYzMTliNWYzZTgxNjg0YTg0OGU2YjQxNzc5NTA2NWRlYTI0ODNhOTE5YjBmNzU3Zjc3MWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/records.ts#L93-L100",
+          "version": "repo-lines-v1:sha256:5c7c8674c50699e3c356b4f6cc6362816440144ff4e59e1f9d603be2c378bb6a:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzAxMzkyY2RmNGJkMDljNjc3Y2E2YWM0NGY3OGM3ZDYyZWZjZWJmMmExYzdlNjIxZTMzMTQ0N2MxZTkzYzg0YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjJkZmIwOGQ2ZWY3YmUwMjI1NWIyNjM3YjcxZWI2Mzc5NGMwMzM1Y2M2ZWJmOWE4Y2ExZTgyMjg1NzBjMjI4OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmZmNDBiOTljZTdmNTIwODc5MGIyYTg5MGQxYzE0NjAxNjAzNzNiNWM0NDFjNzBlN2E1Mzg5YzgwOTA0NTUwNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmU1MGE5NTRlZmFlNGI3M2U5MmQ1MjIyYTE1ZmNmMWRkMzk4M2MyMmYzZDAwOTQxNWI3MjExNGJjMDA1YTdiMyJ9"
+        },
+        {
+          "resource": "repo://src/lib/workout-records.ts#L8-L42",
+          "version": "repo-lines-v1:sha256:7b0d39e2ec3e46709d3acd35516e8e294f0bbcec2c37770a16baae1461ec8842:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzODgxMjgwM2EyZWE5ZDRmYjdiYjdkYTAwYmU2MGE2ODM1MWM4NDNkODBmOTA2MDAxYmI5ZTNjYjc1ZmI1MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiMjdlOTEyZmMyY2QxN2FhOTU4ZWZhM2Q2NTFiODg0NWVlMDk2MGE3ZWVkZmYwYWI5ODFiZDQ1YTFiODNlMWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiNTYzNjk3NzVjYjAwMzFhNTQxOTM3ZGRjNGQ4YjAyNjAzZmZlZjU4NzU1MWQ2ZmVmZGU5MzVkNzQwOTQ2YzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
         }
       ]
     },
@@ -181,46 +179,184 @@
       ]
     },
     {
-      "id": "claim_61f404e4601646b1885a874790258956",
-      "statement": "Session targets (sessionTarget()) are computed client-side in a useMemo against server-hydrated stats and history so that swap/rep/RIR edits update instantly with no network round trip, while Track/Coach/month-review aggregation over full history runs server-side and ships already-shaped data to client-only chart components.",
+      "id": "claim_a3b96ac3d674405ab781e8b4768ca7c2",
+      "statement": "The app is organized in three layers: a framework-free strength engine (src/lib/strength/) with no Next.js or Supabase imports, server loaders and Server Actions that are the only application code talking to Postgres, and an App Router UI where Server Components render hydrated data and a small set of Client Components handle interaction.",
       "evidence": [
         {
-          "resource": "repo://docs/architecture.html#L534-L553",
-          "version": "repo-lines-v1:sha256:f5e07ec3335ac71b58b063209b8c0760e7a0706fbfc0c320d91439f272ceb735:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1YjVlZWQ0MTAwZjA2MDQ2YzZjNzRhYzlkZjQ3N2VhYTE2ZTk2MmZhZDg1Yjc2OTIxODE2Mjg0ZWU2ZTBmNGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlMDA2Mzk5NzZmYTc2MzFhNWRiZDI3ZTNlNGNjMjI3YmI0YzM3MWM3NTVlNjVlNzlkNDlkZDMwMGVkOGY0M2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4NzQ2ZmYwZWY2Y2E0MTA2NjkwYjVlZTEzNWMxNWRkYjJiNDJiN2NlYmYxMWY3ODA4MDQzZjBhMDk4MDUxNjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhlYTQzMTkzMTk3Y2Y1ZTk4MmYwYzk3Njc2NzY5YzVlNjQ1NjBiZDQ4MWRkZTBiNjM1Y2NhNGNkZWNmMDUzZTIifQ"
+          "resource": "repo://docs/ARCHITECTURE.md#L9-L13",
+          "version": "repo-lines-v1:sha256:2322ab47f971738dc02a4124ac386875a5b521f5d208f1b8770870c722b35031:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTI3ZjE1ZDdlYzI4N2MwYjliZTczNzYxNTRkZTg5YzA3YWRhZDc2MGIzOGViNzE2NWJiNWRhYzllZDJjZDAwYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGNmNWYxYmUyNDMwNDllNzIzMGY2MDY2NmNhYTkwZTM5ODc1NDM3N2Y2ODJlOWY3Y2RlOGVjODc4Yjg0MzY0OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2U2NGM2OWNiYzAxMzFjOTY4OWNhYjk2MTlhNzljOGFhZjAyMjQyNmI0Mjk1ZDIxODQ5Yjg0OGIyNjEyZTIwNSJ9"
         },
         {
-          "resource": "repo://docs/architecture.html#L780-L791",
-          "version": "repo-lines-v1:sha256:1680931234a1d7b8e1fd61729873a548be19fee182ca9480838a48b6c7f01454:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzMjcyYjZkM2IyNDgxM2RmYjY2N2MxY2NmNGI2NTdmMmFmZjRmODljMmE3MDNmZDEwMTI4MTg3NWFkYWIzOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5OGYwNzUzYzc3YzljYWMzNjU5YTgwMjRmNTFhMDNiNmU2NmIwNDAwZmZmNWMwNGU5NGI0ZWNkMWZlOWQyMjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmNGIzNjU4NjU2N2YwYmI2MTYxMDI5Y2JlMmJhYmVlMTZhNGEyNmFjZTJkNjZmMTM5ZDI2NmQ5MzQxODk3Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjNzFmMTI2YTgxYjVjYWRkYjVkODAzMzlkMThjNGIxMjUzYzc3MTQzNGVlZDRmMzE4Zjg3NmQzMmE5NzlhMmUifQ"
+          "resource": "repo://src/app/(app)/layout.tsx#L1-L16",
+          "version": "repo-lines-v1:sha256:8c9fdc7f2bbf3716fbeb0117d75144276ce157cb536aedc8e9e7fb365ff53743:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE0NDA0M2YyMTRlODc3MDg1Y2MyNzViYjQ3ODY1YzViY2ZlMDg5ZmQ3YzA2N2E1ZWNiN2MwZTQ1Yzc3MWViYTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L28-L35",
+          "version": "repo-lines-v1:sha256:adb52486998e47f6463fafbbc50d70da3391d8be3e03ee3bd7ba2dd6d696005d:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDdlNGRkY2Q5Mzc0M2QwNWQzNTc4ZmYwNDI5ZDk1YzM3NDVmZDZiODI5MDA4MjEyOTc3N2VjMGEwYjQzNjhhOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjE0ZDlmMjRlMDZlYzI1ZTRiNWQzNGY3OGNlNjE0NWM5ODRjYTk5ZmY4M2RlMTRiNWZhN2U4NjhiOTliNWM0MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGVkNDAxZDk1ZmE2ZjBjYWJmYjhkNzYyNTM0ZTFjZmE3YjlkYWIyMDRiNjc3N2VjNmNkZTUzMjgwZWRlNDE2NiJ9"
+        },
+        {
+          "resource": "repo://src/lib/strength/recompute.ts#L1-L8",
+          "version": "repo-lines-v1:sha256:003b700364274ccc80d908059b8cd794578ee414813d219eea55800b37bca20b:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2Q2OWE5MjZmOWUwNmQwMjg4NzBjOGNiYmJhMjNkYzgwYjRiMTkwZmZhM2YwYTQ2ZmU5NzZiYmU5N2ZiNjQ0OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzNkMTliM2QyNmUyM2QxYjdlNzY4OTJlNzlkNTI2MGQ5YWRjZGFhN2NhODAyMzI3YWNkYjdlYThmNDZjYzU4NyJ9"
         }
       ]
     },
     {
-      "id": "claim_a9fac17228c74138896d0b3661e19334",
-      "statement": "The rest timer is optimistic and starts immediately on local set logging, living in session/[id]/layout.tsx so a set_log revalidation cannot reset it; failed set writes surface as a visible card error rather than a silent revert, and PR pills only reflect persisted set_log rows so an optimistic row never earns a record before it is saved.",
+      "id": "claim_f370a23aeb51443185b0a8656bb57e16",
+      "statement": "AppShell still exposes exactly four tabs (Lift, Track, Program, You) and also mounts AgentEntry whenever chrome is visible except on /coach. hideAppChrome hides the tab bar and the agent entry on /session/, /workout/next, /program/new, and /program/?mode=edit. isTrackPath keeps Track active on /history/.",
       "evidence": [
         {
-          "resource": "repo://docs/architecture.html#L554-L571",
-          "version": "repo-lines-v1:sha256:584170245354e5906f3890375430ab04a6c07394a4a339b2654f0963b0ca7dfb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkZWZjMGJmMGY5M2ZiOWE5ZTVmMmU3YjM4NmE1YmU3ZWQzYjllYWE0OTFlZjg2MzM0ZDc0OGRjMjM0OTdiNWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlMDA2Mzk5NzZmYTc2MzFhNWRiZDI3ZTNlNGNjMjI3YmI0YzM3MWM3NTVlNjVlNzlkNDlkZDMwMGVkOGY0M2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU2NjM0MTRmMDkwNGY5ZjAyMmViNzViMDBmYTZjNTEyNzMyY2U4YmJlMzAzNjQ5NDA2MjEwY2JiN2VkYmNkMjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlZDIwM2U3NDRjYTJlNjBhMWEzYjBmOTRiYTFjMzFmN2VlNzM5ZGZhZDg5MjEzYzUzNDA5YmMxM2M2ZmNkMTMifQ"
+          "resource": "repo://src/app/(app)/app-shell.tsx#L11-L50",
+          "version": "repo-lines-v1:sha256:b2a7a49c964be36ff7aa4297bbe84bcd2eedb13fc5a836c41d5014c9353b1854:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg1YTJlYTBiODg0ZWJjZDhiOTBlYWE3NTM3MTQyMTM4M2ZiYzc3NjAxOGU0MmIwMDM0MjQ5NGRhNWUxMjRhZWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxMzAwNDg0N2UwNGQ4ODQxMmY5NGVhYjZiMDU2NDlkNjJiMDQyM2QwNDliYjRiMzI3YTgxNjMxNmQ2NDQzY2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFiMjE0ZjE4YmNlMzJlMDQxZjEwMzNhZTJmNjc4NDQ3MjlkZDljYzlhYzZkNmU5YWRlMDc2MGM2N2ZmM2FlMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwODY3YTYzODc0ZDM0YTJhMDAyNGMzYWRjYzdjNzExMmM2NjUyMzNiNzZhODQ1YTYxNmNmYjNmZmQzNDQ1OTUifQ"
         },
         {
-          "resource": "repo://docs/architecture.html#L841-L852",
-          "version": "repo-lines-v1:sha256:05c3fcc667c54ebdb36d296b4dcba3c29a78ffb4d7eb8423ee64bbe5092b2866:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzMjcyYjZkM2IyNDgxM2RmYjY2N2MxY2NmNGI2NTdmMmFmZjRmODljMmE3MDNmZDEwMTI4MTg3NWFkYWIzOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5OGYwNzUzYzc3YzljYWMzNjU5YTgwMjRmNTFhMDNiNmU2NmIwNDAwZmZmNWMwNGU5NGI0ZWNkMWZlOWQyMjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmNGIzNjU4NjU2N2YwYmI2MTYxMDI5Y2JlMmJhYmVlMTZhNGEyNmFjZTJkNjZmMTM5ZDI2NmQ5MzQxODk3Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2ODU5MjNiN2NkMDYyODJlZTUzYjlhZDhkZDQ3YjU0MDdkNWU0NWJlYjM0YzljOTZiMTdkZjBlODlmZWNhYmIifQ"
+          "resource": "repo://src/components/agent/agent-entry.tsx#L9-L28",
+          "version": "repo-lines-v1:sha256:1cf52a4a768b4162944b83507f50dbe433e35f626db3d04fe927466b61261973:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4YWE2MmVmOGZiNzFjZDFkMGNlMDQxNTY2MmZhZTRlNWMxNDEyMThhYWE3M2JjZWJmM2JkZjViZDgwYmQ5OGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiODA3MzAxMjYzN2VkMDIzYTU3MjY5NDFkMzhiMGFmOWYyOTkzOTVhZjJiNGJkZDIxYWE2OWM0MWYyNDFhMmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://src/lib/app-chrome.ts#L3-L16",
+          "version": "repo-lines-v1:sha256:6d542d066ef5b1928425148d8b5c9e05b26d0353f550919bbe71bd10f30d647c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwY2M4MGIxOWE0ZWQ4OTczYWE1ZTQ1ODQ1NGYzNjAwY2JjNTgxYTM4Y2M1OWYyYjFhZDMzYTk1OTM4ZTdhNmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiOWQ2OThkODllMjJiNzg4NDk5MjcxM2RkOGVhOGE1OGQzNjdjNWUzNDJlNTdjM2Q2YmUzYTE5MDg5NWZmNGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoyLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdiM2VjODAzM2MzYjAxZTYyNzVhYmMwNGFjNDUyMWUxYmRkNzE2NGM5NDNmNzFkZjgzYmIzZWQ0NDZlNmM4MDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUwMTFiYjQ5MzIzZDg4NTRkMjNlZDkyNWEzOThkYzI1Nzg2YjQ0ZDFmZmFlZjM1ZjM3OGRiNWJiYWVmYTFkOTYifQ"
         }
       ]
     },
     {
-      "id": "claim_8f7bccb5bbc04353961f2eae4ebc1c1b",
-      "statement": "Every user-owned table is scoped by row-level security to auth.uid(); the weekly Coach API is the sole elevated-privilege exception, and it still enforces one explicit user predicate on every query rather than relying on the bypassed RLS.",
+      "id": "claim_3e25bcf5a3a648b28142083b40e8e5e3",
+      "statement": "Auth is split across three places: src/proxy.ts only calls updateSession() to rotate Supabase cookies and does not redirect, (app)/layout.tsx is the page gate via auth.getClaims() redirecting to /login, and Server Actions independently re-check getClaims() through requireUser() because a layout guard does not protect a directly invoked action.",
       "evidence": [
         {
-          "resource": "repo://docs/architecture.html#L829-L840",
-          "version": "repo-lines-v1:sha256:2d58b638a10f115b8725f1719fa840786d38572a6eb0ea1dcde6ad37d6ae399c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzMjcyYjZkM2IyNDgxM2RmYjY2N2MxY2NmNGI2NTdmMmFmZjRmODljMmE3MDNmZDEwMTI4MTg3NWFkYWIzOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5OGYwNzUzYzc3YzljYWMzNjU5YTgwMjRmNTFhMDNiNmU2NmIwNDAwZmZmNWMwNGU5NGI0ZWNkMWZlOWQyMjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmNGIzNjU4NjU2N2YwYmI2MTYxMDI5Y2JlMmJhYmVlMTZhNGEyNmFjZTJkNjZmMTM5ZDI2NmQ5MzQxODk3Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3YTg4ZTE5ZmNiNmZhNDFhMWFlYWMxM2YwYzQxNTlmNzg4N2M2MGJjNmQzN2U1MjU5MTM4NWI5NTNhYmYwNTYifQ"
+          "resource": "repo://src/app/(app)/layout.tsx#L5-L15",
+          "version": "repo-lines-v1:sha256:112c380a03117f4ecb78ee5b52f90dfba47cba81540622e1f808c63ecc2756eb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4NzhmMzFlYWIyNzlmNzI5ZmFiNTRkY2Q2Yzg4M2MwM2UyOTgzODQ2NTE1OTUwODUwNTI4YjRkYTg3ZmRlYjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMxYjA2OTJhZjVkYzNjMjIwMDFjM2ZjMjY2MmJhODk1YjQ0YTg5NjIxYTllMDU0ODRkZWM5ZmY5NTBkNWFjMmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxM2QwM2RmZTc2NGM5M2YwZDFmMDhmZDVjODdkMjQ5ODIyZWUxNzBiMTcwYWVhZGJkZTNjZjQ4MDA1ZDEzYjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L28-L35",
+          "version": "repo-lines-v1:sha256:adb52486998e47f6463fafbbc50d70da3391d8be3e03ee3bd7ba2dd6d696005d:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDdlNGRkY2Q5Mzc0M2QwNWQzNTc4ZmYwNDI5ZDk1YzM3NDVmZDZiODI5MDA4MjEyOTc3N2VjMGEwYjQzNjhhOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjE0ZDlmMjRlMDZlYzI1ZTRiNWQzNGY3OGNlNjE0NWM5ODRjYTk5ZmY4M2RlMTRiNWZhN2U4NjhiOTliNWM0MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGVkNDAxZDk1ZmE2ZjBjYWJmYjhkNzYyNTM0ZTFjZmE3YjlkYWIyMDRiNjc3N2VjNmNkZTUzMjgwZWRlNDE2NiJ9"
+        },
+        {
+          "resource": "repo://src/lib/supabase/middleware.ts#L4-L34",
+          "version": "repo-lines-v1:sha256:715b76fe7bf8196818f58811d2b7f3d92bfd7f0d17e004723b8d5ce7907be87a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmOWFmNWY0MjI5ZWMxZDZhNjk4N2RiNWI2YmMwMDFiY2E2ZDQwNzI3MDRkZmMxMjhhOTgzZDg0Mzk4MGNkN2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjMGU3NzM3NDEwMTQ0OGRmYzU1NTQzMGVjMmFlMmYyZDJiMjk3YjdlNjAyMjZmNjAwZDZhNTE4YzEyZjdmYjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk2OTMwNjZkZDBmYWIwYjBiMGRkMWRlYzk2Y2YyMmVlODY2MmQ4ZWJkNjEyODZjMWM5OGQ1YWQ1ZjJmODM4YmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://src/proxy.ts#L4-L16",
+          "version": "repo-lines-v1:sha256:86eafa043543834bd4dc04c5b1dc92b37034dc3af871042e59a54a205a6ca22a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjYTA1NTk0NmZhZDU1NDA4ODQ3YzQ2ZmYzNmM2ZmMxZTkyYjNlN2EzNmM2NTE3ZGMyY2ZlZWQxZDBlOGM5MWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhMWQxYTYzMzkwMjI5Yzc5ODM0N2U4M2EwNDA1NDQxYzk0MDAwMzUyODRhZDE2OGMxYmY2Y2RmMWQ3MGEzNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5YmRjY2JiNzdmNWFjNDBkZWQ1NGMyYmE4MGUxMTVmODk1YzZkNGQ5NmZlMGI5YTY4NzVjYWVmZjkwNmI2YzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_622f648b50dc44d08bd372f02b0ff41c",
+      "statement": "The app keeps no parallel analytics schema or materialized views. set_log is the sole authoritative ledger, and Track summaries, Coach, month review, and PR pills are TypeScript functions computed over that ledger at read time, with windows such as 21 Chicago days, the last 8 session-bests, and the seven-day Coach report applied in the loader or a pure helper.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L131-L166",
+          "version": "repo-lines-v1:sha256:ea9841472ac654bf13b9e7198face6a4a7ab9df017da5f726dbf3eeeae35ea27:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4Y2E1MWU1YWMwZGI2NTlmMTQ4ODRjMjFhMzBlZmRiYTQyMDk0NWQxMzFkZTNiMGI5MDUzNTJlYjIzMDY3NjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc1OTIzODlmMDNmZDQzMzIxOTM4NDFmYzk4ZTFiZDk5OWY1N2UyZTY2NGZlZGI2MDBlODkwMTY0MGRmOGZhNzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFkNmFkODI1YTRhNDU5YjFhOTMyOGE0NWNiZDUxZWE1MWE4NWYwY2M2NDFlMzIwMDUzODk4ZTkzZjQ4YTI3MzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE2MGYwNDAxNzBlNTM4ZmNlZGYwNTk2NWVmZjYyYWI5YjBjMGU1NDdkZDgyMGYzNWRjZGYzMzc1ZTg2MTIwMTIifQ"
+        },
+        {
+          "resource": "repo://src/lib/analytics.ts#L216-L224",
+          "version": "repo-lines-v1:sha256:fa55ed6106226cd29f12e0d3e4d49d61974af1f226d281280187f198068b37fe:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjNkYTJlZTQwNTA2MTRjM2E2ZmMzZjE3ZTI3YmMwZDg5YjgzNjlhYWYxMWZmMGIzNWY1YWQ0MjY5NDljOWYzZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzE4NzE4NDk2Njk5NDc2MDIzZDNhN2JjNDhiZjYwMmU4ZjdhY2I5ZThiZTkyNWNiYzlhNzk1YmM4MjgwYzdiMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmU3NWM0NWNkZjgxMGRlYThmODAxYzhhNjAzM2FhMzE5ZTQzZWRjYTAzYWQyMTY2YTU4MGUzOGI2NWEzNDM3ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGRkYmJlMmY4OTA4MjJhNTFmYjQzZmFmOTIzYzNmNzZjZmIyOTE2ZDU0YjRjYzQxYWRmMzA3ZTRhMDIwMmI0NyJ9"
+        },
+        {
+          "resource": "repo://src/lib/coach-weekly-data.ts#L42-L48",
+          "version": "repo-lines-v1:sha256:5dd76db5f9b6838158130f9f0c27e061c8e7c0248bef2b8158a6ebee8d03d149:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjJhYjUwOTk5YjhlYmYxZGE5ZmE0NGZlMzQ3YTBlNjY0OWEyY2NiMzQ1ODUyYzBiOGQ1MTEyZTA2YTgzMzJhNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiN2Q4MDM3M2U4MDc1MzZhMjE2MDU2ZDQwZGJmZjNiNTcwYTM3Yzg4ZjM5ZmMwODNkYzBkOTcyNDIyZDIyODNiNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGI0NGJkNDQ3YWZhZjZmODM1Yjk4MzVjNWQ0NjZhZWU4ZTAxNjEyNDdlMGYxNjA4ZTU0Y2Y3MTBlYjNiYTczNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWMyOTM3NTcwNTcxMTVlMjk4MzA2MWVkZDM2ODk1N2VmNjZhYjRjMDdhYTY3OTA3Yzg5ZTdkNDhhYzFkYTJmNiJ9"
+        },
+        {
+          "resource": "repo://src/lib/workout-records.ts#L8-L42",
+          "version": "repo-lines-v1:sha256:7b0d39e2ec3e46709d3acd35516e8e294f0bbcec2c37770a16baae1461ec8842:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzODgxMjgwM2EyZWE5ZDRmYjdiYjdkYTAwYmU2MGE2ODM1MWM4NDNkODBmOTA2MDAxYmI5ZTNjYjc1ZmI1MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiMjdlOTEyZmMyY2QxN2FhOTU4ZWZhM2Q2NTFiODg0NWVlMDk2MGE3ZWVkZmYwYWI5ODFiZDQ1YTFiODNlMWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiNTYzNjk3NzVjYjAwMzFhNTQxOTM3ZGRjNGQ4YjAyNjAzZmZlZjU4NzU1MWQ2ZmVmZGU5MzVkNzQwOTQ2YzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_08fdd5f1e2e64c56906c6d8defcbb78c",
+      "statement": "sessionTarget() is computed client-side in a useMemo against server-hydrated stats and history so swap, rep, and RIR edits update with no network round trip, while Track, Coach, and month-review aggregation over history runs server-side and ships already-shaped data to client chart components.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L11-L12",
+          "version": "repo-lines-v1:sha256:92b41b89fdf1aeb53e5ff0e6558f8179cb98b2e1f4c41629f3f5902483c5748a:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWY4Y2NjMWU1Njg1NWExNjlhZWMzMjZhMGJlNzMwM2ExMzM3MjhlMzc5NDIxNWVhYjQwMDI5YWY2MmI3YWI5NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjQ5ZDBhODZhYjA5M2U4ZjQxYWRhZTEzYTM4MTBhNTQ4YWEyZDY0ZTYzNjlhYTAwZDZmMzYyNDhiYTFkMTFkNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmMxNTU3MWYxYzc5MTM2YTE2MDIzMWZlMjk0OTczNDAxMjlkNGY3ZWI3YmRjZWI5OGMxYWY4NjQ5ZTJiMWU2NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmQ1NWJjYmZmZjk4MjgzNzI5NDc4ZGVkMjQzMDE1ZmJjYmUwOWM5NTY0MmVkNTZmZDRhM2MwM2M4OGJiNThmMiJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L374-L389",
+          "version": "repo-lines-v1:sha256:1f1087e92a3813402262489db8de17447cce56a9e6b4b5cee3b7f0740dc96f7e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjNTY0ZTkyMDEzN2Q5YzNjNDNkMTU0NmY3NzZmMDFlMzk3MzViMWQ5MjZlYjE1YWQ3ZGIwYTU5YzcxNjY1NTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwM2Y1MDkwNmZhNWMzMzdjMWFiZTNjNGQ3OGRkMzdkZGNiZTQ2YTJjNWY4Mzk3YzFjNDdlZGU5OTIzMTIyMjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjViMWRlYmU3NGM4MzI2NWU0OWFlYmRhY2RmYzE4NmIxZWFmZThiYWFlN2I2ZWFkNzQyY2Y2OTlhMmEwYzhkNjgifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/progression.ts#L111-L129",
+          "version": "repo-lines-v1:sha256:24d683d4993fb70bfa3cc6d3aa4e23a69bc191bb11d8177397213f4694caf56c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2ZWE2MDZmNmQ2ODA5MDAzNDRhZWIzMDc3MWE4MTkwODA5NzY3ZWYwOTBjMjE5YjQ1ZGEyZDNiMDZiZThmMzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkOWUxMjU0NjQyNTU3NmQzZGVhZThjOWI5ZGJmMTI4ZDVkNmRkYWY1ZDdmZTg1NzkzNDkyN2RlZmZhM2I5ZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJhZjhkMTc3NGY3ZDgzNmNhYTllY2M2ODFkY2ZjMTc2OTMwMDc3M2JkMGE4MGE1NDcwNDY0ZDhkMTIwNzNiZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwZTUxNzAzZGFlODcyNGJiZjI0ZjBiZWVlMDk0MjcwMmJlM2RiYjk3YzFmNTgwNGIzNzNiYTJkNzQyZGIwNzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bfe7a54a42c54a50a82ee493593e9df9",
+      "statement": "The rest timer starts immediately on local set logging and lives in RestTimerProvider on session/[id]/layout.tsx, persisting its end timestamp outside the revalidated page so a set_log refresh cannot reset it. A failed write surfaces a visible card error and reverts the optimistic row, and PR pills come only from persisted set_log rows via loadWorkoutRecords and workoutRecords.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/active-session.tsx#L405-L438",
+          "version": "repo-lines-v1:sha256:52a1cd6b7b4ca33d9b531073c94d444a30e0532e976fa540bcf4fe3da33fc7a1:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZDM3NmZkNTJhZTVlYjhhOTA3YzBhOWNhMjAyZTg3ZWUxZDZkNGI4ODJkY2M2NWJkNGNjYjA0YzgyZWM2ZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkZjBhMzY4YTc3ZGI5Y2M1MDg2ODM0YTg4ZGFhMjYwOGUxMjljM2VmYmM3OTc4OWE4MDU1NzlhYjViYmQwODUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUzMDU1ZmQyYTc0ZjQ1NGRkYjQ0NzQ3Mzk4MjcxMjkyMzg5MGY0ZTY4MmU4N2ZmYmFmNjczZmQxZGY4YThkOGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4YTlmZTQ2ZjE5NGE3NGZlNWQ5ZGYzYTRkYWI2ODdhNTFiZTU3ODIyNjhlNmRjNjU4OTFkODgyM2Q3ZDU0YTEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/layout.tsx#L28-L37",
+          "version": "repo-lines-v1:sha256:6850d256d7bd7d2358e2ddbec3a4c884ea15734cc4c7d6ad5f116c1b705a1608:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3MjE2ZThlOWMwYTFhNjhkMDZjMmZiYWE1ZmQyMTM5NDgyYjhlZmQwYTE5MzE1YjkxNWU2Y2NlODQ5ZDg5ZGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNlNjNiMzFiYjQxY2YxNmI1NzM4NjQ2ZTdlYzBmZDIxNDU0OTc4YjkyNzM0NzYyYzEzY2Y2ZDE5N2Y0YzNlMWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/%5Bid%5D/rest-timer.tsx#L60-L105",
+          "version": "repo-lines-v1:sha256:be4ccaa55b7ff6482046d4d072a506c7cdeb20855e9ba5050a33eaaf4004964f:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlMzdkMDkwNTViYmIxMDZjYmIyMDdkNGU2NjYwYTY4OTliZjIwMTVjZTUxMTQzM2QyNTkwZjE5YjcwOWM1ODEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxZWYxOTJiNTg0ZDA0MDE4YWNkMDY3YmJlMzU0M2QzODA1OTNhM2Q1ZWE0Zjc0ZWQ5ODE5OGM3Nzg3ZmI3OTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5NGZjMGMxNzNkMWVjM2ZjNTAxZDdkZmE5Mjg1NTAxYzUyN2NmYjQ3MTI1ODNkYTNjYzM2MTgwNTY2YjRiZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzOThmZDJkMGFlMmJjNWIzZDE1YTU1YjJlZWQxYTNkYWZiMjUzMmRjZjA4ZjFmZjk0YjAyYjY0YWU4NTc4ZDYifQ"
+        },
+        {
+          "resource": "repo://src/lib/strength/records.ts#L93-L100",
+          "version": "repo-lines-v1:sha256:5c7c8674c50699e3c356b4f6cc6362816440144ff4e59e1f9d603be2c378bb6a:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzAxMzkyY2RmNGJkMDljNjc3Y2E2YWM0NGY3OGM3ZDYyZWZjZWJmMmExYzdlNjIxZTMzMTQ0N2MxZTkzYzg0YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjJkZmIwOGQ2ZWY3YmUwMjI1NWIyNjM3YjcxZWI2Mzc5NGMwMzM1Y2M2ZWJmOWE4Y2ExZTgyMjg1NzBjMjI4OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmZmNDBiOTljZTdmNTIwODc5MGIyYTg5MGQxYzE0NjAxNjAzNzNiNWM0NDFjNzBlN2E1Mzg5YzgwOTA0NTUwNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmU1MGE5NTRlZmFlNGI3M2U5MmQ1MjIyYTE1ZmNmMWRkMzk4M2MyMmYzZDAwOTQxNWI3MjExNGJjMDA1YTdiMyJ9"
+        },
+        {
+          "resource": "repo://src/lib/workout-records.ts#L8-L42",
+          "version": "repo-lines-v1:sha256:7b0d39e2ec3e46709d3acd35516e8e294f0bbcec2c37770a16baae1461ec8842:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzODgxMjgwM2EyZWE5ZDRmYjdiYjdkYTAwYmU2MGE2ODM1MWM4NDNkODBmOTA2MDAxYmI5ZTNjYjc1ZmI1MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiMjdlOTEyZmMyY2QxN2FhOTU4ZWZhM2Q2NTFiODg0NWVlMDk2MGE3ZWVkZmYwYWI5ODFiZDQ1YTFiODNlMWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiNTYzNjk3NzVjYjAwMzFhNTQxOTM3ZGRjNGQ4YjAyNjAzZmZlZjU4NzU1MWQ2ZmVmZGU5MzVkNzQwOTQ2YzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_91da9205818f485d8335e5732c76ca71",
+      "statement": "Every user-owned table is scoped by row-level security to auth.uid(), with profile using id. The weekly Coach API is the sole elevated-privilege read exception, and it still enforces one explicit user predicate on every query rather than relying on the bypassed RLS.",
+      "evidence": [
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L102-L123",
+          "version": "repo-lines-v1:sha256:ab944a291cf344ef74e936709cbd4be83d24909344b0e524adb780fedf3ecee2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2YzdmNDNjODQyMjFiNTMwYzk3YTQ4MDQ5NmU0NTEzNjU3NmMzNDYzMGRmZDllOWUyYTM2NDgyZWNkY2YyNzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlkNDg5OWJkNDA2Nzg2MTQxM2E0NTg3YzAzZTUzMDAzNWY4NjgzMDA2Y2M2YWI2YWJhZWQ2OWQ5ZDMwNjk1MzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI5NTBiZWE0ZjI0OTE5NmJiYTFjZjgxNDUwNThmNjliNDM0YzQ3YzYxZThhMjFjMDQ0MWNlYmNjN2QyZGUxM2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU3NTllOTQ5YzUyNzc2NjEzOGM2ZTMzYjk2M2Q3ZGMxNWFhMjc1NTFlOTFlOTUwZDQwZjBjZDk3ZjYxNmQ0YjQifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-weekly-data.ts#L196-L203",
+          "version": "repo-lines-v1:sha256:71d0301ccb9340b24b48561eec14d062551a6cfcf3e9828524a4b888c0235246:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDUyMzZiNjM0ZGQxYWNjNTEyMTVkMTBhNjA4YTVhNGRiZmJhMzQ1OGZkZDdhNzc4YmVjOGE1MGYyZGRhZTgwNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2EzZTQ2Zjk0Mjc2YjZmNmY0ZWQxZjAyYWY3OGJlZjZhMmVlMWM0MzlkZDU1ODRiOTczOTQ4MzEzMjE0ZDJiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTY4NDc5N2QxNDcwYThiZmY3YmQ1YTZhMDIxNGU5NWI5ZjMzMzA3ODgxZTY2YzM1ZmY3MDA1ODFjNzIwOGJkZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://src/lib/coach-weekly-data.ts#L42-L80",
+          "version": "repo-lines-v1:sha256:0930ceaf58459cb5a04e11b7d9fc1509e4fa7102a657d70ccf9037fc998e3499:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyYWI1MDk5OWI4ZWJmMWRhOWZhNDRmZTM0N2EwZTY2NDlhMmNjYjM0NTg1MmMwYjhkNTExMmUwNmE4MzMyYTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4ODQ4YWZhNDlkZjlmYmVhZWQxM2I2ZDBiNmMyNWUxOTA0YjBlMjIwNzE4M2JhODIxNTUwYzlhODMwMjRjZTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiNDRiZDQ0N2FmYWY2ZjgzNWI5ODM1YzVkNDY2YWVlOGUwMTYxMjQ3ZTBmMTYwOGU1NGNmNzEwZWIzYmE3MzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4N2MyZWU4NjU5NWM5NTFjYjU2OGJiYjk5YmZiMGFmMDA0MDllZmFmZjg2MGJiYTI1ZTU4NThjNzk1MGE4MWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8f842efd9069471f998e7bb16547f1dd",
+      "statement": "The shipped in-app agent chat is a separate cookie-auth, user-scoped path from the weekly Coach secret client. GET and POST /api/agent/chat use getClaims() and the public server client, Slice 0 binds only the four read tools, and the UI is AgentEntry plus the full-screen /coach page rather than an unbuilt design.",
+      "evidence": [
+        {
+          "resource": "repo://docs/AI-COACH.md#L1-L16",
+          "version": "repo-lines-v1:sha256:de9349673b95941c88da41e7f794fd10cc50332f2a38a62213006765c807143a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMzZkNjllMTUxOTYwOGQ5MjNkNzhiZTA1NTlkMGZkYzhjODNmYTRmZmM0MzBkM2UzMzRiYzMyYjdkODk3NWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwOWIwZWM3MDI2ZTFkZjM2ODM0NWRkY2Y0ZTBlMGYzMjhlMmI5NTFlM2FmZGVlN2ViODA4ZTM4YmY1MWY3ZjUifQ"
+        },
+        {
+          "resource": "repo://docs/ARCHITECTURE.md#L125-L129",
+          "version": "repo-lines-v1:sha256:26a52d79f4ad9c31238a52c54447e30adee62b685245432acf2bc479cd1b9e76:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTFmZGYxMWE4MDljZTkzMmNlMDA3Yjc3MzlhMzA2NWU5N2NiOGMzNjJkNDMyMTdiOGJjNTI5MzE1OGQzNDY4ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzAwODg3ZWU3ZGFjNjcyMDJmMGYwYjhiMTQ0OTE3YTk5MmY3MTBjZDM3OWRhNmJhN2M0OTRiMjRkYzNlYWE0YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjU4ODA4YTkwYjJkNTlkZDYzNjYzMzk5MDBiMTc0YjNmNjJkYTBjYWVhNjUyM2Y1NjI3MjEyNzVmZjc5ZWU2MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTE2ZDQwZjM3MTY4OTFjMzZmNDIwOTk2MjMxOWY5NTFjZDM4MWI5YmVhY2Q1Mjk3NjNlM2JjODhkNjhlNGI0YSJ9"
+        },
+        {
+          "resource": "repo://src/app/api/agent/chat/route.ts#L1-L17",
+          "version": "repo-lines-v1:sha256:2a065a43445ac2c4b51a036bb531f9621fd4f1db1f7c7458f4a357c9f166b346:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwNDkxYmViMjQ4ZGIyN2YwYjJjNzAwMDE4YWExZGUyMjg4MWUzMWQzMTA0M2EzMDE1ZjNmMTAyOGVkM2M0MTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyODcxYzIyMGU1ZTQ0YTUxZWI2ZGViM2ViYzEwOWNkNDM0ODM4NjgxYzIzN2QwNmI3MTA2MDgwMmFlYzlhOGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/chat-handler.ts#L23-L56",
+          "version": "repo-lines-v1:sha256:9849c6eaf95238b0676d6cd7ed95b8d7498620e7e2a68f8befd705af873df684:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjMjI0YjVkNDExNTdmN2U0ZTk3ZDA0OGIzYWMyNTUyNDgyZGZiNTJjMDdhMWIyM2MxNWY2MzYwYjQ4NWU1NjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5MWNiMzYyZDNjNDc4MTlmNjBmZDMxYjFkYjg3ZDE2MWU0YTQ3MWM3Njk0YzU1M2NlZWRmNDU0ZWUyYTQ2OTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNhNWUzZWYwYjNkMzU3ZmUxN2ZjN2JjYjNkNmE5YmFiOTZiMDRlMjE2NGI2NGQ4ZmQwZTRiZGFmYzg5ODdlMDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU2ZDNmYzE4NmNiM2U4ZTlmNWU0YjA2OTVlMmNiNWMyYTdiYWMwN2Q2ZTcwNTdlNGJlNTRmNTIyMWJiNTUxMGQifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/policy.ts#L18-L28",
+          "version": "repo-lines-v1:sha256:5cd0e2f72c4ca1cd5657d330574c8cb57ea36a9d79eacc967ff2444185fc5d40:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NmU1ZjY4MTU0YzRlYzZiODY2NjYwOTRjOThlNWUzOTEzYjYyNzYxYWY0ZWEwZjliNjFiMGY1NzcyMDBlYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg1NGI0ZDE2NTU1MmU5ZmY1NDEzNmQwNjYwYWM3NmY2MWFlNDM1OWU1OTBiMzlhNmYyMTEwMjE0M2E5MmMzNDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg4MzNjODI0YWU3ZGZlM2IxMWE5Mjc4ZThiY2YzMDliYWE0Zjg3MzhmZDE0ZWRhNWI2MmVmOTA5ZDM3ZTU1M2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2YzFmOTYwNmQ4ZGY2MDNmOTZmMmRkMDljMDE0NjU1M2FlNjIzY2M3YzdkN2I4ZTVkYjIyYjY5MzZkNTQxOGMifQ"
+        },
+        {
+          "resource": "repo://src/lib/agent/tools/index.ts#L16-L56",
+          "version": "repo-lines-v1:sha256:7a7de60c29281cf738a11443185ccf301a658f6f135d3fe76749b7746cfb0cab:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyZjU1YWM2NDgxOGY0NjQwYzFiOWM0ZDg0YTcwNzdhNjE3MzdkNWQwNTMwNGRhZTFiZTBmM2FiNzdlNzIxNTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA0MDE5MGEzMDU4ZDliMWU3NmIzYzU1MzdlNzI3YjViYzM2ZGIwNTU0Yjg3MWU1MGRiYjhkYzk1Yjg2OTgyNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFhMjkyMmI1ODYyZTgwYTljOWNkZDBkZjk0YTkzOTY0ZWFjNjU4MTNiN2FjYTZkYWNkNmI2YTJjNWI5YzA4MmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMzNzdhZWRlMDE4MjVkYzI2ZDQyYzM1OWNlMzFlOTViNGVkMzgzNmRiYjdiNWI0YzdhOGVhZTY1Y2E4MmY4ZTEifQ"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.6.0",
-    "at": "2026-09-25T19:18:52.086Z"
+    "at": "2026-09-29T00:58:03.170Z"
   }
 }

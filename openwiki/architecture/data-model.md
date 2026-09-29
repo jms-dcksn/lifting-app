@@ -1,11 +1,61 @@
 ---
 type: architecture-reference
 title: Data model and ownership boundaries
-description: Explains the Postgres schema in supabase/migrations — core lifting/program tables, the owner-scoped RLS pattern, additive-migration discipline, and the atomic-write RPCs that guard multi-table invariants.
-tags: [architecture, database, postgres, supabase, rls, migrations, data-model, program, set_log]
+description: Explains the Postgres schema in supabase/migrations — core lifting and program tables, shipped owner-scoped agent threads, the RLS pattern, additive migrations, and the atomic-write RPCs that guard multi-table invariants.
+tags: [architecture, database, postgres, supabase, rls, migrations, data-model, program, set_log, agent-thread]
 verified:
   - by: openwiki/0.6.0
-    at: 2026-09-25T19:18:52.086Z
+    at: 2026-09-29T00:58:03.170Z
+sources:
+  - id: openwiki-source-31eaa8e764b229f4f6d8357b
+    resource: repo://docs/AI-COACH.md
+  - id: openwiki-source-e8e61d605125cac4d909755e
+    resource: repo://docs/ARCHITECTURE.md
+  - id: openwiki-source-8cc00b595f36ac50faf3d2e8
+    resource: repo://docs/DECISIONS.md
+  - id: openwiki-source-fb1cc746577598e99fdf5cef
+    resource: repo://docs/PROGRAM-TRANSACTIONS.md
+  - id: openwiki-source-3f6f7ef6d6407c44a2236325
+    resource: repo://src/lib/agent/chat-state.ts
+  - id: openwiki-source-d6f7e8c86f423c580c8f6a59
+    resource: repo://src/lib/agent/thread.ts
+  - id: openwiki-source-06d9bbe6ed7b53833ea981eb
+    resource: repo://src/lib/supabase/types.ts
+  - id: openwiki-source-0479c4d807cfcaf49b8df86a
+    resource: repo://supabase/migrations/0001_init.sql
+  - id: openwiki-source-08d7e27bae505eee75e5c118
+    resource: repo://supabase/migrations/0002_program_builder.sql
+  - id: openwiki-source-ca2fbc3e807dbcf2a3123ec5
+    resource: repo://supabase/migrations/0003_harden_signup_trigger.sql
+  - id: openwiki-source-de4bfab3a8351d7f8687d06b
+    resource: repo://supabase/migrations/0006_program_metadata.sql
+  - id: openwiki-source-13af35a653fad7500d0a5bad
+    resource: repo://supabase/migrations/0009_fluid_programs.sql
+  - id: openwiki-source-286769c779f1ca5c70350cd0
+    resource: repo://supabase/migrations/0010_program_phases.sql
+  - id: openwiki-source-535a7a7f7763aa301c09024e
+    resource: repo://supabase/migrations/20260903120706_coach_recommendation_decisions.sql
+  - id: openwiki-source-d3f09bc8a0182a75769e32fe
+    resource: repo://supabase/migrations/20260911005629_exercise_swap_scope.sql
+  - id: openwiki-source-7cd2ccb4d8736797dc4a6c7e
+    resource: repo://supabase/migrations/20260915203212_period_tracking.sql
+  - id: openwiki-source-53337252186c5a1121e50187
+    resource: repo://supabase/migrations/20260916000000_idempotent_logset.sql
+  - id: openwiki-source-1915315531bbdb2a7a7c2327
+    resource: repo://supabase/migrations/20260917000000_atomic_program_mutations.sql
+  - id: openwiki-source-42ac529c3a660b3139a7faa2
+    resource: repo://supabase/migrations/20260918000000_user_exercise_pin.sql
+  - id: openwiki-source-597a0a3cd7e72a1e27e7b6eb
+    resource: repo://supabase/migrations/20260919221137_body_measurement_log.sql
+  - id: openwiki-source-3048387bbf0f2ed4eb93764e
+    resource: repo://supabase/migrations/20260920181553_agent_threads.sql
+  - id: openwiki-source-87776485ef5a75fb13c264b1
+    resource: repo://supabase/migrations/20260921233233_station_machine_type_comment.sql
+  - id: openwiki-source-5dcdbbd3bd4b962baf2a892a
+    resource: repo://supabase/migrations/20260927170000_agent_multi_thread.sql
+  - id: openwiki-source-6a6f4619e598bf058e2861d8
+    resource: repo://supabase/tests/agent_thread_rls.sql
+generated: { by: "openwiki/0.6.0", at: "2026-09-29T00:58:03.170Z" }
 ---
 
 ## Overview
@@ -16,7 +66,35 @@ of that schema used for compile-time safety; it is never hand-edited and never t
 truth. The schema separates a small set of **authoritative** tables (what the user actually did)
 from **derived/rebuildable** caches (fast summaries of that history), and enforces per-user
 ownership almost entirely through Postgres row-level security (RLS) rather than application-layer
-checks.
+checks. Conversation memory is a separate owner-scoped pair, `agent_thread` and
+`agent_message`, not a derivation of `set_log`.
+
+## Entity map
+
+```mermaid
+erDiagram
+  AUTH_USERS ||--|| PROFILE : owns
+  AUTH_USERS ||--o{ EXERCISE : owns
+  AUTH_USERS ||--o{ EQUIPMENT_INSTANCE : owns
+  AUTH_USERS ||--o{ PROGRAM : owns
+  AUTH_USERS ||--o{ WORKOUT_SESSION : owns
+  AUTH_USERS ||--o{ SET_LOG : owns
+  AUTH_USERS ||--o{ USER_EXERCISE_STAT : owns
+  AUTH_USERS ||--o{ AGENT_THREAD : owns
+  AUTH_USERS ||--o{ AGENT_MESSAGE : owns
+  PROGRAM ||--o{ PROGRAM_DAY : contains
+  PROGRAM ||--o{ PROGRAM_PHASE : contains
+  PROGRAM_DAY ||--o{ PROGRAM_SLOT : contains
+  PROGRAM_SLOT ||--o{ MOVEMENT_ADAPTATION : logs
+  PROGRAM ||--o{ WORKOUT_SESSION : "set null"
+  PROGRAM_DAY ||--o{ WORKOUT_SESSION : "set null"
+  WORKOUT_SESSION ||--o{ SET_LOG : contains
+  PROGRAM_SLOT ||--o{ SET_LOG : "set null"
+  EQUIPMENT_INSTANCE ||--o{ SET_LOG : "set null"
+  AGENT_THREAD ||--o{ AGENT_MESSAGE : cascades
+```
+
+User ownership of the shipped agent tables, plus the structural cascades and history-preserving nulls around programs and sets.
 
 ## Core tables
 
@@ -111,6 +189,46 @@ checks.
   table never mutates program or training data, so a review decision cannot corrupt a
   prescription.
 
+### Agent threads
+
+`agent_thread` and `agent_message` are shipped owner-scoped tables, not a planned schema.
+`20260920181553_agent_threads.sql` created them; `20260927170000_agent_multi_thread.sql`
+replaced the original one-thread-per-user constraint with the current many-thread contract.
+Generated `Database` types mirror both tables, including the composite owner foreign key.
+Neither table references a program, session, or `set_log` row. Conversation memory is the
+transcript itself, not embeddings over training history. Chat behavior — drafts, the model
+window, and the `/api/agent/chat` contract — lives in
+[Coach and AI agent](/openwiki/workflows/coach-and-ai-agent.md).
+
+- `agent_thread` is one conversation: `id`, `user_id`, required `title`, `created_at`, and
+  `updated_at`. A user may own many threads. `agent_thread_id_user_key unique (id, user_id)`
+  replaced `agent_thread_user_key unique (user_id)`. The app supplies `id` (LangSmith
+  `uuid7()`); the multi-thread migration dropped the column default, so an insert that omits
+  it fails with `23502`. `title` is `text not null`. The migration backfilled it from each
+  surviving thread's earliest user text (whitespace collapsed, first 80 characters) and used
+  `New chat` when that text was empty. New titles are produced the same way by
+  `threadTitleFromUserText` at the first send. The migration also deleted empty Slice 0
+  threads before that backfill; those rows had no messages, and the delete is not reversible.
+- `agent_message` is one persisted turn part: `thread_id`, `user_id`, `role`
+  (`user | assistant | tool`), `parts` (a `jsonb` array, default `[]`), and `created_at`.
+  Storing parts as JSON is what lets tool calls survive a reload. `agent_message_thread_created_idx`
+  on `(thread_id, created_at)` supports reading a thread in order. The UI reads the full
+  transcript; the model window is a later cut in application code, not a second table.
+- Ownership is a composite foreign key, not a second RLS policy. `agent_message_thread_owner_fkey`
+  is `(thread_id, user_id) references agent_thread (id, user_id) on delete cascade`. RLS only
+  compares a row's own `user_id` with `auth.uid()`, so it cannot see who owns the named
+  thread. The composite key closes that gap for every role, including a client that bypasses
+  RLS: inserting or moving a message onto another user's thread fails with `23503`. Deleting
+  a thread cascades its messages. Deleting `auth.users` cascades both tables through each
+  row's `user_id`.
+- Ordering is `updated_at`, maintained by the writer rather than a trigger. `saveMessage`
+  inserts the message, then stamps `agent_thread.updated_at` to that message's `created_at`.
+  History lists the latest 50 threads with `order by updated_at desc`, backed by
+  `agent_thread_user_updated_idx` on `(user_id, updated_at desc)`. A new chat is a draft with
+  no row; the first send inserts the thread and its first message together in application
+  code. If that message insert fails, `startTurn` deletes the thread before rethrowing.
+  There is no database transaction around that pair, and no agent RPC.
+
 ## Ownership and RLS pattern
 
 Every user-owned table follows the same shape: a `user_id uuid not null references
@@ -128,10 +246,14 @@ filter most reads by user, and Postgres rejects cross-user access unconditionall
 level. Newer tables tend to wrap the predicate as `(select auth.uid()) = user_id` inside a `for
 all` policy instead of separate `using`/`with check` clauses; both forms are equivalent RLS-wise,
 and grants (`grant select, insert, update, delete on table ... to authenticated`) accompany the
-newer style explicitly. The one elevated read path in the system, the Coach weekly API, uses a
-server-only secret client that bypasses RLS entirely — every one of its queries therefore carries
-an explicit `COACH_API_USER_ID` predicate as a substitute for the RLS boundary it has stepped
-around. See `/openwiki/integrations/supabase.md` for that boundary and the client/session-refresh
+newer style explicitly. `agent_thread` and `agent_message` use that newer form
+(`"users manage own agent threads"` / `"users manage own agent messages"`, `for all to
+authenticated`) plus the same table grants. The composite foreign key above is an additional
+integrity constraint, not a replacement for those policies. The one elevated read path in the
+system, the Coach weekly API, uses a server-only secret client that bypasses RLS entirely —
+every one of its queries therefore carries an explicit `COACH_API_USER_ID` predicate as a
+substitute for the RLS boundary it has stepped around. The agent chat path does not use that
+client. See `/openwiki/integrations/supabase.md` for that boundary and the client/session-refresh
 plumbing.
 
 ## Additive-migration discipline
@@ -154,6 +276,9 @@ repeatedly in the schema:
 - Security hardening is itself layered on: `0003_harden_signup_trigger.sql` re-defines
   `handle_new_user()` only to pin `search_path` and revoke direct RPC execution, without
   touching the trigger wiring from `0001_init.sql`.
+- The agent schema evolved the same way. `20260927170000_agent_multi_thread.sql` adds `title`,
+  deletes empty Slice 0 threads, backfills titles, drops the id default and the one-thread key,
+  and replaces the message foreign key. It does not edit `20260920181553_agent_threads.sql`.
 
 ## Atomic-write RPCs
 
@@ -197,7 +322,10 @@ Deliberately **not** wrapped in an RPC: single-statement writes like `logSet`, `
 statement is already atomic. `acceptAdaptation` (log a Fluid adaptation, then optionally call
 `swap_session_exercise`) is also left as two calls; a logged adaptation with a failed follow-up
 swap is considered recoverable and detectable rather than corrupting, so the design in
-`docs/PROGRAM-TRANSACTIONS.md` treats wrapping it as low-priority, not required.
+`docs/PROGRAM-TRANSACTIONS.md` treats wrapping it as low-priority, not required. Agent thread
+creation is the same kind of exception: `startTurn` inserts the thread, then the first message,
+and deletes the thread if the message insert fails. That cleanup is application-level, not an
+atomic RPC.
 
 ## Deletion and cascade semantics
 
@@ -216,8 +344,12 @@ structural or historical:
 - Deleting a `program_day` cascades to its `program_slot` rows (a day's slots have no meaning
   without the day), which is also the exact mechanism `save_program`'s upsert-then-delete-missing
   step relies on to remove an entire day's slots in one statement.
+- Deleting an `agent_thread` cascades to its `agent_message` rows through
+  `agent_message_thread_owner_fkey`. A message cannot outlive its thread, and it cannot be
+  re-pointed at a thread owned by someone else.
 - Every user-owned row ultimately cascades from `auth.users` deletion (`on delete cascade`),
-  so removing an account removes all owned data without a separate purge routine.
+  so removing an account removes all owned data without a separate purge routine. That includes
+  both agent tables.
 
 ## What's authoritative vs. derived
 
@@ -228,10 +360,14 @@ flowchart LR
   REC[recompute.ts]
   MA[movement_adaptation — append-only intent log]
   CRD[coach_recommendation_decision — review state only]
+  AT[agent_thread — conversation rows]
+  AM[agent_message — persisted transcript]
 
   SL -->|rebuild| REC --> UES
   SL -.->|never rewritten by| MA
   SL -.->|never rewritten by| CRD
+  SL -.->|not derived into| AT
+  AT -->|cascades to| AM
 ```
 
 - **Authoritative** (source of truth, never derived from anything else): `set_log`,
@@ -247,6 +383,18 @@ flowchart LR
   `movement_adaptation` records what the plateau engine proposed and what the user did with it,
   used to explain rep-range/exercise changes but never replayed to reconstruct performance
   numbers.
+- **Conversation state, neither a training ledger nor a cache of one**: `agent_thread` and
+  `agent_message` persist the owner's chats. They are not rebuilt from `set_log`, and writing
+  a message does not mutate a program, session, or set. Training facts stay in the tools the
+  agent calls, not in these rows.
+
+## Focused tests
+
+`supabase/tests/agent_thread_rls.sql` is the pgTAP suite for the shipped thread contract
+(11 assertions). As the owner it can read only its own thread and messages, insert a message
+on its own thread, start a second thread, and update its own message parts. It cannot create
+a thread or message for another user (`42501`), omit the app-chosen thread id (`23502`), or
+attach or move its own message onto another user's thread (`23503`).
 
 ## Related pages
 
@@ -256,6 +404,8 @@ flowchart LR
   coefficients, and progression targets.
 - `/openwiki/integrations/supabase.md` covers the client/session plumbing, the Coach API's
   elevated read path, and the RLS boundary this page's ownership pattern depends on.
+- `/openwiki/workflows/coach-and-ai-agent.md` covers the chat route, draft-then-save flow,
+  and the model window cut over a thread's persisted messages.
 - `/openwiki/testing/testing-strategy.md` covers the SQL regression suite
   (`supabase/tests/*.sql`) that exercises RLS policies and the atomic RPCs' rollback/invariant
   behavior.

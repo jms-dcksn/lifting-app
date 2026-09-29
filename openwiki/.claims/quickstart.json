@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:7b46f1a3a8c841c94a688d40ab4b6a31da10f974501de615f26cb85e7f0fafdb",
+  "claims": [
+    {
+      "id": "claim_0309de68d8b043edbd87dfbe1820d10e",
+      "statement": "OpenWiki is optional just-in-time context, not required startup reading. Agents should not enumerate or preload wiki pages at task start, and should fall back to openwiki/quickstart.md only when retrieval tools are unavailable.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L73-L86",
+          "version": "repo-lines-v1:sha256:6c90a8ee260419ce52c98ce902d593546e4e6c9b455577ea517f64e10c04699c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmMTgwZjljMTI2OTAzYmNjMzMxYWE5NTQ1NmU0OTQ0NGE3ZDRkMDExZThhMmE4M2Y1ZGM4NzAyMzkxODEyZDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiNTM5NTNiZmI3MmMxMjYyYmJhZTJlYWNhNzJjYWJmMWFmNDk5MjdhMGJiYTExNTdiMmQ1YmRiMjg1YzRiZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmY2JiZjM5MTQwNzVlY2FhYTViYmYxM2E3ZWIyODJkNWM1YTJiMjhlNzk5YjhhMDlhNTVhOWI4N2E3MjA2OTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMwODlkZjkzZjhiYTU3YTRkZGJmZDhmMDEzOTYyYzM5NzhjZTRkYjY4MTk5YzRkYTY2NjY0OWIwOTk2Y2VkYTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bf6d7b00df2441c8937eba67c83e21df",
+      "statement": "Source and tests establish implemented behavior and beat wiki or docs pages. docs/architecture.html is the named visual architecture map, but it is not present in this checkout, so its contents must not be invented from the link.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L51-L55",
+          "version": "repo-lines-v1:sha256:d135573fb11f7d7fa5205fd22b12ad887db1ba2abc0f93b02efc68fee411facc:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTI2ODg3ZTA0MjE5NDdmYzQ1YjEyZGFjNmUyNjM1YjVkOGMzMjU0OGEyNmQ3MmU2YjJmZDM4OWVmYmQ5NjQ0YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjgzZjQxMzA2MGFlODYzYzU0MWI0NzdhN2Y4ZDI2ZTkzMDg4NzJjMWZlNGUyNDUyNjIwOWJlYzQxOWRkN2M4NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTNkMTRmMDczNjJkOWVjODc2MDQ5NGY2NDY3MjU1NTJjNWNlMWQ3Y2FkMmNjMzhhZDQzOGY1ZTc0OWY5MGQxYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWFlMzBhMTkyZTk2YjZlZDgzMzM4NWYwYzcyZjNlOGQ0ZDQ4YWZhMWM3MDQwNDEyNzkwZjVmYjM3YzM4MDZhNCJ9"
+        },
+        {
+          "resource": "repo://docs/README.md#L3-L11",
+          "version": "repo-lines-v1:sha256:30aed37db5d5a6b41a30f1dd344a3648b339302907101fdd9ca1581d59db5450:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzJkYTZiNmU1NTIxNTFhMzI0ZDlmMzkyMWZmZWQ5ZGQ4OTMxNGQ4OGJlZDdhMjkwODAwMmQ4N2Y1YjNhMmU5NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmMxODY1NDVmNmEzMDhhZjgwNDNkNDEzMjc1NmVjYWY1OWY3ZDI4ZDk1ZTg1NDMzODhjODQwOTNhMGYyZGJmNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjIsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzcyYTI4OWIwZGIwZGI4YjcwMzU3YzBiMTJhMzZhZmQ3ZGJkNmZhMjRkZDRiNmIyMmFmMzFjNjdkMzU5MTYxZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTQ4YWI2MzFhNDI2ZjQ5MzhmMTA3NWJmMzU0MjY4ODcyZWEzZGNmMTRmZmNhNWQwODg2ZjgxN2EzYWU0MDBlMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_715a2e3b3a444418991e24dace066109",
+      "statement": "Workout logging and session failure handling are owned by the session start/log/finish actions. Cookie-backed next-workout planning and scoped in-session swaps are a separate path that must stay consistent with Fluid pending suggestions.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L14-L22",
+          "version": "repo-lines-v1:sha256:0871f28dd93c5edddee3a5c77f193636d8a9b6e2a55402b48d7de0234764daa3:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmQ5Y2M3ODBiOGE4NGU4OWM2NDI2ZTU1YjIwNzBkYjg0Zjg2ZWY5MTRmYjA2OGRlN2VkOTRiMDZlNzEzY2M5NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2IxOTQyNjNlYTY3MjJiNWU2MmVlNjc4OGRmMDgxMDZhN2NiNDQ5YTgyYTk5YzhjY2VlODAxYWVjZTM4MzlhMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjVkYzY1Y2VlNmI5YjIxMTY1NTc5ZGY3YjkxNmEwZmMyMGRhMWIwZWZhY2U5OTNiOWY3NGEwOWNjOTQwYmM4NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmMwYmY4MWU3ZTA1ZjVmNGM0MjhhMGE4YTMxYTgxMTMzNTFiYTBjNTFlMjk3ZWZhNGViYTg5NTQ5OWJiY2JjNyJ9"
+        },
+        {
+          "resource": "repo://src/app/(app)/session/actions.ts#L120-L138",
+          "version": "repo-lines-v1:sha256:b92b2f4db35f0a7846c50c498d09109ab2989294552544f189e48d04cbf0d3ba:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlZmU0M2M1MmM3N2JmMzcyNWM0MDcwZDI5MzRhZDIzMGEyMGNlMWUwZmYxNTg2ZDRhZjM1Mzc4ZmRjY2VjYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5YWJhN2RiYTU5NmI2MDZlNzBiYzUwYzVlOWFkMGY4MmZhNzcyYzExYzQ5MjdkOTk4YTUyN2VjNWU0NDNiOTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5NGZjMGMxNzNkMWVjM2ZjNTAxZDdkZmE5Mjg1NTAxYzUyN2NmYjQ3MTI1ODNkYTNjYzM2MTgwNTY2YjRiZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyNDliODEwMGU0ZjZlN2U1ZWNiNjNmZDY4ZGNjMWUyZDA2ZDI5NzhlOGFiZDA2ZmE5OGVkN2ZmZjI5ODIyOWYifQ"
+        },
+        {
+          "resource": "repo://src/lib/fluid.ts#L1-L5",
+          "version": "repo-lines-v1:sha256:ae3eda846a0b8625004fca0459eac75207ba6c94ef839f8f75150d19727e370d:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTUyMjY3NGUxNGEzZGIzNDY2ZGE1ZDA2ZWJkYzlhOWEzZGIwZDMwMWI5N2E1YzU2ZDY1Zjg5M2ViODEzZjgwZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjJiM2U2NTlhNTRlOWUyYzA4ZTUzYWMyOTE5NTM2YTUwYTVkYjc4YmJmYzIwZmQwNmUwZDc1MmU4OTQ1YTM5ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzFmYWJhODAwMDY2NzA1ZjA0YjQyMTUxNTU0NWVlYzBiMjJiYmVkZDE4N2FlNGIwMTI0NDRkNWNiODdiYTE3OCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_27050d2930b845a6acbca9e551186738",
+      "statement": "Track board summaries, Exercise review, volume, and monthly progress are one analytics family. Weight-calendar writes and period tracking are a separate body-tracking family.",
+      "evidence": [
+        {
+          "resource": "repo://src/app/(app)/weight/actions.ts#L44-L44",
+          "version": "repo-lines-v1:sha256:f67c6c0368ca5f78995988bc9d9f096cd2db8cbbbd2392a114d37e390aad805c:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjY3YzZjMDM2OGNhNWY3ODk5NTk4OGJjOWQ5ZjA5NmNkMmRiOGNiYmJkMjM5MmExMTRkMzdlMzkwYWFkODA1YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjY3YzZjMDM2OGNhNWY3ODk5NTk4OGJjOWQ5ZjA5NmNkMmRiOGNiYmJkMjM5MmExMTRkMzdlMzkwYWFkODA1YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmFmMmVjNTExZmQyYWY3OWVjMjcxNGM0MDFiODg2NmZlZDQ5NTQyN2E2MTNlMzY2Yzc0YjBjOWZhMGIzNTFhNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGMyYjgyMGYwOGM0ZTEyMGQzMTViMWM4M2JlODhhZGQzZjE3NTkxMzhiMzA1MDY2OTc0OTUxZjU4MDVlZTA3MCJ9"
+        },
+        {
+          "resource": "repo://src/lib/analytics.ts#L216-L216",
+          "version": "repo-lines-v1:sha256:f3da2ee4050614c3a6fc3f17e27bc0d89b8369aaf11ff0b35f5ad426949c9f3d:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjNkYTJlZTQwNTA2MTRjM2E2ZmMzZjE3ZTI3YmMwZDg5YjgzNjlhYWYxMWZmMGIzNWY1YWQ0MjY5NDljOWYzZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjNkYTJlZTQwNTA2MTRjM2E2ZmMzZjE3ZTI3YmMwZDg5YjgzNjlhYWYxMWZmMGIzNWY1YWQ0MjY5NDljOWYzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmU3NWM0NWNkZjgxMGRlYThmODAxYzhhNjAzM2FhMzE5ZTQzZWRjYTAzYWQyMTY2YTU4MGUzOGI2NWEzNDM3ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGJmODZlNTJkYzIwZTJhMzgxYWYxNzViNzlhYjBkOTJmYzExMzM4ZDQ0OGJkZDAxN2E2YmRiYzUzOTg3YTg0ZCJ9"
+        },
+        {
+          "resource": "repo://src/lib/monthly-progress.ts#L76-L76",
+          "version": "repo-lines-v1:sha256:1fc8f31c2a59f10073c1c2fbc613290c66ef7560189f6e43ec7db3c4bba821ff:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWZjOGYzMWMyYTU5ZjEwMDczYzFjMmZiYzYxMzI5MGM2NmVmNzU2MDE4OWY2ZTQzZWM3ZGIzYzRiYmE4MjFmZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWZjOGYzMWMyYTU5ZjEwMDczYzFjMmZiYzYxMzI5MGM2NmVmNzU2MDE4OWY2ZTQzZWM3ZGIzYzRiYmE4MjFmZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2EyY2FjYTM0ZTRlYmYzZDU2NGUzNTVmMjY5OTk3OGQzZDE5Nzg4ZjViNGZlZDlhNDA0NjBhYTFlOWM4ZTcxMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzU5NjhkYWI5MWIxM2MwODE2OWI0YmVmNzM4MDg3YjJkNjUxYjBlZDRlMzVmMjlhYmY3ZTZjZjViNDljMTQxYyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_71cc36d1ddf44cfcb8872f7241192435",
+      "statement": "The shipped in-app agent is read-only: WRITE_TOOL_NAMES is empty and its read tools wrap existing loaders. The weekly Coach API is a separate elevated path that builds a secret-key client with session persistence off.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L21-L23",
+          "version": "repo-lines-v1:sha256:fae595b84d0f2cab0063da96485e23c7500d4c99ae96400d4778c7f2d1d8b8a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzBkYmUzNzA2ODBiYWViYTliMjNhNmM0MWI4ZmY1YjhlYTViZjYxYTA0YmQzOTY5ODU5N2IxOTg5MmU0YWY0MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWFlZTIwYzFlMDA5Nzc3M2M3ZjdjYTBiNjlhN2NkMWY4ZGVjMjIxM2ZhMzVkYWFhNzVmNWI0MDY4MmE4ZmMxZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmVhY2IwNjFjMjAyZjZkYjk1NzgwOGExNTk0MmRhN2I1NWFlZTllZDEwNWE3NzZlZGFlZGM1ZTEwZTFmMjY2NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODljNTJkNjRiNmZhZjMxNjQyZTBiYjJjMWQ5YWE2Yjc5MTBjZDZmOGVlMjhlZjRjNmI4ZTY1YTZhOGVmMTBhOSJ9"
+        },
+        {
+          "resource": "repo://src/lib/agent/policy.ts#L18-L28",
+          "version": "repo-lines-v1:sha256:5cd0e2f72c4ca1cd5657d330574c8cb57ea36a9d79eacc967ff2444185fc5d40:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NmU1ZjY4MTU0YzRlYzZiODY2NjYwOTRjOThlNWUzOTEzYjYyNzYxYWY0ZWEwZjliNjFiMGY1NzcyMDBlYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg1NGI0ZDE2NTU1MmU5ZmY1NDEzNmQwNjYwYWM3NmY2MWFlNDM1OWU1OTBiMzlhNmYyMTEwMjE0M2E5MmMzNDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg4MzNjODI0YWU3ZGZlM2IxMWE5Mjc4ZThiY2YzMDliYWE0Zjg3MzhmZDE0ZWRhNWI2MmVmOTA5ZDM3ZTU1M2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2YzFmOTYwNmQ4ZGY2MDNmOTZmMmRkMDljMDE0NjU1M2FlNjIzY2M3YzdkN2I4ZTVkYjIyYjY5MzZkNTQxOGMifQ"
+        },
+        {
+          "resource": "repo://src/lib/coach-weekly-data.ts#L196-L203",
+          "version": "repo-lines-v1:sha256:71d0301ccb9340b24b48561eec14d062551a6cfcf3e9828524a4b888c0235246:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDUyMzZiNjM0ZGQxYWNjNTEyMTVkMTBhNjA4YTVhNGRiZmJhMzQ1OGZkZDdhNzc4YmVjOGE1MGYyZGRhZTgwNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2EzZTQ2Zjk0Mjc2YjZmNmY0ZWQxZjAyYWY3OGJlZjZhMmVlMWM0MzlkZDU1ODRiOTczOTQ4MzEzMjE0ZDJiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTY4NDc5N2QxNDcwYThiZmY3YmQ1YTZhMDIxNGU5NWI5ZjMzMzA3ODgxZTY2YzM1ZmY3MDA1ODFjNzIwOGJkZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_7e0cecd09c4946939adfeec49a2777be",
+      "statement": "Application changes are verified at the boundary that can fail: npm test runs Vitest, npm run test:db runs the pgTAP RLS suite, and lint, typecheck, and build form the app gate. Docs-only edits check claims against source instead of those commands.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L34-L44",
+          "version": "repo-lines-v1:sha256:5ab29a81ebfe0dc18e5b74d3663f808b2d763b160f9b633797d54c4ee2434b8c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3MmE0MWNmM2I3NmJkMzg3MGFiNjhlOWVlYmEyZjgwMDNlMjM5OTU0NjYwOTQ0YTI3NWNmYTA4YmJiODAzZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjZmMwZGYwMzFiNDA1MWFmNjFhODZiZjExYThlZTM1MTZmMmViMGI1MzhlMTJlMGMyMTUyNDlkOWI4YmYzNTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI5Y2QyNDE1ODBhNmMxMTljM2NmMWU2NjBjNjdlMThmOTE0N2ZiNGI4MmE4OGIzZjg4Y2Y1MzUzNjI3MWE0NWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdkNWQzZjZlYTdiNDFiZDEwMzg1NmJmNGIyMzExNTIyODFmMTAxMzJiNjYyYmYwNmIxNmUxM2U1MDBiMTk4MjQifQ"
+        },
+        {
+          "resource": "repo://package.json#L5-L12",
+          "version": "repo-lines-v1:sha256:f661279f3c1420bdfb66016cc97e5c91f5bd9768e9af9a3d52b6126876a570a4:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQ4MzNkNTk0OWMwM2E0MGNhOTUyNDkxNjEwYTY2NTk2NDRiM2FhNDY2MzYyZjc5OTAyMGRiZjE5ODE1NDdkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDYyYTVjZDYwZmJkY2UyNWViMDU5NGNkMTgyNGFhNGI0MDhmZjE1Mjk2ZTI5ZDA2OTk1YjM4ZGRmNzJiZDY5ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGViMThjZmViNzc5ZjU2ODNiNjFhMjA4MWRkY2QxNGYzMDMyNmZiNWYyYmQwODViMmIxNDkyZTk1MzliMTFiNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTlhOTIzODBkOWJkMjVmNjM4MDA1NDNmYWMyMDBjMTY1YjZiYjI0OWMwYjI4NGNmYWYxMDcyODJhYTk2ZGJjMiJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.0",
+    "at": "2026-09-29T00:58:03.170Z"
+  }
+}

@@ -1,11 +1,41 @@
 ---
 type: workflow
 title: Exercise swap scope and workout planning
-description: How users pick exercises before and during a workout — the cookie-persisted next-workout planner shared with Home/Start, and the in-session workout-only vs remainder-of-program swap RPC — and how both interact with fluid adaptation state.
+description: How users pick exercises before and during a workout — the cookie-persisted next-workout planner shared with Home/Start, and the in-session picker-then-confirmation swap that chooses workout-only versus remainder-of-program — and how both interact with fluid adaptation.
 tags: [workout-planning, exercise-swap, next-workout, fluid-adaptation, supabase-rpc, server-actions]
 verified:
   - by: openwiki/0.6.0
-    at: 2026-09-25T19:18:52.086Z
+    at: 2026-09-29T00:58:03.170Z
+sources:
+  - id: openwiki-source-3749d00a235d184bf91f3db3
+    resource: repo://src/app/(app)/program/exercise-picker.tsx
+  - id: openwiki-source-fc53abe6e9d97193632f0a9b
+    resource: repo://src/app/(app)/session/%5Bid%5D/active-session.tsx
+  - id: openwiki-source-6dcda923136d9130e742a21b
+    resource: repo://src/app/(app)/session/%5Bid%5D/page.tsx
+  - id: openwiki-source-fb6e3956308b6521741fac74
+    resource: repo://src/app/(app)/session/actions.ts
+  - id: openwiki-source-1d6b1ed2749c16b12c7347ec
+    resource: repo://src/app/(app)/workout/next/actions.ts
+  - id: openwiki-source-1d09c826873bb28936cb21f8
+    resource: repo://src/app/(app)/workout/next/page.tsx
+  - id: openwiki-source-27a124157dbd64230b3e925e
+    resource: repo://src/app/(app)/workout/next/workout-planner.tsx
+  - id: openwiki-source-968a964669a73b7bdeb8bba3
+    resource: repo://src/components/ui/sheet.tsx
+  - id: openwiki-source-8dc112106562f8c0bf7d689b
+    resource: repo://src/lib/next-workout.ts
+  - id: openwiki-source-7936c6908cc7ca09ad21b464
+    resource: repo://src/lib/session-swap-actions.test.ts
+  - id: openwiki-source-ca252c962d5a187164292437
+    resource: repo://src/lib/strength/plateau.ts
+  - id: openwiki-source-227a7cbd1d55044b7e710ece
+    resource: repo://src/lib/workout-plan.ts
+  - id: openwiki-source-d3f09bc8a0182a75769e32fe
+    resource: repo://supabase/migrations/20260911005629_exercise_swap_scope.sql
+  - id: openwiki-source-dffd6bef5493c386195d9a92
+    resource: repo://supabase/tests/exercise_swap_scope.sql
+generated: { by: "openwiki/0.6.0", at: "2026-09-29T00:58:03.170Z" }
 ---
 
 # Exercise swap scope and workout planning
@@ -33,15 +63,16 @@ flowchart TD
     StartSession -->|"insert succeeds"| ClearCookie["Delete next-workout-plan cookie"]
     StartSession -->|"insert fails"| KeepCookie["Cookie draft retained"]
     ClearCookie --> Session["Active session page"]
-    Session -->|"Swap control -> confirmation sheet"| SwapScope{"Scope?"}
-    SwapScope -->|"This workout only"| RpcWorkout["swap_session_exercise(scope='workout')"]
-    SwapScope -->|"Remainder of program"| RpcProgram["swap_session_exercise(scope='program')"]
+    Session -->|"Swap or last-used"| Picker["ExercisePicker, or skip picker for last-used"]
+    Picker -->|"pick, then picker closes"| Confirm["Confirmation sheet: ExerciseVisual plus scope"]
+    Confirm -->|"This workout only"| RpcWorkout["swap_session_exercise(scope='workout')"]
+    Confirm -->|"Remainder of program"| RpcProgram["swap_session_exercise(scope='program')"]
     RpcWorkout --> SessionJson["Update workout_session.exercise_swaps JSON"]
     RpcProgram --> SessionJson
     RpcProgram --> SlotUpdate["Update program_slot.exercise_id/pattern"]
     RpcProgram -->|"if program.style = fluid"| ManualSwap["Insert movement_adaptation action=manual_swap"]
 ```
-*How Home, the planner, session start, and in-session swaps all route through `loadNextWorkout` and `swap_session_exercise`.*
+*How Home, the planner, session start, and in-session swaps route through `loadNextWorkout` and `swap_session_exercise`. The confirmation sheet opens only after the picker has closed.*
 
 ## Planning the next workout
 
@@ -78,8 +109,9 @@ different plan key, and stale cookies naturally stop matching.
 
 Planning choices are stored in a same-site, `HttpOnly` cookie (`next-workout-plan`, `httpOnly`,
 `sameSite: "lax"`, 30-day `maxAge`) via the `saveWorkoutChoice` Server Action
-(`src/app/(app)/workout/next/actions.ts`). This is intentionally **not** synced across devices,
-and the UI states that limitation. Key properties of this Server Action:
+(`src/app/(app)/workout/next/actions.ts`). The cookie is browser-local and is not synced across
+devices. The planner itself no longer prints that limitation; a successful save only says "Saved
+for this workout." Key properties of this Server Action:
 
 - It re-derives the current plan with `loadNextWorkout` and rejects the save if the workout is
   already open (`next.open`) or if the caller's `key` no longer matches the freshly computed key
@@ -128,24 +160,34 @@ time — so an in-progress session's swap choices are never clobbered by a later
 
 ## In-session exercise swap scope
 
-Inside an active workout, tapping the Swap control (or a profile-specific "Choose machine /
-cable / bench / rack / platform" label from `chooseStationCopy`) opens the shared
-`ExercisePicker`; picking a replacement opens a confirmation `Sheet`
-(`src/app/(app)/session/[id]/active-session.tsx`) with two choices:
+Inside an active workout, the Swap control (or a profile-specific "Choose machine / cable /
+bench / rack / platform" label from `chooseStationCopy`) opens the shared `ExercisePicker`.
+Picking a concrete replacement calls `onPick` and then dismisses the picker. `Sheet` runs that
+dismiss over 250ms before `onClose` clears `swapping`, and the confirmation sheet is gated on
+`pickedSwap && !swapping`, so the two dialogs do not stack. The last-used alternate skips the
+picker and sets the same pending pick directly. Either path then opens the confirmation `Sheet`
+(`src/app/(app)/session/[id]/active-session.tsx`).
+
+The heading is `Use {name} for…`, with a decorative `ExerciseVisual` of the pending exercise
+(`exerciseId` plus `baseExerciseId`, so a station variant can inherit its template image) beside
+the text. The sheet offers two scopes:
 
 - **This workout only** — use the replacement now; the program's exercise returns next time this
-  slot comes up.
+  slot comes up. Success status: "Saved for this workout only."
 - **Remainder of program** — use the replacement now and for this slot every time this program
   day recurs. Other slots, other days, and shared program templates used by other users are
-  unaffected.
+  unaffected. Success status: "Saved for this day for the rest of your program."
 
-Cancel leaves the current selection unchanged. The sheet cannot be dismissed while a save is in
-flight (`dismissible={!savingSwap}`); a failed save shows an inline error and the sheet stays open
-for retry. Both scopes save immediately, before the first set of the workout is logged, and
-survive reload. Sets already logged keep their original `exercise_id` and performance; their
-exercise name is shown alongside the set when it differs from the currently selected exercise.
-Weight/rep recommendations continue to be computed from each specific exercise's own history,
-independent of which exercise is "current" for the slot.
+A caption, "Logged sets stay," states the set invariant before either button. Cancel, Escape,
+scrim tap, and handle swipe all clear the pending pick and leave the current selection unchanged,
+but only while a save is not in flight. The sheet is not dismissible during the save
+(`dismissible={!savingSwap}`), and Cancel is disabled for the same window. A failed save shows
+an inline `role="alert"` error and leaves the sheet open so either scope can be retried. Both
+scopes save immediately, including before the first set of the workout is logged, and survive
+reload. Sets already logged keep their original `exercise_id` and performance; when that id
+differs from the current selection, the logged exercise name is shown on its own line under the
+set. Weight/rep recommendations continue to be computed from each specific exercise's own
+history, independent of which exercise is "current" for the slot.
 
 ### `swapSessionExercise` and the `swap_session_exercise` RPC
 

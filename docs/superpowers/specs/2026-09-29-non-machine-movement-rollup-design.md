@@ -163,6 +163,10 @@ Recap groups one movement into one scope. The group title is the template name. 
 
 Cable and machine targets stay exact-id. A new cable brand calibrates. It does not copy another brand's stack number.
 
+The family input is the first-set list passed to `selectProgressionReference`. It is not a synthetic `user_exercise_stat` row. `recommend()` keeps matching `stats.find(s => s.exerciseId === target.id)`. A movement with no first sets still takes `startingWeight()` and the pattern pool. Do not stuff a sibling's `current_e1rm` into that match. That would skip the rep rung and, on a cable, copy another brand's stack.
+
+Today the session page buckets first sets by exact `exercise_id` and the card reads `progressionByExercise[exerciseId]` (`src/app/(app)/session/[id]/page.tsx`, `active-session.tsx`). A Nautilus card with an empty bucket never sees Flex sets, even if the pure function would accept them. Slice 4 widens the query to `movementMemberIds` for rolling families before that lookup. The agent next-workout tool and Coach `exerciseProgressionReference` use the same list, or the session and the proposal will disagree.
+
 This is the split Card 1 accepts. Reply `exact` on Card 1 if targets must stay per station even while the chart merges. That reply keeps the chart and makes the session treat a new bench as a first exposure. The default is the opposite, because a chart that says 200 lb and a session that says "first time" is two products.
 
 ### 5. Pins
@@ -186,7 +190,8 @@ One URL, `/history/<movementId>`, for a rolling family.
 - Each working set shows a station chip from `catalog[set.exercise_id].brand` when brand is present. Leftover template rows have no brand and no chip.
 - Session-best e1RM is the max stored eligible e1RM in that session across members. The chart is one series. It does not overlay two stations as two lines.
 - Month compare PRs use the same movement scope as `workoutRecords`. Volume sums the member sets. It does not average them.
-- Header title is the template name. The pin control writes the movement id.
+- Header title is the template name. The pin control writes the movement id. The page currently hides that control when `!isLoggableExercise` (`history/[exerciseId]/page.tsx`). A rolling template is not loggable and still shows the pin.
+- Info copy that says the screen is one exact exercise changes on a rolling page. Last today says "this exact exercise and equipment" (`exercise-review.tsx`). The chart says "this exact lift" (`review-chart.tsx`). Those sentences become the movement, with the station named on the set. Machine and cable pages keep the exact wording.
 
 ### 7. Logging
 
@@ -232,11 +237,11 @@ Do not implement the old sentence and this spec at once.
 
 Code slices are for Composer 2.5. Architecture questions stay with Grok and this spec. Each slice is green on its own. Do not start slice N+1 on a red slice N. None of them add a column.
 
-1. **Wire the key into records.** `workoutRecords` groups with `comparisonKey`. Eligibility stays `eligibleRecordSet`. Tests from the matrix for two benches, two machines, two cables, leftover template plus variant, and bodyweight historical load still reconstructed per set. No UI.
-2. **Exercise review read.** Load `movementMemberIds`. Redirect variant URLs. Station chip on Last and the session list. Chart, 21-day window, and month compare use those rows. Agent exercise-review tool uses the same id list and still must not blend machines. `?equipment=` unchanged for non-rolling.
-3. **Track and pins.** Rolling tiles aggregate session-bests. Replace the family-latest assertion for benches. Keep it for `lat-pulldown`. Read-time pin collapse. Allow pinning a rolling template. Cap counts movement keys.
-4. **Session targets.** Ordinary-pound `sessionTarget` input is family history. Cable and machine inputs stay one id. Assert the `logSet` insert id is still the variant.
-5. **Coach, Fluid, monthly.** `stall-report` context uses `comparisonKey`. Monthly PR totals follow `workoutRecords`. Monthly best e1RM uses the movement key for rolling families. Coach fixed-load rows use the same key. Update FEATURES from "specified" to "shipped" only in this slice.
+1. **Wire the key into records.** `workoutRecords` groups with `comparisonKey`. Eligibility stays `eligibleRecordSet`. `finishSession`'s best and previous-best maps (`session/actions.ts`, keyed today by `exercise_id` only) use the same key so one movement is one overload line. Tests from the matrix for two benches, two machines, two cables, leftover template plus variant, and bodyweight historical load still reconstructed per set. No review UI.
+2. **Exercise review read.** Load `movementMemberIds`. Redirect variant URLs. Station chip on Last and the session list. Those rows are `weight × reps` today. The brand is not on the line. Chart, 21-day window, and month compare use the same rows. Rewrite the Last and chart info sentences that say "exact exercise" / "exact lift" on rolling pages only. Show the pin on a rolling template even though `isLoggableExercise` is false. Agent exercise-review tool uses the same id list and still must not blend machines. `?equipment=` unchanged for non-rolling.
+3. **Track and pins.** Rolling tiles aggregate session-bests. Replace the family-latest assertion for benches. Keep it for `lat-pulldown`. `exerciseSummaries`, `e1rmPrFeed`, and `weightPrs` are one row per exact id today. All-lifts and those feeds collapse a rolling family to the movement id so Flex and Nautilus are not two incline rows. Read-time pin collapse. `toggleExercisePin` already allows a default-compound template and rejects every other `needsStation` id (`pins/actions.ts`). Allow a rolling template (`bb-incline-bench` and the other non-default bench, rack, and platform seeds). Keep refusing machine and cable templates. Cap counts movement keys.
+4. **Session targets.** Ordinary-pound `sessionTarget` input is family first-set history. Widen `progressionByExercise` in the session page, the agent next-workout tool, and Coach `exerciseProgressionReference` to `movementMemberIds` before the lookup. Cable and machine inputs stay one id. Do not write a family stat for `recommend()`. Assert the `logSet` insert id is still the variant.
+5. **Coach, Fluid, monthly.** `stall-report` context uses `comparisonKey`. `buildExerciseTrends` and `slotExposures` follow that key so a brand change does not look like a new lift. Monthly PR totals follow `workoutRecords`. Monthly best e1RM uses the movement key for rolling families. Coach fixed-load rows use the same key. Update FEATURES from "specified" to "shipped" only in this slice.
 
 Slice 1 can import `movement.ts` as it exists. If Card 2 comes back `rollup`, stop and redesign the cable value before flipping `rollsUp`. Do not treat the reverse as a one-line predicate change.
 
@@ -257,6 +262,10 @@ Must pass before the feature is called shipped. Rows marked **now** are in `move
 | Two equipment instances of one incline variant | same movement key | **now** |
 | Unknown id | station key, no family | **now** |
 | Review of either incline URL | one page, both brands as chips, one chart | 2 |
+| Rolling review info copy | does not say the page is one exact exercise | 2 |
+| All-lifts incline | one row for the template, not one per brand | 3 |
+| Nautilus card after Flex history | suggested load continues Flex pounds | 4 |
+| Coach proposal for that slot | same load as the session card | 4 |
 | Machine review | still one exact id, instance switcher intact | 2 |
 | Pin incline variant | tile numbers are the family, href is `/history/bb-incline-bench` | 3 |
 | Pin two incline brands | one tile, one cap slot | 3 |

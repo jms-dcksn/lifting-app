@@ -86,7 +86,12 @@ type StationProfile = "machine" | "cable" | "bench" | "rack" | "platform" | "non
 ```
 
 `stationProfile !== "none"` means the template has no absolute load identity and
-must be instantiated before log, pin-as-loggable, or records. This is the
+must be instantiated before log. Pin-as-loggable and record eligibility in this
+sentence are the 2026-09-21 rule. The
+[2026-09-29 rollup spec](2026-09-29-non-machine-movement-rollup-design.md)
+allows pinning a `bench` / `rack` / `platform` template as the movement, and
+compares those families on the template id. Logging the template stays rejected.
+This is the
 generalization of today's `machineTemplate`.
 
 Keep `equipment` (`barbell | dumbbell | cable | machine | bodyweight`) as the

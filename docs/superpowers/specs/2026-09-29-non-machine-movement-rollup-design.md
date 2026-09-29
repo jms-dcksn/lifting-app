@@ -1,9 +1,9 @@
 # Non-machine movement rollup for e1RM and PR records
 
-**Status:** Design, awaiting James. Not shipped. Do not merge on approval alone.
+**Status:** Design, awaiting James. Not shipped. Approving this PR does not answer the cards. Do not implement a slice until the card it depends on is answered. Do not merge.
 **Date:** 2026-09-29
-**Code on this branch:** pure key only (`src/lib/strength/movement.ts`). `set_log`, records, review, Track, pins, progression, Coach, Fluid, and monthly still use exact `exercise_id` until the slices below land.
-**Supersedes, for ordinary-pound families:** the station-composition lock that records, progression, and review stay exact and that split PR chains are accepted. Cable and machine exactness stays. See the Decision Cards.
+**Code on this branch:** pure key only (`src/lib/strength/movement.ts`). Nothing else imports it. If Card 1 comes back `exact`, delete that module. Do not wire it on the strength of this PR.
+**Locks still in force:** station composition (James 2026-09-21), including split PR chains, exact progression, and exact review. This spec proposes changes. It does not replace those sentences.
 
 ## Who this is for
 
@@ -11,33 +11,53 @@ The lifter who pins Barbell Incline Bench and changes gyms. Today Flex Fitness a
 
 The next engineer inherits one comparison key, not a second id column and not a special case in each screen.
 
-## Decision Card 1. Revoke exact PR chains for ordinary pounds
+Each card has one reverse word. That word does not answer the other cards. Approving the PR answers none of them.
 
-**Recommendation.** Revoke "do not merge PR numbers across family members" for station profiles `bench`, `rack`, `platform`, and `none`. Compare e1RM, rep PRs, and top-weight on the seeded template id. Keep writing `set_log.exercise_id` as the station that was loaded.
+## Decision Card 1. Record and review story for ordinary pounds
 
-**Reason.** Those profiles log ordinary pounds. A gym change was splitting one movement into silent parallel charts. The station spec split them so pad angle could not hide inside one number. James now wants that noise explained on the set, not by forking the record. Profile `none` (dumbbell, bodyweight, and barbell rows with no station) is already one id. The same key covers it with a member list of one.
+**Recommendation.** For `bench`, `rack`, `platform`, and `none`, compare e1RM, rep PRs, and top-weight on the seeded template id. Exercise review, Track numbers, and All-lifts follow that key. Keep writing `set_log.exercise_id` as the station that was loaded.
 
-**Risk.** Two benches are not the same implement. A higher e1RM can be the pad. Session targets for these families follow the family pounds, so a harsher bench can inherit last gym's load. The set row shows the brand. Stall evidence also continues across brands, so a geometry change does not reset a plateau series.
+**Reason.** Those profiles log ordinary pounds. A gym change splits one movement into parallel charts. Profile `none` is already one id. The same key covers it with a member list of one.
 
-**Decision needed.** Approve this revocation. Reply `exact` to keep today's split chains for benches, racks, and platforms.
+**Risk.** Two benches are not the same implement. A higher e1RM can be the pad. The set row shows the brand. This card does not change the next session's load and does not change Fluid.
 
-This card is the product reversal of [station composition](2026-09-21-station-composition-design.md) (James 2026-09-21, "split PR chains are accepted") and of [Architecture](../../ARCHITECTURE.md) ("Do not merge PR numbers across family members"). Those sentences stay in the old docs with a pointer. They are not the rule for ordinary-pound families once the slices ship.
+**Decision needed.** Approve to merge that story. Reply `exact` to keep today's split chains, including the chart. `exact` does not mean "merge the chart and keep per-station targets." Targets are Card 3.
 
 ## Decision Card 2. Cables stay exact
 
-**Recommendation.** Do not roll cable families up. A Hoist stack and a Nautilus stack keep separate e1RM, rep-PR, and top-weight chains, separate calibration, and separate session targets. Same rule as machines.
+**Recommendation.** Do not roll cable families up. A Hoist stack and a Nautilus stack keep separate e1RM, rep-PR, and top-weight chains, separate calibration, and separate session targets. Same rule as machines. The default Pulldown tile stays family-latest, one brand's number, not a blend.
 
-**Reason.** Cable variants set `needs_calibration`. `personal_coefficient` is `observed e1RM / pattern strength` on that exact id (`recomputeAndUpsertStat` in `src/app/(app)/session/actions.ts`). `set_log.e1rm` is `computeE1rm` of the raw stack, not a pound. Maxing those numbers across brands invents a PR when the lifter changed columns. The station spec split cables for this reason. James included cable in "non-machine." The comparable quantity would be pattern strength, and that number is not the stack on the pin. Shipping it beside stack-unit PRs makes Track speak two languages. Reps at stack 50 are not a shared load either.
+**Reason.** Cable variants set `needs_calibration`. `personal_coefficient` is `observed e1RM / pattern strength from other exercises` on that exact id (`recomputeAndUpsertStat` in `src/app/(app)/session/actions.ts`). `set_log.e1rm` is `computeE1rm` of the raw stack. Maxing those numbers invents a PR when the lifter changed columns. The request named cable inside "non-machine." This card declines raw-stack rollup anyway. A lifter whose only vertical pull is pulldowns may never get a coefficient for the first brand, because the anchor uses other exercises' stats. Dividing by that coefficient is not a ready formula.
 
-**Risk.** A gym change still splits the pulldown chart. In-session history already lists both brands via `exerciseFamilyIds`. The chart does not.
+**Risk.** A gym change still splits the pulldown chart.
 
-**Decision needed.** Accept this default. The one-word reverse is `rollup`.
+**Decision needed.** Accept this default by saying nothing about cables. Approving the PR is not a yes. The one-word reverse is `rollup`.
 
-`rollup` does not mean `rollsUp` returns true and the family takes `max(raw e1RM)`. It means a later slice whose family series is `stored e1RM / that station's personal_coefficient`, labeled as strength rather than stack weight, with rep PRs and top-weight still exact-station, and with session targets still exact-station. Sets logged before that station has a coefficient do not enter the family series. Until that word, cable code stays on Card 1's machine side.
+`rollup` means stop and redesign a pattern-strength series before any cable code changes. It does not mean `rollsUp` returns true. It does not mean `max(raw e1RM)`. Rep PRs, top-weight, and session targets stay on the exact station in that redesign. Sets with no coefficient stay out of the family series.
+
+## Decision Card 3. Session targets stay on this station
+
+**Recommendation.** Keep today's target. `selectProgressionReference` and `sessionTarget` see this station's first sets only. A new bench or cable brand takes `startingWeight()` (pattern estimate, low confidence, `rep_min`). It does not copy the other station's weight or rep rung.
+
+**Reason.** The chart can be one story while the bar in front of the lifter is another implement. Alternating gyms in one slot is worse than a first visit. The latest same-slot exposure wins, then the higher e1RM inside that window. The easier pad's pounds land on the harder pad. A miss under `rep_min` then lowers the next target for the easier pad too. That seesaw is in `progression.ts` today once the input list contains both brands. Card 1 does not require it.
+
+**Risk.** Track can say 200 lb while the first session on a new bench says "first time" and suggests a pattern load. The history sheet still lists both brands.
+
+**Decision needed.** Accept per-station targets. Reply `family` to feed `movementMemberIds` into the session page, the agent next-workout tool, and Coach `exerciseProgressionReference`. `family` includes the seesaw above. If Card 1 is `exact`, this card does nothing.
+
+## Decision Card 4. Stall and Fluid stay per station
+
+**Recommendation.** A brand change still starts a new stall series, as `recordScope` does today. Fluid keeps matching assessments on exact exercise id.
+
+**Reason.** Continuing the series is the one rollup effect that changes the program. A harsher bench can pile up no-gain exposures and trigger a rep-band change or a swap. An easier bench can hide a plateau behind a pad-driven e1RM jump. `fluid.ts` ranks other loggable exercises in the pattern as swap candidates, and a sibling brand is loggable, so it can be offered as a new movement. That ranking is a separate bug from the chart.
+
+**Risk.** A gym change still looks like a new lift on the stall card, even when Card 1 has merged the chart.
+
+**Decision needed.** Accept the reset. Reply `continue` to use the movement key in `stall-report` and in `buildExerciseTrends` / `slotExposures`. `continue` also requires Fluid to match the assessment on the movement and to exclude sibling stations from the swap pool. If Card 1 is `exact`, this card does nothing.
 
 ## Principles that changed a choice
 
-Only principles whose leaf was read for this design.
+Only principles whose leaf was read this session, from the uploaded skill files. Those files are not in the repo.
 
 | Principle | Choice it changed |
 | --- | --- |
@@ -46,9 +66,9 @@ Only principles whose leaf was read for this design.
 | Redesign from first principles | Record scope is the movement for ordinary pounds, as if the station had always been an annotation on the set. Family-latest tile numbers are not kept beside a new rollup. |
 | Subtract before you add | No `rollup_exercise_id`. No pin backfill. No revival of `equipment_instance` as station identity. `exerciseFamilyIds` stays browse-only. |
 | Foundational thinking | `movement.ts` is the key, landed before any screen reads it. Later slices call it. They do not invent a second key. |
-| Experience first | One review URL and family pounds on the next session for ordinary-lb families. Station chips on the set. Cable targets stay on this stack. |
+| Experience first | One review URL for the chart. Targets stay on this station after the seesaw case. The earlier family-pounds choice is withdrawn unless James replies `family`. |
 | Sequence verifiable units | Slices 1–5 each end in a test from the matrix. This branch is the key only. |
-| Prove it works | `movement.test.ts` asserts the incline key, machine isolation, cable isolation, and that the logged id is not rewritten. Later slices must extend that file's cases into the engine they touch. |
+| Prove it works | `movement.test.ts` asserts keys. It does not run `logSet`. The old "logged id is not rewritten" test only checked a local object. Slice 4 is the insert proof. |
 
 ## Current contracts this design reconciles
 
@@ -143,7 +163,7 @@ Aggregates, ordinary-pound families only, read from `set_log` with the existing 
 - Track tile number, delta, and sparkline
 - week-record flash if any member earned a canonical record
 - monthly best stored e1RM and monthly PR totals that replay `workoutRecords`
-- stall / Fluid / Coach series identity, so a brand change does not reset the series
+- stall, Fluid, and Coach series identity only if Card 4 is `continue`
 
 Stays exact:
 
@@ -159,15 +179,11 @@ Recap groups one movement into one scope. The group title is the template name. 
 
 ### 4. Progression and session targets
 
-**Experience first.** The lifter is about to load a bar. For ordinary-pound families the next target uses family first-set history (`selectProgressionReference` over `movementMemberIds`), then the same bump and floor rules. A new bench continues the pounds. The set still inserts the variant id. The first time the movement has no history, `startingWeight()` is unchanged.
+Card 3 default is today's exact station. `movementMemberIds` is not a target input.
 
-Cable and machine targets stay exact-id. A new cable brand calibrates. It does not copy another brand's stack number.
+`recommend()` keeps matching `stats.find(s => s.exerciseId === target.id)`. Do not stuff a sibling's `current_e1rm` into that match.
 
-The family input is the first-set list passed to `selectProgressionReference`. It is not a synthetic `user_exercise_stat` row. `recommend()` keeps matching `stats.find(s => s.exerciseId === target.id)`. A movement with no first sets still takes `startingWeight()` and the pattern pool. Do not stuff a sibling's `current_e1rm` into that match. That would skip the rep rung and, on a cable, copy another brand's stack.
-
-Today the session page buckets first sets by exact `exercise_id` and the card reads `progressionByExercise[exerciseId]` (`src/app/(app)/session/[id]/page.tsx`, `active-session.tsx`). A Nautilus card with an empty bucket never sees Flex sets, even if the pure function would accept them. Slice 4 widens the query to `movementMemberIds` for rolling families before that lookup. The agent next-workout tool and Coach `exerciseProgressionReference` use the same list, or the session and the proposal will disagree.
-
-This is the split Card 1 accepts. Reply `exact` on Card 1 if targets must stay per station even while the chart merges. That reply keeps the chart and makes the session treat a new bench as a first exposure. The default is the opposite, because a chart that says 200 lb and a session that says "first time" is two products.
+The session page buckets first sets by exact `exercise_id` and the card reads `progressionByExercise[exerciseId]` (`src/app/(app)/session/[id]/page.tsx`, `active-session.tsx`). That stays. Only a `family` reply widens the session page, the agent next-workout tool, and Coach `exerciseProgressionReference` to `movementMemberIds`, and that reply includes the seesaw in Card 3. Those three callers move together so the proposal and the bar match. The input is the first-set list, not a synthetic stat row.
 
 ### 5. Pins
 
@@ -178,7 +194,8 @@ Pin the movement, not the station.
 - A variant pin whose movement is already a default compound does not hide that default and does not add a second tile. Hiding still requires a pin row whose id is the default id.
 - Pinning a `bench` / `rack` / `platform` template is allowed. It is the display master. Logging that template stays rejected.
 - Machine and cable templates stay unpinnable until resolved. Pins on those variants stay exact ids.
-- No SQL backfill. Read-time collapse. Unpinning the tile deletes every pin row that resolves to that movement.
+- No SQL backfill. Read-time collapse.
+- A pin row whose id is a default compound id means that tile is hidden (`hiddenDefaultIds`). It does not mean "pinned extra." Unpinning a variant, or collapsing variant pins, never deletes that hide row. Showing the default again deletes only the default id. A Rogue bench pin plus a hidden Bench tile stays hidden. The Rogue row does not add a second tile and does not unhide Bench.
 
 ### 6. Exercise review
 
@@ -195,12 +212,9 @@ One URL, `/history/<movementId>`, for a rolling family.
 
 ### 7. Logging
 
-Sets keep the exact variant id. Proved two ways.
+Sets keep the exact variant id. `logSet` inserts `exercise_id: input.exerciseId` after `isLoggableExercise` rejects the template (`session/actions.ts`). This PR does not execute that function. The pure scope returns `movement:bb-incline-bench` for a set whose `exercise_id` is the Flex variant. That is a key assertion, not an insert test.
 
-1. `logSet` inserts `exercise_id: input.exerciseId` after `isLoggableExercise` rejects the template. This design does not change that function in the key slice.
-2. `movement.test.ts` runs `comparisonScope` on a Flex incline set and asserts `exercise_id` is still `bb-incline-bench__flex-fitness__bench` while the key is `movement:bb-incline-bench`.
-
-Slice 4 adds a regression that the insert payload's `exercise_id` is the variant when the target was chosen from family history.
+Slice 4, and only if Card 3 is `family`, adds a regression that the insert payload's `exercise_id` is the variant when the target was chosen from family history. Card 1 does not need that regression. Logging is already exact.
 
 ### 8. Data model
 
@@ -214,15 +228,15 @@ Read-time aggregation. `set_log` is authoritative. Family e1RM is replayed, the 
 
 **Exercise review.** Last session lists sets with a Flex Fitness or Nautilus chip. The chart does not reset when the bench changes.
 
-**Session.** Choose bench still runs before the first set. The suggested load follows the family's last pounds. The saved set name is the brand variant.
+**Session.** Choose bench still runs before the first set. The suggested load stays this station's own rung. A new bench uses the pattern estimate. The saved set name is the brand variant. Family pounds on the next set happen only if Card 3 is `family`.
 
 **Machines.** Hammer and Cybex chest press stay two tiles if both are pinned, two charts, two calibrations.
 
 **Cables, under the default.** Same as machines for numbers. The history sheet can still show both brands when opened from a session.
 
-## Superseded lines
+## Proposed replacements
 
-Do not implement the old sentence and this spec at once.
+The old sentences stay in force until the named card is answered. Do not delete them in the owning doc.
 
 | Old lock | Where | Replacement |
 | --- | --- | --- |
@@ -237,13 +251,15 @@ Do not implement the old sentence and this spec at once.
 
 Code slices are for Composer 2.5. Architecture questions stay with Grok and this spec. Each slice is green on its own. Do not start slice N+1 on a red slice N. None of them add a column.
 
-1. **Wire the key into records.** `workoutRecords` groups with `comparisonKey`. Eligibility stays `eligibleRecordSet`. `finishSession`'s best and previous-best maps (`session/actions.ts`, keyed today by `exercise_id` only) use the same key so one movement is one overload line. Tests from the matrix for two benches, two machines, two cables, leftover template plus variant, and bodyweight historical load still reconstructed per set. No review UI.
-2. **Exercise review read.** Load `movementMemberIds`. Redirect variant URLs. Station chip on Last and the session list. Those rows are `weight × reps` today. The brand is not on the line. Chart, 21-day window, and month compare use the same rows. Rewrite the Last and chart info sentences that say "exact exercise" / "exact lift" on rolling pages only. Show the pin on a rolling template even though `isLoggableExercise` is false. Agent exercise-review tool uses the same id list and still must not blend machines. `?equipment=` unchanged for non-rolling.
-3. **Track and pins.** Rolling tiles aggregate session-bests. Replace the family-latest assertion for benches. Keep it for `lat-pulldown`. `exerciseSummaries`, `e1rmPrFeed`, and `weightPrs` are one row per exact id today. All-lifts and those feeds collapse a rolling family to the movement id so Flex and Nautilus are not two incline rows. Read-time pin collapse. `toggleExercisePin` already allows a default-compound template and rejects every other `needsStation` id (`pins/actions.ts`). Allow a rolling template (`bb-incline-bench` and the other non-default bench, rack, and platform seeds). Keep refusing machine and cable templates. Cap counts movement keys.
-4. **Session targets.** Ordinary-pound `sessionTarget` input is family first-set history. Widen `progressionByExercise` in the session page, the agent next-workout tool, and Coach `exerciseProgressionReference` to `movementMemberIds` before the lookup. Cable and machine inputs stay one id. Do not write a family stat for `recommend()`. Assert the `logSet` insert id is still the variant.
-5. **Coach, Fluid, monthly.** `stall-report` context uses `comparisonKey`. `buildExerciseTrends` and `slotExposures` follow that key so a brand change does not look like a new lift. Monthly PR totals follow `workoutRecords`. Monthly best e1RM uses the movement key for rolling families. Coach fixed-load rows use the same key. Update FEATURES from "specified" to "shipped" only in this slice.
+Slices 1–3 run only after Card 1 is approved. They do not import `movement.ts` before that. If Card 1 is `exact`, delete the module. Slice 4 runs only after `family`. Slice 5's stall work runs only after `continue`. Monthly totals follow `workoutRecords` with slices 1–3 and do not wait on Card 4.
 
-Slice 1 can import `movement.ts` as it exists. If Card 2 comes back `rollup`, stop and redesign the cable value before flipping `rollsUp`. Do not treat the reverse as a one-line predicate change.
+1. **Wire the key into records.** `workoutRecords` groups with `comparisonKey`. Eligibility stays `eligibleRecordSet`. `finishSession`'s best and previous-best maps (`session/actions.ts`, keyed today by `exercise_id` only) use the same key so one movement is one overload line. Replace these tests in the same slice, or they will force the old split back in. `records.test.ts` ("isolates exact exercises...") expects two equipment instances of one barbell id to share no record. `station-calibration-records.test.ts` ("does not merge leftover template PRs into a new family variant") expects a leftover `bb-incline-bench` row and the Flex variant to share no record. Keep the cable and machine cases in that file. Bodyweight historical load stays reconstructed per set. No review UI.
+2. **Exercise review read.** Load `movementMemberIds`. Redirect variant URLs. Station chip on Last and the session list. Those rows are `weight × reps` today. The brand is not on the line. Chart, 21-day window, and month compare use the same rows. Rewrite the Last and chart info sentences that say "exact exercise" / "exact lift" on rolling pages only. Show the pin on a rolling template even though `isLoggableExercise` is false. Agent exercise-review tool uses the same id list and still must not blend machines. Update `docs/ai-coach.html` in this slice. `?equipment=` unchanged for non-rolling.
+3. **Track and pins.** Rolling tiles aggregate session-bests. Replace the family-latest assertion for benches. Keep it for `lat-pulldown`. `exerciseSummaries`, `e1rmPrFeed`, and `weightPrs` are one row per exact id today. All-lifts and those feeds collapse a rolling family to the movement id so Flex and Nautilus are not two incline rows. Read-time pin collapse that never deletes a default-id hide row. `toggleExercisePin` already allows a default-compound template and rejects every other `needsStation` id (`pins/actions.ts`). Allow a rolling template (`bb-incline-bench` and the other non-default bench, rack, and platform seeds). Keep refusing machine and cable templates. Cap counts movement keys.
+4. **Session targets, only if Card 3 is `family`.** Widen `progressionByExercise` in the session page, the agent next-workout tool, and Coach `exerciseProgressionReference` together. Cable and machine inputs stay one id. Do not write a family stat for `recommend()`. Assert the `logSet` insert id is still the variant. Update `docs/ai-coach.html` because the next-workout tool's inputs change.
+5. **Coach, Fluid, monthly.** Monthly PR totals and monthly best e1RM follow the Card 1 key. Coach fixed-load rows for ordinary pounds use that key too. Stall, `buildExerciseTrends`, and `slotExposures` change only if Card 4 is `continue`, and then Fluid's assessment match and swap pool change with them. Update FEATURES from "proposed" to "shipped" only for the cards that were approved.
+
+If Card 2 comes back `rollup`, stop and redesign the cable value before any predicate change. Do not treat that word as a one-line flip of `rollsUp`.
 
 ## Test matrix
 
@@ -259,22 +275,23 @@ Must pass before the feature is called shipped. Rows marked **now** are in `move
 | Dumbbell incline vs barbell incline | different keys | **now** |
 | Custom cable, no base | its own station key | **now** |
 | Two equipment instances of one machine | different station keys | **now** |
-| Two equipment instances of one incline variant | same movement key | **now** |
 | Unknown id | station key, no family | **now** |
 | Review of either incline URL | one page, both brands as chips, one chart | 2 |
 | Rolling review info copy | does not say the page is one exact exercise | 2 |
 | All-lifts incline | one row for the template, not one per brand | 3 |
-| Nautilus card after Flex history | suggested load continues Flex pounds | 4 |
-| Coach proposal for that slot | same load as the session card | 4 |
+| Nautilus card after Flex history | pattern estimate, not Flex pounds, unless Card 3 is `family` | 4 |
+| Coach proposal for that slot | same rule as the session card | 4 |
 | Machine review | still one exact id, instance switcher intact | 2 |
 | Pin incline variant | tile numbers are the family, href is `/history/bb-incline-bench` | 3 |
 | Pin two incline brands | one tile, one cap slot | 3 |
 | Default bench tile | aggregate, not `latestFamilyMember` | 3 |
 | Default pulldown tile | still family-latest, not a blend | 3 |
-| New bench, family has history | target uses family pounds | 4 |
-| New cable brand | target does not copy the other stack | 4 |
-| Saved set | `exercise_id` is the variant | 4, **now** for the pure scope |
-| Stall series across two benches | one series | 5 |
+| New bench, family has history | pattern estimate, not the other bench's pounds | default |
+| New cable brand | target does not copy the other stack | default |
+| Saved set | `logSet` insert id stays the variant | already true |
+| Leftover incline template plus Flex variant in `workoutRecords` | one chain after Card 1 | 1 |
+| Two equipment instances of `bb-bench` in `records.test.ts` | one chain after Card 1 | 1 |
+| Stall series across two benches | still resets, unless Card 4 is `continue` | 5 |
 | Stall series across two machines | reset | 5 |
 
 ## Out of scope
@@ -284,5 +301,5 @@ Must pass before the feature is called shipped. Rows marked **now** are in `move
 - Rewriting historical `set_log` rows.
 - Activating `equipment_instance` as a station.
 - Merging movement patterns (bench press and incline are different templates).
-- AI Coach product slices other than the review tool's id list in slice 2.
+- Agent tool changes outside slices 2 and 4. Those two slices update `docs/ai-coach.html`.
 - Changing e1RM math in `e1rm.ts`.

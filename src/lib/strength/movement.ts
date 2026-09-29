@@ -24,8 +24,8 @@ export function stationProfileOf(
   return "none";
 }
 
-// Cable stays exact until James reverses the Decision Card. A reverse is not
-// this boolean flipping to true. Raw stack e1RM must not become the family number.
+// Records proposal for Card 1 only. Not a session-target or stall switch.
+// Cable raw stack e1RM stays out. A `rollup` reply is a new value, not this boolean.
 export function rollsUp(template: Pick<ExerciseDef, "stationProfile" | "equipment">): boolean {
   const profile = stationProfileOf(template);
   return profile !== "machine" && profile !== "cable";

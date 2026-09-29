@@ -117,13 +117,12 @@ describe("movement comparison scope", () => {
     expect(comparisonKey(flex)).toBe("movement:bb-incline-bench");
   });
 
-  it("does not rewrite the logged exercise id when the story rolls up", () => {
-    const set = {
-      exercise_id: flexIncline.id,
-      equipment_instance_id: null as string | null,
-    };
-    expect(comparisonScope(set, catalog).kind).toBe("movement");
-    expect(set.exercise_id).toBe("bb-incline-bench__flex-fitness__bench");
+  it("maps one incline variant to the template and ignores which pad instance was stored", () => {
+    const padA = scope(flexIncline.id, "pad-a");
+    const padB = scope(flexIncline.id, "pad-b");
+    expect(padA).toEqual({ kind: "movement", movementId: "bb-incline-bench" });
+    expect(comparisonKey(padA)).toBe(comparisonKey(padB));
+    expect(comparisonKey(padA)).toBe("movement:bb-incline-bench");
   });
 
   it("keeps two chest-press machines and two pulldown cables on separate keys", () => {

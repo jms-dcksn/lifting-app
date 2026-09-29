@@ -63,6 +63,10 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
 3. The bump test is reps-only. Coach effort reductions use first-set RIR; hard back-off
    sets must not lower an accurately loaded top set.
 
+Grouping by exact exercise stays. Card 3 of the
+[2026-09-29 rollup spec](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+would widen ordinary-pound families only on the word `family`. That card is not approved.
+
 `plateau.ts` owns Fluid detection, rep-band changes, and swap ranking; `fluid.ts` loads
 adaptation context. Manual swaps preserve rep ranges and reset plateau state, unlike coach
 `swap` interventions. Follow [swap persistence](EXERCISE-SWAPS.md). Coach, Fluid and monthly review share
@@ -130,19 +134,13 @@ rows live in `agent_thread` / `agent_message`, many threads per user. See
 
 ## History and reporting
 
-Ordinary-pound movement rollup is specified in
-[2026-09-29 non-machine movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
-and is **not shipped**. Until slices 1–5 land, the bullets below describe the code.
-For `bench`, `rack`, `platform`, and `none`, that spec supersedes "do not merge PR
-numbers" and exact-id progression. Machine and cable stay exact unless James
-reverses the cable card with `rollup`.
+[2026-09-29 movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+is a proposal. The bullets below are the rule until James answers its cards.
 
 - In-session quick history uses `exerciseFamilyIds()` to include explicitly linked
   variants (machine, cable, bench, rack, platform) via `baseExerciseId`, returns ten
   latest sets from previous workouts, and loads only when opened.
-  This family grouping is for browsing. The shipped code still uses exact exercise
-  identity for progression and records. The rollup spec replaces that for
-  ordinary-pound families. Do not grow a second id beside `baseExerciseId`.
+  This family grouping is for browsing; progression and records use exact exercise identity.
 - Per-exercise `/history/[exerciseId]` is Exercise review for every entry point. A `month`
   query is return-link context, not a second page. The screen answers Last (last finished
   session), the past 21 Chicago days, an e1RM chart (last 8 session-bests, or All
@@ -157,13 +155,10 @@ reverses the cable card with `rollup`.
   (`/analytics`) uses `analytics.ts` summaries plus `board.ts` for default compounds and
   pin visibility; those summaries pick the latest finished instance per exact exercise.
   Default-compound tiles keep template ids (`bb-bench`, `lat-pulldown`, …) and short
-  names. Shipped code still points numbers and the review href at the latest finished
-  family member, and pins on a variant stay exact-id.
-  **Superseded for ordinary-pound families** by the
-  [2026-09-29 rollup spec](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
-  That spec merges the PR story onto the template and collapses variant pins to it.
-  Cable default tiles stay family-latest until the cable Decision Card is reversed.
-  Do not merge machine PR numbers.
+  names; numbers and the review href follow the latest finished family member.
+  Pins on a specific variant stay exact-id. Do not merge PR numbers across family members.
+  Card 1 of the rollup spec proposes a merge for ordinary-pound families only.
+  Machine and cable PR numbers stay unmerged unless Card 2 is `rollup`.
   Volume and this week's full PR list sit in Track Explore. Weight trends live on Body.
   Coach lives on Track (`/analytics/coach`). The Track tab stays current on `/history/...`.
   Pattern-strength replay does not replay historical personal machine coefficients.

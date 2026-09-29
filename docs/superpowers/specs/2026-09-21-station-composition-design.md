@@ -2,12 +2,10 @@
 
 **Status:** Approved / shipped (James 2026-09-21). Open questions LOCKED. Slices 1–6 shipped.
 
-**Superseded in part (2026-09-29, not shipped).** Exact PR chains for `bench`,
-`rack`, `platform`, and `none` are replaced by
-[non-machine movement rollup](2026-09-29-non-machine-movement-rollup-design.md).
-Machine and cable records stay exact. No `set_log` rewrite. Station profiles,
-picker copy, and calibration rules in this spec stay. Read the 2026-09-29
-Decision Cards before changing `recordScope` or Track tile numbers.
+**Proposed, pending James (2026-09-29).** This spec's locks stay in force.
+[Movement rollup](2026-09-29-non-machine-movement-rollup-design.md) asks separate
+cards for records, cables, targets, and stall. Approving that PR does not
+replace a lock here. Do not change `recordScope` until Card 1 is approved.
 **Issue:** [#146](https://github.com/jms-dcksn/lifting-app/issues/146) · shipped-doc refresh [#153](https://github.com/jms-dcksn/lifting-app/issues/153)
 **Date:** 2026-09-21
 **Companion:** Phase C machine variants — [2026-06-21 spec](2026-06-21-machine-brands-types-custom-exercises-design.md); shipped behavior in [Features §6](../../FEATURES.md) and [Decisions: station composition](../../DECISIONS.md#station-composition-2026-09-21-shipped).
@@ -316,21 +314,20 @@ When equipment is `cable`, show the brand field and lock type. When equipment is
 
 ## Impact
 
-**Superseded in part by the 2026-09-29 rollup spec.** Exact `exercise_id` remains
-the calibration key, the machine key, and the cable key. It remains the shipped
-progression and record key until those slices land. After they land, ordinary-pound
-families (`bench`, `rack`, `platform`, `none`) compare on the template id.
-Families stay browse-only for `exerciseFamilyIds`. Record rollup uses
-`movementMemberIds`, not that browse helper.
+Exact `exercise_id` remains the progression, record, and calibration key.
+Families are browse-only.
+
+**Proposed, pending James.** Card 1 of the 2026-09-29 rollup spec would compare
+ordinary-pound record families on the template id. Card 3 (`family`) would let
+targets use that family. Until those words, this section stands.
 
 ### Records (rep / e1RM / top-weight)
 
-Shipped scope stays `(user_id, exercise_id, equipment_instance_id)`
-([workout records](../../DECISIONS.md#workout-records)). After the 2026-09-29
-slices, that pair remains the machine and cable key only. Ordinary-pound
-families compare on the template id. A Nautilus cable stack and a Hoist cable
-stack are different `exercise_id`s, so they do not share PRs unless James
-replies `rollup` on that spec's cable card.
+Scope stays `(user_id, exercise_id, equipment_instance_id)`
+([workout records](../../DECISIONS.md#workout-records)). A Nautilus cable stack
+and a Hoist cable stack are different `exercise_id`s, so they do not share PRs.
+Card 1 of the 2026-09-29 spec proposes sharing ordinary-pound chains. Card 2
+keeps this cable split unless the reply is `rollup`. Neither card is approved.
 A leftover flat `lat-pulldown` row keeps its own chain (see History).
 `eligibleRecordSet` must treat `needsStation` templates as ineligible, the way
 it treats `machineTemplate` today. Calibration working sets on cable variants
@@ -355,14 +352,16 @@ pass `equipment` keep doing so. Do not invent a second query param.
 ids become station templates: `bb-bench`, `bb-deadlift`, `bb-back-squat`,
 `bb-ohp`, `lat-pulldown` (`bb-row` stays `none`).
 
-**Locked (James 2026-09-21) and superseded in part (2026-09-29).** Keep those
+**Locked (James 2026-09-21).** Keep those
 template ids as the default tile keys and short names so Bench / Squat /
 Deadlift / OHP / Pulldown do not vanish. Shipped code still resolves numbers
 and the review href to the latest finished set among
-`exerciseFamilyIds(templateId)`. The rollup spec replaces that blend-avoidance
-for ordinary-pound defaults with a real aggregate, and collapses variant pins
-onto the template. `lat-pulldown` stays family-latest. Do not merge machine
-PR numbers. Do not merge cable PR numbers unless James replies `rollup`.
+`exerciseFamilyIds(templateId)`. Pins on a
+specific variant stay exact-id. Do not merge PR numbers across family members.
+
+Card 1 of the 2026-09-29 spec proposes an aggregate for ordinary-pound defaults
+and collapsing variant pins onto the template. `lat-pulldown` stays family-latest
+unless Card 2 is `rollup`. That proposal is not this lock.
 
 ### Calibration
 
@@ -378,14 +377,16 @@ double-progression on that variant's own first sets.
 
 Do not rewrite progression math (`sessionTarget`, `selectProgressionReference`,
 bump/floor rules). A new variant has no exact-id history, so it already takes
-the no-prior branch.
+the no-prior branch. Card 3 of the 2026-09-29 spec would widen that history only
+on the word `family`. Until then, this paragraph stands.
 
 ### Swaps and family browse
 
 `exerciseFamilyIds` already returns template + variants once `baseExerciseId` is
 set. Cable and barbell-station variants join that family automatically. In-session
 history can show leftover flat template sets beside new variant sets. Records and
-targets do not use the family.
+targets do not use the family. Card 1 would let records use it after approval.
+Card 3 would let targets use it only on `family`.
 
 Swap ranking stays in-pattern. Filter unresolved station templates out of
 candidates the same way machines are filtered today. Resolving a swap target
@@ -465,15 +466,14 @@ refresh is Slice 6.
 ## Open questions — LOCKED (James 2026-09-21)
 
 1. **History:** no rewrite of flat cable/barbell `set_log` rows. Family browse
-   groups template + later variants. The next log creates a variant. Split PR
-   chains were accepted here. **Superseded for ordinary-pound families** by the
-   [2026-09-29 rollup spec](2026-09-29-non-machine-movement-rollup-design.md).
-   Cable and machine chains stay split.
+   groups template + later variants; the next log creates a variant. Split PR
+   chains are accepted.
+   Card 1 of the [2026-09-29 rollup spec](2026-09-29-non-machine-movement-rollup-design.md)
+   proposes continuing ordinary-pound chains. It is not accepted here.
 2. **Track default compounds:** family-latest numbers and review href among
    `exerciseFamilyIds(templateId)`. Pins on a specific variant stay exact-id.
-   **Superseded for ordinary-pound families** by the 2026-09-29 rollup spec
-   (aggregate numbers, pin collapses to the template). Cable tiles stay on
-   this bullet.
+   The same Card 1 proposes aggregate numbers for ordinary-pound tiles. Cable
+   tiles stay on this bullet unless Card 2 is `rollup`.
 3. **Copy:** profile-specific — **Choose bench** / **Choose cable** /
    **Choose rack** / **Choose platform** / **Choose machine**. Not generic
    “Choose station”.
@@ -497,6 +497,6 @@ flowchart TD
   logV --> exact
 ```
 
-The diagram is the shipped 2026-09-21 path. Ordinary-pound record and
-progression edges move to the template key in the 2026-09-29 spec. Calibration
-and the `set_log` write stay on this diagram.
+The diagram is the shipped path and stays the rule. Card 1 would move ordinary-pound
+record comparison to the template. Card 3 (`family`) would move progression.
+Calibration and the `set_log` write stay on this diagram either way.

@@ -38,7 +38,7 @@ not recommend programming changes or mutate training data.
   The flag does not rewrite the program.
 - **Fixed-load progress:** shipped code compares the best reps at an exact exercise
   and exact raw logged weight in the current window with the best reps in the prior
-  window. **Specified, not shipped:** ordinary-pound families share the template
+  window. **Proposed, pending James (Card 1):** ordinary-pound families share the template
   movement key in
   [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
   Machine and cable stay exact.

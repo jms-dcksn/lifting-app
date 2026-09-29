@@ -153,6 +153,10 @@ remains the user's final decision. The session page's effective exercise-per-slo
 from the most recently logged exercise in that slot this session, so an in-session swap survives
 a page reload.
 
+**Proposed, pending James (2026-09-29).** Exact-exercise progression above stays.
+Card 3 of the [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+would widen it only on the word `family`.
+
 **Swap is same-pattern-first with a show-all escape hatch.** `ExercisePicker` gained
 `patternFilter` (already plumbed for swap) plus a "show all patterns" toggle, since a same-
 pattern substitute isn't always available or desired.
@@ -564,20 +568,17 @@ authenticated `loadWorkoutRecords` read path. No schema migration is required.
 
 ### Comparability and eligibility
 
-The shipped identity is `(user_id, exercise_id, equipment_instance_id)`, across
-programs and slots. Variant slugs distinguish brand and station tag (`stack` /
-`plate` / `bench` / `rack` / `platform`). Broad movement patterns and the history
-sheet's exercise families are not record comparison scopes in the code on `main`.
-Unresolved machine templates cannot earn records. Leftover flat cable/barbell
-template rows stay eligible on that exact id.
+The identity is `(user_id, exercise_id, equipment_instance_id)`, across programs and
+slots. Variant slugs distinguish brand and station tag (`stack` / `plate` / `bench` /
+`rack` / `platform`). Broad movement patterns and the history sheet's exercise
+families are not record comparison scopes. Unresolved machine templates cannot earn
+records. Leftover flat cable/barbell template rows stay eligible on that exact id;
+they do not merge with later variants.
 
-**Superseded for ordinary-pound families (2026-09-29, not shipped).**
-[Non-machine movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
-compares `bench`, `rack`, `platform`, and `none` on the seeded template
-(`movement:<id>`), including leftover template rows, and ignores
-`equipment_instance_id` for that key. Machine and cable keep this exact pair.
-Do not add `rollup_exercise_id`. James can reply `exact` to keep this paragraph
-as the rule for benches too.
+**Proposed, pending James (2026-09-29).** The paragraph above stays in force.
+[Movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+Card 1 asks to compare `bench`, `rack`, `platform`, and `none` on the template
+for records only. Reply `exact` keeps this paragraph. Do not implement from this note.
 
 Working sets require finite load, positive whole-number reps, and valid RIR (0–5).
 Legacy null RIR uses the canonical default of 2; missing load/reps is never zero-filled.
@@ -765,9 +766,8 @@ Approved / shipped. Open questions LOCKED. Source of truth:
 `StationTag`; `resolveVariant` for cable and barbell-station templates; picker
 forms and session/planner/swap/pin gate; family-latest Track default-compound
 numbers and review hrefs; cable-variant first sessions calibrate, barbell
-stations do not. Shipped records stay exact-id across leftover template and
-variant families. Ordinary-pound rollup is specified and not shipped. See the
-superseded note below.
+stations do not, records stay exact-id across leftover template + variant
+families.
 
 Phase C scoped brand/type to machines and left cables flat. That judgment is
 reversed for every cable and for the barbell stations below. Dumbbells and
@@ -788,17 +788,16 @@ same as `selectorized` / `plate_loaded`). Do not add `station_kind`. Expand
 `variantId` / `variantName` tags: `stack`, `plate`, `bench`, `rack`, `platform`.
 
 **History, Track tiles, copy (LOCKED James 2026-09-21).** No rewrite of flat
-cable/barbell `set_log` rows. Family browse groups template + later variants.
-The next log creates a variant. Session/planner copy is profile-specific
-(**Choose bench** / Choose cable / etc.), not "Choose station".
+cable/barbell `set_log` rows — family browse groups template + later variants;
+the next log creates a variant; split PR chains are accepted. Track default
+compounds use family-latest numbers and href. Session/planner copy is
+profile-specific (**Choose bench** / Choose cable / etc.), not “Choose station”.
 
-**Superseded in part (2026-09-29, not shipped).** "Split PR chains are accepted"
-and "records, progression, and review stay exact `exercise_id`" no longer hold
-for `bench`, `rack`, `platform`, and `none` once
-[movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
-slices land. Cable and machine exactness, the no-rewrite rule, and the
-profile-specific copy stay. Track family-latest numbers stay for cable defaults
-only.
+Builder may keep storing templates; session/planner resolve before set-entry.
+Records, progression, and review stay exact `exercise_id`. AI Coach, bodyweight
+stations, and progression-math rewrites are out of scope.
 
-Builder may keep storing templates. Session and planner still resolve before
-set-entry. AI Coach product work and bodyweight stations stay out of that spec.
+**Proposed, pending James (2026-09-29).** The lock above stays in force.
+[Movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+asks four separate questions. Card 1 is records and review. Card 3 is targets.
+Card 4 is stall and Fluid. None of them is approved by this note.

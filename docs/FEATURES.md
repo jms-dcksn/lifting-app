@@ -276,7 +276,7 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
   profile-specific copy (**Choose machine** / **Choose cable** / **Choose bench** /
   **Choose rack** / **Choose platform**). The program builder stores templates
   (`resolveStations={false}`). `logSet`, swap, planner saves, and extra-pin writes
-  reject unresolved station templates. **Specified, not shipped:** a pin of a
+  reject unresolved station templates. **Proposed, pending James:** a pin of a
   `bench`, `rack`, or `platform` template is the movement pin. Logging that
   template stays rejected.
   See [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
@@ -284,7 +284,7 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
   rewritten. Family browse groups the template with later variants. Shipped
   records, progression, and calibration stay exact `exercise_id`. The first
   variant session is a first exposure (cables calibrate; barbell stations
-  ordinary lb). **Specified, not shipped:** ordinary-pound families
+  ordinary lb). **Proposed, pending James:** ordinary-pound families
   (`bench`, `rack`, `platform`, `none`) roll e1RM and PRs up to the template.
   See [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
   Cable and machine stay exact.
@@ -311,8 +311,7 @@ valid. It does not swap in a monthly-history page. Invalid months are ignored.
 
 - **Exact identity** — finished working sets for this exercise plus equipment
   instance. Header shows a human instance label (or gym) when one exists. Multiple
-  instances get a text-link switcher. Series never blend. **Specified, not
-  shipped:** a rolling ordinary-pound family is one URL at the template id,
+  instances get a text-link switcher. Series never blend. **Proposed, pending James:** a rolling ordinary-pound family is one URL at the template id,
   with a station chip per set, and `?equipment=` does not split that chart.
   See [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
 - **Finished sessions** — working sets from sessions with `finished_at` (not in the
@@ -352,8 +351,7 @@ Default-compound tiles keep the template ids and short names (`bb-bench`,
 finished family member** (`exerciseFamilyIds`), a brand variant or leftover
 flat row, plus that member's equipment instance, not a blend of PRs. Pins on
 a specific variant stay exact-id. Extra pins and All-lifts rows still use the
-latest finished equipment instance for that exact exercise. **Specified, not
-shipped:** ordinary-pound tiles aggregate the family and variant pins collapse
+latest finished equipment instance for that exact exercise. **Proposed, pending James (Card 1):** ordinary-pound tiles aggregate the family and variant pins collapse
 to the template. Cable tiles stay family-latest.
 See [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
 Tap opens

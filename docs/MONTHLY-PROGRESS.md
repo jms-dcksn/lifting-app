@@ -15,7 +15,7 @@ version 1.2 `buildMonthlyReport`. Track links to it. No migration or new secrets
   preserving its finish-before-start rules and historical bodyweight reconstruction.
   Rep PRs are final distinct workout/exact-exercise/equipment/normalized-load records;
   e1RM PRs are one best record per workout/exact identity; top-weight PRs are one best
-  max effective load per workout/exact identity. **Specified, not shipped:**
+  max effective load per workout/exact identity. **Proposed, pending James (Card 1):**
   ordinary-pound families use the template movement key from
   [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
   once `workoutRecords` does. Machine and cable stay exact. First observations and ties
@@ -61,8 +61,10 @@ shared threshold calculation and Fluid's intervention ladder.
   `performed_at`. Logging several workouts on one date does not collapse their exposures.
 - Identity includes the exact exercise and equipment instance. A swap away and back,
   a mixed-identity workout, a phase change, or a recorded adaptation starts fresh evidence.
-  **Specified, not shipped:** a brand change inside one ordinary-pound movement
-  does not start fresh evidence. A different template, a machine, or a cable still does.
+  **Proposed, pending James (Card 4):** the reset above stays. Reply `continue` on the
+  [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+  to keep one series across brands of one ordinary-pound movement. A different template,
+  a machine, or a cable still starts fresh evidence either way.
   See [movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md).
   Phase/rep-range/RIR/set-count context comes from the stored session week and adaptation
   history. Adaptation rows are ordered by timestamp with ID as a deterministic tie-break.

@@ -1,3 +1,4 @@
+import type { AgentScreenContext } from "./context";
 import type { AgentMessage } from "./messages";
 import type { AgentStreamEvent } from "./stream";
 
@@ -17,8 +18,8 @@ export type ChatSelection =
   | { kind: "thread"; threadId: ThreadId };
 
 export type TurnRequest =
-  | { kind: "new"; text: string }
-  | { kind: "continue"; threadId: ThreadId; text: string };
+  | { kind: "new"; text: string; context: AgentScreenContext }
+  | { kind: "continue"; threadId: ThreadId; text: string; context: AgentScreenContext };
 
 type Turn = {
   optimisticId: string;

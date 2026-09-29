@@ -1,7 +1,9 @@
 "use client";
 
+import { latestConfirmCallId } from "@/lib/agent/client-tools";
 import { splitCoachReply } from "@/lib/agent/markdown";
 import { textFromParts, type AgentMessage } from "@/lib/agent/messages";
+import { AgentConfirmChip } from "./agent-confirm-chip";
 import { CoachMarkdown } from "./coach-markdown";
 
 export function AgentTranscript({
@@ -9,12 +11,18 @@ export function AgentTranscript({
   pendingText,
   streamingText,
   pendingTool,
+  confirmedCallIds = new Set<string>(),
+  onConfirmStarted,
 }: {
   messages: AgentMessage[];
   pendingText?: string;
   streamingText?: string;
   pendingTool?: string | null;
+  confirmedCallIds?: ReadonlySet<string>;
+  onConfirmStarted?: (callId: string) => void;
 }) {
+  const confirmCallId = latestConfirmCallId(messages);
+  const showConfirm = confirmCallId !== null && !confirmedCallIds.has(confirmCallId);
   if (messages.length === 0 && !pendingText && !streamingText && !pendingTool) {
     return <p className="text-body text-muted">Ask how this week went.</p>;
   }
@@ -39,6 +47,14 @@ export function AgentTranscript({
       {streamingText ? (
         <li>
           <CoachReply text={streamingText} />
+        </li>
+      ) : null}
+      {showConfirm ? (
+        <li>
+          <AgentConfirmChip
+            label="Start workout"
+            onStarted={() => onConfirmStarted?.(confirmCallId!)}
+          />
         </li>
       ) : null}
     </ol>
@@ -91,5 +107,9 @@ function toolLabel(name: string) {
   if (name === "activeProgram") return "your program";
   if (name === "exerciseReview") return "exercise review";
   if (name === "nextWorkout") return "next workout targets";
+  if (name === "openCoachCheckIn") return "Coach check-in";
+  if (name === "openExerciseReview") return "exercise review";
+  if (name === "openProgram") return "your program";
+  if (name === "startNextWorkout") return "next workout";
   return name;
 }

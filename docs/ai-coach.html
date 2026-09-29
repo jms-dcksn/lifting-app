@@ -15,12 +15,12 @@
   <body class="bg-stone-50 text-slate-900 font-sans">
     <main class="max-w-5xl mx-auto px-6 py-12 space-y-14">
       <header class="space-y-3">
-        <p class="text-xs uppercase tracking-wider text-slate-500">lifting-app · Slice 0 · 2026-09-20 · threads 2026-09-27</p>
+        <p class="text-xs uppercase tracking-wider text-slate-500">lifting-app · Slice 0 · 2026-09-20 · threads 2026-09-27 · Slice 1 · 2026-09-29</p>
         <h1 class="font-serif text-4xl tracking-tight">How the in-app Coach talks to the ledger</h1>
         <p class="text-lg text-slate-700 max-w-3xl">
-          This page teaches the shipped Slice 0 agent and the multi-thread chat built on it.
-          The deterministic Track Coach still owns the numbers. The agent is a talking layer
-          on top of loaders you already have.
+          This page teaches the shipped Slice 0 agent, multi-thread chat, and Slice 1 screen
+          context plus navigation. The deterministic Track Coach still owns the numbers. The
+          agent is a talking layer on top of loaders you already have.
         </p>
         <p class="text-sm text-slate-600">
           Contract: <a class="underline" href="AI-COACH.md">AI-COACH.md</a>
@@ -463,10 +463,96 @@ export function splitCoachReply(text: string): { body: string; sources: string[]
         </article>
       </section>
 
+      <section id="slice-1" class="space-y-4">
+        <h2 class="font-serif text-2xl">Slice 1 — Screen context and navigation</h2>
+        <p class="text-slate-700 max-w-3xl">
+          Each turn carries a small context packet: where you are in the app, which program is
+          active, whether a session is open, and which exercise is in focus on Exercise review.
+          Navigation tools return the same hrefs a tap would. The browser navigates after the
+          turn saves. Starting a workout still needs a confirm chip in the transcript.
+        </p>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
+          <pre class="mermaid">
+sequenceDiagram
+  participant You
+  participant Chat as AgentChat
+  participant Route as POST /api/agent/chat
+  participant Agent as LangChain
+  participant Tool as openCoachCheckIn
+  You->>Chat: open my coach check-in
+  Chat->>Route: text, threadId, context.pathname
+  Route->>Route: enrich activeProgramId
+  Route->>Agent: system prompt + screen context
+  Agent->>Tool: openCoachCheckIn
+  Tool-->>Agent: href /analytics/coach
+  Agent-->>Chat: reply + tool parts
+  Chat->>Chat: router.push(href), close sheet
+          </pre>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2">
+          <article class="rounded-lg border border-slate-200 bg-white p-5 space-y-2">
+            <h3 class="text-xs uppercase tracking-wider text-slate-500">Context packet</h3>
+            <p class="text-sm"><code class="font-mono">pathname</code>, <code class="font-mono">activeProgramId</code>, <code class="font-mono">openSessionId</code>, <code class="font-mono">focusedExerciseId</code>. Parsed on the client from the URL; active program filled on the server.</p>
+          </article>
+          <article class="rounded-lg border-2 border-slate-900 bg-white p-5 space-y-2">
+            <h3 class="text-xs uppercase tracking-wider text-slate-500">Confirm before start</h3>
+            <p class="text-sm"><code class="font-mono">startNextWorkout</code> never calls <code class="font-mono">startNextSession</code> on the server. The chip runs the existing server action only after you tap.</p>
+          </article>
+        </div>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/context.ts — packet on each turn</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export function parseScreenContextFromPath(pathname: string): AgentScreenContext {
+  const sessionMatch = pathname.match(SESSION_PATH);
+  const openSessionId = sessionMatch && !RECAP_PATH.test(pathname)
+    ? decodeURIComponent(sessionMatch[1]) : null;
+  const exerciseMatch = pathname.match(HISTORY_PATH);
+  const focusedExerciseId = exerciseMatch ? decodeURIComponent(exerciseMatch[1]) : null;
+  return { pathname, activeProgramId: null, openSessionId, focusedExerciseId };
+}</code></pre>
+        </article>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/tools/navigation.ts — same hrefs as taps</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export function openCoachCheckIn() {
+  return { source: "openCoachCheckIn", action: "navigate", href: "/analytics/coach" };
+}
+
+export function startNextWorkoutRequest() {
+  return {
+    source: "startNextWorkout",
+    action: "confirm",
+    message: "Tap Start workout in the chat to begin.",
+  };
+}</code></pre>
+        </article>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/components/agent/agent-chat.tsx — client navigates on done</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>body: JSON.stringify({
+  text,
+  threadId: conversation.kind === "saved" ? conversation.threadId : null,
+  context: parseScreenContextFromPath(pathname),
+}),
+
+if (streamEvent.type === "done") {
+  runClientActions(streamEvent.messages, router, onNavigate);
+}</code></pre>
+        </article>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/components/agent/agent-confirm-chip.tsx — unattended start blocked</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>onClick={() => {
+  start(async () => {
+    await startNextSession();
+    onStarted?.();
+  });
+}}</code></pre>
+        </article>
+      </section>
+
       <section class="space-y-3">
-        <h2 class="font-serif text-2xl">What Slice 0 will not do</h2>
+        <h2 class="font-serif text-2xl">What Slice 0–1 will not do</h2>
         <ul class="list-disc pl-5 text-slate-700 space-y-1">
-          <li>Write programs, start sessions, or accept Coach proposals.</li>
+          <li>Write programs, accept Coach proposals, or change settings.</li>
+          <li>Start a workout without the in-chat confirm chip.</li>
+          <li>Show the agent entry during an active session (<code class="font-mono text-sm">hideAppChrome</code>).</li>
           <li>Read period observations.</li>
           <li>Replace Track Coach at <code class="font-mono text-sm">/analytics/coach</code>.</li>
           <li>Summarize, compact, or embed the conversation.</li>

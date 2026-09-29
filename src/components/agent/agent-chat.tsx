@@ -2,10 +2,13 @@
 
 import { useEffect, useLayoutEffect, useReducer, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { cx } from "@/components/ui/cx";
 import { IconHistory, IconPlus, IconSend } from "@/components/ui/icons";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
+import { clientActionsFromParts } from "@/lib/agent/client-tools";
+import { parseScreenContextFromPath } from "@/lib/agent/context";
 import {
   canNavigate,
   chatReducer,
@@ -16,18 +19,24 @@ import {
   type ThreadId,
   type ThreadSummary,
 } from "@/lib/agent/chat-state";
+import type { AgentMessage } from "@/lib/agent/messages";
 import { readSseEvents } from "@/lib/agent/stream";
 import { AgentTranscript } from "./agent-transcript";
 
 export function AgentChat({
   initial,
   variant,
+  onNavigate,
 }: {
   initial?: AgentChatSnapshot;
   variant: "sheet" | "page";
+  onNavigate?: () => void;
 }) {
+  const pathname = usePathname();
+  const router = useRouter();
   const [{ threads, screen, error }, dispatch] = useReducer(chatReducer, initial, initialChatState);
   const [draft, setDraft] = useState("");
+  const [confirmedCallIds, setConfirmedCallIds] = useState<Set<string>>(() => new Set());
   const scroller = useRef<HTMLDivElement>(null);
   const stickToEnd = useRef(true);
   const navigable = canNavigate(screen);
@@ -82,6 +91,7 @@ export function AgentChat({
         body: JSON.stringify({
           text,
           threadId: conversation.kind === "saved" ? conversation.threadId : null,
+          context: parseScreenContextFromPath(pathname),
         }),
       });
       if (!response.ok || !response.body) {
@@ -90,6 +100,9 @@ export function AgentChat({
       for await (const streamEvent of readSseEvents(response.body)) {
         if (streamEvent.type === "thread") userTextStored = true;
         dispatch({ type: "event", event: streamEvent });
+        if (streamEvent.type === "done") {
+          runClientActions(streamEvent.messages, router, onNavigate);
+        }
       }
       dispatch({ type: "closed", error: "Connection lost." });
     } catch (caught) {
@@ -156,7 +169,16 @@ export function AgentChat({
             onOpen={openThread}
           />
         ) : null}
-        {view ? <AgentTranscript {...view} /> : null}
+        {view ? (
+          <AgentTranscript
+            {...view}
+            confirmedCallIds={confirmedCallIds}
+            onConfirmStarted={(callId) => {
+              setConfirmedCallIds((current) => new Set(current).add(callId));
+              onNavigate?.();
+            }}
+          />
+        ) : null}
       </div>
       {screen.name === "chat" ? (
         <form onSubmit={send} className="flex shrink-0 items-center gap-2 bg-background px-4 py-3">
@@ -235,4 +257,20 @@ async function fetchSnapshot(url: string): Promise<AgentChatSnapshot> {
 
 function shortDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function runClientActions(
+  messages: AgentMessage[],
+  router: ReturnType<typeof useRouter>,
+  onNavigate?: () => void,
+) {
+  for (const message of messages) {
+    if (message.role !== "tool") continue;
+    for (const action of clientActionsFromParts(message.parts)) {
+      if (action.type === "navigate") {
+        router.push(action.href);
+        onNavigate?.();
+      }
+    }
+  }
 }

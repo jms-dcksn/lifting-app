@@ -3,6 +3,8 @@ import { ChatOpenAI } from "@langchain/openai";
 import type { Callbacks } from "@langchain/core/callbacks/manager";
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import type { StructuredToolInterface } from "@langchain/core/tools";
+import type { AgentScreenContext } from "./context";
+import { formatScreenContextForPrompt } from "./context";
 import {
   AI_GATEWAY_BASE_URL,
   TOOL_CALL_BUDGET,
@@ -32,6 +34,7 @@ export function createGatewayModel() {
 export async function runAgentTurn(input: {
   persisted: AgentMessage[];
   threadId: string;
+  screenContext?: AgentScreenContext;
   tools: StructuredToolInterface[];
   model?: BaseChatModel;
   callbacks?: Callbacks;
@@ -39,10 +42,13 @@ export async function runAgentTurn(input: {
 }): Promise<Array<Omit<AgentMessage, "id" | "createdAt">>> {
   const windowed = selectModelMessages(input.persisted);
   const model = input.model ?? createGatewayModel();
+  const systemPrompt = input.screenContext
+    ? `${AGENT_SYSTEM_PROMPT}${formatScreenContextForPrompt(input.screenContext)}`
+    : AGENT_SYSTEM_PROMPT;
   const agent = createAgent({
     model,
     tools: input.tools,
-    systemPrompt: AGENT_SYSTEM_PROMPT,
+    systemPrompt,
     middleware: [
       toolCallLimitMiddleware({
         runLimit: TOOL_CALL_BUDGET,

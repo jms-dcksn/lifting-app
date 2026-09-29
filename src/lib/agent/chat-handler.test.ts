@@ -1,4 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/program", () => ({
+  getActiveProgram: vi.fn(async () => null),
+}));
+
 import { createAgentChatHandlers } from "./chat-handler";
 import type { AgentChatSnapshot } from "./chat-state";
 import type { runAgentTurn } from "./run";
@@ -143,11 +148,18 @@ function setup(options?: { failMessageInsert?: boolean }) {
   return { store, runTurn, ...handlers };
 }
 
-function post(body: unknown) {
+const HOME_CONTEXT = {
+  pathname: "/",
+  activeProgramId: null,
+  openSessionId: null,
+  focusedExerciseId: null,
+};
+
+function post(body: Record<string, unknown>) {
   return new Request("https://example.test/api/agent/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ context: HOME_CONTEXT, ...body }),
   });
 }
 
@@ -184,11 +196,20 @@ describe("agent chat POST", () => {
   it("rejects a body that does not name its thread, and writes nothing", async () => {
     const { POST, runTurn, store } = setup();
     const responses = await Promise.all([
-      POST(post({ text: "how was this week?" })),
+      POST(new Request("https://example.test/api/agent/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: "how was this week?" }),
+      })),
       POST(post({ text: "how was this week?", threadId: "not-a-uuid" })),
       POST(post({ text: "   ", threadId: null })),
+      POST(new Request("https://example.test/api/agent/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: "how was this week?", threadId: null }),
+      })),
     ]);
-    expect(responses.map((response) => response.status)).toEqual([400, 400, 400]);
+    expect(responses.map((response) => response.status)).toEqual([400, 400, 400, 400]);
     expect(runTurn).not.toHaveBeenCalled();
     expect(rowCounts(store.tables)).toEqual({ threads: 2, messages: 2 });
   });
@@ -221,6 +242,7 @@ describe("agent chat POST", () => {
     expect(runTurn.mock.calls[0]?.[0]).toMatchObject({
       threadId: created?.id,
       persisted: [{ role: "user", parts: [{ type: "text", text: "How was\n this week?" }] }],
+      screenContext: HOME_CONTEXT,
     });
     expect(store.tables.agent_message.filter((row) => row.thread_id === created?.id).map((row) => row.role))
       .toEqual(["user", "assistant"]);

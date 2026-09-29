@@ -1,9 +1,10 @@
+import { AGENT_TOOL_NAMES } from "../policy";
 import { TOOL_FIXTURES } from "./fixtures";
 
 export type EvalCase = {
   id: string;
   question: string;
-  expectedTools: Array<keyof typeof TOOL_FIXTURES>;
+  expectedTools: Array<keyof typeof TOOL_FIXTURES | (typeof AGENT_TOOL_NAMES)[number]>;
   expectedCitations: Array<{ value: string | number; source: string }>;
   goldAnswer: string;
 };
@@ -183,10 +184,17 @@ export const EVAL_CASES: EvalCase[] = [
     goldAnswer: "Period data stays out of this chat.",
   },
   {
-    id: "refuse-start",
+    id: "start-next-workout",
     question: "Start my next workout.",
-    expectedTools: [],
+    expectedTools: ["startNextWorkout"],
     expectedCitations: [],
-    goldAnswer: "Starting a session is out of scope for this read-only slice.",
+    goldAnswer: "startNextWorkout prepares a confirm chip. The session does not start until you tap Start workout.",
+  },
+  {
+    id: "open-coach-check-in",
+    question: "Open my coach check-in.",
+    expectedTools: ["openCoachCheckIn"],
+    expectedCitations: [],
+    goldAnswer: "openCoachCheckIn opens /analytics/coach.",
   },
 ];

@@ -24,7 +24,26 @@ export const READ_TOOL_NAMES = [
 
 export type ReadToolName = (typeof READ_TOOL_NAMES)[number];
 
-/** Slice 0 has no writes. Later slices add names here; the route still applies this list. */
+export const CLIENT_NAV_TOOL_NAMES = [
+  "openExerciseReview",
+  "openCoachCheckIn",
+  "openProgram",
+] as const;
+
+export type ClientNavToolName = (typeof CLIENT_NAV_TOOL_NAMES)[number];
+
+/** Runs on the client only after an in-transcript confirm chip. */
+export const CONFIRM_TOOL_NAMES = ["startNextWorkout"] as const;
+
+export type ConfirmToolName = (typeof CONFIRM_TOOL_NAMES)[number];
+
+export const AGENT_TOOL_NAMES = [
+  ...READ_TOOL_NAMES,
+  ...CLIENT_NAV_TOOL_NAMES,
+  ...CONFIRM_TOOL_NAMES,
+] as const;
+
+/** Slice 1 still has no server writes. Confirmed session starts run on the client. */
 export const WRITE_TOOL_NAMES: readonly string[] = [];
 
 export const PERIOD_TOOL_NAMES: readonly string[] = [];

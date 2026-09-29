@@ -5,6 +5,12 @@ import type { Database } from "@/lib/supabase/types";
 import { activeProgram } from "./active-program";
 import { exerciseReview } from "./exercise-review";
 import { nextWorkout } from "./next-workout";
+import {
+  openCoachCheckIn,
+  openExerciseReview,
+  openProgram,
+  startNextWorkoutRequest,
+} from "./navigation";
 import { weeklyCoach } from "./weekly-coach";
 
 type Client = SupabaseClient<Database>;
@@ -14,6 +20,13 @@ function asJson(value: unknown) {
 }
 
 /** LangChain adapters. Domain functions above are the public interface. */
+export function bindAgentTools(supabase: Client, userId: string) {
+  return [
+    ...bindReadTools(supabase, userId),
+    ...bindClientTools(),
+  ];
+}
+
 export function bindReadTools(supabase: Client, userId: string) {
   return [
     tool(async () => asJson(await weeklyCoach(supabase, userId)), {
@@ -56,4 +69,49 @@ export function bindReadTools(supabase: Client, userId: string) {
   ];
 }
 
-export { activeProgram, exerciseReview, nextWorkout, weeklyCoach };
+function bindClientTools() {
+  return [
+    tool(async ({ exerciseId, equipmentInstanceId }) =>
+      asJson(openExerciseReview({ exerciseId, equipmentInstanceId })), {
+      name: "openExerciseReview",
+      description:
+        "Open Exercise review for one exact exercise plus equipment instance. Use when the user asks to see review, history, Last card, or e1RM chart for an exercise.",
+      schema: z.object({
+        exerciseId: z.string().describe("Catalog exercise id, e.g. bb-back-squat"),
+        equipmentInstanceId: z.string().nullable().optional()
+          .describe("Equipment instance id, or null for no instance"),
+      }),
+    }),
+    tool(async () => asJson(openCoachCheckIn()), {
+      name: "openCoachCheckIn",
+      description:
+        "Open Track Coach check-in at /analytics/coach. Use when the user asks to open coach check-in, weekly check-in, or proposals screen.",
+      schema: z.object({}),
+    }),
+    tool(async ({ programId }) => asJson(openProgram(programId)), {
+      name: "openProgram",
+      description:
+        "Open a program detail screen. Pass the active program id unless the user names another program.",
+      schema: z.object({
+        programId: z.string().describe("Program id to open"),
+      }),
+    }),
+    tool(async () => asJson(startNextWorkoutRequest()), {
+      name: "startNextWorkout",
+      description:
+        "Request starting the next workout. The session does not start until the user taps the in-chat confirm chip.",
+      schema: z.object({}),
+    }),
+  ];
+}
+
+export {
+  activeProgram,
+  exerciseReview,
+  nextWorkout,
+  openCoachCheckIn,
+  openExerciseReview,
+  openProgram,
+  startNextWorkoutRequest,
+  weeklyCoach,
+};

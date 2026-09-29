@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  CLIENT_NAV_TOOL_NAMES,
+  CONFIRM_TOOL_NAMES,
   CONTEXT_MESSAGE_LIMIT,
   LANGSMITH_PROJECT_NAME,
   MODEL_CONTEXT_CHAR_BUDGET,
@@ -30,6 +32,12 @@ describe("agent policy", () => {
       "exerciseReview",
       "nextWorkout",
     ]);
+    expect(CLIENT_NAV_TOOL_NAMES).toEqual([
+      "openExerciseReview",
+      "openCoachCheckIn",
+      "openProgram",
+    ]);
+    expect(CONFIRM_TOOL_NAMES).toEqual(["startNextWorkout"]);
   });
 
   it("sends only the last N messages and drops old tool results first", () => {

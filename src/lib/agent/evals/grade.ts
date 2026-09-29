@@ -1,4 +1,4 @@
-import { READ_TOOL_NAMES, WRITE_TOOL_NAMES } from "../policy";
+import { AGENT_TOOL_NAMES, CONFIRM_TOOL_NAMES, WRITE_TOOL_NAMES } from "../policy";
 import type { EvalCase } from "./cases";
 
 export function gradeGrounding(input: {
@@ -13,7 +13,10 @@ export function gradeGrounding(input: {
   }
   for (const tool of input.usedTools) {
     if (WRITE_TOOL_NAMES.includes(tool)) reasons.push(`write tool ${tool}`);
-    if (!READ_TOOL_NAMES.includes(tool as (typeof READ_TOOL_NAMES)[number]) && !input.expectedTools.includes(tool)) {
+    if (CONFIRM_TOOL_NAMES.includes(tool as (typeof CONFIRM_TOOL_NAMES)[number]) && !input.expectedTools.includes(tool)) {
+      reasons.push(`unexpected confirm tool ${tool}`);
+    }
+    if (!AGENT_TOOL_NAMES.includes(tool as (typeof AGENT_TOOL_NAMES)[number]) && !input.expectedTools.includes(tool)) {
       reasons.push(`unexpected tool ${tool}`);
     }
   }

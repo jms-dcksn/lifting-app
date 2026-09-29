@@ -21,7 +21,7 @@ export function AgentEntry() {
       </IconButton>
       {open ? (
         <Sheet onClose={() => setOpen(false)} ariaLabel="Coach" className="flex h-[85dvh] min-h-0 flex-col overflow-hidden">
-          <AgentChat variant="sheet" />
+          <AgentChat variant="sheet" onNavigate={() => setOpen(false)} />
         </Sheet>
       ) : null}
     </>

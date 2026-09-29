@@ -16,6 +16,12 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+const push = vi.fn();
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+  useRouter: () => ({ push }),
+}));
+
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   HTMLDialogElement.prototype.showModal = function showModal() {
@@ -33,6 +39,7 @@ beforeEach(() => {
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
+  push.mockReset();
 });
 
 afterEach(() => {
@@ -277,10 +284,89 @@ describe("agent chrome", () => {
     type("How was my week?");
     await submit();
 
-    expect(fetchMock.mock.calls[0]?.[1]?.body).toBe(JSON.stringify({ text: "How was my week?", threadId: null }));
+    expect(fetchMock.mock.calls[0]?.[1]?.body).toBe(JSON.stringify({
+      text: "How was my week?",
+      threadId: null,
+      context: {
+        pathname: "/",
+        activeProgramId: null,
+        openSessionId: null,
+        focusedExerciseId: null,
+      },
+    }));
     expect(`${window.location.pathname}${window.location.search}`).toBe("/coach?thread=0199a3b2-0000-7000-8000-00000000000a");
     expect(host.querySelector("h1")?.textContent).toBe("Coach");
     expect([...host.querySelectorAll(".uppercase")].map((node) => node.textContent)).toEqual(["You", "Coach"]);
     expect(host.querySelector(".overflow-y-auto .mr-auto")?.textContent).toContain("3/4 sessions.");
+  });
+
+  it("shows a confirm chip after startNextWorkout and navigates on openCoachCheckIn", async () => {
+    const user = userMessage("m1", "Open my coach check-in");
+    const answer: AgentMessage = {
+      id: "m2",
+      role: "assistant",
+      createdAt: "2026-09-27T00:00:01.000Z",
+      parts: [
+        { type: "tool-call", id: "nav-1", name: "openCoachCheckIn", args: {} },
+        { type: "text", text: "Opening Coach check-in." },
+      ],
+    };
+    const tool: AgentMessage = {
+      id: "m3",
+      role: "tool",
+      createdAt: "2026-09-27T00:00:02.000Z",
+      parts: [{
+        type: "tool-result",
+        id: "nav-1",
+        name: "openCoachCheckIn",
+        result: { action: "navigate", href: "/analytics/coach" },
+      }],
+    };
+    const fetchMock = vi.fn<typeof fetch>(async () => sseResponse([
+      { type: "thread", thread: { id: A, title: "Open my coach check-in", updatedAt: user.createdAt }, userMessage: user },
+      { type: "done", messages: [user, answer, tool] },
+    ]));
+    vi.stubGlobal("fetch", fetchMock);
+    act(() => {
+      root.render(<AgentChat variant="sheet" initial={saved} />);
+    });
+
+    type("Open my coach check-in");
+    await submit();
+
+    expect(push).toHaveBeenCalledWith("/analytics/coach");
+  });
+
+  it("renders a Start workout confirm chip for startNextWorkout tool calls", () => {
+    act(() => {
+      root.render(
+        <AgentTranscript
+          messages={[
+            {
+              id: "a1",
+              role: "assistant",
+              createdAt: "2026-09-27T00:00:00.000Z",
+              parts: [
+                { type: "tool-call", id: "start-1", name: "startNextWorkout", args: {} },
+                { type: "text", text: "Tap Start workout when you are ready." },
+              ],
+            },
+            {
+              id: "t1",
+              role: "tool",
+              createdAt: "2026-09-27T00:00:01.000Z",
+              parts: [{
+                type: "tool-result",
+                id: "start-1",
+                name: "startNextWorkout",
+                result: { action: "confirm" },
+              }],
+            },
+          ]}
+        />,
+      );
+    });
+
+    expect(host.querySelector("button")?.textContent).toBe("Start workout");
   });
 });

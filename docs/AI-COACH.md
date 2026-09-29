@@ -6,7 +6,8 @@ replace it. Track Coach (`/analytics/coach`), `CoachCheckInReport`, and
 language, intake, navigation, and draft layer on top of existing loaders and actions.
 
 **Status:** Slice 0 shipped 2026-09-20. Chat became multi-thread on 2026-09-27
-([Threads](#threads)). Later slices are still specified, not built. Rationale lives in
+([Threads](#threads)). Slice 1 (screen context and navigation) shipped 2026-09-29.
+Later slices are still specified, not built. Rationale lives in
 [Decisions](DECISIONS.md#ai-coach-2026-09-20) and
 [AI Coach threads](DECISIONS.md#ai-coach-threads-2026-09-27). The teaching surface
 is [ai-coach.html](ai-coach.html) — update that HTML whenever agent behavior changes.
@@ -183,15 +184,19 @@ session.
 
 ### Slice 1 — Screen context and navigation
 
+**Status.** Shipped 2026-09-29. Teaching walkthrough: [ai-coach.html](ai-coach.html#slice-1).
+
 **Intent.** Omnipresent without being a fifth tab. Still read-mostly.
 
 **In**
 
 - A context packet on each turn: pathname, active program id, open session id, focused
-  exercise id when the screen has one.
+  exercise id when the screen has one. The client sends pathname-derived ids on
+  `POST /api/agent/chat`; the route enriches `activeProgramId` from `getActiveProgram`.
 - Client tools that route: `openExerciseReview`, `openCoachCheckIn`, `openProgram`.
-- Optional `startNextWorkout` that calls `startNextSession` only after an in-transcript
-  confirm chip, then navigates.
+  Server tools return the same hrefs the UI uses; the client navigates on `done`.
+- `startNextWorkout` prepares an in-transcript confirm chip. `startNextSession` runs
+  only after the user taps it, then Next.js redirects to the session screen.
 
 **Out**
 

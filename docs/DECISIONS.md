@@ -564,12 +564,20 @@ authenticated `loadWorkoutRecords` read path. No schema migration is required.
 
 ### Comparability and eligibility
 
-The identity is `(user_id, exercise_id, equipment_instance_id)`, across programs and
-slots. Variant slugs distinguish brand and station tag (`stack` / `plate` / `bench` /
-`rack` / `platform`). Broad movement patterns and the history sheet's exercise
-families are not record comparison scopes. Unresolved machine templates cannot earn
-records. Leftover flat cable/barbell template rows stay eligible on that exact id;
-they do not merge with later variants.
+The shipped identity is `(user_id, exercise_id, equipment_instance_id)`, across
+programs and slots. Variant slugs distinguish brand and station tag (`stack` /
+`plate` / `bench` / `rack` / `platform`). Broad movement patterns and the history
+sheet's exercise families are not record comparison scopes in the code on `main`.
+Unresolved machine templates cannot earn records. Leftover flat cable/barbell
+template rows stay eligible on that exact id.
+
+**Superseded for ordinary-pound families (2026-09-29, not shipped).**
+[Non-machine movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+compares `bench`, `rack`, `platform`, and `none` on the seeded template
+(`movement:<id>`), including leftover template rows, and ignores
+`equipment_instance_id` for that key. Machine and cable keep this exact pair.
+Do not add `rollup_exercise_id`. James can reply `exact` to keep this paragraph
+as the rule for benches too.
 
 Working sets require finite load, positive whole-number reps, and valid RIR (0–5).
 Legacy null RIR uses the canonical default of 2; missing load/reps is never zero-filled.
@@ -757,8 +765,9 @@ Approved / shipped. Open questions LOCKED. Source of truth:
 `StationTag`; `resolveVariant` for cable and barbell-station templates; picker
 forms and session/planner/swap/pin gate; family-latest Track default-compound
 numbers and review hrefs; cable-variant first sessions calibrate, barbell
-stations do not, records stay exact-id across leftover template + variant
-families.
+stations do not. Shipped records stay exact-id across leftover template and
+variant families. Ordinary-pound rollup is specified and not shipped. See the
+superseded note below.
 
 Phase C scoped brand/type to machines and left cables flat. That judgment is
 reversed for every cable and for the barbell stations below. Dumbbells and
@@ -779,11 +788,17 @@ same as `selectorized` / `plate_loaded`). Do not add `station_kind`. Expand
 `variantId` / `variantName` tags: `stack`, `plate`, `bench`, `rack`, `platform`.
 
 **History, Track tiles, copy (LOCKED James 2026-09-21).** No rewrite of flat
-cable/barbell `set_log` rows — family browse groups template + later variants;
-the next log creates a variant; split PR chains are accepted. Track default
-compounds use family-latest numbers and href. Session/planner copy is
-profile-specific (**Choose bench** / Choose cable / etc.), not “Choose station”.
+cable/barbell `set_log` rows. Family browse groups template + later variants.
+The next log creates a variant. Session/planner copy is profile-specific
+(**Choose bench** / Choose cable / etc.), not "Choose station".
 
-Builder may keep storing templates; session/planner resolve before set-entry.
-Records, progression, and review stay exact `exercise_id`. AI Coach, bodyweight
-stations, and progression-math rewrites are out of scope.
+**Superseded in part (2026-09-29, not shipped).** "Split PR chains are accepted"
+and "records, progression, and review stay exact `exercise_id`" no longer hold
+for `bench`, `rack`, `platform`, and `none` once
+[movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
+slices land. Cable and machine exactness, the no-rewrite rule, and the
+profile-specific copy stay. Track family-latest numbers stay for cable defaults
+only.
+
+Builder may keep storing templates. Session and planner still resolve before
+set-entry. AI Coach product work and bodyweight stations stay out of that spec.

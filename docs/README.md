@@ -15,6 +15,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Exercise review (Slices A–F shipped) | [2026-09-19 spec](superpowers/specs/2026-09-19-exercise-review-design.md) |
 | Exercise illustrations (shared visual) | [2026-09-28 spec](superpowers/specs/2026-09-28-exercise-visuals-design.md) |
 | Station composition (Approved / shipped) | [2026-09-21 spec](superpowers/specs/2026-09-21-station-composition-design.md); [Features §6](FEATURES.md) |
+| Ordinary-pound movement e1RM/PR rollup (specified, not shipped) | [2026-09-29 spec](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md) |
 | Shipped behavior | [Features](FEATURES.md) |
 | Rationale and record eligibility | [Decisions](DECISIONS.md) |
 | Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |

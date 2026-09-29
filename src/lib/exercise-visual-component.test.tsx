@@ -16,13 +16,18 @@ describe("ExerciseVisual", () => {
     expect(html).toContain('src="/exercises/bb-bench.jpg"');
     expect(html).toContain('alt=""');
     expect(html).toContain("aria-hidden");
-    expect(html).toContain("size-11");
+    expect(html).toContain("h-9");
+    expect(html).toContain("w-16");
+    expect(html).toContain("object-cover");
+    expect(html).not.toContain("object-contain");
   });
 
-  it("uses the larger frame on headers", () => {
+  it("uses the larger 16:9 frame on headers", () => {
     const html = render({ exerciseId: "hack-squat", size: "lg" });
-    expect(html).toContain("size-[4.5rem]");
+    expect(html).toContain("h-16");
+    expect(html).toContain("w-[7.11rem]");
     expect(html).toContain('src="/exercises/hack-squat.jpg"');
+    expect(html).toContain("object-cover");
   });
 
   it("shows the dumbbell fallback when the identity has no art", () => {

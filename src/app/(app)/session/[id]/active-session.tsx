@@ -503,7 +503,7 @@ function SlotCard({
     <Card tone={tone}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} />
+          <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} size="lg" />
           <h2 className="text-heading">
             <Link
               href={exerciseReviewHref({

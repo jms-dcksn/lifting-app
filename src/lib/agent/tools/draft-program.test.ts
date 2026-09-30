@@ -37,7 +37,7 @@ describe("draftProgramFromIntake", () => {
     expect(rpc).not.toHaveBeenCalled();
   });
 
-  it("persists an inactive draft and returns builder navigation", async () => {
+  it("persists an inactive draft and returns a builder confirm chip", async () => {
     mockProgramCount(2);
 
     const result = await draftProgramFromIntake(supabase as never, "user-1", {
@@ -51,7 +51,9 @@ describe("draftProgramFromIntake", () => {
     if (result.status !== "draft") return;
     expect(result.isActive).toBe(false);
     expect(result.href).toMatch(/\/program\/.*mode=edit$/);
-    expect(result.action).toBe("navigate");
+    expect(result.action).toBe("confirm");
+    expect(result.galleryTemplate).toBe(true);
+    expect(result.matchTraits.length).toBeGreaterThan(0);
     expect(rpc).toHaveBeenCalledWith("save_program", {
       p_tree: expect.objectContaining({
         isActive: false,

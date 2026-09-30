@@ -7,7 +7,7 @@ import {
 } from "@/lib/program-from-template";
 import type { Database } from "@/lib/supabase/types";
 import { recentExerciseIds } from "@/lib/program";
-import { assembleProgramDraft } from "../program-intake/assembler";
+import { assembleProgramDraft, describeTemplateMatch, pickTemplate } from "../program-intake/assembler";
 import { classifyProgramIntake } from "../program-intake/classify";
 
 type Client = SupabaseClient<Database>;
@@ -29,8 +29,10 @@ export async function draftProgramFromIntake(
   }
 
   const recentIds = await recentExerciseIds(supabase, userId);
+  const intake = classification.intake;
+  const template = pickTemplate(intake);
   const draft = assembleProgramDraft({
-    intake: classification.intake,
+    intake,
     recentExerciseIds: recentIds,
   });
   const programId = crypto.randomUUID();
@@ -44,12 +46,17 @@ export async function draftProgramFromIntake(
     status: "draft" as const,
     programId,
     templateId: draft.templateId,
+    templateName: template.name,
+    galleryTemplate: true,
+    matchTraits: describeTemplateMatch(template, intake),
     name: draft.name,
     style: draft.style,
     isActive: activate,
     dayCount: draft.days.length,
-    action: "navigate" as const,
+    action: "confirm" as const,
     href,
+    message:
+      "Tap Open in builder when you want to review or activate this inactive draft. The app does not navigate until you confirm.",
     classification,
   };
 }

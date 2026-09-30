@@ -33,7 +33,7 @@ export const CLIENT_NAV_TOOL_NAMES = [
 export type ClientNavToolName = (typeof CLIENT_NAV_TOOL_NAMES)[number];
 
 /** Runs on the client only after an in-transcript confirm chip. */
-export const CONFIRM_TOOL_NAMES = ["startNextWorkout"] as const;
+export const CONFIRM_TOOL_NAMES = ["startNextWorkout", "draftProgramFromIntake"] as const;
 
 export type ConfirmToolName = (typeof CONFIRM_TOOL_NAMES)[number];
 

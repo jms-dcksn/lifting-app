@@ -37,7 +37,7 @@ describe("agent policy", () => {
       "openCoachCheckIn",
       "openProgram",
     ]);
-    expect(CONFIRM_TOOL_NAMES).toEqual(["startNextWorkout"]);
+    expect(CONFIRM_TOOL_NAMES).toEqual(["startNextWorkout", "draftProgramFromIntake"]);
   });
 
   it("sends only the last N messages and drops old tool results first", () => {

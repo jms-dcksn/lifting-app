@@ -3,6 +3,18 @@ import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
 import { assembleProgramDraft, pickTemplate, validateAssembledProgram } from "./assembler";
 
 describe("assembleProgramDraft", () => {
+  it("prefers neutral 3-day strength templates over women/glutes tags when emphasis is unspecified", () => {
+    const template = pickTemplate({
+      days: 3,
+      goal: "strength",
+      style: "classic",
+      equipment: "full_gym",
+      emphasis: "balanced",
+    });
+    expect(template.id).not.toBe("strong-foundations-women-3x");
+    expect(["kino-strength-density", "warrior-shred", "essentials-3x"]).toContain(template.id);
+  });
+
   it("picks a 4-day hypertrophy template for matching intake", () => {
     const template = pickTemplate({
       days: 4,

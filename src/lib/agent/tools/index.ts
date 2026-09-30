@@ -76,7 +76,7 @@ function bindWriteTools(supabase: Client, userId: string) {
     tool(async (input) => asJson(await draftProgramFromIntake(supabase, userId, input)), {
       name: "draftProgramFromIntake",
       description:
-        "Classify program intake (days, goal, style, equipment, emphasis, omissions) and draft an inactive program in the builder. Low confidence returns follow-up chips instead of guessing a split. Never activates an existing active program.",
+        "Recommend an existing PROGRAM_TEMPLATES gallery program from intake (days, goal, style, equipment, emphasis, omissions), patch exercises lightly, and persist an inactive draft. Low confidence returns follow-up chips instead of guessing a split. Does not invent custom programs. Returns an Open in builder confirm chip — the app does not navigate until the user taps it. Never activates an existing active program.",
       schema: z.object({
         days: z.union([z.number().int().min(3).max(6), z.enum(["3", "4", "5", "6"])]).optional()
           .describe("Training days per week (3–6)"),

@@ -27,6 +27,10 @@ function templateDayCount(template: ProgramTemplate): number {
   return tag ? Number(tag.split("-")[0]) : template.days.length;
 }
 
+function isNeutralEmphasis(intake: ProgramIntake): boolean {
+  return !intake.emphasis || intake.emphasis === "balanced";
+}
+
 function scoreTemplate(template: ProgramTemplate, intake: ProgramIntake): number {
   let score = 0;
   const days = templateDayCount(template);
@@ -43,6 +47,14 @@ function scoreTemplate(template: ProgramTemplate, intake: ProgramIntake): number
     if (intake.emphasis === "lower" && template.tags.includes("legs")) score += 2;
   }
 
+  if (isNeutralEmphasis(intake)) {
+    if (template.tags.includes("women")) score -= 6;
+    if (template.tags.includes("glutes")) score -= 4;
+    if (template.tags.includes("beginner") && intake.goal !== "general") score -= 3;
+    if (template.tags.includes("kinobody") && intake.goal === "strength") score += 4;
+    if (template.id === "kino-strength-density" || template.id.startsWith("essentials-")) score += 3;
+  }
+
   if (intake.equipment === "machines_only") {
     if (template.tags.includes("women") || template.id.includes("strong-foundations")) score += 5;
     if (template.tags.includes("kinobody")) score += 2;
@@ -56,6 +68,18 @@ function scoreTemplate(template: ProgramTemplate, intake: ProgramIntake): number
   if (intake.style === "classic" && !template.phases?.length) score -= 1;
 
   return score;
+}
+
+export function describeTemplateMatch(template: ProgramTemplate, intake: ProgramIntake): string[] {
+  const traits: string[] = [`${templateDayCount(template)} training days`];
+  if (template.tags.includes(intake.goal)) traits.push(`${intake.goal} focus`);
+  if (intake.emphasis && intake.emphasis !== "balanced" && template.tags.includes(intake.emphasis)) {
+    traits.push(`${intake.emphasis} emphasis`);
+  }
+  if (template.tags.includes("kinobody")) traits.push("Kinobody gallery template");
+  else if (template.tags.includes("nippard")) traits.push("Nippard gallery template");
+  else traits.push("gallery program template");
+  return traits;
 }
 
 export function pickTemplate(intake: ProgramIntake): ProgramTemplate {

@@ -208,30 +208,42 @@ the same screens a tap would, and a session route still has no agent entry.
 
 ### Slice 2 — Program intake → draft
 
-**Status.** Shipped 2026-09-29. Teaching walkthrough: [ai-coach.html § Slice 2](ai-coach.html#slice-2).
+**Status.** Shipped 2026-09-29; dogfood polish 2026-09-30. Teaching walkthrough:
+[ai-coach.html § Slice 2](ai-coach.html#slice-2).
 
-**Intent.** First product bet: messy wish list becomes an inactive draft in the existing
-builder.
+**Intent.** Honest gallery template picker: messy wish list becomes an inactive draft in
+the existing builder. This slice recommends an existing `PROGRAM_TEMPLATES` entry (pick +
+light patch), not a custom program builder.
 
 **In**
 
+- Starter-prompt pills on empty/new threads (e.g. “Build me a program”, week check-in,
+  coach check-in, next workout / target, exercise review). Tapping a pill fills the
+  composer like intake chips.
 - Short chat or chip intake: days, goal, emphasis, equipment, omissions, classic vs fluid.
 - Jev (Choice / Noul / Score) or equivalent structured classify over that closed
   ontology. Low confidence asks a follow-up; it does not guess a split.
 - Deterministic assembler: pick or patch a `PROGRAM_TEMPLATES` entry from catalog +
   lift history, then persist as a draft (same path as `createFromTemplate`, which is
   inactive unless the account has no programs). Do not call `saveProgram` on generate;
-  that action activates. Open `/program/[id]?mode=edit`.
+  that action activates. Present the recommendation in chat (name, match traits, gallery
+  source), then offer an **Open in builder** confirm chip. Navigate to
+  `/program/[id]?mode=edit` only after the user taps the chip.
 - Prefer exercises with stats; honor omissions; keep machine generics as templates.
-  Validate with the same catalog/pattern tests templates already use.
+  Neutral asks should not default to audience-specific templates (e.g. women/glutes)
+  when emphasis is unspecified. Validate with the same catalog/pattern tests templates
+  already use.
+- System prompt and tool descriptions state the gallery-picker boundary. Custom program
+  design (discovery mode + program-writer sub-agent) is deferred to a later slice.
 
 **Out**
 
 - Activating on generate. Emitting programs as free-form LLM JSON. Jev generating
-  prose or slot lists. Web search for hypertrophy papers.
+  prose or slot lists. Web search for hypertrophy papers. Full custom program builder
+  (discovery middleware, program-writer sub-agent, free-form program JSON).
 
-**Done when** an intake round-trips to the builder, slot identities are valid, and the
-active program is unchanged until the user saves.
+**Done when** an intake round-trips to the builder after explicit confirm, slot
+identities are valid, and the active program is unchanged until the user saves.
 
 ### Slice 3 — Weekly narrative
 

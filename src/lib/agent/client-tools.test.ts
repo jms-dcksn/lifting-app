@@ -4,6 +4,7 @@ import {
   latestConfirmCallId,
   openExerciseReviewHref,
   parseClientAction,
+  pendingConfirmFromMessages,
 } from "./client-tools";
 
 describe("agent client tools", () => {
@@ -38,11 +39,11 @@ describe("agent client tools", () => {
       type: "tool-result",
       id: "c3",
       name: "draftProgramFromIntake",
-      result: { action: "navigate", href: "/program/abc?mode=edit" },
+      result: { action: "confirm", href: "/program/abc?mode=edit" },
     })).toEqual({
-      type: "navigate",
-      href: "/program/abc?mode=edit",
+      type: "confirm",
       tool: "draftProgramFromIntake",
+      href: "/program/abc?mode=edit",
     });
   });
 
@@ -54,5 +55,10 @@ describe("agent client tools", () => {
     ] as const;
     expect(clientActionsFromParts([parts[1]])).toEqual([{ type: "confirm", tool: "startNextWorkout" }]);
     expect(latestConfirmCallId([{ parts: [...parts] }])).toBe("new");
+    expect(pendingConfirmFromMessages([{ parts: [...parts] }])).toEqual({
+      callId: "new",
+      tool: "startNextWorkout",
+      label: "Start workout",
+    });
   });
 });

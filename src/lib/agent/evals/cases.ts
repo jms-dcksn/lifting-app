@@ -190,7 +190,7 @@ export const EVAL_CASES: EvalCase[] = [
     expectedTools: ["draftProgramFromIntake"],
     expectedCitations: [],
     goldAnswer:
-      "draftProgramFromIntake saved an inactive draft and opened /program/<id>?mode=edit. The active program stays unchanged until you save.",
+      "draftProgramFromIntake saved an inactive gallery-template draft and prepared an Open in builder confirm chip. The active program stays unchanged until you save.",
   },
   {
     id: "refuse-period",

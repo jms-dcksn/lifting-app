@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>lifting-app — architecture map</title>
+  <meta name="description" content="High-level living map of lifting-app: the four experiences, how they talk to Postgres, and the decisions that keep the system fast." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,16..72,500;0,16..72,650;1,16..72,500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0c0b09;
+      --bg-2: #141210;
+      --ink: #f3eee4;
+      --muted: #9a9388;
+      --faint: #6e685f;
+      --line: #2a2620;
+      --line-strong: #3f3a32;
+      --gold: #e8c547;
+      --gold-dim: rgba(232, 197, 71, 0.14);
+      --green: #5dcaa0;
+      --green-dim: rgba(93, 202, 160, 0.12);
+      --amber: #e0a04a;
+      --amber-dim: rgba(224, 160, 74, 0.14);
+      --blue: #8aa4c8;
+      --blue-dim: rgba(138, 164, 200, 0.12);
+      --rose: #d57a6a;
+      --surface: #1b1814;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+      --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, rgba(232, 197, 71, 0.08), transparent 50%),
+        var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+    a { color: var(--gold); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a:hover { color: #f4d76a; }
+    code, .mono { font-family: var(--mono); font-size: 0.86em; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px 96px; }
+
+    .mast {
+      padding: 48px 0 28px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
+      align-items: end;
+    }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: 0 0 12px;
+    }
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(2.4rem, 5vw, 4.2rem);
+      font-weight: 650;
+      letter-spacing: -0.03em;
+      line-height: 0.95;
+      margin: 0 0 16px;
+    }
+    .lede {
+      max-width: 42rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin: 0;
+    }
+    .meta {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+      line-height: 1.7;
+    }
+    .meta strong { color: var(--ink); font-weight: 500; }
+
+    nav.toc {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      margin: 0 -24px;
+      padding: 10px 24px;
+    }
+    nav.toc ol {
+      display: flex;
+      gap: 6px 18px;
+      flex-wrap: wrap;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    nav.toc a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    nav.toc a:hover, nav.toc a[aria-current="true"] { color: var(--ink); }
+
+    section { padding: 56px 0 8px; }
+    h2 {
+      font-family: var(--serif);
+      font-size: 2rem;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+    }
+    h3 {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      font-weight: 650;
+      margin: 32px 0 10px;
+    }
+    .sub { color: var(--muted); margin: 0 0 28px; max-width: 46rem; }
+    p { max-width: 46rem; }
+    .callout {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 16px 18px;
+      max-width: 46rem;
+    }
+    .callout strong { color: var(--gold); }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin: 0 0 22px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .swatch {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .flow {
+      display: grid;
+      gap: 10px;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+    .arrow-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      gap: 10px;
+    }
+    .arrow-row::before, .arrow-row::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: var(--line-strong);
+    }
+
+    .box {
+      background: var(--surface);
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      padding: 12px 14px;
+      min-height: 84px;
+    }
+    .box .label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .box h4 { margin: 0 0 4px; font-size: 0.98rem; font-weight: 600; }
+    .box p { margin: 0; color: var(--muted); font-size: 13px; max-width: none; }
+    .box.gold { border-color: #7a6520; background: linear-gradient(180deg, var(--gold-dim), var(--surface)); }
+    .box.green { border-color: #2d5c4a; background: linear-gradient(180deg, var(--green-dim), var(--surface)); }
+    .box.amber { border-color: #6b4d22; background: linear-gradient(180deg, var(--amber-dim), var(--surface)); }
+    .box.blue { border-color: #3d4d66; background: linear-gradient(180deg, var(--blue-dim), var(--surface)); }
+
+    .rooms {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .room {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      min-height: 210px;
+    }
+    .room header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .room h3 { margin: 0; font-size: 1.2rem; }
+    .room .path { font-family: var(--mono); font-size: 11px; color: var(--gold); }
+    .room ul { margin: 8px 0 0; padding: 0 0 0 16px; color: var(--muted); font-size: 13.5px; }
+    .room li { margin: 4px 0; }
+    .immersive {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .note {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 12px 0 0;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .lessons { display: grid; gap: 12px; }
+    .lesson {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .lesson .n {
+      font-family: var(--serif);
+      font-size: 1.8rem;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .lesson h3 { margin: 0 0 4px; font-size: 1.1rem; }
+    .lesson p { margin: 0; color: var(--muted); font-size: 14.5px; max-width: none; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 500; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    td .why { color: var(--muted); display: block; font-size: 13px; margin-top: 2px; }
+
+    .stack {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+    .chev { color: var(--faint); font-family: var(--mono); text-align: center; }
+
+    footer.doc {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+    footer.doc ul { padding-left: 18px; }
+
+    @media (max-width: 860px) {
+      .mast, .rooms, .immersive, .grid-2, .stack { grid-template-columns: 1fr; }
+      .meta { text-align: left; }
+      .stack .chev { transform: rotate(90deg); }
+    }
+    @media print {
+      nav.toc { position: static; }
+      body { background: white; color: #111; }
+      .box, .room, .lesson, table { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="mast">
+      <div>
+        <p class="kicker">Living architecture map · high-level</p>
+        <h1>How this lifting app is put together</h1>
+        <p class="lede">
+          Four experiences in a phone-sized web app, one Postgres database, and a pure
+          TypeScript strength engine shared by both. This page is the visual contract for
+          that shape. Algorithm invariants live in
+          <a href="ARCHITECTURE.md">ARCHITECTURE.md</a>; the why-we-chose-it history lives in
+          <a href="DECISIONS.md">DECISIONS.md</a>.
+        </p>
+      </div>
+      <p class="meta">
+        <strong>Audience</strong> humans + agents<br />
+        <strong>Scope</strong> experiences, data, request path<br />
+        <strong>As of</strong> 2026-09-20 · source of truth<br />
+        <strong>Keep current</strong> when routes, tables, or write paths change
+      </p>
+    </header>
+
+    <nav class="toc" aria-label="On this page">
+      <ol>
+        <li><a href="#what">1. What this is</a></li>
+        <li><a href="#experiences">2. Experiences</a></li>
+        <li><a href="#request">3. Request path</a></li>
+        <li><a href="#workout">4. Workout loop</a></li>
+        <li><a href="#data">5. Data</a></li>
+        <li><a href="#engine">6. Engine</a></li>
+        <li><a href="#lessons">7. Why it stays fast</a></li>
+      </ol>
+    </nav>
+
+    <section id="what">
+      <h2>1. What this system is</h2>
+      <p class="sub">
+        A personal progressive-overload tracker. One owner. Workouts require the network.
+        Those two facts do more architectural work than any framework choice.
+      </p>
+
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--blue)"></i> Runtime</span>
+        <span><i class="swatch" style="background:var(--gold)"></i> Authoritative write</span>
+        <span><i class="swatch" style="background:var(--green)"></i> Derived read</span>
+        <span><i class="swatch" style="background:var(--amber)"></i> Pure compute</span>
+      </div>
+
+      <div class="flow">
+        <div class="stack">
+          <div class="box blue">
+            <div class="label">Device</div>
+            <h4>Browser / home-screen PWA</h4>
+            <p>Installable. Wake lock. Optimistic set logging. Not offline — <code>/rest-sw.js</code> only schedules rest notifications.</p>
+          </div>
+          <div class="chev">HTTPS →</div>
+          <div class="box blue">
+            <div class="label">Compute</div>
+            <h4>Vercel · Next.js App Router</h4>
+            <p>Server Components load. Server Actions write. One private API route for weekly Coach.</p>
+          </div>
+          <div class="chev">SQL →</div>
+          <div class="box gold">
+            <div class="label">Data + auth</div>
+            <h4>Supabase Postgres</h4>
+            <p>Magic-link auth. Owner-scoped RLS on every table. <code>set_log</code> is the training ledger.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:18px">
+        <strong>Scale model.</strong> This is not a multi-tenant SaaS. “Scalable” here means:
+        years of one person’s sets stay cheap to scan, a tap in the gym stays snappy, and
+        the security story stays one rule — the row belongs to <code>auth.uid()</code>.
+        We deleted an offline/sync layer that was ~40% of the original design because
+        connectivity during workouts is assumed.
+      </div>
+    </section>
+
+    <section id="experiences">
+      <h2>2. The four experiences</h2>
+      <p class="sub">
+        The signed-in shell is a Next.js route group, <code>src/app/(app)</code>. Parentheses
+        mean it does not appear in the URL. It wraps every logged-in screen with
+        <code>getClaims()</code> and the Lift / Track / Program / You tab bar.
+        Login and <code>/auth/callback</code> sit outside that group on purpose.
+      </p>
+
+      <div class="rooms">
+        <article class="room">
+          <header><h3>Lift</h3><span class="path">/</span></header>
+          <p>Home. Start or resume. Upcoming workout. Last session recap chips.</p>
+          <ul>
+            <li>Reads the active program and next day</li>
+            <li>Creates the next <code>workout_session</code></li>
+            <li>Planner at <code>/workout/next</code></li>
+          </ul>
+        </article>
+        <article class="room">
+          <header><h3>Track</h3><span class="path">/analytics</span></header>
+          <p>Scoreboard of compounds, then Explore: Coach, Body, Volume, Month, All lifts.</p>
+          <ul>
+            <li>Almost entirely derived from <code>set_log</code></li>
+            <li>Exercise review is <code>/history/[id]</code></li>
+            <li>Pins are display-only</li>
+          </ul>
+        </article>
+        <article class="room">
+          <header><h3>Program</h3><span class="path">/program</span></header>
+          <p>Gallery, detail, builder, templates. One active program per owner.</p>
+          <ul>
+            <li>Writes the program / day / slot tree</li>
+            <li>Id-preserving save so logged sets keep their slot</li>
+            <li>Templates live in app code, not migrations</li>
+          </ul>
+        </article>
+        <article class="room">
+          <header><h3>You</h3><span class="path">/settings</span></header>
+          <p>Profile, rest defaults, weight, optional period tracking, sign out.</p>
+          <ul>
+            <li>Bodyweight is dated observations</li>
+            <li>Coach lives on Track, not here</li>
+            <li>Sign-out is a server action</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="immersive">
+        <div class="box amber">
+          <div class="label">Immersive · tab bar hidden</div>
+          <h4>Active workout</h4>
+          <p><code>/session/[id]</code> — log sets, swap, rest timer, finish recap. Owns the screen.</p>
+        </div>
+        <div class="box amber">
+          <div class="label">Immersive · tab bar hidden</div>
+          <h4>Next-workout planner</h4>
+          <p><code>/workout/next</code> — pre-start machine/swap choices, cookie-scoped to this browser.</p>
+        </div>
+        <div class="box amber">
+          <div class="label">Immersive · tab bar hidden</div>
+          <h4>Program builder</h4>
+          <p><code>/program/new</code> and <code>?mode=edit</code> — sticky save, no competing tabs.</p>
+        </div>
+      </div>
+      <p class="note">
+        Track stays current on <code>/history/...</code> so Exercise review feels like a Track destination,
+        not a fifth tab. Recap is <code>/session/[id]/recap</code> only — the workout page never repeats that hero.
+      </p>
+    </section>
+
+    <section id="request">
+      <h2>3. How a request actually runs</h2>
+      <p class="sub">
+        Auth is split on purpose: the edge refreshes cookies; the app layout decides whether
+        you may enter. Mixing those jobs is a common Next.js footgun.
+      </p>
+
+      <div class="flow">
+        <div class="row">
+          <div class="box blue">
+            <div class="label">1. Every matched request</div>
+            <h4><code>src/proxy.ts</code></h4>
+            <p>Calls <code>updateSession()</code>. Rotates auth cookies. Does not redirect. Static assets and HMR are excluded.</p>
+          </div>
+          <div class="box blue">
+            <div class="label">2. Signed-in shell</div>
+            <h4><code>(app)/layout.tsx</code></h4>
+            <p><code>getClaims()</code>. No claims → <code>/login</code>. This is the real gate. Server Actions repeat it.</p>
+          </div>
+          <div class="box green">
+            <div class="label">3. Page load</div>
+            <h4>Server Component</h4>
+            <p>Fetches with the cookie-based public client. RLS still applies. HTML ships with data already in it.</p>
+          </div>
+          <div class="box gold">
+            <div class="label">4. User intent</div>
+            <h4>Server Action</h4>
+            <p>Log a set, save a program, pin a lift. Same user client. Revalidate the route after the write.</p>
+          </div>
+        </div>
+        <div class="arrow-row">one request · React cache() collapses duplicate work</div>
+        <div class="row">
+          <div class="box">
+            <div class="label">Memoized once per request</div>
+            <h4><code>createClient()</code></h4>
+            <p>Layout, page, and nested loaders share one Supabase client because <code>cache()</code> keys on argument identity.</p>
+          </div>
+          <div class="box">
+            <div class="label">Memoized once per request</div>
+            <h4><code>getCatalogMap()</code></h4>
+            <p>Seeded templates + this owner’s machine variants and customs. Every screen that names an exercise uses the merge.</p>
+          </div>
+          <div class="box">
+            <div class="label">Memoized once per request</div>
+            <h4><code>getCurrentBodyweight()</code></h4>
+            <p>Newest dated weigh-in, else the profile baseline. Live loads use this; historical records never do.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>The one exception: weekly Coach API</h3>
+      <p>
+        <code>GET /api/coach/v1/weekly</code> is the only elevated application read path.
+        A scheduled task has no browser session, so it uses a server-held secret client.
+        Every query still includes an explicit <code>COACH_API_USER_ID</code> predicate because
+        that secret bypasses RLS. Capability token, read-only, <code>no-store</code> / noindex.
+        It serializes the same report and proposals Track Coach already shows — it does not
+        invent a second analytics pipeline.
+      </p>
+    </section>
+
+    <section id="workout">
+      <h2>4. The workout loop (where speed is won)</h2>
+      <p class="sub">
+        The active session is the product. The architecture around it is: hydrate enough
+        state on the server that the phone can think locally, then write the ledger and
+        rebuild a small cache.
+      </p>
+
+      <div class="flow">
+        <div class="row">
+          <div class="box green">
+            <div class="label">Server hydrates, does not target</div>
+            <h4>Session page</h4>
+            <p>Catalog, <code>user_exercise_stat</code>, recent first-sets, bodyweight, pins, pending Fluid suggestions, workout records.</p>
+          </div>
+          <div class="box amber">
+            <div class="label">Client derives instantly</div>
+            <h4><code>sessionTarget()</code> in <code>useMemo</code></h4>
+            <p>Swap, edit reps, edit RIR — the suggested load updates with no round-trip. Same helper Coach uses for overload proposals.</p>
+          </div>
+          <div class="box gold">
+            <div class="label">Optimistic, then true</div>
+            <h4><code>logSet</code> action</h4>
+            <p>Inserts <code>set_log</code> (idempotent). Rebuilds that exercise’s stat. Failed writes surface on the card; rest still started.</p>
+          </div>
+        </div>
+        <div class="arrow-row">set_log is the ledger · user_exercise_stat is a rebuildable cache</div>
+        <div class="row">
+          <div class="box">
+            <div class="label">Rest</div>
+            <h4>Layout-owned timer</h4>
+            <p>Lives in <code>session/[id]/layout.tsx</code> so a set-log revalidation cannot kill it. Absolute end timestamp, not a decrementing counter.</p>
+          </div>
+          <div class="box">
+            <div class="label">Records</div>
+            <h4>Replay, not a trophy table</h4>
+            <p>Gold PR pills come from <code>workoutRecords</code> over saved sets. Optimistic rows never earn records. Recap is the same replay after finish.</p>
+          </div>
+          <div class="box">
+            <div class="label">Machines</div>
+            <h4>Resolve before logging</h4>
+            <p>Builder stores a generic template. The session find-or-creates a brand/type variant. Calibration anchors a personal coefficient once, then holds it.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>
+        Home, the planner, and Start share <code>loadNextWorkout</code>. That keeps “what is the
+        next day?” from drifting across screens. Planner choices live in a cookie for this
+        browser; they are not a second program.
+      </p>
+    </section>
+
+    <section id="data">
+      <h2>5. Data: one ledger, many views</h2>
+      <p class="sub">
+        If you remember one diagram, remember this. Writes concentrate. Reads fan out through
+        pure functions. We do not keep a parallel analytics schema.
+      </p>
+
+      <div class="grid-2">
+        <div class="flow">
+          <div class="box gold">
+            <div class="label">Authoritative</div>
+            <h4><code>set_log</code></h4>
+            <p>Every working set. Weight, reps, RIR, stored e1RM, exact <code>exercise_id</code>, optional equipment instance, slot id. Rebuild anything from here.</p>
+          </div>
+          <div class="arrow-row">derived from the ledger</div>
+          <div class="row">
+            <div class="box green">
+              <div class="label">Cache</div>
+              <h4><code>user_exercise_stat</code></h4>
+              <p>Current e1RM + personal coefficient. Rebuilt on log. Never the record baseline.</p>
+            </div>
+            <div class="box green">
+              <div class="label">On the fly</div>
+              <h4>Track / Coach / Month / PRs</h4>
+              <p>Aggregated in TypeScript from finished sessions. No analytics tables.</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <table>
+            <thead>
+              <tr><th>Cluster</th><th>What it stores</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Program tree</td>
+                <td><code>program</code> → <code>program_day</code> → <code>program_slot</code> + <code>program_phase</code>
+                  <span class="why">At most one active program (partial unique index). Slot ids survive edits.</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Session</td>
+                <td><code>workout_session</code>
+                  <span class="why"><code>finished_at</code> is the completion flag. Also readiness, pain, note, stored week, in-session swaps.</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Catalog extras</td>
+                <td><code>exercise</code>, <code>equipment_instance</code>
+                  <span class="why">Seeds live in code. DB holds this owner’s machine variants and customs.</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Body</td>
+                <td><code>bodyweight_log</code>, <code>body_measurement_log</code>, <code>period_observation</code>
+                  <span class="why">Date-keyed observations. Profile bodyweight is the fallback, never overwritten by history.</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Intent, not truth</td>
+                <td><code>movement_adaptation</code>, <code>coach_recommendation_decision</code>, <code>user_exercise_pin</code>
+                  <span class="why">Accepted Fluid changes, Coach accept/defer, pins. None of these rewrite <code>set_log</code>.</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h3>Who talks to which tables</h3>
+      <table>
+        <thead>
+          <tr><th>Experience</th><th>Reads</th><th>Writes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lift / planner / Start</td>
+            <td>Active program, finished-session count, open session, catalog, planner cookie</td>
+            <td>Insert <code>workout_session</code> (atomic). Cookie for pre-start choices.</td>
+          </tr>
+          <tr>
+            <td>Active workout</td>
+            <td>Session, slots, stats, first-set history, records, Fluid suggestions</td>
+            <td><code>set_log</code>, stats rebuild, session feedback, swaps, adaptations</td>
+          </tr>
+          <tr>
+            <td>Track + Exercise review</td>
+            <td>Finished <code>set_log</code> ⋈ sessions, pins, weight, measurements</td>
+            <td>Pins only. Charts stay client; aggregation stays server.</td>
+          </tr>
+          <tr>
+            <td>Program</td>
+            <td>Batched summaries, one full tree on detail</td>
+            <td>Id-preserving upsert/delete via <code>save_program</code> RPC. Activate / clone.</td>
+          </tr>
+          <tr>
+            <td>You / Body</td>
+            <td>Profile, dated logs, period consent</td>
+            <td>Profile fields. Atomic weight RPC when a date is occupied.</td>
+          </tr>
+          <tr>
+            <td>Weekly Coach API</td>
+            <td>Same report inputs as Track Coach, secret client, explicit user predicate</td>
+            <td>Nothing. Review state is written only from the app UI.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="engine">
+      <h2>6. One engine, two runtimes</h2>
+      <p class="sub">
+        <code>src/lib/strength/</code> is framework-free TypeScript. That is not a style preference.
+        It is how the same math can run in the browser during a set and on the server during
+        a rebuild or a Coach report without drifting.
+      </p>
+
+      <div class="flow">
+        <div class="row">
+          <div class="box amber">
+            <div class="label">Normalize</div>
+            <h4><code>e1rm.ts</code></h4>
+            <p>Weight × reps × RIR → estimated 1RM via an RPE table. Progressive overload means this number trends up.</p>
+          </div>
+          <div class="box amber">
+            <div class="label">Transfer</div>
+            <h4><code>recommend.ts</code></h4>
+            <p>One latent strength per movement pattern. Exercise coefficient × pattern strength. Bayesian shrink toward the user.</p>
+          </div>
+          <div class="box amber">
+            <div class="label">Progress</div>
+            <h4><code>progression.ts</code></h4>
+            <p>Bounded best-recent first set for the exact exercise. Hit the top of the rep range → add the increment.</p>
+          </div>
+          <div class="box amber">
+            <div class="label">Adapt</div>
+            <h4><code>plateau.ts</code></h4>
+            <p>Fluid programs only. Stall → widen reps, then swap. Shared stall evidence with Coach and monthly review.</p>
+          </div>
+        </div>
+        <div class="arrow-row">same functions · client for interaction · server for authority</div>
+        <div class="row">
+          <div class="box">
+            <div class="label">Why client</div>
+            <h4>Gym latency</h4>
+            <p>A swap that waited on the network would feel broken. Hydrate stats; compute the target next to the stepper.</p>
+          </div>
+          <div class="box">
+            <div class="label">Why server</div>
+            <h4>The ledger must be honest</h4>
+            <p>e1RM is stored on the set at write time. Stats rebuild after the insert. Records replay from saved rows, not the mutable cache.</p>
+          </div>
+          <div class="box">
+            <div class="label">Why pure</div>
+            <h4>One definition, many screens</h4>
+            <p>Home, session, recap, Track, Month, Coach UI, Coach API all import the same helpers. If the formula changed in two places, the app would lie.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="lessons">
+      <h2>7. Architecture considerations we actually made</h2>
+      <p class="sub">
+        These are the load-bearing choices. Each one is a bet about where work should happen
+        so the app stays fast for one serious lifter, not for a hypothetical million.
+      </p>
+
+      <div class="lessons">
+        <article class="lesson">
+          <div class="n">01</div>
+          <div>
+            <h3>Delete the layer you do not operate</h3>
+            <p>
+              No offline database, no sync engine, no second backend. Connectivity during
+              workouts is a product assumption. That removed a huge class of conflict,
+              cache, and identity bugs. The remaining PWA bits (manifest, wake lock,
+              notification worker) are cues, not a local replica.
+            </p>
+          </div>
+        </article>
+        <article class="lesson">
+          <div class="n">02</div>
+          <div>
+            <h3>Authoritative writes, derived reads</h3>
+            <p>
+              <code>set_log</code> is the source of truth. Stats, Track cards, Coach facts,
+              and PR pills are functions of that ledger. If a cache is wrong, rebuild it.
+              If a report is wrong, fix the function — do not add a second table that can
+              drift. This is how you stay correct as features multiply.
+            </p>
+          </div>
+        </article>
+        <article class="lesson">
+          <div class="n">03</div>
+          <div>
+            <h3>Put compute next to the interaction</h3>
+            <p>
+              Session targets run on the client because the interaction is chatty (swap,
+              nudge reps, change RIR). Aggregation for Track and Coach runs on the server
+              because the dataset is the full history and the UI is a read. Charts are
+              client-only because Recharts needs the DOM; they receive already-shaped series.
+            </p>
+          </div>
+        </article>
+        <article class="lesson">
+          <div class="n">04</div>
+          <div>
+            <h3>Scan one user’s history; do not invent caches early</h3>
+            <p>
+              Full-history <code>set_log</code> reads are still cheap at personal scale.
+              Analytics therefore has no materialized views or counter tables. When a
+              screen needs a window (21 Chicago days, last 8 session-bests, seven-day
+              Coach), the window is applied in the loader or the pure helper — not by a
+              new schema. Revisit this only if a specific query becomes slow.
+            </p>
+          </div>
+        </article>
+        <article class="lesson">
+          <div class="n">05</div>
+          <div>
+            <h3>Pay for a query once per request</h3>
+            <p>
+              React <code>cache()</code> around the Supabase client, catalog, and current
+              bodyweight means layout + page + nested loaders do not stampede the database.
+              <code>cache()</code> keys on arguments, so the shared client instance is what
+              makes the other two hit. The Coach API client is separate on purpose.
+            </p>
+          </div>
+        </article>
+        <article class="lesson">
+          <div class="n">06</div>
+          <div>
+            <h3>Identity is exact; browsing can be fuzzy</h3>
+            <p>
+              Progression, records, and review key on exact exercise (and equipment instance
+              when it exists). Quick history may show a family of machine variants for
+              browsing. Mixing those rules would blend a Cybex press with a Hammer Strength
+              press and invent fake PRs. Exactness is the scalability of truth.
+            </p>
+          </div>
+        </article>
+        <article class="lesson">
+          <div class="n">07</div>
+          <div>
+            <h3>RLS is the wall; the Coach API is a guarded door</h3>
+            <p>
+              Every user-owned table is scoped to <code>auth.uid()</code>. The weekly Coach
+              route is the sole exception, and it is still one user, one token, read-only.
+              Never add a second service-role path “just for convenience.” Convenience is
+              how owner isolation dies.
+            </p>
+          </div>
+        </article>
+        <article class="lesson">
+          <div class="n">08</div>
+          <div>
+            <h3>Optimistic where the body is waiting; honest when the write fails</h3>
+            <p>
+              Rest starts the moment a set is logged locally. The clock is real even if
+              the network blips. The set itself still has to persist, and a failure is a
+              visible card error — not a silent revert that looks like a dead tap.
+              Records wait for persistence so gold never lies.
+            </p>
+          </div>
+        </article>
+        <article class="lesson">
+          <div class="n">09</div>
+          <div>
+            <h3>Keep the UI layer small enough to audit</h3>
+            <p>
+              One overlay (<code>Sheet</code> = native <code>&lt;dialog&gt;</code>), semantic
+              tokens, no animation library, View Transitions for reorder. Server Components
+              stay server by keeping class builders in modules without <code>"use client"</code>.
+              A thin UI is a performance choice: less JS on a phone in a rack.
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="doc">
+      <p>
+        <strong style="color:var(--ink)">How to keep this page true.</strong>
+        If you add a tab, a Server Action write, a table, or a new elevated API, update the
+        matching diagram here in the same change. Do not copy algorithm detail onto this page —
+        link it.
+      </p>
+      <p>Contracts this map does not replace:</p>
+      <ul>
+        <li><a href="ARCHITECTURE.md">ARCHITECTURE.md</a> — engine, catalog, auth, program loading invariants</li>
+        <li><a href="DECISIONS.md">DECISIONS.md</a> — rationale, including workout records</li>
+        <li><a href="UI.md">UI.md</a> — primitives, motion, server/client boundaries</li>
+        <li><a href="COACH-REPORT.md">COACH-REPORT.md</a> — weekly facts, proposals, private API</li>
+        <li><a href="WORKOUT-PLANNING.md">WORKOUT-PLANNING.md</a> / <a href="EXERCISE-SWAPS.md">EXERCISE-SWAPS.md</a> — planner cookies and swap persistence</li>
+        <li><a href="FEATURES.md">FEATURES.md</a> — shipped behavior inventory</li>
+        <li><a href="README.md">docs index</a></li>
+      </ul>
+    </footer>
+  </div>
+  <script>
+    const links = [...document.querySelectorAll("nav.toc a")];
+    const sections = links.map((a) => document.querySelector(a.getAttribute("href"))).filter(Boolean);
+    const io = new IntersectionObserver((entries) => {
+      const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!visible) return;
+      links.forEach((a) => a.removeAttribute("aria-current"));
+      const active = links.find((a) => a.getAttribute("href") === "#" + visible.target.id);
+      if (active) active.setAttribute("aria-current", "true");
+    }, { rootMargin: "-20% 0px -70% 0px", threshold: [0.1, 0.4] });
+    sections.forEach((s) => io.observe(s));
+  </script>
+</body>
+</html>

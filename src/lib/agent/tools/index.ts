@@ -51,10 +51,12 @@ export function bindReadTools(supabase: Client, userId: string) {
       {
         name: "exerciseReview",
         description:
-          "Load Exercise review for one exact exercise plus equipment instance: Last session, 21-day window, and last-8 e1RM chart. Pass exerciseId when known; otherwise a name. Do not blend machines.",
+          "Load Exercise review for one exact exercise plus equipment instance: Last session, 21-day window, and last-8 e1RM chart. Prefer name when unsure; omit exerciseId unless it came from focusedExerciseId or a prior tool result. Do not invent ids. Word order may differ from catalog names. Do not blend machines.",
         schema: z.object({
-          exerciseId: z.string().optional().describe("Catalog exercise id, e.g. bb-back-squat"),
-          name: z.string().optional().describe("Exercise name if the id is unknown"),
+          exerciseId: z.string().optional()
+            .describe("Known catalog exercise id from focusedExerciseId or a prior tool result only. Omit if unsure."),
+          name: z.string().optional()
+            .describe("Exercise name in natural language; word order may differ from the catalog (e.g. incline barbell bench)."),
           equipmentInstanceId: z.string().nullable().optional()
             .describe("Equipment instance id, or null for no instance"),
         }),

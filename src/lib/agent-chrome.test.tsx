@@ -115,11 +115,13 @@ describe("agent chrome", () => {
     expect(hideAppChrome("/coach")).toBe(false);
   });
 
-  it("renders the empty transcript prompt", () => {
+  it("renders starter prompts on an empty transcript", () => {
     act(() => {
-      root.render(<AgentTranscript messages={[]} />);
+      root.render(<AgentTranscript messages={[]} onChipSelect={() => {}} />);
     });
-    expect(host.textContent).toContain("Ask how this week went.");
+    expect(host.textContent).toContain("Ask Coach about your week, next workout, or a gallery program.");
+    expect(host.textContent).toContain("Build me a program");
+    expect(host.textContent).toContain("How was my week?");
   });
 
   it("puts you on the right and renders Coach markdown with one source", () => {
@@ -200,11 +202,11 @@ describe("agent chrome", () => {
     act(() => {
       root.render(<AgentChat variant="sheet" initial={saved} />);
     });
-    expect(host.textContent).not.toContain("Ask how this week went.");
+    expect(host.textContent).not.toContain("Build me a program");
 
     click("New chat");
 
-    expect(host.textContent).toContain("Ask how this week went.");
+    expect(host.textContent).toContain("Build me a program");
     expect(host.querySelector("a")?.getAttribute("href")).toBe("/coach?thread=new");
     expect(fetchMock).not.toHaveBeenCalled();
   });

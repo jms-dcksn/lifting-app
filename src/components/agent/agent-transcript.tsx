@@ -1,6 +1,8 @@
 "use client";
 
-import { latestConfirmCallId } from "@/lib/agent/client-tools";
+import { pendingConfirmFromMessages } from "@/lib/agent/client-tools";
+import { intakeChipsFromParts } from "@/lib/agent/intake-chips";
+import { STARTER_PROMPTS } from "@/lib/agent/starter-prompts";
 import { splitCoachReply } from "@/lib/agent/markdown";
 import { textFromParts, type AgentMessage } from "@/lib/agent/messages";
 import { AgentConfirmChip } from "./agent-confirm-chip";
@@ -12,19 +14,41 @@ export function AgentTranscript({
   streamingText,
   pendingTool,
   confirmedCallIds = new Set<string>(),
-  onConfirmStarted,
+  onConfirm,
+  onChipSelect,
 }: {
   messages: AgentMessage[];
   pendingText?: string;
   streamingText?: string;
   pendingTool?: string | null;
   confirmedCallIds?: ReadonlySet<string>;
-  onConfirmStarted?: (callId: string) => void;
+  onConfirm?: (callId: string) => void | Promise<void>;
+  onChipSelect?: (label: string) => void;
 }) {
-  const confirmCallId = latestConfirmCallId(messages);
-  const showConfirm = confirmCallId !== null && !confirmedCallIds.has(confirmCallId);
-  if (messages.length === 0 && !pendingText && !streamingText && !pendingTool) {
-    return <p className="text-body text-muted">Ask how this week went.</p>;
+  const pendingConfirm = pendingConfirmFromMessages(messages);
+  const showConfirm = pendingConfirm !== null && !confirmedCallIds.has(pendingConfirm.callId);
+  const intakeChips = intakeChipsFromParts(messages.flatMap((message) => message.parts));
+  const showStarterPrompts = messages.length === 0 && !pendingText && !streamingText && !pendingTool;
+  if (showStarterPrompts) {
+    return (
+      <div className="space-y-3">
+        <p className="text-body text-muted">Ask Coach about your week, next workout, or a gallery program.</p>
+        {onChipSelect ? (
+          <div className="flex flex-wrap gap-2">
+            {STARTER_PROMPTS.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => onChipSelect(prompt)}
+                className="rounded-full border border-border-strong bg-surface px-3 py-1.5 text-caption text-body hover:bg-muted"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    );
   }
 
   return (
@@ -49,12 +73,29 @@ export function AgentTranscript({
           <CoachReply text={streamingText} />
         </li>
       ) : null}
-      {showConfirm ? (
+      {showConfirm && pendingConfirm ? (
         <li>
           <AgentConfirmChip
-            label="Start workout"
-            onStarted={() => onConfirmStarted?.(confirmCallId!)}
+            label={pendingConfirm.label}
+            pendingLabel={pendingConfirm.tool === "startNextWorkout" ? "Starting…" : "Opening…"}
+            onConfirm={() => onConfirm?.(pendingConfirm.callId)}
           />
+        </li>
+      ) : null}
+      {intakeChips.length > 0 && onChipSelect ? (
+        <li>
+          <div className="flex flex-wrap gap-2">
+            {intakeChips.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => onChipSelect(chip)}
+                className="rounded-full border border-border-strong bg-surface px-3 py-1.5 text-caption text-body hover:bg-muted"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
         </li>
       ) : null}
     </ol>
@@ -111,5 +152,6 @@ function toolLabel(name: string) {
   if (name === "openExerciseReview") return "exercise review";
   if (name === "openProgram") return "your program";
   if (name === "startNextWorkout") return "next workout";
+  if (name === "draftProgramFromIntake") return "program draft";
   return name;
 }

@@ -25,7 +25,7 @@ describe("agent policy", () => {
     expect(MODEL_CONTEXT_CHAR_BUDGET).toBeGreaterThan(1000);
     expect(TOOL_CALL_BUDGET).toBeGreaterThan(0);
     expect(LANGSMITH_PROJECT_NAME).toBe("lifting-app-agent");
-    expect(WRITE_TOOL_NAMES).toEqual([]);
+    expect(WRITE_TOOL_NAMES).toEqual(["draftProgramFromIntake"]);
     expect(READ_TOOL_NAMES).toEqual([
       "weeklyCoach",
       "activeProgram",
@@ -37,7 +37,7 @@ describe("agent policy", () => {
       "openCoachCheckIn",
       "openProgram",
     ]);
-    expect(CONFIRM_TOOL_NAMES).toEqual(["startNextWorkout"]);
+    expect(CONFIRM_TOOL_NAMES).toEqual(["startNextWorkout", "draftProgramFromIntake"]);
   });
 
   it("sends only the last N messages and drops old tool results first", () => {

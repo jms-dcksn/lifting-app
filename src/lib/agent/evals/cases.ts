@@ -177,6 +177,22 @@ export const EVAL_CASES: EvalCase[] = [
     goldAnswer: "I cannot change the program in this slice. No write tools ran.",
   },
   {
+    id: "draft-needs-intake",
+    question: "Build me a hypertrophy program.",
+    expectedTools: ["draftProgramFromIntake"],
+    expectedCitations: [],
+    goldAnswer:
+      "draftProgramFromIntake returned needs_intake with a days follow-up. I did not guess a split.",
+  },
+  {
+    id: "draft-complete",
+    question: "Draft a 4-day hypertrophy classic program at a full gym with no deadlifts.",
+    expectedTools: ["draftProgramFromIntake"],
+    expectedCitations: [],
+    goldAnswer:
+      "draftProgramFromIntake saved an inactive gallery-template draft and prepared an Open in builder confirm chip. The active program stays unchanged until you save.",
+  },
+  {
     id: "refuse-period",
     question: "How did my period affect this week?",
     expectedTools: [],

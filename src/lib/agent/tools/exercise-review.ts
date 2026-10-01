@@ -159,29 +159,131 @@ export type ResolvedExerciseIdentity =
       matches: Array<{ id: string; name: string }>;
     };
 
+function tokenizeExerciseName(value: string): string[] {
+  return value
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+}
+
+function catalogTokensByExercise(
+  catalog: Record<string, { id: string; name: string }>,
+): Map<string, string[]> {
+  const tokensById = new Map<string, string[]>();
+  for (const def of Object.values(catalog)) {
+    tokensById.set(def.id, tokenizeExerciseName(def.name));
+  }
+  return tokensById;
+}
+
+function tokensAreSubset(subset: string[], superset: Set<string>): boolean {
+  return subset.every((token) => superset.has(token));
+}
+
+type NameMatchCandidate = {
+  def: { id: string; name: string };
+  defTokens: string[];
+  catalogSubsetOfQuery: boolean;
+  querySubsetOfCatalog: boolean;
+};
+
+const EQUIPMENT_TOKENS = new Set([
+  "barbell",
+  "dumbbell",
+  "machine",
+  "cable",
+  "weighted",
+  "bodyweight",
+]);
+
+function rankNameMatchCandidates(candidates: NameMatchCandidate[]): NameMatchCandidate[] {
+  return [...candidates].sort((left, right) => {
+    if (left.catalogSubsetOfQuery !== right.catalogSubsetOfQuery) {
+      return left.catalogSubsetOfQuery ? -1 : 1;
+    }
+    if (left.defTokens.length !== right.defTokens.length) {
+      return right.defTokens.length - left.defTokens.length;
+    }
+    return left.def.name.localeCompare(right.def.name);
+  });
+}
+
+function narrowByDefaultEquipment(
+  queryTokens: string[],
+  ranked: NameMatchCandidate[],
+): NameMatchCandidate[] {
+  const querySpecifiesEquipment = queryTokens.some((token) => EQUIPMENT_TOKENS.has(token));
+  if (querySpecifiesEquipment || ranked.length <= 1) return ranked;
+
+  const barbellMatches = ranked.filter((candidate) => candidate.defTokens.includes("barbell"));
+  return barbellMatches.length > 0 ? barbellMatches : ranked;
+}
+
 export function resolveExerciseIdentity(
   catalog: Record<string, { id: string; name: string }>,
   input: { exerciseId?: string; name?: string },
 ): ResolvedExerciseIdentity {
-  const knownId = input.exerciseId;
+  const knownId = input.exerciseId?.trim();
   if (knownId && catalog[knownId]) {
     return { exerciseId: knownId };
   }
-  const needle = input.name?.trim().toLowerCase();
+
+  const needle = input.name?.trim();
   if (!needle) {
+    if (knownId) {
+      return {
+        source: "exerciseReview" as const,
+        error: `Unknown exercise id “${knownId}”. Pass a catalog name instead of inventing an id.`,
+      };
+    }
     return {
       source: "exerciseReview" as const,
       error: "Need an exercise id or name.",
     };
   }
+
   const entries = Object.values(catalog);
-  const exact = entries.find((def) => def.name.toLowerCase() === needle);
+  const exact = entries.find((def) => def.name.toLowerCase() === needle.toLowerCase());
   if (exact) return { exerciseId: exact.id };
-  const matches = entries.filter((def) =>
-    def.name.toLowerCase().includes(needle) || needle.includes(def.name.toLowerCase()),
-  );
-  if (matches.length === 1) return { exerciseId: matches[0].id };
-  if (matches.length === 0) {
+
+  const queryTokens = tokenizeExerciseName(needle);
+  if (queryTokens.length === 0) {
+    return {
+      source: "exerciseReview" as const,
+      error: `No exercise matched “${input.name}”.`,
+    };
+  }
+
+  const tokensById = catalogTokensByExercise(catalog);
+  const queryTokenSet = new Set(queryTokens);
+
+  let candidates: NameMatchCandidate[] = [];
+  for (const def of entries) {
+    const defTokens = tokensById.get(def.id) ?? [];
+    const defTokenSet = new Set(defTokens);
+    const catalogSubsetOfQuery = tokensAreSubset(defTokens, queryTokenSet);
+    const querySubsetOfCatalog = tokensAreSubset(queryTokens, defTokenSet);
+    if (!catalogSubsetOfQuery && !querySubsetOfCatalog) continue;
+
+    candidates.push({
+      def,
+      defTokens,
+      catalogSubsetOfQuery,
+      querySubsetOfCatalog,
+    });
+  }
+
+  for (const token of queryTokens) {
+    const withToken = candidates.filter((candidate) => candidate.defTokens.includes(token));
+    const withoutToken = candidates.filter((candidate) => !candidate.defTokens.includes(token));
+    if (withToken.length > 0 && withoutToken.length > 0) {
+      candidates = withToken;
+    }
+  }
+
+  const ranked = narrowByDefaultEquipment(queryTokens, rankNameMatchCandidates(candidates));
+  if (ranked.length === 1) return { exerciseId: ranked[0].def.id };
+  if (ranked.length === 0) {
     return {
       source: "exerciseReview" as const,
       error: `No exercise matched “${input.name}”.`,
@@ -190,7 +292,7 @@ export function resolveExerciseIdentity(
   return {
     source: "exerciseReview" as const,
     needsDisambiguation: true,
-    matches: matches.slice(0, 8).map((def) => ({ id: def.id, name: def.name })),
+    matches: ranked.slice(0, 8).map(({ def }) => ({ id: def.id, name: def.name })),
   };
 }
 

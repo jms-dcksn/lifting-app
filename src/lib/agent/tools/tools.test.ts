@@ -94,6 +94,49 @@ describe("agent read tools", () => {
     expect("needsDisambiguation" in resolved || "matches" in resolved).toBe(true);
   });
 
+  it("resolves incline bench phrasing to bb-incline-bench, not flat bb-bench", () => {
+    const catalog = Object.fromEntries(EXERCISES.map((def) => [def.id, def]));
+    const queries = [
+      "incline barbell bench press",
+      "Incline bench",
+      "barbell incline bench",
+    ];
+    for (const name of queries) {
+      const resolved = resolveExerciseIdentity(catalog, { name });
+      expect(resolved).toEqual({ exerciseId: "bb-incline-bench" });
+    }
+  });
+
+  it("does not map incline barbell bench press to flat bb-bench", () => {
+    const catalog = Object.fromEntries(EXERCISES.map((def) => [def.id, def]));
+    const resolved = resolveExerciseIdentity(catalog, {
+      exerciseId: "bb-incline-barbell-bench-press",
+      name: "incline barbell bench press",
+    });
+    expect(resolved).toEqual({ exerciseId: "bb-incline-bench" });
+    expect(resolved).not.toEqual({ exerciseId: "bb-bench" });
+  });
+
+  it("ignores invented exerciseId and resolves by name", () => {
+    const catalog = Object.fromEntries(EXERCISES.map((def) => [def.id, def]));
+    const resolved = resolveExerciseIdentity(catalog, {
+      exerciseId: "bb-incline-barbell-bench-press",
+      name: "barbell incline bench",
+    });
+    expect(resolved).toEqual({ exerciseId: "bb-incline-bench" });
+  });
+
+  it("returns a clear error for invented exerciseId without a name", () => {
+    const catalog = Object.fromEntries(EXERCISES.map((def) => [def.id, def]));
+    const resolved = resolveExerciseIdentity(catalog, {
+      exerciseId: "bb-incline-barbell-bench-press",
+    });
+    expect(resolved).toMatchObject({
+      source: "exerciseReview",
+      error: expect.stringContaining("Unknown exercise id"),
+    });
+  });
+
   it("nextWorkout targets use the same sessionTarget path", () => {
     const catalog = Object.fromEntries(EXERCISES.map((def) => [def.id, def]));
     const last = { weight: 225, reps: 8, rir: 1 };

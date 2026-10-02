@@ -13,6 +13,9 @@ import {
 } from "@/lib/exercise-review-sessions";
 import { reviewCompareDefaults } from "@/lib/exercise-review-months";
 import { reviewMonthSides, type ReviewMonthSource } from "@/lib/exercise-review-month-stats";
+import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
+import { exerciseCardLabel } from "@/lib/exercise-card-label";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { PinButton } from "../../pins/pin-button";
 import { MonthCompare } from "./month-compare";
@@ -33,10 +36,11 @@ export type ExerciseReviewProps = {
   equipmentChoices?: EquipmentChoice[];
 } & (
   | { status: "missing" }
-  | { status: "empty"; name: string; exerciseId?: string; baseExerciseId?: string | null; pin?: PinProps; rolling?: boolean }
+  | { status: "empty"; name: string; def?: ExerciseDef; exerciseId?: string; baseExerciseId?: string | null; pin?: PinProps; rolling?: boolean }
   | {
       status: "ready";
       name: string;
+      def?: ExerciseDef;
       exerciseId?: string;
       baseExerciseId?: string | null;
       isBodyweight: boolean;
@@ -62,7 +66,13 @@ export function ExerciseReview(props: ExerciseReviewProps) {
     );
   }
 
-  const { name, pin, reviewMonth, equipmentLabel, equipmentChoices } = props;
+  const { name, def, pin, reviewMonth, equipmentLabel, equipmentChoices } = props;
+  const labelLines = def
+    ? {
+        ...exerciseCardLabel(def),
+        ...(equipmentLabel ? { tertiary: equipmentLabel } : {}),
+      }
+    : { name };
   return (
     <ReviewShell reviewMonth={reviewMonth}>
       <header className="flex items-start justify-between gap-3">
@@ -72,10 +82,7 @@ export function ExerciseReview(props: ExerciseReviewProps) {
             baseExerciseId={props.baseExerciseId}
             size="lg"
           />
-          <div className="min-w-0">
-            <h1 className="text-display">{name}</h1>
-            {equipmentLabel && <p className="mt-1 text-caption text-muted">{equipmentLabel}</p>}
-          </div>
+          <ExerciseCardLabel as="h1" size="display" lines={labelLines} />
         </div>
         {pin && <PinButton exerciseId={pin.exerciseId} pinned={pin.pinned} name={pin.name} />}
       </header>

@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { ExerciseCardLabel, exerciseCardAriaLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { iconButtonClasses } from "@/components/ui/icon-button-styles";
 import { IconHistory } from "@/components/ui/icons";
 import {
@@ -10,13 +12,33 @@ import {
 } from "@/lib/strength/records";
 import { exerciseReviewHref } from "@/lib/exercise-review-href";
 
-export function AchievementPills({ groups, exerciseId }: { groups: ExerciseRecords[]; exerciseId?: string }) {
+export function AchievementPills({
+  groups,
+  exerciseId,
+  catalog,
+}: {
+  groups: ExerciseRecords[];
+  exerciseId?: string;
+  catalog?: Record<string, ExerciseDef>;
+}) {
   if (!groups.length) return null;
   return (
     <div className="mt-3 flex flex-col gap-2" aria-label="Workout personal records">
       {groups.map((group) => (
         <div key={group.key} className="min-w-0">
-          {exerciseId && group.exerciseId !== exerciseId && <p className="mb-1 text-caption text-muted">{group.name}</p>}
+          {exerciseId && group.exerciseId !== exerciseId && (
+            catalog?.[group.exerciseId] ? (
+              <ExerciseCardLabel
+                as="p"
+                size="body"
+                def={catalog[group.exerciseId]}
+                catalog={catalog}
+                className="mb-1"
+              />
+            ) : (
+              <p className="mb-1 text-caption text-muted">{group.name}</p>
+            )
+          )}
           <ul className="flex flex-wrap gap-2 text-caption font-medium text-record">
             {recapLines(group).map((line) => (
               <li key={line} className="max-w-full rounded-control border border-record/30 bg-record/10 px-2 py-1">
@@ -34,12 +56,14 @@ export function AchievementRecap({
   groups,
   dayName,
   totalSets,
+  catalog,
   titleAs = "h2",
   empty = "hide",
 }: {
   groups: ExerciseRecords[];
   dayName: string;
   totalSets: number;
+  catalog?: Record<string, ExerciseDef>;
   titleAs?: "h1" | "h2";
   empty?: "hide" | "hero";
 }) {
@@ -90,7 +114,17 @@ export function AchievementRecap({
                 className="flex min-w-0 items-center gap-3 text-body font-medium underline-offset-2 hover:underline"
               >
                 <ExerciseVisual exerciseId={group.exerciseId} />
-                <span className="truncate">{group.name}</span>
+                {catalog?.[group.exerciseId] ? (
+                  <ExerciseCardLabel
+                    as="span"
+                    size="body"
+                    def={catalog[group.exerciseId]}
+                    catalog={catalog}
+                    className="truncate"
+                  />
+                ) : (
+                  <span className="truncate">{group.name}</span>
+                )}
               </Link>
               <div className="flex shrink-0 items-center gap-1">
                 <div className="text-right text-body tabular-nums text-record">
@@ -103,7 +137,7 @@ export function AchievementRecap({
                     exerciseId: group.exerciseId,
                     equipmentInstanceId: group.equipmentInstanceId,
                   })}
-                  aria-label={`View history for ${group.name}`}
+                  aria-label={`View history for ${catalog?.[group.exerciseId] ? exerciseCardAriaLabel(catalog[group.exerciseId], catalog) : group.name}`}
                   className={iconButtonClasses("ghost")}
                 >
                   <IconHistory />

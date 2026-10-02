@@ -118,10 +118,10 @@ export default async function AnalyticsPage() {
         <h1 className="text-display">Track</h1>
         <div className="flex">
           <TrackExploreMenu
-            weekPrs={<WeekPrList sessions={week.sessions} />}
-            allLifts={<ExerciseList items={listItems} />}
+            weekPrs={<WeekPrList sessions={week.sessions} catalog={catalog} />}
+            allLifts={<ExerciseList items={listItems} catalog={catalog} />}
           />
-          <PinEditorButton items={pinItems} />
+          <PinEditorButton items={pinItems} catalog={catalog} />
         </div>
       </header>
 

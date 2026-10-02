@@ -40,6 +40,7 @@ export default async function SessionRecapPage({
       dayName={day?.name ?? "Workout"}
       totalSets={current.filter((set) => !set.is_warmup).length}
       achievements={achievements}
+      catalog={catalog}
       initialFeedback={{
         readiness: session.readiness,
         jointPain: session.joint_pain as JointPain | null,

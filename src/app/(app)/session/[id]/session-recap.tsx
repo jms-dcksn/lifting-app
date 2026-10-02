@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import type { ExerciseRecords } from "@/lib/strength/records";
 import type { SessionFeedback } from "@/lib/session-feedback";
 import { retryServerAction } from "@/lib/retry";
@@ -14,12 +15,14 @@ export function SessionRecap({
   dayName,
   totalSets,
   achievements,
+  catalog,
   initialFeedback,
 }: {
   sessionId: string;
   dayName: string;
   totalSets: number;
   achievements: ExerciseRecords[];
+  catalog?: Record<string, ExerciseDef>;
   initialFeedback: SessionFeedback;
 }) {
   const [feedback, setFeedback] = useState(initialFeedback);
@@ -40,6 +43,7 @@ export function SessionRecap({
         groups={achievements}
         dayName={dayName}
         totalSets={totalSets}
+        catalog={catalog}
         titleAs="h1"
         empty="hero"
       />

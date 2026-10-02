@@ -6,6 +6,7 @@ import type { ExerciseDef } from "@/lib/strength/coefficients";
 import type { Program } from "@/lib/program";
 import { validateProgramPhases, type ProgramPhase } from "@/lib/periodization";
 import { Button } from "@/components/ui/button";
+import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
@@ -415,7 +416,17 @@ export function ProgramBuilder({
                         exerciseId={slot.exerciseId}
                         baseExerciseId={byId[slot.exerciseId]?.baseExerciseId}
                       />
-                      <span className="min-w-0 truncate text-body font-medium">{exerciseName(byId, slot.exerciseId)}</span>
+                      {byId[slot.exerciseId] ? (
+                        <ExerciseCardLabel
+                          as="span"
+                          size="body"
+                          def={byId[slot.exerciseId]}
+                          catalog={byId}
+                          className="truncate"
+                        />
+                      ) : (
+                        <span className="min-w-0 truncate text-body font-medium">{slot.exerciseId}</span>
+                      )}
                     </span>
                     <span className="flex items-center gap-1">
                       <ReorderButtons

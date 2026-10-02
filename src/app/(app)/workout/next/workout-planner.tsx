@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { ExerciseCardLabel, exerciseCardAriaLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card, CardLabel } from "@/components/ui/card";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
@@ -53,13 +54,17 @@ export function WorkoutPlanner({ planKey, programName, dayName, week, slots, cat
           <CardLabel>Exercise {index + 1}</CardLabel>
           <div className="mt-1 flex items-start gap-3">
             <ExerciseVisual exerciseId={slot.exerciseId} baseExerciseId={def?.baseExerciseId ?? slot.baseExerciseId} size="lg" />
-            <h2 className="text-heading">{def?.name ?? slot.exerciseId}</h2>
+            {def ? (
+              <ExerciseCardLabel as="h2" size="heading" def={def} catalog={Object.fromEntries(catalog.map((d) => [d.id, d]))} />
+            ) : (
+              <h2 className="text-heading">{slot.exerciseId}</h2>
+            )}
           </div>
           <p className="mt-2 text-body tabular-nums">{p.targetSets} sets × {p.repMin}{p.repMin !== p.repMax ? `–${p.repMax}` : ""} reps · {rirLabel(p)} RIR</p>
           <p className="mt-1 text-caption text-muted">Rest {slot.restSeconds} seconds between sets</p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button type="button" variant="secondary" disabled={pending} onClick={() => setPicking(slot)}
-              aria-label={`${chooseCopy ? `${chooseCopy} for` : "Swap"} ${def?.name ?? slot.exerciseId}`}>
+              aria-label={`${chooseCopy ? `${chooseCopy} for` : "Swap"} ${def ? exerciseCardAriaLabel(def, Object.fromEntries(catalog.map((d) => [d.id, d]))) : slot.exerciseId}`}>
               {chooseCopy ?? "Swap exercise"}
             </Button>
             {slot.exerciseId !== slot.baseExerciseId && <Button type="button" variant="ghost" disabled={pending}

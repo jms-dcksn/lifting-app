@@ -140,7 +140,7 @@ export default async function VolumePage({
           <p className="text-body text-muted">One week so far — the chart appears after the next week.</p>
         )}
       </Card>
-      <VolumeExercisePicker items={listItems} selectedId={selectedId} />
+      <VolumeExercisePicker items={listItems} selectedId={selectedId} catalog={catalog} />
     </div>
   );
 }

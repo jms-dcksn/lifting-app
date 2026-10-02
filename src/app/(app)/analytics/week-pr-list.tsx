@@ -1,12 +1,20 @@
 import Link from "next/link";
+import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { recapLines } from "@/lib/strength/records";
 import { sessionRecordSummary } from "@/lib/board";
 import { sessionRecapPath } from "@/lib/session-paths";
 import { exerciseReviewHref } from "@/lib/exercise-review-href";
 import type { WeekRecordSession } from "@/lib/week-records-data";
 
-export function WeekPrList({ sessions }: { sessions: WeekRecordSession[] }) {
+export function WeekPrList({
+  sessions,
+  catalog,
+}: {
+  sessions: WeekRecordSession[];
+  catalog?: Record<string, ExerciseDef>;
+}) {
   if (sessions.length === 0) {
     return <p className="text-body text-muted">No records this week.</p>;
   }
@@ -35,7 +43,17 @@ export function WeekPrList({ sessions }: { sessions: WeekRecordSession[] }) {
                     className="flex min-w-0 items-center gap-3 text-body font-medium underline-offset-2 hover:underline"
                   >
                     <ExerciseVisual exerciseId={group.exerciseId} />
-                    <span className="truncate">{group.name}</span>
+                    {catalog?.[group.exerciseId] ? (
+                      <ExerciseCardLabel
+                        as="span"
+                        size="body"
+                        def={catalog[group.exerciseId]}
+                        catalog={catalog}
+                        className="truncate"
+                      />
+                    ) : (
+                      <span className="truncate">{group.name}</span>
+                    )}
                   </Link>
                   <div className="shrink-0 text-right text-body tabular-nums text-record">
                     {recapLines(group).map((line) => (

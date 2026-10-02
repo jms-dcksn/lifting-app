@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
+import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { Input } from "@/components/ui/input";
 import { cx } from "@/components/ui/cx";
 import type { ExerciseListItem } from "../exercise-list";
@@ -15,9 +17,11 @@ export function volumePageHref(exerciseId: string | null): string {
 export function VolumeExercisePicker({
   items,
   selectedId,
+  catalog,
 }: {
   items: ExerciseListItem[];
   selectedId: string | null;
+  catalog?: Record<string, ExerciseDef>;
 }) {
   const [query, setQuery] = useState("");
   const selected = items.find((item) => item.exerciseId === selectedId) ?? null;
@@ -63,7 +67,17 @@ export function VolumeExercisePicker({
               <span className="flex min-w-0 items-center gap-3">
                 <ExerciseVisual exerciseId={item.exerciseId} />
                 <span className="min-w-0">
-                  <span className="block truncate text-body font-medium">{item.name}</span>
+                  {catalog?.[item.exerciseId] ? (
+                    <ExerciseCardLabel
+                      as="span"
+                      size="body"
+                      def={catalog[item.exerciseId]}
+                      catalog={catalog}
+                      className="truncate"
+                    />
+                  ) : (
+                    <span className="block truncate text-body font-medium">{item.name}</span>
+                  )}
                   <span className="block text-caption capitalize text-muted">
                     {item.pattern.replace(/_/g, " ")} · {item.sessionCount} session
                     {item.sessionCount === 1 ? "" : "s"} · {shortDate(item.lastPerformedAt)}

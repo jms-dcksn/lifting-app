@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { IconHistory, IconLastUsed, IconSwap } from "@/components/ui/icons";
 import { Sheet } from "@/components/ui/sheet";
+import { ExerciseCardLabel, exerciseCardAriaLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card, CardLabel } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
@@ -344,7 +345,7 @@ function SlotCard({
   const showSuggestion = !!suggestion && !dismissed && slot.sets.length === 0;
 
   const def = catalog[exerciseId];
-  const name = def?.name ?? exerciseId;
+  const name = def ? exerciseCardAriaLabel(def, catalog) : exerciseId;
   const equipment = def?.equipment ?? "barbell";
   const increment = def?.increment ?? 5;
   // A station template isn't loggable — it must resolve to a brand / brand+type variant.
@@ -504,15 +505,19 @@ function SlotCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} size="lg" />
-          <h2 className="text-heading">
+          <h2 className="min-w-0">
             <Link
               href={exerciseReviewHref({
                 exerciseId,
                 equipmentInstanceId: slot.sets.at(-1)?.equipmentInstanceId ?? null,
               })}
-              className="underline-offset-2 hover:underline"
+              className="block underline-offset-2 hover:underline"
             >
-              {name}
+              {def ? (
+                <ExerciseCardLabel as="span" size="heading" def={def} catalog={catalog} />
+              ) : (
+                <span className="text-heading">{name}</span>
+              )}
             </Link>
           </h2>
         </div>
@@ -556,9 +561,16 @@ function SlotCard({
         </div>
       </div>
       {showHistory && (
-        <ExerciseHistory key={exerciseId} exerciseId={exerciseId} sessionId={sessionId}
-          name={catalog[def?.baseExerciseId ?? exerciseId]?.name ?? name}
-          isBodyweight={isBodyweight} onClose={() => setShowHistory(false)} />
+        <ExerciseHistory
+          key={exerciseId}
+          exerciseId={exerciseId}
+          sessionId={sessionId}
+          name={name}
+          def={def}
+          catalog={catalog}
+          isBodyweight={isBodyweight}
+          onClose={() => setShowHistory(false)}
+        />
       )}
 
       <div className="mt-1 flex items-center justify-between gap-3">
@@ -706,10 +718,13 @@ function SlotCard({
       {pickedSwap && !swapping && (
         <Sheet ariaLabel="Apply exercise swap" dismissible={!savingSwap} onClose={() => setPickedSwap(null)}>
           <div className="flex flex-col gap-3 px-4 pb-6 pt-2">
-            <h2 className="flex items-start gap-3 text-heading">
+            <div className="flex items-start gap-3">
               <ExerciseVisual exerciseId={pickedSwap.id} baseExerciseId={pickedSwap.baseExerciseId} />
-              <span>Use {pickedSwap.name} for…</span>
-            </h2>
+              <div className="min-w-0">
+                <p className="text-caption text-muted">Use for…</p>
+                <ExerciseCardLabel as="h2" size="heading" def={pickedSwap} catalog={catalog} />
+              </div>
+            </div>
             <p className="text-caption text-muted">Logged sets stay.</p>
             <Button type="button" pending={savingSwap} onClick={() => confirmSwap("workout")}>
               This workout only

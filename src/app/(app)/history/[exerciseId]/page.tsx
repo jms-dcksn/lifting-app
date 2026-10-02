@@ -166,6 +166,7 @@ export default async function HistoryPage({
       <ExerciseReview
         status="empty"
         name={name}
+        def={def}
         exerciseId={reviewExerciseId}
         baseExerciseId={def?.baseExerciseId}
         reviewMonth={reviewMonth}
@@ -204,6 +205,7 @@ export default async function HistoryPage({
     <ExerciseReview
       status="ready"
       name={name}
+      def={def}
       exerciseId={reviewExerciseId}
       baseExerciseId={def?.baseExerciseId}
       isBodyweight={isBodyweight}

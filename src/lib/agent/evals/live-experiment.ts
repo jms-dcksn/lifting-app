@@ -10,26 +10,22 @@ import { runAgentTurn } from "../run";
 import { bindAgentTools } from "../tools";
 import { askJev } from "./jev";
 import {
-  INCLINE_E1RM_QUESTION,
-  INCLINE_E1RM_REFERENCE,
   LIVE_DATASET,
   LIVE_EVAL_PROJECT,
-  REFERENCE_MATCH_INSTRUCTIONS,
+  LIVE_EXAMPLES,
+  gradeFoundExercise,
   gradeRightTool,
   gradeToolCount,
   outputFromTurn,
   scoreNoul,
+  type ExpectedReview,
+  type LiveExample,
   type LiveTurnOutput,
 } from "./live";
 
-const EVAL_THREAD_ID = "eval-incline-bench-e1rm";
 const DEFAULT_EVAL_EMAIL = "jms.dcksn88@gmail.com";
 
-type ExampleOutputs = {
-  expectedTools: string[];
-  maxToolCalls: number;
-  reference: string;
-};
+const DATASET_DESCRIPTION = "Live Coach reads: exerciseReview e1RM trend, disambiguation, and a miss. Local experiments trace to lifting-app-agent-evals.";
 
 type JudgeArgs = {
   inputs: Record<string, unknown>;
@@ -62,19 +58,13 @@ export async function runLiveExperiment() {
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
   const userId = await userIdForEmail(supabase, email);
-  const outputs: ExampleOutputs = {
-    expectedTools: ["exerciseReview"],
-    maxToolCalls: 3,
-    reference: INCLINE_E1RM_REFERENCE,
-  };
 
-  console.log(`\nDataset: ${LIVE_DATASET}`);
+  console.log(`\nDataset: ${LIVE_DATASET} (${LIVE_EXAMPLES.length} examples)`);
   console.log(`Traces: ${LIVE_EVAL_PROJECT} (not the Vercel project)`);
-  console.log(`User: ${email}`);
-  console.log(`Reference:\n${INCLINE_E1RM_REFERENCE}\n`);
+  console.log(`User: ${email}\n`);
 
   const client = new Client();
-  await upsertExample(client, outputs);
+  await syncLiveExamples(client);
 
   const screenContext = await enrichScreenContext(supabase, userId, {
     pathname: "/",
@@ -84,16 +74,19 @@ export async function runLiveExperiment() {
   });
 
   const results = await evaluate(
-    async (inputs: { question: string }): Promise<LiveTurnOutput> => {
+    async (inputs: { question: string; id?: string }): Promise<LiveTurnOutput> => {
+      const question = inputs.question;
+      const exampleId = typeof inputs.id === "string" ? inputs.id : "live";
+      console.log(`\n${exampleId}: ${question}`);
       const persisted: AgentMessage[] = [{
         id: "eval-user",
         role: "user",
-        parts: [{ type: "text", text: inputs.question }],
+        parts: [{ type: "text", text: question }],
         createdAt: new Date().toISOString(),
       }];
       const generated = await runAgentTurn({
         persisted,
-        threadId: EVAL_THREAD_ID,
+        threadId: `eval-${exampleId}`,
         screenContext,
         tools: bindAgentTools(supabase, userId),
         traceMetadata: { source: "local-eval", dataset: LIVE_DATASET },
@@ -105,7 +98,7 @@ export async function runLiveExperiment() {
     },
     {
       data: LIVE_DATASET,
-      experimentPrefix: "incline-e1rm",
+      experimentPrefix: "exercise-review",
       maxConcurrency: 1,
       metadata: { source: "local-eval" },
       evaluators: [
@@ -123,21 +116,31 @@ export async function runLiveExperiment() {
           );
           return { key: "tool_call_count", ...grade };
         },
+        (args: JudgeArgs) => {
+          const expected = reviewFrom(args.referenceOutputs?.review);
+          if (!expected) return { key: "found_exercise", score: 0, comment: "example has no review expectation" };
+          const grade = gradeFoundExercise({
+            toolResults: toolResultsFrom(args.outputs),
+            expected,
+          });
+          return { key: "found_exercise", ...grade };
+        },
         async (args: JudgeArgs) => {
           const question = typeof args.inputs.question === "string" ? args.inputs.question : "";
           const referenceText = typeof args.referenceOutputs?.reference === "string"
             ? args.referenceOutputs.reference
             : "";
           const answer = typeof args.outputs.answer === "string" ? args.outputs.answer : "";
+          const instructions = instructionsFrom(args.referenceOutputs?.instructions);
           const nouls = await askJev({
             state: { question, reference: referenceText, answer },
             questions: {
               matches_reference: {
                 type: "noul",
-                instructions: REFERENCE_MATCH_INSTRUCTIONS,
+                instructions,
                 criteria: {
-                  true: REFERENCE_MATCH_INSTRUCTIONS.pass,
-                  false: REFERENCE_MATCH_INSTRUCTIONS.fail,
+                  true: instructions.pass,
+                  false: instructions.fail,
                 },
               },
             },
@@ -160,26 +163,54 @@ export async function runLiveExperiment() {
   await awaitAllCallbacks();
 }
 
-async function upsertExample(client: Client, outputs: ExampleOutputs) {
+export async function syncLiveDataset() {
+  loadLocalEnv();
+  if (!process.env.LANGSMITH_API_KEY?.trim()) {
+    throw new Error("Live dataset sync needs LANGSMITH_API_KEY in the shell or .env.local.");
+  }
+  await syncLiveExamples(new Client());
+}
+
+export async function syncLiveExamples(client: Client) {
   let datasetId: string;
   try {
     const dataset = await client.readDataset({ datasetName: LIVE_DATASET });
     datasetId = dataset.id;
   } catch {
     const dataset = await client.createDataset(LIVE_DATASET, {
-      description: "One live Coach read: incline bench e1RM trend. Local experiments trace to lifting-app-agent-evals.",
+      description: DATASET_DESCRIPTION,
     });
     datasetId = dataset.id;
   }
+  await client.updateDataset({ datasetId, description: DATASET_DESCRIPTION });
 
-  const inputs = { question: INCLINE_E1RM_QUESTION };
+  const existing: Array<{ id: string; inputs?: Record<string, unknown> }> = [];
   for await (const example of client.listExamples({ datasetId })) {
-    if (example.inputs?.question === INCLINE_E1RM_QUESTION) {
-      await client.updateExample({ id: example.id, inputs, outputs });
-      return;
-    }
+    existing.push({ id: example.id, inputs: example.inputs });
   }
-  await client.createExample({ dataset_id: datasetId, inputs, outputs });
+
+  for (const example of LIVE_EXAMPLES) {
+    const inputs = { id: example.id, question: example.question };
+    const outputs = exampleOutputs(example);
+    const match = existing.find((row) =>
+      row.inputs?.id === example.id || row.inputs?.question === example.question
+    );
+    if (match) {
+      await client.updateExample({ id: match.id, inputs, outputs });
+      continue;
+    }
+    await client.createExample({ dataset_id: datasetId, inputs, outputs });
+  }
+}
+
+function exampleOutputs(example: LiveExample) {
+  return {
+    expectedTools: example.expectedTools,
+    maxToolCalls: example.maxToolCalls,
+    reference: example.reference,
+    instructions: example.instructions,
+    review: example.review,
+  };
 }
 
 async function userIdForEmail(
@@ -194,6 +225,42 @@ async function userIdForEmail(
     if (data.users.length < 200) break;
   }
   throw new Error(`No auth user for ${email}`);
+}
+
+function instructionsFrom(value: unknown) {
+  if (!value || typeof value !== "object") throw new Error("example is missing reference instructions");
+  const record = value as { pass?: unknown; fail?: unknown };
+  if (typeof record.pass !== "string" || typeof record.fail !== "string") {
+    throw new Error("example reference instructions are missing pass and fail");
+  }
+  return { ...(value as Record<string, unknown>), pass: record.pass, fail: record.fail };
+}
+
+function reviewFrom(value: unknown): ExpectedReview | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as { outcome?: unknown; exerciseId?: unknown; matchIds?: unknown; name?: unknown };
+  if (record.outcome === "resolved" && typeof record.exerciseId === "string") {
+    return { outcome: "resolved", exerciseId: record.exerciseId };
+  }
+  if (record.outcome === "disambiguate" && Array.isArray(record.matchIds)) {
+    const matchIds = record.matchIds.filter((id): id is string => typeof id === "string");
+    return { outcome: "disambiguate", matchIds };
+  }
+  if (record.outcome === "miss" && typeof record.name === "string") {
+    return { outcome: "miss", name: record.name };
+  }
+  return null;
+}
+
+function toolResultsFrom(outputs: Record<string, unknown>) {
+  const results = outputs.toolResults;
+  if (!Array.isArray(results)) return [];
+  return results.flatMap((result) => {
+    if (!result || typeof result !== "object" || !("name" in result)) return [];
+    const name = (result as { name?: unknown }).name;
+    if (typeof name !== "string") return [];
+    return [{ name, result: (result as { result?: unknown }).result }];
+  });
 }
 
 function toolCallsFrom(outputs: Record<string, unknown>) {

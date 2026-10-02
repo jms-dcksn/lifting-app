@@ -548,39 +548,57 @@ if (streamEvent.type === "done") {
       </section>
 
       <section class="space-y-4">
-        <h2 class="font-serif text-2xl">One live example</h2>
+        <h2 class="font-serif text-2xl">A missing trend is said out loud</h2>
+        <p class="text-slate-700 max-w-3xl">
+          One e1RM point is not a trend. The system prompt tells the model to say so when
+          <code class="font-mono text-sm">exerciseReview</code> returns a gap, a null delta, or fewer than
+          two chart points, and then to report the last session if one exists. The same rule covers
+          the other read tools: Coach text that says “not available”, a null next-workout target,
+          and no active program. Each tool description names the field that means “missing”.
+        </p>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/prompt.ts — say the comparison is missing</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>- One logged value is not a trend. If the user asked how something is changing and the tool has no comparison, say that no trend is available, then give the last fact the tool did return.
+  - exerciseReview: recent21Days is null, recent21Days.kind is "gap", recent21Days.delta is null, or chartLast8 has fewer than two points.</code></pre>
+        </article>
+
+        <h2 class="font-serif text-2xl">Eleven live examples</h2>
         <p class="text-slate-700 max-w-3xl">
           Fixture evals grade canned Coach numbers. <code class="font-mono text-sm">npm run eval:agent</code>
-          runs the real model and the prod ledger once, for “How is my e1RM trending on incline bench press”.
-          The reference is the handwritten
-          <code class="font-mono text-sm">INCLINE_E1RM_REFERENCE</code> in
-          <code class="font-mono text-sm">src/lib/agent/evals/live.ts</code>. Each run copies it onto the dataset.
-          Jev ignores the exact pounds and checks that the reply names incline barbell bench and reports a trend.
+          runs the real model and the prod ledger for each row in
+          <code class="font-mono text-sm">LIVE_EXAMPLES</code>. Every question is
+          “How is my e1RM trending on …” with a different exercise phrase: three exact names,
+          three shorter names that still resolve, three ambiguous names, and one miss (“rdl”).
+          The original incline-bench question stays. Each example has its own handwritten reference.
+          The run copies those onto dataset <code class="font-mono text-sm">ai-coach-live</code>.
+          Jev ignores exact pounds. For a resolved lift it checks that the reply names that lift
+          and reports a trend. For an ambiguous name it checks that the reply asks the user to
+          choose the exercises in the reference. For “rdl” it checks that the reply says nothing matched.
           The script does not save a chat thread. Traces go to
           <code class="font-mono text-sm">lifting-app-agent-evals</code>, not the project Vercel uses.
         </p>
         <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
           <pre class="mermaid">
 flowchart LR
-  Q["Dataset example"] --> Agent["runAgentTurn"]
+  Q["11 dataset examples"] --> Agent["runAgentTurn"]
   Agent --> DB[("Prod ledger")]
-  Agent --> Exp["Experiment incline-e1rm"]
+  Agent --> Exp["Experiment exercise-review"]
   Ref["Handwritten reference"] --> Judges
-  Exp --> Judges["right_tool, tool_call_count, Jev noul"]
+  Exp --> Judges["right_tool, tool count, found_exercise, Jev"]
   classDef sink fill:#0f172a,color:#f8fafc,stroke:#0f172a;
   class DB,Exp sink
           </pre>
         </div>
         <article class="space-y-2">
-          <h3 class="font-mono text-sm">src/lib/agent/evals/live.ts — the three scores</h3>
-          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export const LIVE_EVAL_PROJECT = "lifting-app-agent-evals";
-export const REFERENCE_MATCH_THRESHOLD = 0.8;
-
-export function gradeToolCount(count: number, maxToolCalls: number) {
-  return {
-    score: count &lt;= maxToolCalls ? 1 : 0,
-    comment: `${count} tool call${count === 1 ? "" : "s"} (max ${maxToolCalls})`,
-  };
+          <h3 class="font-mono text-sm">src/lib/agent/evals/live.ts — the exercise the tool actually returned</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>function gradeResolved(result: Record&lt;string, unknown&gt;, exerciseId: string) {
+  if (result.needsDisambiguation === true) {
+    return { score: 0, comment: "asked to disambiguate" };
+  }
+  if (typeof result.error === "string") return { score: 0, comment: result.error };
+  const found = typeof result.exerciseId === "string" ? result.exerciseId : "";
+  if (found === exerciseId) return { score: 1, comment: `found ${exerciseId}` };
+  return { score: 0, comment: `found ${found || "nothing"} (expected ${exerciseId})` };
 }</code></pre>
         </article>
       </section>

@@ -32,13 +32,13 @@ export function bindReadTools(supabase: Client, userId: string) {
     tool(async () => asJson(await weeklyCoach(supabase, userId)), {
       name: "weeklyCoach",
       description:
-        "Load this week's Track Coach check-in: adherence, trends, proposals, and formatted text. Use for “how was this week?”, proposals, RIR, or bodyweight in the Coach report.",
+        "Load this week's Track Coach check-in: adherence, trends, proposals, and formatted text. Use for “how was this week?”, proposals, RIR, or bodyweight in the Coach report. If checkInText says not available, a change is null, or a trend is insufficient_data, say that comparison is missing.",
       schema: z.object({}),
     }),
     tool(async () => asJson(await activeProgram(supabase, userId)), {
       name: "activeProgram",
       description:
-        "Load the user's active program: name, style, days, and slot prescriptions. Use for “what's my program?”.",
+        "Load the user's active program: name, style, days, and slot prescriptions. Use for “what's my program?”. If program is null, say there is no active program.",
       schema: z.object({}),
     }),
     tool(
@@ -51,7 +51,7 @@ export function bindReadTools(supabase: Client, userId: string) {
       {
         name: "exerciseReview",
         description:
-          "Load Exercise review for one exact exercise plus equipment instance: Last session, 21-day window, and last-8 e1RM chart. Prefer name when unsure; omit exerciseId unless it came from focusedExerciseId or a prior tool result. Do not invent ids. Word order may differ from catalog names. Do not blend machines.",
+          "Load Exercise review for one exact exercise plus equipment instance: Last session, 21-day window, and last-8 e1RM chart. Prefer name when unsure; omit exerciseId unless it came from focusedExerciseId or a prior tool result. Do not invent ids. Word order may differ from catalog names. Do not blend machines. A trend needs at least two e1RM points. If recent21Days is null or kind is gap, delta is null, or chartLast8 has fewer than two points, say there is no trend and still report last when it is present.",
         schema: z.object({
           exerciseId: z.string().optional()
             .describe("Known catalog exercise id from focusedExerciseId or a prior tool result only. Omit if unsure."),
@@ -65,7 +65,7 @@ export function bindReadTools(supabase: Client, userId: string) {
     tool(async () => asJson(await nextWorkout(supabase, userId)), {
       name: "nextWorkout",
       description:
-        "Load the next workout and sessionTarget() weights so “why is my next squat target X?” matches Home and the session screen.",
+        "Load the next workout and sessionTarget() weights so “why is my next squat target X?” matches Home and the session screen. If workout is null, say there is no next workout. If a slot target is null, say that target is not set.",
       schema: z.object({}),
     }),
   ];

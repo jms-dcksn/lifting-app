@@ -67,6 +67,30 @@
       "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
       "computedHash": "2449db6ab1ded9581f69fcc56c1f64818112d05e271fd4c5da23c6523f9d3d9d"
     },
+    "langsmith-custom-apps": {
+      "source": "langchain-ai/langsmith-skills",
+      "sourceType": "github",
+      "skillPath": "config/skills/langsmith-custom-apps/SKILL.md",
+      "computedHash": "7db99b11815590ca0c636606f9687a97833b377390ab32f1b9ee814675696eef"
+    },
+    "langsmith-dataset": {
+      "source": "langchain-ai/langsmith-skills",
+      "sourceType": "github",
+      "skillPath": "config/skills/langsmith-dataset/SKILL.md",
+      "computedHash": "38c4ed7c09f14948243ace1b2e55c9baa356954ce1e17deace33745f443fa79b"
+    },
+    "langsmith-evaluator": {
+      "source": "langchain-ai/langsmith-skills",
+      "sourceType": "github",
+      "skillPath": "config/skills/langsmith-evaluator/SKILL.md",
+      "computedHash": "19c3706c96c069a20f3484742e5c6c013f2e8cc645c58fdcc89b9a79b8fe802f"
+    },
+    "langsmith-trace": {
+      "source": "langchain-ai/langsmith-skills",
+      "sourceType": "github",
+      "skillPath": "config/skills/langsmith-trace/SKILL.md",
+      "computedHash": "b450dadea70507f0405c33b8171ee927b221f679e0e9f650d49176e512084cfa"
+    },
     "prototype": {
       "source": "mattpocock/skills",
       "sourceType": "github",

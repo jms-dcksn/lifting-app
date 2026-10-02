@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "eval:agent": "EVAL_LIVE=1 vitest run src/lib/agent/evals/live-experiment.test.ts",
     "test:watch": "vitest",
     "test:db": "supabase test db supabase/tests/*_rls.sql"
   },

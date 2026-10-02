@@ -547,6 +547,44 @@ if (streamEvent.type === "done") {
         </article>
       </section>
 
+      <section class="space-y-4">
+        <h2 class="font-serif text-2xl">One live example</h2>
+        <p class="text-slate-700 max-w-3xl">
+          Fixture evals grade canned Coach numbers. <code class="font-mono text-sm">npm run eval:agent</code>
+          runs the real model and the prod ledger once, for “How is my e1RM trending on incline bench press”.
+          The reference is the handwritten
+          <code class="font-mono text-sm">INCLINE_E1RM_REFERENCE</code> in
+          <code class="font-mono text-sm">src/lib/agent/evals/live.ts</code>. Each run copies it onto the dataset.
+          Jev ignores the exact pounds and checks that the reply names incline barbell bench and reports a trend.
+          The script does not save a chat thread. Traces go to
+          <code class="font-mono text-sm">lifting-app-agent-evals</code>, not the project Vercel uses.
+        </p>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
+          <pre class="mermaid">
+flowchart LR
+  Q["Dataset example"] --> Agent["runAgentTurn"]
+  Agent --> DB[("Prod ledger")]
+  Agent --> Exp["Experiment incline-e1rm"]
+  Ref["Handwritten reference"] --> Judges
+  Exp --> Judges["right_tool, tool_call_count, Jev noul"]
+  classDef sink fill:#0f172a,color:#f8fafc,stroke:#0f172a;
+  class DB,Exp sink
+          </pre>
+        </div>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/evals/live.ts — the three scores</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export const LIVE_EVAL_PROJECT = "lifting-app-agent-evals";
+export const REFERENCE_MATCH_THRESHOLD = 0.8;
+
+export function gradeToolCount(count: number, maxToolCalls: number) {
+  return {
+    score: count &lt;= maxToolCalls ? 1 : 0,
+    comment: `${count} tool call${count === 1 ? "" : "s"} (max ${maxToolCalls})`,
+  };
+}</code></pre>
+        </article>
+      </section>
+
       <section class="space-y-3">
         <h2 class="font-serif text-2xl">What Slice 0–1 will not do</h2>
         <ul class="list-disc pl-5 text-slate-700 space-y-1">

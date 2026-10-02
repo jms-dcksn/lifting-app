@@ -131,7 +131,9 @@ sheet fetches its snapshot each time it opens.
 `AI_GATEWAY_API_KEY` (or Vercel OIDC `VERCEL_OIDC_TOKEN`), `LANGSMITH_API_KEY`,
 `LANGSMITH_TRACING`, and `LANGSMITH_PROJECT=lifting-app-agent`. Optional `AGENT_MODEL`.
 None may use a `NEXT_PUBLIC_` prefix. Listed in `.env.local.example` and
-[DEPLOY.md](../DEPLOY.md). Local LangSmith project is dedicated to this agent.
+[DEPLOY.md](../DEPLOY.md). The chat route's LangSmith project is dedicated to this
+agent. Local experiments use a second project, `lifting-app-agent-evals`, so reruns
+do not land in the Vercel firehose. `JEV_API_KEY` is read only by that eval script.
 
 ## Slices
 
@@ -277,7 +279,18 @@ beyond last-N. Each is its own Decision Card; none is implied by shipping 0–4.
 
 ## Evals
 
-Label as you dogfood. Slice 0 grades grounding (tool choice + cited numbers). Slice 2
-grades ontology confidence and template invariants. Slice 4 grades “no write without
-confirm.” Inspect traces in the dedicated LangSmith project; do not paste capability
-URLs, secrets, or weekly Coach tokens into traces, issues, or chat.
+Label as you dogfood. Slice 0 grades grounding (tool choice + cited numbers) against
+fixtures in `src/lib/agent/evals/`. Slice 2 grades ontology confidence and template
+invariants. Slice 4 grades “no write without confirm.”
+
+One live example sits beside those fixtures. `npm run eval:agent` asks
+“How is my e1RM trending on incline bench press”, calls the real agent and the prod
+ledger for `EVAL_USER_EMAIL` (default the owner account), and writes dataset
+`ai-coach-live`. It does not insert `agent_thread` rows. The reference output is the
+handwritten `INCLINE_E1RM_REFERENCE` in `src/lib/agent/evals/live.ts`. Each run copies
+that string onto the dataset. Three local judges score the run: `right_tool` (called
+`exerciseReview` for incline bench), `tool_call_count` (at most 3), and
+`reference_match` (a Jev noul, correct at 0.8 or above). Jev ignores exact pounds and
+dates and checks that the reply names incline barbell bench and reports a trend.
+Traces go to `lifting-app-agent-evals`. Do not paste capability URLs, secrets,
+or weekly Coach tokens into traces, issues, or chat.

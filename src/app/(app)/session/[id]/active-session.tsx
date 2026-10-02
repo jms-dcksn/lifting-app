@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Suspense, use, useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
-import { chooseStationCopy, isLoggableExercise } from "@/lib/station";
+import { canSwapStation, isLoggableExercise } from "@/lib/station";
 import {
   selectProgressionReference,
   sessionTarget,
@@ -26,6 +26,7 @@ import { InfoButton } from "@/components/ui/info-button";
 import { Stepper } from "@/components/ui/stepper";
 import { PinButton } from "../../pins/pin-button";
 import { ExercisePicker } from "../../program/exercise-picker";
+import { SwapStationButton } from "../../program/swap-station-button";
 import { RestBar, useSessionRestTimer } from "./rest-timer";
 import { ExerciseHistory } from "./exercise-history";
 import {
@@ -349,7 +350,7 @@ function SlotCard({
   const increment = def?.increment ?? 5;
   // A station template isn't loggable — it must resolve to a brand / brand+type variant.
   const isTemplate = !!def && !isLoggableExercise(def);
-  const chooseCopy = chooseStationCopy(def?.stationProfile) ?? "Choose machine";
+  const showStationSwap = canSwapStation(def, catalog);
 
   // Quick swap to the alternate last used for this slot. The button names the alternate by its
   // brand/type (never a sliced display name) so two variants of one movement stay distinct; the
@@ -535,7 +536,7 @@ function SlotCard({
             variant="ghost"
             onClick={() => setSwapping(true)}
             disabled={alreadyFinished || savingSwap}
-            aria-label={isTemplate ? `${chooseCopy} for ${name}` : `Swap ${name} for another exercise`}
+            aria-label={`Swap ${name} for another exercise`}
           >
             <IconSwap />
           </IconButton>
@@ -792,13 +793,35 @@ function SlotCard({
         </div>
       )}
 
-      {isTemplate ? (
+      {showStationSwap && isTemplate ? (
         <div className="mt-3">
-          <Button type="button" className="w-full" disabled={alreadyFinished || savingSwap} onClick={() => setSwapping(true)}>
-            {chooseCopy}
-          </Button>
+          <SwapStationButton
+            exerciseId={exerciseId}
+            catalog={catalog}
+            size="lg"
+            className="w-full"
+            disabled={alreadyFinished || savingSwap}
+            onPick={(picked) => {
+              setSwapError(null);
+              setPickedSwap(picked);
+            }}
+          />
         </div>
-      ) : editingId === null ? (
+      ) : showStationSwap && !isTemplate ? (
+        <div className="mt-3">
+          <SwapStationButton
+            exerciseId={exerciseId}
+            catalog={catalog}
+            disabled={alreadyFinished || savingSwap}
+            onPick={(picked) => {
+              setSwapError(null);
+              setPickedSwap(picked);
+            }}
+          />
+        </div>
+      ) : null}
+
+      {!isTemplate && editingId === null ? (
         <div className="mt-3">
           <SetEntry
             key={`${exerciseId}-${p.repMin}-${p.repMax}`}

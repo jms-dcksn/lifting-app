@@ -57,6 +57,45 @@ export function ExercisePicker({
   );
 }
 
+// Direct station picker for same-movement machine / cable / bench swaps.
+export function StationPicker({
+  template,
+  onPick,
+  onClose,
+}: {
+  template: ExerciseDef;
+  onPick: (exercise: ExerciseDef) => void;
+  onClose: () => void;
+}) {
+  return (
+    <Sheet onClose={onClose} className="flex h-[85dvh] flex-col">
+      <StationPickerBody template={template} onPick={onPick} onClose={onClose} />
+    </Sheet>
+  );
+}
+
+function StationPickerBody({
+  template,
+  onPick,
+  onClose,
+}: {
+  template: ExerciseDef;
+  onPick: (exercise: ExerciseDef) => void;
+  onClose: () => void;
+}) {
+  const dismiss = useSheetDismiss();
+  return (
+    <StationForm
+      template={template}
+      onBack={onClose}
+      onResolved={(def) => {
+        onPick(def);
+        dismiss();
+      }}
+    />
+  );
+}
+
 type View =
   | { kind: "list" }
   | { kind: "station"; template: ExerciseDef }

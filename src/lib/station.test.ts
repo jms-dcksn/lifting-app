@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest";
 import { EXERCISE_BY_ID } from "./strength/coefficients";
 import {
   CHOOSE_STATION_COPY,
+  canSwapStation,
   chooseStationCopy,
   isLoggableExercise,
   shouldResolveStation,
   stationPickerForm,
   stationResolveInput,
+  stationTemplateFor,
+  swapStationLabel,
 } from "./station";
 
 describe("station picker helpers", () => {
@@ -60,6 +63,31 @@ describe("station picker helpers", () => {
       brand: "Hammer Strength",
       machineType: "plate_loaded",
     });
+  });
+
+  it("resolves station templates for same-movement swaps", () => {
+    const catalog = EXERCISE_BY_ID;
+    const variant = {
+      ...EXERCISE_BY_ID["machine-chest-press"],
+      id: "machine-chest-press__hs__plate_loaded",
+      baseExerciseId: "machine-chest-press",
+      stationProfile: undefined,
+      machineTemplate: false,
+    };
+    expect(stationTemplateFor(EXERCISE_BY_ID["machine-chest-press"], catalog)).toBe(
+      EXERCISE_BY_ID["machine-chest-press"],
+    );
+    expect(stationTemplateFor(variant, catalog)).toBe(EXERCISE_BY_ID["machine-chest-press"]);
+    expect(stationTemplateFor(EXERCISE_BY_ID["bb-row"], catalog)).toBeNull();
+    expect(canSwapStation(variant, catalog)).toBe(true);
+    expect(canSwapStation(EXERCISE_BY_ID["bb-row"], catalog)).toBe(false);
+    expect(swapStationLabel(EXERCISE_BY_ID["machine-chest-press"], catalog)).toBe("Choose machine");
+    expect(swapStationLabel(variant, catalog)).toBe("Swap machine");
+    expect(swapStationLabel(EXERCISE_BY_ID["lat-pulldown"], catalog)).toBe("Choose cable");
+    expect(swapStationLabel(
+      { ...EXERCISE_BY_ID["lat-pulldown"], id: "lat-pulldown__nautilus__selectorized", baseExerciseId: "lat-pulldown", stationProfile: undefined },
+      catalog,
+    )).toBe("Swap cable");
   });
 
   it("session pickers resolve station templates; the builder does not", () => {

@@ -7,9 +7,10 @@ import { ExerciseCardLabel, exerciseCardAriaLabel } from "@/components/ui/exerci
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card, CardLabel } from "@/components/ui/card";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
-import { chooseStationCopy } from "@/lib/station";
+import { canSwapStation } from "@/lib/station";
 import { rirLabel, type EffectivePrescription } from "@/lib/periodization";
 import { ExercisePicker } from "../../program/exercise-picker";
+import { SwapStationButton } from "../../program/swap-station-button";
 import { startPlannedSession } from "../../session/actions";
 import { saveWorkoutChoice } from "./actions";
 
@@ -20,7 +21,7 @@ export function WorkoutPlanner({ planKey, programName, dayName, week, slots, cat
   planKey: string; programName: string; dayName: string; week: number; slots: Slot[]; catalog: ExerciseDef[];
 }) {
   const [catalog, setCatalog] = useState(initialCatalog);
-  const [picking, setPicking] = useState<Slot | null>(null);
+  const [pickingExercise, setPickingExercise] = useState<Slot | null>(null);
   const [pending, startSaving] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -49,7 +50,7 @@ export function WorkoutPlanner({ planKey, programName, dayName, week, slots, cat
       {slots.map((slot, index) => {
         const def = catalog.find((d) => d.id === slot.exerciseId);
         const p = slot.prescription;
-        const chooseCopy = chooseStationCopy(def?.stationProfile);
+        const showStationSwap = canSwapStation(def, Object.fromEntries(catalog.map((d) => [d.id, d])));
         return <Card key={slot.id}>
           <CardLabel>Exercise {index + 1}</CardLabel>
           <div className="mt-1 flex items-start gap-3">
@@ -63,9 +64,25 @@ export function WorkoutPlanner({ planKey, programName, dayName, week, slots, cat
           <p className="mt-2 text-body tabular-nums">{p.targetSets} sets × {p.repMin}{p.repMin !== p.repMax ? `–${p.repMax}` : ""} reps · {rirLabel(p)} RIR</p>
           <p className="mt-1 text-caption text-muted">Rest {slot.restSeconds} seconds between sets</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" disabled={pending} onClick={() => setPicking(slot)}
-              aria-label={`${chooseCopy ? `${chooseCopy} for` : "Swap"} ${def ? exerciseCardAriaLabel(def, Object.fromEntries(catalog.map((d) => [d.id, d]))) : slot.exerciseId}`}>
-              {chooseCopy ?? "Swap exercise"}
+            {showStationSwap && (
+              <SwapStationButton
+                exerciseId={slot.exerciseId}
+                catalog={catalog}
+                disabled={pending}
+                onPick={(picked) => {
+                  setCatalog((current) => current.some((d) => d.id === picked.id) ? current : [...current, picked]);
+                  save(slot.id, picked.id);
+                }}
+              />
+            )}
+            <Button
+              type="button"
+              variant={showStationSwap ? "ghost" : "secondary"}
+              disabled={pending}
+              onClick={() => setPickingExercise(slot)}
+              aria-label={`Swap ${def ? exerciseCardAriaLabel(def, Object.fromEntries(catalog.map((d) => [d.id, d]))) : slot.exerciseId} for another exercise`}
+            >
+              Swap exercise
             </Button>
             {slot.exerciseId !== slot.baseExerciseId && <Button type="button" variant="ghost" disabled={pending}
               onClick={() => save(slot.id, null)}>Reset</Button>}
@@ -76,14 +93,14 @@ export function WorkoutPlanner({ planKey, programName, dayName, week, slots, cat
         {error && <p role="alert" className="mb-3 text-caption text-danger">{error}</p>}
         <p role="status" className="mb-2 text-caption text-muted">{pending ? "Saving…" : notice}</p>
         <form action={startPlannedSession.bind(null, planKey)}>
-          <Button size="lg" className="w-full" disabled={pending || !!picking}>Start workout</Button>
+          <Button size="lg" className="w-full" disabled={pending || !!pickingExercise}>Start workout</Button>
         </form>
       </div>
-      {picking && <ExercisePicker catalog={catalog} patternFilter={picking.pattern} resolveStations
+      {pickingExercise && <ExercisePicker catalog={catalog} patternFilter={pickingExercise.pattern} resolveStations
         onPick={(def) => {
           setCatalog((current) => current.some((d) => d.id === def.id) ? current : [...current, def]);
-          save(picking.id, def.id);
-        }} onClose={() => setPicking(null)} />}
+          save(pickingExercise.id, def.id);
+        }} onClose={() => setPickingExercise(null)} />}
     </div>
   );
 }

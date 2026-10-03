@@ -34,8 +34,11 @@ export async function exerciseReview(
   userId: string,
   input: { exerciseId?: string; name?: string; equipmentInstanceId?: string | null },
 ) {
-  const catalog = await getCatalogMap(supabase, userId);
-  const resolved = resolveExerciseIdentity(catalog, input);
+  const [catalog, loggedExerciseIds] = await Promise.all([
+    getCatalogMap(supabase, userId),
+    loggedExerciseIdsFor(supabase, userId),
+  ]);
+  const resolved = resolveExerciseIdentity(catalog, { ...input, loggedExerciseIds });
   if (!("exerciseId" in resolved)) return resolved;
   const requestedId = resolved.exerciseId;
   const requestedDef = catalog[requestedId];
@@ -159,32 +162,16 @@ export type ResolvedExerciseIdentity =
       matches: Array<{ id: string; name: string }>;
     };
 
-function tokenizeExerciseName(value: string): string[] {
-  return value
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean);
-}
-
-function catalogTokensByExercise(
-  catalog: Record<string, { id: string; name: string }>,
-): Map<string, string[]> {
-  const tokensById = new Map<string, string[]>();
-  for (const def of Object.values(catalog)) {
-    tokensById.set(def.id, tokenizeExerciseName(def.name));
-  }
-  return tokensById;
-}
-
-function tokensAreSubset(subset: string[], superset: Set<string>): boolean {
-  return subset.every((token) => superset.has(token));
-}
-
-type NameMatchCandidate = {
-  def: { id: string; name: string };
-  defTokens: string[];
-  catalogSubsetOfQuery: boolean;
-  querySubsetOfCatalog: boolean;
+const ALIASES: Record<string, readonly string[]> = {
+  rdl: ["romanian", "deadlift"],
+  rdls: ["romanian", "deadlift"],
+  ohp: ["overhead", "press"],
+  bss: ["bulgarian", "split"],
+  db: ["dumbbell"],
+  bb: ["barbell"],
+  pullup: ["pull", "up"],
+  pullups: ["pull", "up"],
+  military: ["overhead"],
 };
 
 const EQUIPMENT_TOKENS = new Set([
@@ -196,32 +183,188 @@ const EQUIPMENT_TOKENS = new Set([
   "bodyweight",
 ]);
 
-function rankNameMatchCandidates(candidates: NameMatchCandidate[]): NameMatchCandidate[] {
-  return [...candidates].sort((left, right) => {
-    if (left.catalogSubsetOfQuery !== right.catalogSubsetOfQuery) {
-      return left.catalogSubsetOfQuery ? -1 : 1;
+/** Query words that are not catalog tokens. `flat` means the incline names lose. */
+const MODIFIER_REJECT: Record<string, string> = {
+  flat: "incline",
+};
+
+const MIN_SCORE = 0.5;
+const RESOLVE_MARGIN = 0.12;
+const EXTRA_NAME_TOKEN = 0.07;
+
+function tokenize(value: string): string[] {
+  return value.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+}
+
+function forms(token: string): string[] {
+  const out = new Set([token]);
+  if (token.length > 4 && token.endsWith("es")) out.add(token.slice(0, -2));
+  if (token.length > 3 && token.endsWith("s") && !token.endsWith("ss")) out.add(token.slice(0, -1));
+  return [...out];
+}
+
+function expandAliases(tokens: string[]): string[] {
+  const out: string[] = [];
+  for (const token of tokens) {
+    const alias = ALIASES[token] ?? forms(token).map((form) => ALIASES[form]).find(Boolean);
+    if (alias) out.push(...alias);
+    else out.push(token);
+  }
+  return out;
+}
+
+function editDistance(left: string, right: string): number {
+  const rows = left.length + 1;
+  const cols = right.length + 1;
+  const dp = Array.from({ length: rows }, () => new Array<number>(cols).fill(0));
+  for (let i = 0; i < rows; i++) dp[i]![0] = i;
+  for (let j = 0; j < cols; j++) dp[0]![j] = j;
+  for (let i = 1; i < rows; i++) {
+    for (let j = 1; j < cols; j++) {
+      const cost = left[i - 1] === right[j - 1] ? 0 : 1;
+      dp[i]![j] = Math.min(dp[i - 1]![j]! + 1, dp[i]![j - 1]! + 1, dp[i - 1]![j - 1]! + cost);
+      if (i > 1 && j > 1 && left[i - 1] === right[j - 2] && left[i - 2] === right[j - 1]) {
+        dp[i]![j] = Math.min(dp[i]![j]!, dp[i - 2]![j - 2]! + 1);
+      }
     }
-    if (left.defTokens.length !== right.defTokens.length) {
-      return right.defTokens.length - left.defTokens.length;
+  }
+  return dp[left.length]![right.length]!;
+}
+
+function tokenMatches(query: string, catalog: string): boolean {
+  const queryForms = forms(query);
+  const catalogForms = forms(catalog);
+  if (queryForms.some((form) => catalogForms.includes(form))) return true;
+  const longer = Math.max(query.length, catalog.length);
+  const shorter = Math.min(query.length, catalog.length);
+  return longer >= 5 && shorter >= 4 && editDistance(query, catalog) <= 1;
+}
+
+function joinsAround(tokens: string[], index: number): string[] {
+  const joins: string[] = [];
+  const push = (left: string, right: string) => {
+    if (left in MODIFIER_REJECT || right in MODIFIER_REJECT) return;
+    for (const a of forms(left)) {
+      for (const b of forms(right)) joins.push(a + b);
     }
-    return left.def.name.localeCompare(right.def.name);
+  };
+  if (index > 0) push(tokens[index - 1]!, tokens[index]!);
+  if (index + 1 < tokens.length) push(tokens[index]!, tokens[index + 1]!);
+  return joins;
+}
+
+type CatalogDoc = {
+  id: string;
+  name: string;
+  nameTokens: string[];
+  tokens: string[];
+};
+
+function catalogDocs(catalog: Record<string, { id: string; name: string }>): CatalogDoc[] {
+  return Object.values(catalog).map((def) => {
+    const nameTokens = tokenize(def.name);
+    return {
+      id: def.id,
+      name: def.name,
+      nameTokens,
+      tokens: [...nameTokens, ...tokenize(def.id)],
+    };
   });
 }
 
-function narrowByDefaultEquipment(
-  queryTokens: string[],
-  ranked: NameMatchCandidate[],
-): NameMatchCandidate[] {
-  const querySpecifiesEquipment = queryTokens.some((token) => EQUIPMENT_TOKENS.has(token));
-  if (querySpecifiesEquipment || ranked.length <= 1) return ranked;
+function tokenHitsDoc(token: string, joins: string[], docTokens: string[]): boolean {
+  if (docTokens.some((catalog) => tokenMatches(token, catalog))) return true;
+  return joins.some((join) => docTokens.some((catalog) => tokenMatches(join, catalog)));
+}
 
-  const barbellMatches = ranked.filter((candidate) => candidate.defTokens.includes("barbell"));
-  return barbellMatches.length > 0 ? barbellMatches : ranked;
+function queryJoins(content: string[]): string[] {
+  return content.flatMap((_, index) => joinsAround(content, index));
+}
+
+function nameTokenCovered(nameToken: string, content: string[], joins: string[]): boolean {
+  return content.some((token) => tokenMatches(token, nameToken)) || joins.some((join) => tokenMatches(join, nameToken));
+}
+
+function nameIsCovered(nameTokens: string[], content: string[]): boolean {
+  const joins = queryJoins(content);
+  return nameTokens.every((nameToken) => nameTokenCovered(nameToken, content, joins));
+}
+
+function idf(token: string, docs: CatalogDoc[]): number {
+  let seen = 0;
+  for (const doc of docs) {
+    if (doc.tokens.some((catalog) => forms(token).some((form) => forms(catalog).includes(form)))) seen++;
+  }
+  return Math.log((docs.length + 1) / (seen + 1)) + 1;
+}
+
+type ScoredName = { id: string; name: string; score: number; nameTokens: string[] };
+
+function knownContent(content: string[], docs: CatalogDoc[]): string[] {
+  const haystack = docs.flatMap((doc) => doc.tokens);
+  return content.filter((token, index) => tokenHitsDoc(token, joinsAround(content, index), haystack));
+}
+
+function scoreNames(docs: CatalogDoc[], content: string[], rejected: string | undefined): ScoredName[] {
+  const scoredContent = knownContent(content, docs);
+  const weights = scoredContent.map((token) => idf(token, docs) ** 2);
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  const scored: ScoredName[] = [];
+  for (const doc of docs) {
+    if (rejected && doc.nameTokens.includes(rejected)) continue;
+    let matched = 0;
+    scoredContent.forEach((token, index) => {
+      const at = content.indexOf(token);
+      if (tokenHitsDoc(token, joinsAround(content, at), doc.tokens)) matched += weights[index] ?? 0;
+    });
+    if (total === 0 || matched === 0) continue;
+    const joins = queryJoins(content);
+    const uncovered = doc.nameTokens.filter((nameToken) => !nameTokenCovered(nameToken, content, joins)).length;
+    const score = matched / total - uncovered * EXTRA_NAME_TOKEN;
+    if (score >= MIN_SCORE) scored.push({ id: doc.id, name: doc.name, score, nameTokens: doc.nameTokens });
+  }
+  return scored.sort((left, right) => right.score - left.score || left.name.localeCompare(right.name));
+}
+
+function preferBarbell(queryTokens: string[], content: string[], scored: ScoredName[]): ScoredName[] {
+  if (queryTokens.some((token) => EQUIPMENT_TOKENS.has(token)) || scored.length <= 1) return scored;
+  const barbell = scored.filter((row) => row.nameTokens.includes("barbell"));
+  if (barbell.length === 0) return scored;
+  return scored.filter((row) => {
+    if (row.nameTokens.includes("barbell")) return true;
+    return content.some((token, index) => {
+      const joins = joinsAround(content, index);
+      const hit = tokenHitsDoc(token, joins, row.nameTokens);
+      const covered = barbell.some((other) => tokenHitsDoc(token, joins, other.nameTokens));
+      return hit && !covered;
+    });
+  });
+}
+
+function preferLogged(scored: ScoredName[], logged: ReadonlySet<string> | null): ScoredName[] {
+  if (!logged || logged.size === 0) return scored;
+  const hit = scored.filter((row) => logged.has(row.id));
+  return hit.length > 0 ? hit : scored;
+}
+
+function unknownTokenBlocks(content: string[], docs: CatalogDoc[]): boolean {
+  const covered = docs.some((doc) => nameIsCovered(doc.nameTokens, content));
+  if (covered) return false;
+  return content.some((token, index) => !tokenHitsDoc(token, joinsAround(content, index), docs.flatMap((doc) => doc.tokens)));
+}
+
+async function loggedExerciseIdsFor(supabase: Client, userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("user_exercise_stat")
+    .select("exercise_id")
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => row.exercise_id);
 }
 
 export function resolveExerciseIdentity(
   catalog: Record<string, { id: string; name: string }>,
-  input: { exerciseId?: string; name?: string },
+  input: { exerciseId?: string; name?: string; loggedExerciseIds?: readonly string[] },
 ): ResolvedExerciseIdentity {
   const knownId = input.exerciseId?.trim();
   if (knownId && catalog[knownId]) {
@@ -242,57 +385,49 @@ export function resolveExerciseIdentity(
     };
   }
 
+  const logged = input.loggedExerciseIds ? new Set(input.loggedExerciseIds) : null;
   const entries = Object.values(catalog);
   const exact = entries.find((def) => def.name.toLowerCase() === needle.toLowerCase());
-  if (exact) return { exerciseId: exact.id };
+  if (exact && (!logged || logged.size === 0 || logged.has(exact.id))) {
+    return { exerciseId: exact.id };
+  }
 
-  const queryTokens = tokenizeExerciseName(needle);
-  if (queryTokens.length === 0) {
+  const rawTokens = tokenize(needle);
+  const queryTokens = expandAliases(rawTokens);
+  const content = queryTokens.filter((token) => !(token in MODIFIER_REJECT));
+  if (content.length === 0) {
     return {
       source: "exerciseReview" as const,
-      error: `No exercise matched “${input.name}”.`,
+      error: `No exercise matched “${needle}”.`,
     };
   }
 
-  const tokensById = catalogTokensByExercise(catalog);
-  const queryTokenSet = new Set(queryTokens);
-
-  let candidates: NameMatchCandidate[] = [];
-  for (const def of entries) {
-    const defTokens = tokensById.get(def.id) ?? [];
-    const defTokenSet = new Set(defTokens);
-    const catalogSubsetOfQuery = tokensAreSubset(defTokens, queryTokenSet);
-    const querySubsetOfCatalog = tokensAreSubset(queryTokens, defTokenSet);
-    if (!catalogSubsetOfQuery && !querySubsetOfCatalog) continue;
-
-    candidates.push({
-      def,
-      defTokens,
-      catalogSubsetOfQuery,
-      querySubsetOfCatalog,
-    });
-  }
-
-  for (const token of queryTokens) {
-    const withToken = candidates.filter((candidate) => candidate.defTokens.includes(token));
-    const withoutToken = candidates.filter((candidate) => !candidate.defTokens.includes(token));
-    if (withToken.length > 0 && withoutToken.length > 0) {
-      candidates = withToken;
-    }
-  }
-
-  const ranked = narrowByDefaultEquipment(queryTokens, rankNameMatchCandidates(candidates));
-  if (ranked.length === 1) return { exerciseId: ranked[0].def.id };
-  if (ranked.length === 0) {
+  const docs = catalogDocs(catalog);
+  if (unknownTokenBlocks(content, docs)) {
     return {
       source: "exerciseReview" as const,
-      error: `No exercise matched “${input.name}”.`,
+      error: `No exercise matched “${needle}”.`,
     };
   }
+
+  const rejected = queryTokens.map((token) => MODIFIER_REJECT[token]).find(Boolean);
+  const ranked = preferLogged(
+    preferBarbell(queryTokens, content, scoreNames(docs, content, rejected)),
+    logged,
+  );
+  const top = ranked[0];
+  if (!top) {
+    return {
+      source: "exerciseReview" as const,
+      error: `No exercise matched “${needle}”.`,
+    };
+  }
+  const close = ranked.filter((row) => top.score - row.score < RESOLVE_MARGIN);
+  if (close.length === 1) return { exerciseId: close[0]!.id };
   return {
     source: "exerciseReview" as const,
     needsDisambiguation: true,
-    matches: ranked.slice(0, 8).map(({ def }) => ({ id: def.id, name: def.name })),
+    matches: close.slice(0, 8).map(({ id, name }) => ({ id, name })),
   };
 }
 

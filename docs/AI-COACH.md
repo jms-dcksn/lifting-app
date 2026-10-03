@@ -295,22 +295,24 @@ copies that example's handwritten reference onto the dataset.
 The original question is still “How is my e1RM trending on incline bench press”.
 Ten more use the same sentence with a different exercise phrase:
 
-- Easy, exact catalog names: barbell back squat, leg press, romanian deadlift.
-- Medium, shorter names that still resolve to one id: back squat, bench press, deadlift.
+- Easy names: Nautilus hack squat, leg press, romanian deadlift.
+- Shorter names: Cybex hack squat, bench press, deadlift.
 - Hard, the tool asks which exercise: squat, barbell squat, dumbbell bench. The
   reference lists those matches and asks the user to choose.
-- Miss: “rdl”. The reference says no exercise matched. It does not suggest a neighbor.
+- Nickname: “rdl”, which resolves to Romanian deadlift.
 
-Phrases were checked against the seed catalog and the eval user's exercise rows on
-2026-10-02. “Lateral raise” was left out because that account's station variants
-change the match list. The incline phrase itself does not resolve; the agent is
-still expected to land on `bb-incline-bench`.
+Gold is that lift, never a scripted miss. “rdl” and “incline bench press” both
+resolve on the seed catalog.
+Back squat is not in the resolved set. The eval user has one back-squat point
+(checked 2026-10-03) and multi-point charts on Hack Squat — Nautilus (plate) and
+Hack Squat — Cybex (plate). Bare “hack squat” exact-matches the empty template, so
+the questions name the station (“nautilus hack squat”, “cybex hack squat”).
 
 Four local judges score each run: `right_tool` (called `exerciseReview`),
-`tool_call_count` (at most 3), `found_exercise` (the last exerciseReview result is
-the expected id, the expected disambiguation ids, or a not-found error), and
-`reference_match` (a Jev noul, correct at 0.8 or above). Jev instructions are stored
-on the example. For a resolved lift, Jev ignores exact pounds and dates and checks
-that the reply names that lift and reports a trend. Traces go to
-`lifting-app-agent-evals`. Do not paste capability URLs, secrets, or weekly Coach
-tokens into traces, issues, or chat.
+`tool_call_count` (at most 3), `found_exercise` (any exerciseReview result in the
+turn is the expected id or the expected disambiguation ids), and `reference_match`
+(a Jev noul, correct at 0.8 or above). A miss or a later call that names a different
+lift does not erase an earlier hit. Jev instructions are stored on the example. For
+a resolved lift, Jev ignores exact pounds and dates and checks that the reply names
+that lift and reports a trend. Traces go to `lifting-app-agent-evals`. Do not paste
+capability URLs, secrets, or weekly Coach tokens into traces, issues, or chat.

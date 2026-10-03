@@ -32,13 +32,6 @@ const CLARIFY_INSTRUCTIONS = {
   fail: "The reply picks one exercise and reports a trend, or it names a lift that is not in reference.",
 };
 
-const MISS_INSTRUCTIONS = {
-  question: "Does `answer` say the exercise in the question was not found?",
-  ignore: "Ignore wording and any Source line.",
-  pass: "The reply says no exercise matched and does not report an e1RM trend.",
-  fail: "The reply suggests a specific exercise or reports a trend.",
-};
-
 /** Jev noul at or above this counts as a correct answer. */
 export const REFERENCE_MATCH_THRESHOLD = 0.8;
 
@@ -62,11 +55,10 @@ export type SeedResolution =
     }
   | { source: "exerciseReview"; error: string };
 
-/** What the live judge expects from the exerciseReview tool result. */
+/** What the live judge expects from the exerciseReview results on the turn. */
 export type ExpectedReview =
   | { outcome: "resolved"; exerciseId: string }
-  | { outcome: "disambiguate"; matchIds: string[] }
-  | { outcome: "miss"; name: string };
+  | { outcome: "disambiguate"; matchIds: string[] };
 
 export type LiveExample = {
   id: string;
@@ -82,7 +74,7 @@ export type LiveExample = {
     pass: string;
     fail: string;
   };
-  /** Resolver outcome on the seed catalog. Incline's phrase is a miss; the agent is still expected to find the lift. */
+  /** Resolver outcome on the seed catalog. A miss here can still have a resolved gold lift. */
   seedResolution: SeedResolution;
   review: ExpectedReview;
 };
@@ -136,10 +128,6 @@ function disambiguation(matches: Array<{ id: string; name: string }>): SeedResol
   return { source: "exerciseReview", needsDisambiguation: true, matches };
 }
 
-function notFound(name: string): SeedResolution {
-  return { source: "exerciseReview", error: `No exercise matched “${name}”.` };
-}
-
 function resolvedExample(input: {
   id: string;
   name: string;
@@ -180,10 +168,12 @@ function clarifyExample(input: {
 }
 
 /**
- * Eleven live reads. Easy and medium names resolve to one id on the seed catalog and on
- * the eval user's catalog (checked 2026-10-02). Hard names ask the user to choose.
- * "rdl" matches nothing. The original incline question is a miss as written; the agent
- * is still expected to land on bb-incline-bench.
+ * Eleven live reads. Gold is the lift the question means. "rdl" and
+ * "incline bench press" resolve on the seed catalog.
+ * Back squat has one logged point for the eval user (checked 2026-10-03), so those
+ * examples are the Nautilus and Cybex hack squats, which have chart trends.
+ * On the seed catalog both phrases collapse to the hack-squat template. On the eval
+ * user's catalog they resolve to the station rows that hold the sets.
  */
 export const LIVE_EXAMPLES: LiveExample[] = [
   {
@@ -194,16 +184,19 @@ export const LIVE_EXAMPLES: LiveExample[] = [
     maxToolCalls: 3,
     reference: INCLINE_E1RM_REFERENCE,
     instructions: REFERENCE_MATCH_INSTRUCTIONS,
-    seedResolution: notFound("incline bench press"),
+    seedResolution: { exerciseId: INCLINE_BENCH_ID },
     review: { outcome: "resolved", exerciseId: INCLINE_BENCH_ID },
   },
-  resolvedExample({
-    id: "easy-barbell-back-squat",
-    name: "barbell back squat",
-    exerciseId: "bb-back-squat",
-    spokenName: "barbell back squat",
-    figures: ["315", "300", "2026-09-12", "320", "-20", "280 → 300 → 320 → 315"],
-  }),
+  {
+    ...resolvedExample({
+      id: "easy-nautilus-hack-squat",
+      name: "nautilus hack squat",
+      exerciseId: "hack-squat__nautilus__plate_loaded",
+      spokenName: "Hack Squat — Nautilus (plate)",
+      figures: ["441.2", "441.18", "2026-09-19", "441.18", "0", "381.68 → 380.58 → 393.70 → 405.95 → 424.33 → 441.18"],
+    }),
+    seedResolution: { exerciseId: "hack-squat" },
+  },
   resolvedExample({
     id: "easy-leg-press",
     name: "leg press",
@@ -218,13 +211,16 @@ export const LIVE_EXAMPLES: LiveExample[] = [
     spokenName: "romanian deadlift",
     figures: ["275", "260", "2026-09-16", "280", "-20", "250 → 265 → 280 → 260"],
   }),
-  resolvedExample({
-    id: "medium-back-squat",
-    name: "back squat",
-    exerciseId: "bb-back-squat",
-    spokenName: "barbell back squat",
-    figures: ["305", "290", "2026-09-18", "310", "-20", "270 → 290 → 310 → 305"],
-  }),
+  {
+    ...resolvedExample({
+      id: "medium-cybex-hack-squat",
+      name: "cybex hack squat",
+      exerciseId: "hack-squat__cybex__plate_loaded",
+      spokenName: "Hack Squat — Cybex (plate)",
+      figures: ["205.9", "205.88", "2026-10-03", "205.88", "0", "183.73 → 189.45 → 198.02 → 205.88"],
+    }),
+    seedResolution: { exerciseId: "hack-squat" },
+  },
   resolvedExample({
     id: "medium-bench-press",
     name: "bench press",
@@ -247,15 +243,23 @@ export const LIVE_EXAMPLES: LiveExample[] = [
     matches: DUMBBELL_BENCH_MATCHES,
   }),
   {
-    id: "miss-rdl",
+    id: "alias-rdl",
     name: "rdl",
     question: ask("rdl"),
     expectedTools: ["exerciseReview"],
     maxToolCalls: 3,
-    reference: "No exercise matched \"rdl\".",
-    instructions: MISS_INSTRUCTIONS,
-    seedResolution: notFound("rdl"),
-    review: { outcome: "miss", name: "rdl" },
+    reference: trendReference(
+      "romanian deadlift",
+      "318.3",
+      "318.25",
+      "2026-10-03",
+      "318.25",
+      "0",
+      "286.26 → 295.28 → 304.47 → 311.70 → 318.25",
+    ),
+    instructions: trendInstructions("romanian deadlift"),
+    seedResolution: { exerciseId: "bb-rdl" },
+    review: { outcome: "resolved", exerciseId: "bb-rdl" },
   },
 ];
 
@@ -304,11 +308,10 @@ export function gradeFoundExercise(input: {
   toolResults: LiveToolResult[];
   expected: ExpectedReview;
 }) {
-  const result = lastReviewResult(input.toolResults);
-  if (!result) return { score: 0, comment: "no exerciseReview result" };
-  if (input.expected.outcome === "resolved") return gradeResolved(result, input.expected.exerciseId);
-  if (input.expected.outcome === "disambiguate") return gradeDisambiguation(result, input.expected.matchIds);
-  return gradeMiss(result, input.expected.name);
+  const results = reviewRecords(input.toolResults);
+  if (results.length === 0) return { score: 0, comment: "no exerciseReview result" };
+  if (input.expected.outcome === "resolved") return gradeResolved(results, input.expected.exerciseId);
+  return gradeDisambiguation(results, input.expected.matchIds);
 }
 
 export function scoreNoul(noul: number, threshold = REFERENCE_MATCH_THRESHOLD) {
@@ -319,47 +322,37 @@ export function scoreNoul(noul: number, threshold = REFERENCE_MATCH_THRESHOLD) {
   };
 }
 
-function gradeResolved(result: Record<string, unknown>, exerciseId: string) {
+function gradeResolved(results: Record<string, unknown>[], exerciseId: string) {
+  if (results.some((result) => result.exerciseId === exerciseId)) {
+    return { score: 1, comment: `found ${exerciseId}` };
+  }
+  return { score: 0, comment: `expected ${exerciseId}; saw ${results.map(describeResult).join(" | ")}` };
+}
+
+function gradeDisambiguation(results: Record<string, unknown>[], matchIds: string[]) {
+  const hit = results.find((result) =>
+    result.needsDisambiguation === true && sameIds(matchIdsFrom(result), matchIds)
+  );
+  if (hit) return { score: 1, comment: `choices ${matchIds.join(", ")}` };
+  return { score: 0, comment: `expected ${matchIds.join(", ")}; saw ${results.map(describeResult).join(" | ")}` };
+}
+
+function reviewRecords(toolResults: LiveToolResult[]) {
+  return toolResults.flatMap((result) => {
+    if (result.name !== "exerciseReview") return [];
+    const record = asRecord(result.result);
+    return record ? [record] : [];
+  });
+}
+
+function describeResult(result: Record<string, unknown>) {
+  if (typeof result.exerciseId === "string") return result.exerciseId;
+  if (typeof result.error === "string") return result.error;
   if (result.needsDisambiguation === true) {
-    return { score: 0, comment: "asked to disambiguate" };
+    const ids = matchIdsFrom(result);
+    return ids.length ? `choices ${ids.join(", ")}` : "choices none";
   }
-  if (typeof result.error === "string") return { score: 0, comment: result.error };
-  const found = typeof result.exerciseId === "string" ? result.exerciseId : "";
-  if (found === exerciseId) return { score: 1, comment: `found ${exerciseId}` };
-  return { score: 0, comment: `found ${found || "nothing"} (expected ${exerciseId})` };
-}
-
-function gradeDisambiguation(result: Record<string, unknown>, matchIds: string[]) {
-  if (typeof result.exerciseId === "string") {
-    return { score: 0, comment: `resolved to ${result.exerciseId}` };
-  }
-  if (typeof result.error === "string") return { score: 0, comment: result.error };
-  const found = matchIdsFrom(result);
-  if (result.needsDisambiguation === true && sameIds(found, matchIds)) {
-    return { score: 1, comment: `choices ${found.join(", ")}` };
-  }
-  const listed = found.length ? found.join(", ") : "none";
-  return { score: 0, comment: `choices ${listed} (expected ${matchIds.join(", ")})` };
-}
-
-function gradeMiss(result: Record<string, unknown>, name: string) {
-  if (typeof result.exerciseId === "string") {
-    return { score: 0, comment: `resolved to ${result.exerciseId}` };
-  }
-  if (result.needsDisambiguation === true) {
-    return { score: 0, comment: "asked to disambiguate" };
-  }
-  const error = typeof result.error === "string" ? result.error : "";
-  if (error.includes("No exercise matched") && error.includes(name)) {
-    return { score: 1, comment: error };
-  }
-  return { score: 0, comment: error || "exerciseReview did not report a miss" };
-}
-
-function lastReviewResult(toolResults: LiveToolResult[]) {
-  const reviews = toolResults.filter((result) => result.name === "exerciseReview");
-  const last = reviews[reviews.length - 1];
-  return last ? asRecord(last.result) : null;
+  return "unrecognized";
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {

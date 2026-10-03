@@ -34,12 +34,13 @@ describe("live eval examples", () => {
     const resolved = LIVE_EXAMPLES.filter((example) => example.review.outcome === "resolved");
     expect(resolved.map((example) => example.id)).toEqual([
       "incline-bench",
-      "easy-barbell-back-squat",
+      "easy-nautilus-hack-squat",
       "easy-leg-press",
       "easy-romanian-deadlift",
-      "medium-back-squat",
+      "medium-cybex-hack-squat",
       "medium-bench-press",
       "medium-deadlift",
+      "alias-rdl",
     ]);
     for (const example of resolved) {
       expect(example.reference).toContain("Last recorded E1RM");
@@ -48,7 +49,11 @@ describe("live eval examples", () => {
     const hard = LIVE_EXAMPLES.find((example) => example.id === "hard-squat");
     expect(hard?.reference).toContain("Barbell Back Squat");
     expect(hard?.reference).toContain("Barbell Front Squat");
-    expect(LIVE_EXAMPLES.find((example) => example.id === "miss-rdl")?.reference).toContain("rdl");
+    const rdl = LIVE_EXAMPLES.find((example) => example.id === "alias-rdl");
+    expect(rdl?.review).toEqual({ outcome: "resolved", exerciseId: "bb-rdl" });
+    expect(rdl?.reference).toContain("romanian deadlift");
+    expect(rdl?.reference).not.toContain("No exercise matched");
+    expect(LIVE_EXAMPLES.some((example) => example.reference.includes("No exercise matched"))).toBe(false);
   });
 });
 
@@ -87,24 +92,56 @@ describe("live eval graders", () => {
       }],
     }).score).toBe(1);
     expect(gradeFoundExercise({
-      expected: { outcome: "miss", name: "rdl" },
+      expected: { outcome: "resolved", exerciseId: "bb-rdl" },
       toolResults: [{
         name: "exerciseReview",
         result: { source: "exerciseReview", error: "No exercise matched “rdl”." },
       }],
-    }).score).toBe(1);
+    }).score).toBe(0);
     expect(gradeFoundExercise({
-      expected: { outcome: "miss", name: "rdl" },
+      expected: { outcome: "resolved", exerciseId: "bb-rdl" },
       toolResults: [{ name: "exerciseReview", result: { exerciseId: "bb-rdl" } }],
     }).comment).toContain("bb-rdl");
   });
 
-  it("uses the last exerciseReview result when the model retries", () => {
+  it("passes when any exerciseReview result found the exercise", () => {
     expect(gradeFoundExercise({
       expected: { outcome: "resolved", exerciseId: "bb-bench" },
       toolResults: [
         { name: "exerciseReview", result: { error: "No exercise matched “bench”." } },
         { name: "exerciseReview", result: { exerciseId: "bb-bench" } },
+      ],
+    }).score).toBe(1);
+    expect(gradeFoundExercise({
+      expected: { outcome: "resolved", exerciseId: "bb-incline-bench" },
+      toolResults: [
+        { name: "exerciseReview", result: { error: "No exercise matched “incline bench press”." } },
+        { name: "exerciseReview", result: { exerciseId: "bb-incline-bench" } },
+        { name: "exerciseReview", result: { exerciseId: "db-incline-bench" } },
+        {
+          name: "exerciseReview",
+          result: { needsDisambiguation: true, matches: [{ id: "bb-incline-bench" }] },
+        },
+      ],
+    }).score).toBe(1);
+    expect(gradeFoundExercise({
+      expected: { outcome: "resolved", exerciseId: "bb-incline-bench" },
+      toolResults: [
+        { name: "exerciseReview", result: { error: "No exercise matched “incline bench press”." } },
+        { name: "exerciseReview", result: { exerciseId: "db-incline-bench" } },
+      ],
+    }).score).toBe(0);
+    expect(gradeFoundExercise({
+      expected: { outcome: "disambiguate", matchIds: ["db-bench", "db-incline-bench"] },
+      toolResults: [
+        {
+          name: "exerciseReview",
+          result: {
+            needsDisambiguation: true,
+            matches: [{ id: "db-bench" }, { id: "db-incline-bench" }],
+          },
+        },
+        { name: "exerciseReview", result: { exerciseId: "db-incline-bench" } },
       ],
     }).score).toBe(1);
   });

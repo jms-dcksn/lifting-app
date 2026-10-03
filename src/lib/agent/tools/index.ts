@@ -51,12 +51,12 @@ export function bindReadTools(supabase: Client, userId: string) {
       {
         name: "exerciseReview",
         description:
-          "Load Exercise review for one exact exercise plus equipment instance: Last session, 21-day window, and last-8 e1RM chart. Prefer name when unsure; omit exerciseId unless it came from focusedExerciseId or a prior tool result. Do not invent ids. Word order may differ from catalog names. Do not blend machines. A trend needs at least two e1RM points. If recent21Days is null or kind is gap, delta is null, or chartLast8 has fewer than two points, say there is no trend and still report last when it is present.",
+          "Load Exercise review for one exact exercise plus equipment instance: Last session, 21-day window, and last-8 e1RM chart. Prefer name when unsure; omit exerciseId unless it came from focusedExerciseId or a prior tool result. Do not invent ids. Names may differ in word order, plurality, or nickname (rdl, ohp, db, bb). If the result needsDisambiguation, ask the user which listed exercise they mean. Do not blend machines. A trend needs at least two e1RM points. If recent21Days is null or kind is gap, delta is null, or chartLast8 has fewer than two points, say there is no trend and still report last when it is present.",
         schema: z.object({
           exerciseId: z.string().optional()
             .describe("Known catalog exercise id from focusedExerciseId or a prior tool result only. Omit if unsure."),
           name: z.string().optional()
-            .describe("Exercise name in natural language; word order may differ from the catalog (e.g. incline barbell bench)."),
+            .describe("Exercise name in natural language. Word order, plurals, and nicknames are ok (e.g. incline bench press, rdl, db bench)."),
           equipmentInstanceId: z.string().nullable().optional()
             .describe("Equipment instance id, or null for no instance"),
         }),

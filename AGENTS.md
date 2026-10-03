@@ -43,10 +43,11 @@ For application changes run tests, lint, typecheck, and build; verify changed UI
 browser when authenticated state is available. For docs-only edits, check references and
 claims against source. Record what was actually verified and any remaining limits.
 
-Use [ship-phase](.agents/skills/ship-phase/SKILL.md) when building or wrapping up a planned
-phase. Refresh the owning docs and write `.claude/LAST_SESSION.md` with the current HEAD,
-changes, checks, open work, and commit/push status. Keep `CLAUDE.md` exactly `@AGENTS.md`;
-put new detail in the relevant reference and add a trigger here only when needed.
+Use [close-session](.agents/skills/close-session/SKILL.md) when a session changes the repo
+or a commit lands. It refreshes the owning docs and overwrites `.claude/LAST_SESSION.md`
+with this session's work, checks, and current HEAD. The Stop hook blocks until that file
+names HEAD. Keep `CLAUDE.md` exactly `@AGENTS.md`; put new detail in the owning reference
+and add a trigger here only when a new task branch appears.
 
 ## Read before changing
 

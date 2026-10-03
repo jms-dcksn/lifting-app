@@ -369,6 +369,52 @@ alter table public.agent_message
   on delete cascade;</code></pre>
         </article>
         <article class="space-y-2">
+          <h3 class="font-mono text-sm">Name resolution — exerciseReview</h3>
+          <p class="text-sm text-slate-600 max-w-3xl">
+            The user says a lift. They do not know the catalog id. The resolver
+            stays in process, over the merged catalog, and asks when two lifts
+            stay close. A word that matches nothing, such as “face pulls”, is
+            not found. If the phrase is an exact catalog name and that row is
+            logged, or nothing is logged, that row wins. Otherwise a logged
+            station can beat the empty template: “hack squat” with only a
+            Nautilus history resolves to that station, and asks when Cybex has
+            sets too.
+          </p>
+          <pre class="mermaid bg-white border border-slate-200 p-4 text-sm overflow-x-auto">flowchart LR
+  Phrase["rdl, curls, incline bench press"] --> Expand["nicknames, plurals, one-letter typos"]
+  Expand --> Score["rare overlapping words score higher"]
+  Score --> Barbell["unspecified equipment prefers barbell"]
+  Barbell --> Logged["tie-break toward user_exercise_stat"]
+  Logged --> Pick{"one lift clear of the next?"}
+  Pick -->|yes| Review["exercise id"]
+  Pick -->|no| Ask["needsDisambiguation, up to 8 names"]</pre>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const ALIASES: Record&lt;string, readonly string[]&gt; = {
+  rdl: ["romanian", "deadlift"],
+  rdls: ["romanian", "deadlift"],
+  ohp: ["overhead", "press"],
+  bss: ["bulgarian", "split"],
+  db: ["dumbbell"],
+  bb: ["barbell"],
+  pullup: ["pull", "up"],
+  pullups: ["pull", "up"],
+  military: ["overhead"],
+};
+
+const close = ranked.filter((row) => top.score - row.score &lt; RESOLVE_MARGIN);
+if (close.length === 1) return { exerciseId: close[0]!.id };
+return {
+  source: "exerciseReview" as const,
+  needsDisambiguation: true,
+  matches: close.slice(0, 8).map(({ id, name }) => ({ id, name })),
+};</code></pre>
+          <p class="text-sm text-slate-600">
+            Source: <code class="font-mono text-sm">src/lib/agent/tools/exercise-review.ts</code>.
+            Seed names live in <code class="font-mono text-sm">coefficients.ts</code>, not in the
+            <code class="font-mono text-sm">exercise</code> table, so this match does not use SQL
+            <code class="font-mono text-sm">LIKE</code>.
+          </p>
+        </article>
+        <article class="space-y-2">
           <h3 class="font-mono text-sm">Movement rollup — exerciseReview (Card 1, 2026-09-29)</h3>
           <p class="text-sm text-slate-600 max-w-3xl">
             Ordinary-pound families share one movement story in review and in this tool.
@@ -567,13 +613,20 @@ if (streamEvent.type === "done") {
           Fixture evals grade canned Coach numbers. <code class="font-mono text-sm">npm run eval:agent</code>
           runs the real model and the prod ledger for each row in
           <code class="font-mono text-sm">LIVE_EXAMPLES</code>. Every question is
-          “How is my e1RM trending on …” with a different exercise phrase: three exact names,
-          three shorter names that still resolve, three ambiguous names, and one miss (“rdl”).
+          “How is my e1RM trending on …” with a different exercise phrase: Nautilus hack squat,
+          leg press, and romanian deadlift; Cybex hack squat, bench press, and deadlift;
+          three ambiguous names (squat, barbell squat, dumbbell bench); and the nickname “rdl”.
           The original incline-bench question stays. Each example has its own handwritten reference.
           The run copies those onto dataset <code class="font-mono text-sm">ai-coach-live</code>.
+          Gold is the lift the question means. “rdl” and “incline bench press” both resolve on the
+          seed catalog. Back squat is out of the resolved set:
+          that account has one point there, and the hack-squat stations have charts.
           Jev ignores exact pounds. For a resolved lift it checks that the reply names that lift
           and reports a trend. For an ambiguous name it checks that the reply asks the user to
-          choose the exercises in the reference. For “rdl” it checks that the reply says nothing matched.
+          choose the exercises in the reference.
+          <code class="font-mono text-sm">found_exercise</code> passes when any
+          <code class="font-mono text-sm">exerciseReview</code> result in the turn matches.
+          A miss, or a later call that names something else, does not erase an earlier hit.
           The script does not save a chat thread. Traces go to
           <code class="font-mono text-sm">lifting-app-agent-evals</code>, not the project Vercel uses.
         </p>
@@ -590,15 +643,12 @@ flowchart LR
           </pre>
         </div>
         <article class="space-y-2">
-          <h3 class="font-mono text-sm">src/lib/agent/evals/live.ts — the exercise the tool actually returned</h3>
-          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>function gradeResolved(result: Record&lt;string, unknown&gt;, exerciseId: string) {
-  if (result.needsDisambiguation === true) {
-    return { score: 0, comment: "asked to disambiguate" };
+          <h3 class="font-mono text-sm">src/lib/agent/evals/live.ts — any exerciseReview result in the turn</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>function gradeResolved(results: Record&lt;string, unknown&gt;[], exerciseId: string) {
+  if (results.some((result) => result.exerciseId === exerciseId)) {
+    return { score: 1, comment: `found ${exerciseId}` };
   }
-  if (typeof result.error === "string") return { score: 0, comment: result.error };
-  const found = typeof result.exerciseId === "string" ? result.exerciseId : "";
-  if (found === exerciseId) return { score: 1, comment: `found ${exerciseId}` };
-  return { score: 0, comment: `found ${found || "nothing"} (expected ${exerciseId})` };
+  return { score: 0, comment: `expected ${exerciseId}; saw ${results.map(describeResult).join(" | ")}` };
 }</code></pre>
         </article>
       </section>

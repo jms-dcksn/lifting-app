@@ -25,7 +25,7 @@ import {
 
 const DEFAULT_EVAL_EMAIL = "jms.dcksn88@gmail.com";
 
-const DATASET_DESCRIPTION = "Live Coach reads: exerciseReview e1RM trend, disambiguation, and a miss. Local experiments trace to lifting-app-agent-evals.";
+const DATASET_DESCRIPTION = "Live Coach reads: exerciseReview e1RM trend and disambiguation. Gold is the lift the question means. Local experiments trace to lifting-app-agent-evals.";
 
 type JudgeArgs = {
   inputs: Record<string, unknown>;
@@ -189,10 +189,22 @@ export async function syncLiveExamples(client: Client) {
     existing.push({ id: example.id, inputs: example.inputs });
   }
 
+  const wantedIds = new Set(LIVE_EXAMPLES.map((example) => example.id));
+  const wantedQuestions = new Set(LIVE_EXAMPLES.map((example) => example.question));
+  const stale = existing.filter((row) => {
+    const id = row.inputs?.id;
+    const question = row.inputs?.question;
+    const idOk = typeof id === "string" && wantedIds.has(id);
+    const questionOk = typeof question === "string" && wantedQuestions.has(question);
+    return !idOk && !questionOk;
+  });
+  for (const row of stale) await client.deleteExample(row.id);
+  const current = existing.filter((row) => !stale.includes(row));
+
   for (const example of LIVE_EXAMPLES) {
     const inputs = { id: example.id, question: example.question };
     const outputs = exampleOutputs(example);
-    const match = existing.find((row) =>
+    const match = current.find((row) =>
       row.inputs?.id === example.id || row.inputs?.question === example.question
     );
     if (match) {
@@ -238,16 +250,13 @@ function instructionsFrom(value: unknown) {
 
 function reviewFrom(value: unknown): ExpectedReview | null {
   if (!value || typeof value !== "object") return null;
-  const record = value as { outcome?: unknown; exerciseId?: unknown; matchIds?: unknown; name?: unknown };
+  const record = value as { outcome?: unknown; exerciseId?: unknown; matchIds?: unknown };
   if (record.outcome === "resolved" && typeof record.exerciseId === "string") {
     return { outcome: "resolved", exerciseId: record.exerciseId };
   }
   if (record.outcome === "disambiguate" && Array.isArray(record.matchIds)) {
     const matchIds = record.matchIds.filter((id): id is string => typeof id === "string");
     return { outcome: "disambiguate", matchIds };
-  }
-  if (record.outcome === "miss" && typeof record.name === "string") {
-    return { outcome: "miss", name: record.name };
   }
   return null;
 }

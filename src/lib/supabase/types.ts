@@ -723,6 +723,10 @@ export type Database = {
         Args: { p_program_id: string }
         Returns: undefined
       }
+      swap_program_slot_exercise: {
+        Args: { p_slot_id: string; p_exercise_id: string; p_pattern: string }
+        Returns: undefined
+      }
       swap_session_exercise: {
         Args: { p_session_id: string; p_slot_id: string; p_exercise_id: string; p_pattern: string; p_scope: string }
         Returns: undefined

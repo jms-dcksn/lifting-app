@@ -9,7 +9,7 @@ vi.mock("./catalog", async () => {
   return { getCatalogMap: async () => EXERCISE_BY_ID };
 });
 
-import { swapSessionExercise } from "@/app/(app)/session/actions";
+import { swapProgramSlotExercise, swapSessionExercise } from "@/app/(app)/session/actions";
 
 const rpc = vi.fn();
 
@@ -44,6 +44,30 @@ describe("swapSessionExercise station gate", () => {
       scope: "workout",
     });
     expect(rpc).toHaveBeenCalledWith("swap_session_exercise", expect.objectContaining({
+      p_exercise_id: "bb-row",
+    }));
+  });
+});
+
+describe("swapProgramSlotExercise station gate", () => {
+  it.each(["lat-pulldown", "bb-incline-bench", "machine-chest-press", "bb-back-squat"] as const)(
+    "rejects swapping onto unresolved %s",
+    async (exerciseId) => {
+      await expect(swapProgramSlotExercise({
+        programSlotId: "slot",
+        exerciseId,
+      })).rejects.toThrow("Choose a specific exercise or machine first.");
+      expect(rpc).not.toHaveBeenCalled();
+    },
+  );
+
+  it("calls swap_program_slot_exercise for a loggable exercise", async () => {
+    await swapProgramSlotExercise({
+      programSlotId: "slot",
+      exerciseId: "bb-row",
+    });
+    expect(rpc).toHaveBeenCalledWith("swap_program_slot_exercise", expect.objectContaining({
+      p_slot_id: "slot",
       p_exercise_id: "bb-row",
     }));
   });

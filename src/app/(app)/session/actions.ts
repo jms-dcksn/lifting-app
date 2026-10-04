@@ -599,3 +599,24 @@ export async function swapSessionExercise(input: {
     revalidatePath("/program", "layout");
   }
 }
+
+// Program-scope swap before a session exists (planner). Uses the same slot/adaptation writes
+// as swap_session_exercise(scope='program') without touching workout_session.
+export async function swapProgramSlotExercise(input: {
+  programSlotId: string;
+  exerciseId: string;
+}): Promise<void> {
+  const { supabase, userId } = await requireUser();
+  const catalog = await getCatalogMap(supabase, userId);
+  const exercise = catalog[input.exerciseId];
+  if (!isLoggableExercise(exercise)) throw new Error("Choose a specific exercise or machine first.");
+  const { error } = await supabase.rpc("swap_program_slot_exercise", {
+    p_slot_id: input.programSlotId,
+    p_exercise_id: exercise.id,
+    p_pattern: exercise.pattern,
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath("/workout/next");
+  revalidatePath("/program", "layout");
+}

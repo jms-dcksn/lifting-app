@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "tsx scripts/check-hosted-migrations.ts && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
@@ -35,6 +35,7 @@
     "jsdom": "^29.1.1",
     "supabase": "^2.116.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^4.1.9"
   }

@@ -802,3 +802,17 @@ stations, and progression-math rewrites are out of scope.
 [Movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
 asks four separate questions. Card 1 is records and review. Card 3 is targets.
 Card 4 is stall and Fluid. None of them is approved by this note.
+
+## Hosted migration gate (2026-10-04)
+
+Merging to `main` deploys the Next.js app through Vercel. `supabase db push` is still
+the only apply, and it runs from a linked checkout. The production build reads the
+hosted ledger before `next build`. `scripts/check-hosted-migrations.ts` calls
+`public.deployment_applied_migration_versions` with the publishable key. The function
+returns the requested versions that `supabase_migrations.schema_migrations` already
+records. `anon` can execute it and cannot select the ledger table.
+
+A missing file exits 1. Vercel keeps the previous production deployment. The first
+deploy of this change fails until `npx supabase db push`, because the read function
+is itself a migration. CI, local, and preview builds do not call the hosted project.
+`npm run test:db` still proves only a local stack. See [Deployment](../DEPLOY.md).

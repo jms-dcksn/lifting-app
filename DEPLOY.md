@@ -58,7 +58,16 @@ are relevant, including phases, feedback, bodyweight history, Coach decisions, e
 and atomic calendar writes. Period tracking (#33) adds `profile.sex`, consent columns, and
 `period_observation`; apply that migration before deploying the You (`/settings`) UI that
 reads those fields. Rest-complete tone (`profile.rest_tone_enabled`, default true) is a
-later profile column; apply its migration before relying on the Settings checkbox. Vercel's build does not run database migrations. Breaking consent-copy
+later profile column; apply its migration before relying on the Settings checkbox.
+
+The production build runs `scripts/check-hosted-migrations.ts` before `next build`.
+That script reads `deployment_applied_migration_versions` with the publishable key. It does not apply SQL.
+If a file in `supabase/migrations` is missing from the hosted ledger, the build exits 1 and the previous production deployment keeps serving.
+Clear it with `npx supabase db push` from a linked checkout of main, then redeploy.
+The first production deploy of this change fails until that push, because the read function is itself a migration. CI, local, and preview builds do not call the hosted project.
+`npm run test:db` still only proves a local stack.
+
+Breaking consent-copy
 changes should bump `period_consent_version` and require re-consent.
 
 Enable email magic-link Auth. Set Site URL and allowed redirect URLs for the production

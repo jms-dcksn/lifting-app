@@ -39,6 +39,8 @@ in Node, including pure logic and mocked action/data-boundary tests. Co-locate t
 SQL ownership/atomicity checks live in `supabase/tests/` with execution notes in feature docs.
 `npm run test:db` runs the pgTAP ownership suite (`supabase/tests/*_rls.sql`) against a local
 stack and needs Docker; CI runs the same command. Other scripts there are manual `psql -f` checks.
+A migration is on the hosted project only after `npx supabase db push`, and the production build
+blocks when `supabase/migrations` disagrees with that ledger. See [Deployment](DEPLOY.md).
 For application changes run tests, lint, typecheck, and build; verify changed UI flows in a
 browser when authenticated state is available. For docs-only edits, check references and
 claims against source. Record what was actually verified and any remaining limits.

@@ -32,7 +32,12 @@ jobs:
             exit 1
           fi
 
+      # Run the pinned runner from the pull request base, not the head. The head
+      # branch could modify review.ts and exfiltrate CURSOR_API_KEY.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:

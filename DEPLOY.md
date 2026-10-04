@@ -112,6 +112,9 @@ code, Cursor opens a follow-up pull request from the source pull request's head.
 review prompt tells the agent to retarget that pull request onto the source branch. The
 workflow does not receive the key on fork pull requests. It skips a follow-up whose body
 contains `security-review-follow-up`, and a `cursor/` branch titled `Security review for #`.
+The Actions job checks out the pull request base commit and runs `.github/security-review/`
+from that ref so a head-branch change cannot exfiltrate `CURSOR_API_KEY`. Pull-request title
+and branch metadata are passed to the agent as untrusted data inside a delimited block.
 
 The workflow reads the Actions secret `CURSOR_API_KEY`. Mint a user key at
 [Cursor Dashboard → Integrations](https://cursor.com/dashboard/integrations), or a team

@@ -99,6 +99,27 @@ through Vercel's integration. `.github/workflows/ci.yml` runs lint, typecheck, V
 build on every pull request, plus the pgTAP ownership suite against a local Supabase stack, so
 an RLS regression on a covered table fails the build.
 
+## Pull request security review
+
+`.github/workflows/security-review.yml` runs when a pull request is opened from a branch in
+this repository, and again when new commits are pushed to it. A newer push cancels the
+in-flight Actions job, and the runner cancels that cloud run. The job stays green when the
+agent finishes, including when it opens a follow-up pull request. It fails when the agent
+cannot start or the run errors.
+
+The agent resolves Composer 2.5 with `Cursor.models.list()` on each run. If it changes
+code, Cursor opens a follow-up pull request from the source pull request's head. The
+review prompt tells the agent to retarget that pull request onto the source branch. The
+workflow does not receive the key on fork pull requests. It skips a follow-up whose body
+contains `security-review-follow-up`, and a `cursor/` branch titled `Security review for #`.
+
+The workflow reads the Actions secret `CURSOR_API_KEY`. Mint a user key at
+[Cursor Dashboard → Integrations](https://cursor.com/dashboard/integrations), or a team
+service-account key under Team Settings → Service accounts. Team Admin API keys do not
+work. The GitHub connection for that key must include `jms-dcksn/lifting-app`, with
+permission to push branches and open pull requests. Store the key as a repository secret
+named `CURSOR_API_KEY`. Do not commit it.
+
 ## Operations
 
 - Application rollback does not undo database migrations; use a reviewed forward migration

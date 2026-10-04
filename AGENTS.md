@@ -70,6 +70,7 @@ and add a trigger here only when a new task branch appears.
 | Tape measurements, site chips, or Body inches chart | [Body measurements](docs/BODY-MEASUREMENTS.md) |
 | Monthly comparisons, PR totals, stall classification, or period × performance weeks | [Monthly progress](docs/MONTHLY-PROGRESS.md); Coach/Fluid/monthly share `stall-report.ts`; [period tracking](docs/PERIOD-TRACKING.md) |
 | Setup, environment variables, migrations, or deployment | [Deployment](DEPLOY.md) |
+| Pull request security review workflow | [Deployment](DEPLOY.md#pull-request-security-review) |
 | Feature scope or selecting planned work | [Features](docs/FEATURES.md) and [build plan](docs/PLAN.md); verify old checklist status against code |
 
 <!-- OPENWIKI:START -->

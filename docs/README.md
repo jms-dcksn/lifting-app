@@ -7,6 +7,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Purpose | Owner |
 | --- | --- |
 | Setup and product overview | [README](../README.md) |
+| Pull request security review workflow | [Deployment](../DEPLOY.md#pull-request-security-review) |
 | Environment, migration and deployment operations | [DEPLOY](../DEPLOY.md) |
 | Visual map of experiences, request path, and why the system stays fast | [Architecture map](architecture.html) |
 | Current module boundaries and engine/data invariants | [Architecture](ARCHITECTURE.md) |

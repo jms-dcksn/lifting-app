@@ -7,6 +7,12 @@ bench / rack / platform control), select the replacement, then choose:
 - **Remainder of program:** use the replacement now and for the same slot each time this
   program day recurs. Other slots/days and shared program templates are unaffected.
 
+The upcoming-workout planner (`/workout/next`) shows the same confirmation sheet after Swap
+exercise or Swap machine. **This workout only** writes the browser cookie draft only.
+**Remainder of program** calls `swap_program_slot_exercise`, the planner path for the same
+program-slot and fluid `manual_swap` writes that in-session program scope uses through
+`swap_session_exercise`.
+
 Cancel leaves the selected exercise unchanged. Failed saves show an error and allow retry.
 The confirmation sheet cannot be dismissed while saving. Finished workouts reject swaps.
 Both scopes save before the first set and survive reload. Sets already logged retain their

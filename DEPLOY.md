@@ -110,6 +110,10 @@ an RLS regression on a covered table fails the build.
 
 ## Pull request security review
 
+The Cursor workflow is temporarily disabled in GitHub Actions as of 2026-10-06,
+pending a replacement. Its workflow and SDK runner remain for reference. Re-enable it
+only when the replacement is ready; the behavior below describes the enabled workflow.
+
 `.github/workflows/security-review.yml` runs when a pull request is opened from a branch in
 this repository, and again when new commits are pushed to it. A newer push cancels the
 in-flight Actions job, and the runner cancels that cloud run. The job stays green when the

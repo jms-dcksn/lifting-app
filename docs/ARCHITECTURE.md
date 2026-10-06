@@ -57,10 +57,15 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
    a bounded window; choose the highest-e1RM performance at or after it. With no same-slot
    exposure, use the best of four recent exposures. Ties favor recency; unavailable e1RM
    falls back to recent performance. An old all-time best cannot override this window.
-2. No usable reference delegates to the recommender at `rep_min`. A first set below the
+2. No usable reference delegates to the recommender at `rep_min`. At 4+ target RIR,
+   recalculate load from the selected performance's e1RM at its prior rep count clamped
+   to the prescribed range, capped at the prior load. Missing RIR defaults to 2. Bodyweight
+   loads include current bodyweight before converting back to rounded added/assisted load;
+   unknown or non-positive effective load yields no recovery target.
+3. Below 4 target RIR, a first set below the
    floor recalibrates load without increasing it; reaching `rep_max` adds the exercise's
    increment and resets reps to the floor; otherwise hold weight and target one more rep.
-3. The bump test is reps-only. Coach effort reductions use first-set RIR; hard back-off
+4. The bump test is reps-only. Coach effort reductions use first-set RIR; hard back-off
    sets must not lower an accurately loaded top set.
 
 Grouping by exact exercise stays. Card 3 of the

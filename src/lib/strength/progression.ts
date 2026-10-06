@@ -1,10 +1,10 @@
 // Double-progression engine: the per-session weight/rep target for a slot.
 //
-// Structure (sets x rep-range @ RIR) is fixed across the block. Week-over-week overload
-// comes from advancing the target off the last logged performance:
+// Below 4 target RIR, week-over-week overload advances from the last logged performance:
 //   - first working set missed rep_min    -> recalibrate load, target rep_min
 //   - first working set reached rep_max  -> add increment, reset reps to rep_min
 //   - otherwise                          -> hold weight, target +1 rep toward rep_max
+// At 4+ target RIR, recalculate load at the prior reps clamped to the prescribed range.
 // No prior performance (first session or a fresh swap) -> hand off to the e1RM recommender
 // at rep_min. The bump test is reps-only; RIR feeds e1RM but does not gate the bump.
 //
@@ -129,21 +129,25 @@ export function sessionTarget(
     };
   }
 
-  // Has prior performance — double progression off the most recent first working set.
-  // A below-floor set is a calibration miss, not a new progression rung. Derive a load
-  // expected to reach rep_min at the prescribed RIR and never increase the recorded load.
-  if (last.reps < slot.repMin) {
+  // Recovery effort recalculates load instead of advancing the progression rung.
+  // A below-floor set also recalibrates load, at rep_min. Neither increases load.
+  const recovery = slot.targetRir >= 4;
+  if (recovery || last.reps < slot.repMin) {
+    const targetReps = recovery
+      ? Math.max(slot.repMin, Math.min(slot.repMax, last.reps))
+      : slot.repMin;
     const observedLoad = def.equipment === "bodyweight"
       ? bodyweight == null ? null : bodyweight + last.weight
       : last.weight;
+    if (recovery && (observedLoad == null || observedLoad <= 0)) return null;
     let targetWeight = last.weight;
     if (observedLoad != null && observedLoad > 0) {
       const estimatedE1rm = computeE1rm(
         observedLoad,
         last.reps,
-        last.rir ?? slot.targetRir,
+        last.rir ?? (recovery ? 2 : slot.targetRir),
       );
-      const targetLoad = weightForTarget(estimatedE1rm, slot.repMin, slot.targetRir);
+      const targetLoad = weightForTarget(estimatedE1rm, targetReps, slot.targetRir);
       // Round the value the user actually loads. For bodyweight work, rounding total
       // effective load before subtracting a decimal weigh-in creates impossible plates
       // such as +35.8 lb.
@@ -157,7 +161,7 @@ export function sessionTarget(
     }
     return {
       weight: targetWeight,
-      targetReps: slot.repMin,
+      targetReps,
       targetRir: slot.targetRir,
       source: "progression",
       last,

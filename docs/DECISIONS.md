@@ -142,6 +142,13 @@ load for bodyweight movements before converting back to added/assisted load, and
 at the prior logged load. This keeps both the active-session target and weekly Coach proposal
 inside the programmed range without rewarding an overweight set.
 
+**Recovery targets use the load model rather than double progression.** Prescriptions at
+4+ RIR recalculate load from the selected recent performance, retaining its rep count
+within the programmed range and never increasing its load. The threshold covers both
+Deload and Recovery phases without depending on names. Legacy missing RIR defaults to 2;
+unknown bodyweight yields no recovery target. Below 4 RIR, progression remains unchanged.
+This keeps session numbers and the agent's shared target output aligned with easier effort.
+
 **Repeated weekly exercises share a bounded progression window.** The latest performance for
 the exact `(program_slot_id, exercise_id)` remains the anchor, preserving different rep ranges
 and swap chains. From that anchor forward, `selectProgressionReference()` chooses the highest

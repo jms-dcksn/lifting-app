@@ -125,16 +125,14 @@ SSR. Email magic-link login exchanges its code in `src/app/auth/callback/route.t
 `createClient()`, `getCatalogMap()`, and `getCurrentBodyweight()` are wrapped in React
 `cache()`, so a request loads each once. `cache()` keys on argument identity, so the shared
 client instance is what lets layout, page, and action calls hit the same entry; keep it
-memoized. The Coach API's elevated client is separate and unaffected.
+memoized.
 `src/proxy.ts` calls `updateSession()` from `src/lib/supabase/middleware.ts` on matched
 requests and propagates refreshed cookies. It does not redirect unauthenticated users:
 the app layout and authenticated actions enforce access via `getClaims()`.
 
-The sole elevated application read path is `GET /api/coach/v1/weekly`:
-route → `createCoachWeeklyHandler()` → `loadCoachWeekly()` → server-only secret client.
-Every query retains an explicit `COACH_API_USER_ID` predicate because the secret bypasses
-RLS. Preserve capability auth and no-store/noindex responses. Configuration, privacy,
-and rotation live in [Coach report](COACH-REPORT.md#weekly-coach-api) and [deployment](../DEPLOY.md).
+Track Coach and the agent’s `weeklyCoach` tool share `loadCoachUi` with the signed-in
+user’s client and owner-scoped RLS. There is no elevated application read path.
+`SUPABASE_SECRET_KEY` is retained only for local live agent evals.
 
 The in-app agent is a separate cookie-auth path: `POST /api/agent/chat` → LangChain loop →
 read tools wrapping `loadCoachUi`, `getActiveProgram`, Exercise review grouping, and
@@ -178,7 +176,7 @@ Card 2–4 defaults unless James reverses them.
   `loadWorkoutRecords`. Compare against history finished before the session's start.
   Record kinds are rep PRs, top-weight (max effective load), and e1RM.
   Read [workout records](DECISIONS.md#workout-records) before changing eligibility or precision.
-- Coach snapshot/export and weekly API share `coach-check-in.ts` plus deterministic proposals
+- Coach snapshot/clipboard and the agent’s `weeklyCoach` tool share `coach-check-in.ts` plus deterministic proposals
   in `coach-recommendations.ts`. Accept/dismiss/defer persists review state, not prescriptions.
 - Weight calendar, trend, and monthly loaders have separate complete-history and date-window
   contracts. Follow their feature docs rather than reusing a capped dashboard query.

@@ -334,14 +334,11 @@ weekly exercises remain distinguishable. The only new mutable state is the user'
 accepted/dismissed/deferred response keyed to that evidence snapshot. Accepting does not rewrite
 a program: the established slot/exercise log chain remains the source of the next workout target.
 
-**The scheduled Coach API is a narrow capability, not a second account session.** Issue #9 exposes
-the canonical report and proposal layer through one read-only route. A server-held Supabase secret
-is necessary because a scheduled task has no browser session, but every elevated query still
-includes the one configured user scope. The public credential is a separately revocable,
-high-entropy capability token compared via fixed-length SHA-256 digests and never returned or
-logged. Bearer auth is preferred; a query capability is retained only because ChatGPT scheduled
-tasks do not currently expose custom request headers. Both forms receive the same no-store,
-noindex response policy and cannot mutate training or recommendation-decision state.
+**Retire the unused weekly HTTP export (2026-10-08, #182).** The private export
+experiment from #9 is removed after the [caller audit](COACH-REPORT.md#http-export-retirement-182-2026-10-08) found no active caller.
+Track Coach and `weeklyCoach` retain the shared session-scoped `loadCoachUi` path.
+`SUPABASE_SECRET_KEY` remains for local live agent evals; there is no elevated
+application read path.
 
 **Bodyweight observations are date-keyed; `profile.bodyweight` is the preserved fallback.**
 `bodyweight_log` permits one observation per user per calendar date. A repeated date replaces
@@ -702,16 +699,15 @@ is [AI-COACH.md](AI-COACH.md). Locks below are the hard-to-reverse calls; slice 
 live in that doc.
 
 **Wrap the deterministic Coach.** Track Coach, `CoachCheckInReport`, proposals, and the
-weekly API remain the source of weekly facts. The agent narrates and acts on that output.
-Replacing `/analytics/coach` would throw away a tested contract the private API also uses.
+agent’s `weeklyCoach` tool remain the source of weekly facts. The agent narrates and acts on that output.
+Replacing `/analytics/coach` would throw away the tested contract shared by the agent.
 
 **Stay in this TypeScript app.** Every tool worth calling is already a TS loader or action
 (`loadCoachUi`, `getActiveProgram`, `loadNextWorkout`, `sessionTarget()`, `saveProgram`,
 `startNextSession`). A Python sidecar would re-expose that surface. Deep Agents waits
 until Slice 5; LangChain TypeScript is enough for the loop.
 
-**User session + RLS, not the weekly secret.** The agent is an in-app user. The weekly API
-is a single-account capability URL with a service-role client. Domain tools wrap existing
+**User session + RLS.** The agent is an in-app user. Domain tools wrap existing
 loaders so period data, slot identity, and owner scope cannot drift. Conversation memory
 is new `agent_thread` / `agent_message` rows, not embeddings over `set_log`. Slice 0
 keeps the full transcript in those tables and sends only the last N messages to the

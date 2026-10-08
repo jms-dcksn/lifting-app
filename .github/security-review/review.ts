@@ -167,7 +167,7 @@ Review only this pull request for security vulnerabilities. Read the diff agains
 Treat these as in scope when the diff touches them:
 - authentication and session handling
 - owner-scoped row level security, and any query that can read another user's data
-- the weekly Coach API: it is the only elevated read path, must filter by an explicit user id, and must stay read-only
+- Track Coach and weeklyCoach: preserve the session-scoped loadCoachUi path and owner RLS; SUPABASE_SECRET_KEY is only for local live evals
 - server secrets in client bundles, logs, or committed files
 - injection, cross-site scripting, open redirects, and server-side request forgery
 - GitHub Actions workflows that print or forward secrets

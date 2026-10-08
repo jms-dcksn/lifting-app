@@ -19,7 +19,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Ordinary-pound movement e1RM/PR rollup (specified, not shipped) | [2026-09-29 spec](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md) |
 | Shipped behavior | [Features](FEATURES.md) |
 | Rationale and record eligibility | [Decisions](DECISIONS.md) |
-| Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |
+| Weekly facts, proposals, session-scoped consumers | [Coach report](COACH-REPORT.md) |
 | In-app agent, chat overlay, or AI Coach slices | [AI Coach](AI-COACH.md), [explainer](ai-coach.html) |
 | Active substitutions / pre-workout choices | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
 | Weight observations, charts and goal distance | [Calendar](WEIGHT-CALENDAR.md), [trends](WEIGHT-TRENDS.md) |

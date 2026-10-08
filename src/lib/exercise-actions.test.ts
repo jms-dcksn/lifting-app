@@ -257,6 +257,37 @@ const INHERIT_CASES: {
   },
 ];
 
+describe("approved machine additions", () => {
+  it.each([
+    "machine-incline-chest-press",
+    "machine-decline-chest-press",
+    "machine-seated-dip",
+    "machine-low-row",
+    "machine-lat-pulldown",
+    "machine-pullover",
+    "lying-leg-curl",
+    "kneeling-leg-curl",
+    "seated-calf-raise",
+    "machine-calf-extension",
+    "machine-preacher-curl",
+    "machine-triceps-extension",
+  ])("persists and reuses %s with each machine type", async (baseExerciseId) => {
+    for (const machineType of ["selectorized", "plate_loaded"] as const) {
+      const input = { baseExerciseId, brand: "Life Fitness", machineType };
+      const def = await resolveVariant(input);
+      const stored = rows.find((row) => row.id === def.id)!;
+      expect(stored.user_id).toBe(USER_B);
+      expect(stored.base_exercise_id).toBe(baseExerciseId);
+      expect(stored.equipment).toBe("machine");
+      expect(stored.needs_calibration).toBe(true);
+      expect(stored.machine_type).toBe(machineType);
+      const count = rows.length;
+      expect((await resolveVariant(input)).id).toBe(def.id);
+      expect(rows).toHaveLength(count);
+    }
+  });
+});
+
 describe("resolveVariant station profiles", () => {
   it.each(INHERIT_CASES)(
     "creates $baseExerciseId as $equipment / $machineType (calibrate=$needsCalibration)",

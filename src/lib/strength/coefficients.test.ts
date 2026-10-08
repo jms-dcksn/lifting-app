@@ -19,6 +19,18 @@ const STATION_PROFILE_BY_ID: Record<string, StationProfile> = {
   "db-incline-bench": "none",
   "weighted-dip": "none",
   "machine-chest-press": "machine",
+  "machine-incline-chest-press": "machine",
+  "machine-decline-chest-press": "machine",
+  "machine-seated-dip": "machine",
+  "machine-low-row": "machine",
+  "machine-lat-pulldown": "machine",
+  "machine-pullover": "machine",
+  "lying-leg-curl": "machine",
+  "kneeling-leg-curl": "machine",
+  "seated-calf-raise": "machine",
+  "machine-calf-extension": "machine",
+  "machine-preacher-curl": "machine",
+  "machine-triceps-extension": "machine",
   "pec-deck": "machine",
   "bb-ohp": "rack",
   "db-shoulder-press": "none",
@@ -72,8 +84,8 @@ describe("catalog templates", () => {
   });
 
   it("maps every seed to the locked station profile", () => {
-    expect(EXERCISES).toHaveLength(48);
-    expect(Object.keys(STATION_PROFILE_BY_ID)).toHaveLength(48);
+    expect(EXERCISES).toHaveLength(60);
+    expect(Object.keys(STATION_PROFILE_BY_ID)).toHaveLength(60);
     expect(EXERCISES.map((e) => e.id).sort()).toEqual(Object.keys(STATION_PROFILE_BY_ID).sort());
 
     const counts = { machine: 0, cable: 0, bench: 0, rack: 0, platform: 0, none: 0 };
@@ -83,7 +95,7 @@ describe("catalog templates", () => {
       expect(e.machineTemplate, e.id).toBe(e.stationProfile === "machine" || undefined);
       counts[e.stationProfile!] += 1;
     }
-    expect(counts).toEqual({ machine: 16, cable: 8, bench: 3, rack: 3, platform: 2, none: 16 });
+    expect(counts).toEqual({ machine: 28, cable: 8, bench: 3, rack: 3, platform: 2, none: 16 });
   });
 
   it("treats a missing profile as already resolved", () => {

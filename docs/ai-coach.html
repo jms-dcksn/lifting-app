@@ -260,6 +260,13 @@ stateDiagram-v2
 
       <section class="space-y-6">
         <h2 class="font-serif text-2xl">Code from the landed files</h2>
+        <p>Track Coach and <code>weeklyCoach</code> share <code>loadCoachUi</code> through the signed-in user’s session and RLS. The unused HTTP export and its secret client were removed in #182. <code>SUPABASE_SECRET_KEY</code> remains only for local live evals.</p>
+        <pre class="mermaid">flowchart LR
+  T[Track Coach] --> L[loadCoachUi]
+  W[weeklyCoach tool] --> L
+  L --> C[Session client]
+  C --> R[Owner RLS]
+  R --> F[Canonical report and proposals]</pre>
         <p class="text-slate-700">These snippets are from the landed files. If they drift, the HTML is wrong — update it.</p>
 
         <article class="space-y-2">
@@ -290,7 +297,7 @@ export const TOOL_CALL_BUDGET = 8;</code></pre>
         </article>
 
         <article class="space-y-2">
-          <h3 class="font-mono text-sm">src/app/api/agent/chat/route.ts — cookie auth, not the weekly secret</h3>
+          <h3 class="font-mono text-sm">src/app/api/agent/chat/route.ts — cookie authentication</h3>
           <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const handlers = createAgentChatHandlers({
   async auth() {
     const supabase = await createClient();
@@ -301,7 +308,7 @@ export const TOOL_CALL_BUDGET = 8;</code></pre>
 });</code></pre>
           <p class="text-sm text-slate-600">
             Unauthenticated requests get 401 before any tool runs. Tools never receive
-            <code class="font-mono">SUPABASE_SECRET_KEY</code> or <code class="font-mono">COACH_API_TOKEN</code>.
+            <code class="font-mono">SUPABASE_SECRET_KEY</code>.
           </p>
         </article>
 

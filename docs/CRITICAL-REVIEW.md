@@ -296,7 +296,7 @@
 
 ### A6. Privacy & Security (P0–P1)
 
-**Finding: Coach API token validation is correct, but capability URL is logged in errors**  
+**Historical finding (endpoint removed in #182): Coach API token validation is correct, but capability URL is logged in errors**
 **Severity:** P1 (potential secret leak)  
 **Evidence:**
 - `src/lib/coach-api.ts:42-43` validates token with `constantTimeTokenEqual()` (timing-safe)

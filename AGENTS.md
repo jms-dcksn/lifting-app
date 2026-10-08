@@ -19,8 +19,8 @@ TypeScript strength engine. Workouts require connectivity; there is no offline s
   unapproved hard-to-reverse architecture, spending, external-facing changes, new scope, or unvalidated underlying assumptions:
   recommendation, reason, risk, and decision needed.
 - Keep credentials in ignored environment files or deployment settings. Preserve owner-scoped
-  RLS. The weekly Coach API is the sole elevated application read path; its queries require
-  explicit user predicates. Keep it read-only, no-store, and noindex.
+  RLS. Track Coach and agent tools use the signed-in user’s client. Keep
+  `SUPABASE_SECRET_KEY` confined to local live agent evals.
 - Keep `set_log` authoritative and strength statistics rebuildable. Preserve exact exercise
   identity and historical bodyweight when comparing records or editing saved sets.
 - Use existing UI primitives and semantic tokens. Keep strength/report calculations pure and
@@ -64,7 +64,7 @@ and add a trigger here only when a new task branch appears.
 | PR pills, completion recaps, or historical set edits | [Workout records](docs/DECISIONS.md#workout-records) |
 | Exercise review Last card, 21-day window, or e1RM chart | [Exercise review spec](docs/superpowers/specs/2026-09-19-exercise-review-design.md); [Features](docs/FEATURES.md) |
 | Movement-level e1RM/PR rollup for non-machine families | [2026-09-29 rollup spec](docs/superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md). Proposed, pending James. Do not implement until the card for that slice is answered. Current records stay exact. |
-| Coach report, proposals, Track Coach UI, or private weekly API | [Coach contract](docs/COACH-REPORT.md) and [architecture: strength](docs/ARCHITECTURE.md#strength-and-exercise-identity) |
+| Coach report, proposals, Track Coach UI, or weeklyCoach tool | [Coach contract](docs/COACH-REPORT.md) and [architecture: strength](docs/ARCHITECTURE.md#strength-and-exercise-identity) |
 | Agent chat, LangChain tools, or AI Coach slices | [AI Coach](docs/AI-COACH.md) and [AI Coach explainer](docs/ai-coach.html) |
 | Track Explore destinations (Coach, Body, Volume) | [Track body and volume plan](docs/superpowers/plans/2026-09-19-track-body-volume.md); [Features](docs/FEATURES.md) |
 | Weight writes, date moves, or shared calendar | [Weight calendar](docs/WEIGHT-CALENDAR.md) |

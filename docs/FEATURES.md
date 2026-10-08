@@ -377,8 +377,7 @@ Secondary, not equal cards, behind Explore:
   exercise (`?exercise=`). Search matches All lifts (one row per exercise). Unknown
   ids fall back to all training. Mixed machines share one series.
 
-Coach check-in and proposals live on Track Explore, not You. The weekly API
-(`GET /api/coach/v1/weekly`) is unchanged. Canonical eligibility stays `workoutRecords`
+Coach check-in and proposals live on Track Explore, not You. Canonical eligibility stays `workoutRecords`
 and monthly contracts; the old Progress records feed is gone.
 
 Pure helpers in `src/lib/analytics.ts` still compute volume, summaries, and (unused on the

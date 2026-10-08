@@ -379,7 +379,7 @@
           <div class="box blue">
             <div class="label">Compute</div>
             <h4>Vercel · Next.js App Router</h4>
-            <p>Server Components load. Server Actions write. One private API route for weekly Coach.</p>
+            <p>Server Components load. Server Actions write. Agent chat uses cookie authentication.</p>
           </div>
           <div class="chev">SQL →</div>
           <div class="box gold">
@@ -520,15 +520,10 @@
         </div>
       </div>
 
-      <h3>The one exception: weekly Coach API</h3>
-      <p>
-        <code>GET /api/coach/v1/weekly</code> is the only elevated application read path.
-        A scheduled task has no browser session, so it uses a server-held secret client.
-        Every query still includes an explicit <code>COACH_API_USER_ID</code> predicate because
-        that secret bypasses RLS. Capability token, read-only, <code>no-store</code> / noindex.
-        It serializes the same report and proposals Track Coach already shows — it does not
-        invent a second analytics pipeline.
-      </p>
+      <h3>Coach shares the user session</h3>
+      <p>Track Coach and the agent’s <code>weeklyCoach</code> tool use
+        <code>loadCoachUi</code> with owner-scoped RLS. There is no elevated application
+        read path. <code>SUPABASE_SECRET_KEY</code> remains for local live agent evals.</p>
     </section>
 
     <section id="workout">
@@ -684,11 +679,6 @@
             <td>Profile, dated logs, period consent</td>
             <td>Profile fields. Atomic weight RPC when a date is occupied.</td>
           </tr>
-          <tr>
-            <td>Weekly Coach API</td>
-            <td>Same report inputs as Track Coach, secret client, explicit user predicate</td>
-            <td>Nothing. Review state is written only from the app UI.</td>
-          </tr>
         </tbody>
       </table>
     </section>
@@ -739,7 +729,7 @@
           <div class="box">
             <div class="label">Why pure</div>
             <h4>One definition, many screens</h4>
-            <p>Home, session, recap, Track, Month, Coach UI, Coach API all import the same helpers. If the formula changed in two places, the app would lie.</p>
+            <p>Home, session, recap, Track, Month, Coach UI, agent tools all import the same helpers. If the formula changed in two places, the app would lie.</p>
           </div>
         </div>
       </div>
@@ -810,7 +800,7 @@
               React <code>cache()</code> around the Supabase client, catalog, and current
               bodyweight means layout + page + nested loaders do not stampede the database.
               <code>cache()</code> keys on arguments, so the shared client instance is what
-              makes the other two hit. The Coach API client is separate on purpose.
+              makes the other two hit.
             </p>
           </div>
         </article>
@@ -829,12 +819,11 @@
         <article class="lesson">
           <div class="n">07</div>
           <div>
-            <h3>RLS is the wall; the Coach API is a guarded door</h3>
+            <h3>RLS enforces owner isolation</h3>
             <p>
-              Every user-owned table is scoped to <code>auth.uid()</code>. The weekly Coach
-              route is the sole exception, and it is still one user, one token, read-only.
-              Never add a second service-role path “just for convenience.” Convenience is
-              how owner isolation dies.
+              Every user-owned table is scoped to <code>auth.uid()</code>. Track Coach
+              and agent tools use the signed-in user’s client. Keep elevated secrets
+              confined to local live evals.
             </p>
           </div>
         </article>
@@ -877,7 +866,7 @@
         <li><a href="ARCHITECTURE.md">ARCHITECTURE.md</a> — engine, catalog, auth, program loading invariants</li>
         <li><a href="DECISIONS.md">DECISIONS.md</a> — rationale, including workout records</li>
         <li><a href="UI.md">UI.md</a> — primitives, motion, server/client boundaries</li>
-        <li><a href="COACH-REPORT.md">COACH-REPORT.md</a> — weekly facts, proposals, private API</li>
+        <li><a href="COACH-REPORT.md">COACH-REPORT.md</a> — weekly facts, proposals, session-scoped consumers</li>
         <li><a href="WORKOUT-PLANNING.md">WORKOUT-PLANNING.md</a> / <a href="EXERCISE-SWAPS.md">EXERCISE-SWAPS.md</a> — planner cookies and swap persistence</li>
         <li><a href="FEATURES.md">FEATURES.md</a> — shipped behavior inventory</li>
         <li><a href="README.md">docs index</a></li>

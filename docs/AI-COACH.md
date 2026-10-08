@@ -1,8 +1,8 @@
 # AI Coach
 
 A memory-backed agent that lives in the app. It wraps the deterministic Coach; it does not
-replace it. Track Coach (`/analytics/coach`), `CoachCheckInReport`, and
-`GET /api/coach/v1/weekly` stay the factual check-in and private export. The agent is the
+replace it. Track Coach (`/analytics/coach`) and `CoachCheckInReport` provide the
+factual check-in through `loadCoachUi`. The agent is the
 language, intake, navigation, and draft layer on top of existing loaders and actions.
 
 **Status:** Slice 0 shipped 2026-09-20. Chat became multi-thread on 2026-09-27
@@ -27,7 +27,7 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 | Surface | Persistent entry + `Sheet` on Lift / Track / Program / You. Full screen at `/coach?thread=`. Both carry chat history and New chat. No fifth tab. Hidden wherever `hideAppChrome` is true. |
 | Jev | Skip in Slice 0. Slice 2 uses it to classify program constraints, not to emit a program. |
 | Models | Vercel AI Gateway, server-only. LangSmith is the trace sink. |
-| Data | Logged-in user client + RLS. Domain tools wrap existing loaders. Not the weekly Coach secret, not a generic SQL tool, not embeddings over `set_log`. |
+| Data | Logged-in user client + RLS. Domain tools wrap existing loaders. No elevated database client, generic SQL tool, or embeddings over `set_log`. |
 | Authority | Engine owns numbers and prescriptions. Agent owns language, intake, drafts, and navigation. |
 | Privacy | Period observations stay out unless a later, separate opt-in. Same default as Coach. |
 | Context | Full transcript per thread in Postgres. Each model turn gets system prompt + that thread's last N messages. No summarization, compaction, or distilled user-memory in Slice 0. |
@@ -38,7 +38,7 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
   (`sessionTarget()`, `buildCoachCheckInReport`, `buildCoachRecommendations`,
   `groupReviewSessions`, `loadStallAssessments`). The prompt does not recompute them.
 - Tools take the user-scoped Supabase client from the request session. They never receive
-  `SUPABASE_SECRET_KEY` or `COACH_API_TOKEN`.
+  `SUPABASE_SECRET_KEY`.
 - Program persistence goes through `saveProgram`, `createFromTemplate`, or clone. Slot IDs
   stay id-preserving. Slice 2 writes inactive drafts; saving in the builder still activates.
 - New capability = a domain tool (+ eval cases), not a new aggregation forked from Coach.
@@ -315,4 +315,4 @@ turn is the expected id or the expected disambiguation ids), and `reference_matc
 lift does not erase an earlier hit. Jev instructions are stored on the example. For
 a resolved lift, Jev ignores exact pounds and dates and checks that the reply names
 that lift and reports a trend. Traces go to `lifting-app-agent-evals`. Do not paste
-capability URLs, secrets, or weekly Coach tokens into traces, issues, or chat.
+secrets into traces, issues, or chat.

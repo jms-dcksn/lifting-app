@@ -417,6 +417,24 @@ alter table public.agent_message
             Nautilus history resolves to that station, and asks when Cybex has
             sets too.
           </p>
+          <p class="text-sm text-slate-600 max-w-3xl">
+            The expanded machine catalog keeps cable and lever pulldowns separate.
+            With no logged station preference, “lat pull down” asks which one;
+            “cable lat pull down” and “machine lat pull down” select their respective
+            templates. Choosing a machine brand and loading type creates an owned
+            Supabase variant through the existing station flow. Each new machine
+            requires calibration; old custom exercise histories remain separate.
+          </p>
+          <pre class="mermaid bg-white border border-slate-200 p-4 text-sm overflow-x-auto">flowchart LR
+  Query["lat pull down"] --> Choice["Cable or machine?"]
+  Choice --> Cable["lat-pulldown: cable"]
+  Choice --> Machine["machine-lat-pulldown: machine"]
+  Machine --> Station["Choose brand and loading type"]
+  Station --> Owned["Owned exercise row in Supabase"]
+  Owned --> Calibrate["Calibrate this machine"]</pre>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>// src/lib/strength/coefficients.ts
+{ id: "machine-lat-pulldown", name: "Machine Lat Pulldown", pattern: "vertical_pull", equipment: "machine", coefficient: 1.0, needsCalibration: true, increment: 10, stationProfile: "machine" },
+{ id: "machine-pullover", name: "Machine Pullover", pattern: "vertical_pull", equipment: "machine", coefficient: 0.7, needsCalibration: true, increment: 5, stationProfile: "machine" },</code></pre>
           <pre class="mermaid bg-white border border-slate-200 p-4 text-sm overflow-x-auto">flowchart LR
   Phrase["rdl, curls, incline bench press"] --> Expand["nicknames, plurals, one-letter typos"]
   Expand --> Score["rare overlapping words score higher"]

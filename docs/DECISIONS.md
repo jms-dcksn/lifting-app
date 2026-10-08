@@ -482,6 +482,17 @@ cannot guarantee lock-screen delivery. Native push remains out of scope (#43).
 
 ## Phase C decisions (machine brands, types, custom exercises)
 
+**Machine catalog expansion (2026-10-08).** The 12 additions approved in the
+[catalog research](2026-10-08-machine-exercise-catalog-research.md) are shared code templates;
+owner-specific brand/type rows continue to be created by `resolveVariant`. No bulk inserts
+or schema changes. Pullover shares `vertical_pull` (lat-focused shoulder extension), and
+seated dip shares `horizontal_press` with weighted dips rather than isolated elbow extension.
+Coefficients and load increments are rough starting defaults, not manufacturer-verified
+load conversions; every new machine calibrates. Kneeling curl is a one-leg movement;
+log the machine's loaded weight, with each side tracked consistently. Existing `machine-row`
+is displayed as "Machine Horizontal Row (ISO-Lateral)"; its ID and stored variant names
+remain intact. Custom lying-curl and calf-press records are not merged into new templates.
+
 Spec: `docs/superpowers/specs/2026-06-21-machine-brands-types-custom-exercises-design.md`;
 plan: `docs/superpowers/plans/2026-06-21-machine-brands-types-custom-exercises.md`.
 

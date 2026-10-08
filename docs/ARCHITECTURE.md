@@ -15,6 +15,11 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
   loads. Preserve this model rather than replacing it with a bare Epley/Brzycki formula.
 - `coefficients.ts` owns seeded exercises and population coefficients. `recommend.ts` pools
   reference-lift strength by movement pattern and uses Bayesian shrinkage (`PRIOR_WEIGHT`).
+  The expanded machine catalog includes supported-arm curls/extensions, lever pulldown,
+  pullover, incline/decline press, seated dip, low row, lying/kneeling leg curls and separate
+  seated calf raise/footplate calf extension. Pullover uses `vertical_pull`; seated dip uses
+  `horizontal_press`, matching the existing weighted dip. All require station resolution
+  and calibration. Existing custom exercises retain their own identities and history.
 - `catalog.ts` merges seeds with the owner's station variants and custom exercises; seeds
   win ID collisions. Use the merged catalog in screens and stat rebuilds. `exercise_id` is
   a text slug, intentionally not a foreign key. `exercise-id.ts` owns variant/custom IDs.

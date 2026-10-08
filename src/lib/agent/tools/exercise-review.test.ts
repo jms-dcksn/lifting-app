@@ -38,9 +38,21 @@ describe("resolveExerciseIdentity", () => {
   });
 
   it("joins a split compound onto one catalog token", () => {
-    expect(idOf("lat pull down")).toEqual({ exerciseId: "lat-pulldown" });
+    expect(idOf("cable lat pull down")).toEqual({ exerciseId: "lat-pulldown" });
+    expect(idOf("machine lat pull down")).toEqual({ exerciseId: "machine-lat-pulldown" });
     expect(idOf("skull crushers")).toEqual({ exerciseId: "db-skullcrusher" });
     expect(idOf("pull ups")).toEqual({ exerciseId: "weighted-pullup" });
+  });
+
+  it("asks which pulldown when cable and machine both match", () => {
+    expect(idOf("lat pull down")).toEqual({
+      source: "exerciseReview",
+      needsDisambiguation: true,
+      matches: [
+        { id: "lat-pulldown", name: "Lat Pulldown (Cable)" },
+        { id: "machine-lat-pulldown", name: "Machine Lat Pulldown" },
+      ],
+    });
   });
 
   it("resolves gym nicknames", () => {

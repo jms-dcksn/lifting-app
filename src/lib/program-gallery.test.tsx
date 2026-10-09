@@ -187,6 +187,31 @@ describe("ProgramGallery", () => {
     expect(host.querySelector("h2")?.textContent).toBe("My programs");
   });
 
+  it.each(programs)("makes the visible content of $name part of its detail link", (program) => {
+    render();
+    const link = host.querySelector<HTMLAnchorElement>(`a[href="/program/${program.id}"]`)!;
+    const onClick = vi.fn((event: Event) => event.preventDefault());
+    link.addEventListener("click", onClick);
+
+    const labels = [
+      program.name,
+      `${program.dayCount} days/wk · ${program.weeks} weeks · ${program.exerciseCount} exercises`,
+      program.style,
+      program.tags[0],
+      ...(program.isActive ? ["active"] : []),
+    ];
+    for (const label of labels) {
+      const content = [...link.querySelectorAll("span")].find((el) => el.textContent === label);
+      expect(content, `${label} must be inside the navigation link`).toBeDefined();
+      act(() => content!.click());
+    }
+    expect(onClick).toHaveBeenCalledTimes(labels.length);
+    expect(link.querySelector("button")).toBeNull();
+    const remove = link.parentElement!.querySelector('button[aria-label^="Remove "]');
+    expect(remove).not.toBeNull();
+    expect(remove?.closest("a")).toBeNull();
+  });
+
   it("confirms Remove on a My programs tile before deleting", async () => {
     vi.useFakeTimers();
     render();

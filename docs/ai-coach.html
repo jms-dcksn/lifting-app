@@ -659,9 +659,28 @@ const intakeChips = intakeChipsFromParts(messages.flatMap((message) => message.p
       </section>
 
       <section class="space-y-3">
+        <h2 class="font-serif text-2xl">How Coach explains a template recommendation</h2>
+        <p class="text-slate-700">
+          Before intake, Coach says it can choose an existing gallery program for review in the
+          builder. It explains the choice using only the returned match traits. Intake confidence
+          measures supplied fields; it does not prove the program satisfies every preference.
+          A requested back emphasis without a matching trait is flagged for builder review.
+        </p>
+        <h3 class="font-mono text-sm">src/lib/agent/prompt.ts — evidence for the match</h3>
+        <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>When draftProgramFromIntake returns a draft, name the gallery template and explain why it matched using only matchTraits. Intake fields and classification scores describe the request, not proof that the template satisfies it.</code></pre>
+        <p class="text-sm text-slate-600">
+          Coach does not claim extra volume, equipment compatibility, honored omissions, or exercise
+          substitutions without explicit tool evidence. The program is saved before Open in builder
+          is tapped. Coach reads <code class="font-mono">isActive</code> to report its status:
+          existing accounts receive an inactive draft; an account with no programs gets its first
+          program activated immediately.
+        </p>
+      </section>
+
+      <section class="space-y-3">
         <h2 class="font-serif text-2xl">What Slice 0–2 will not do</h2>
         <ul class="list-disc pl-5 text-slate-700 space-y-1">
-          <li>Activate a draft or replace the active program until you save in the builder.</li>
+          <li>Replace an existing active program until you save in the builder. An account with no programs activates its first program on generation.</li>
           <li>Emit programs as free-form LLM JSON.</li>
           <li>Accept Coach proposals or change settings (Slice 4).</li>
           <li>Start a workout without the in-chat confirm chip.</li>

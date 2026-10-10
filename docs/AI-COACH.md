@@ -235,6 +235,10 @@ light patch), not a custom program builder.
   already use.
 - System prompt and tool descriptions state the gallery-picker boundary. Custom program
   design (discovery mode + program-writer sub-agent) is deferred to a later slice.
+  Before intake, Coach explains that it chooses an existing gallery program for review.
+  Match explanations use only `matchTraits`; intake confidence does not prove template fit.
+  An unconfirmed requested emphasis is called out for builder review. Coach reports saved
+  activation status from `isActive`, including the first-program activation exception.
 
 **Out**
 

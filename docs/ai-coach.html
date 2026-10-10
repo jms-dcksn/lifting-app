@@ -32,12 +32,32 @@
       <section class="space-y-4">
         <h2 class="font-serif text-2xl">The path of one question</h2>
         <p class="text-slate-700 max-w-3xl">
-          You tap the chat button (or open <code class="font-mono text-sm">/coach</code>).
+          You tap the speech-bubble button with two four-point sparkles (or open <code class="font-mono text-sm">/coach</code>).
           The browser sends your words to a server route. That route proves you are signed in,
           writes your message to Postgres, asks LangChain to think, and streams the reply back.
           LangChain may call a tool. Each tool is a thin wrapper around an existing loader.
           LangSmith records the trace so you can see which tools ran.
         </p>
+        <div class="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4">
+          <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M11 5H7a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3v3l4-3h5a3 3 0 0 0 3-3v-3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="m17 2 1.1 2.9L21 6l-2.9 1.1L17 10l-1.1-2.9L13 6l2.9-1.1L17 2Zm5-1 0.5 1.5L24 3l-1.5 0.5L22 5l-0.5-1.5L20 3l1.5-0.5L22 1Z" fill="currentColor" />
+            </svg>
+          </span>
+          <p class="text-sm text-slate-700">The bubble signals conversation; the sparkles identify AI assistance. The icon inherits the button color, and the button keeps its accessible name, Coach.</p>
+        </div>
+        <div class="code-rail rounded-lg bg-slate-900 text-slate-100 p-4 overflow-x-auto">
+          <p class="text-xs text-slate-400 mb-2">src/components/agent/agent-entry.tsx</p>
+          <pre class="text-sm"><code>&lt;IconButton
+  type="button"
+  aria-label="Coach"
+  className="fixed right-4 z-30 bottom-[calc(4.25rem+env(safe-area-inset-bottom)+0.75rem)] bg-background"
+  onClick={() =&gt; setOpen(true)}
+&gt;
+  &lt;IconChat /&gt;
+&lt;/IconButton&gt;</code></pre>
+        </div>
         <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
           <pre class="mermaid">
 flowchart LR

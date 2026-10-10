@@ -57,6 +57,8 @@ those functions; they are not the public interface. Policy (`period` excluded, w
 allow-list, tool-call budget) lives in one module and is applied by the route.
 
 Streaming UI uses existing primitives (`Sheet`, `IconButton`, type scale, copy density).
+The persistent entry uses a speech bubble with two four-point sparkles (`IconChat`)
+to identify AI chat, inside the standard 44px Coach button.
 Your turns sit on the right; Coach sits on the left. The sheet and `/coach` open the most
 recent thread at its latest message, and the composer stays pinned. The model writes
 markdown, and the sheet renders bold, lists, and gain percents. A single trailing

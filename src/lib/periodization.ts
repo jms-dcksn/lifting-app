@@ -15,6 +15,7 @@ export interface ProgramPhase {
   targetRirMin: number | null;
   targetRirMax: number | null;
   setMultiplier: number | null;
+  isDeload?: boolean;
 }
 
 export interface EffectivePrescription extends Prescription {

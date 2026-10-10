@@ -57,7 +57,7 @@ export default async function Home() {
     loadWeekRecordChips(supabase, userId, catalog),
     supabase
       .from("set_log")
-      .select("id, session_id, exercise_id, equipment_instance_id, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at, finished_at)")
+      .select("id, session_id, exercise_id, equipment_instance_id, weight, reps, rir, e1rm, created_at, is_warmup, is_deload, workout_session!inner(performed_at, finished_at)")
       .eq("user_id", userId)
       .eq("is_warmup", false)
       .order("created_at", { ascending: true }),
@@ -190,6 +190,7 @@ function normalizeHomeRows(
     e1rm: number | null;
     created_at: string;
     is_warmup: boolean;
+    is_deload: boolean;
     workout_session:
       | { performed_at: string; finished_at: string | null }
       | { performed_at: string; finished_at: string | null }[]
@@ -212,6 +213,7 @@ function normalizeHomeRows(
       performedAt: session.performed_at,
       finishedAt: session.finished_at,
       isWarmup: row.is_warmup,
+      isDeload: row.is_deload,
     }];
   });
 }

@@ -95,6 +95,7 @@ export function ActiveSession({
   week,
   weeks,
   phase,
+  isDeload = false,
   bodyweight,
   defaultRestSeconds,
   alreadyFinished,
@@ -112,6 +113,7 @@ export function ActiveSession({
   week: number;
   weeks: number;
   phase: ProgramPhase | null;
+  isDeload?: boolean;
   bodyweight: number | null;
   defaultRestSeconds: number;
   alreadyFinished: boolean;
@@ -191,6 +193,13 @@ export function ActiveSession({
           {bodyweight ? ` · BW ${bodyweight} lb` : ""}
         </p>
       </header>
+
+      {isDeload && (
+        <div className="flex items-center gap-1">
+          <CardLabel>Deload</CardLabel>
+          <InfoButton title="Deload">Excluded from strength progression and PRs. Working sets still count toward training volume.</InfoButton>
+        </div>
+      )}
 
       {phase && phasePrescription ? (
         <Card tone="active">

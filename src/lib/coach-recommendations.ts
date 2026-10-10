@@ -226,7 +226,7 @@ function recommendationForSlot(
     latest.session.weekIndex ?? 1,
     phases,
   );
-  if (isDeload(latestPrescription.phase)) {
+  if (latest.session.isDeload ?? isDeload(latestPrescription.phase)) {
     return recommendation({
       kind: "deload_hold",
       slotId: slot.id,
@@ -430,7 +430,7 @@ function exerciseProgressionReference(
   const sessionById = new Map(finishedSessions(input).map((session) => [session.id, session]));
   const firstByExposure = new Map<string, CoachSetInput>();
   for (const set of input.sets) {
-    if (set.isWarmup || set.exerciseId !== exerciseId) continue;
+    if (set.isWarmup || set.isDeload || set.exerciseId !== exerciseId) continue;
     const session = sessionById.get(set.sessionId);
     if (!session) continue;
     const key = `${set.sessionId}:${set.programSlotId ?? "adhoc"}`;
@@ -476,7 +476,7 @@ function slotExposures(input: BuildCoachRecommendationsInput, slot: CoachSlotInp
     const comparable = sets.filter((set) => set.exerciseId === exerciseId);
     const phases = input.phases.filter((phase) => phase.programId === slot.programId);
     const prescription = resolvePrescription(slot, session.weekIndex ?? 1, phases);
-    const e1rms = comparable.flatMap((set) => set.e1rm == null ? [] : [set.e1rm]);
+    const e1rms = comparable.flatMap((set) => set.isDeload || set.e1rm == null ? [] : [set.e1rm]);
     return [{
       session,
       firstSet: comparable[0],
@@ -490,7 +490,8 @@ function slotExposures(input: BuildCoachRecommendationsInput, slot: CoachSlotInp
   const phaseKey = (e: Exposure) => resolvePrescription(slot, e.session.weekIndex ?? 1,
     input.phases.filter(p => p.programId === slot.programId)).phase?.id ?? null;
   let start = raw.length - 1;
-  while (start > 0 && raw[start - 1].firstSet.exerciseId === latest.firstSet.exerciseId
+  while (start > 0 && !raw[start - 1].session.isDeload && !raw[start - 1].firstSet.isDeload
+    && raw[start - 1].firstSet.exerciseId === latest.firstSet.exerciseId
     && phaseKey(raw[start - 1]) === phaseKey(latest)) start--;
   const assessment = input.stalls?.find(s => s.slotId === slot.id);
   const comparable = assessment ? new Set(assessment.points.map(p => p.sessionId)) : null;

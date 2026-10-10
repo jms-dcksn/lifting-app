@@ -138,3 +138,22 @@ named `CURSOR_API_KEY`. Do not commit it.
   a publishable key requires a rebuild/redeploy of clients that embed it.
 - Check `package.json` and deployment settings for build/runtime configuration. This checkout
   has no pinned Node engine, `.nvmrc`, or `vercel.json`; verify the selected runtime at release.
+
+### Deload progression migration
+
+Apply `20261010171247_deload_progression.sql` before deploying the deload-aware app.
+It adds phase/session/set flags and invoker triggers, updates `save_program`, backfills
+unambiguous surviving phase/week context and rebuilds affected strength caches. It preserves
+saved e1RMs and RLS. Affected personal calibration coefficients are cleared and re-anchored
+on the next eligible stat write. Existing open sessions are included in the backfill.
+
+Review `supabase/tests/deload_legacy_review.sql` for missing context or ambiguous custom
+phases. Historical classification cannot be reconstructed reliably after phase edits or
+program deletion; the migration does not infer it from low loads or high RIR. The report
+is read-only; corrections require an explicitly scoped follow-up migration. Changing a
+phase in the builder only classifies future sessions.
+
+SQL checks: run `supabase/tests/deload_backfill.sql` with `psql -v ON_ERROR_STOP=1` on a
+checkout/database immediately before this migration (the test applies it transactionally
+and rolls back); run `supabase/tests/deload_progression_rls.sql` after migrations to verify
+inheritance, RPC persistence, edits/deletion, calibration suppression and cross-user denial.

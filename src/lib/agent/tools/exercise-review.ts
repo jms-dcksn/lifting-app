@@ -50,7 +50,7 @@ export async function exerciseReview(
 
   const { data: rows, error } = await supabase
     .from("set_log")
-    .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, program_slot_id, is_warmup, workout_session!inner(performed_at, finished_at, program_id)")
+    .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, program_slot_id, is_warmup, is_deload, workout_session!inner(performed_at, finished_at, program_id)")
     .eq("user_id", userId)
     .in("exercise_id", memberIds)
     .eq("is_warmup", false)
@@ -67,6 +67,7 @@ export async function exerciseReview(
       reps: row.reps,
       rir: row.rir,
       e1rm: row.e1rm,
+      isDeload: row.is_deload,
       performedAt: workout.performed_at,
       finishedAt: workout.finished_at,
       programId: workout.program_id ?? null,
@@ -145,6 +146,7 @@ export function summarizeExerciseReview(input: {
           dateKey: last.dateKey,
           programName: last.programName,
           bestE1rm: last.bestE1rm,
+          isDeload: last.isDeload ?? false,
           sets: last.sets,
         }
       : null,

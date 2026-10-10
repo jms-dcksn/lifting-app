@@ -3,7 +3,7 @@ import type { ExerciseDef } from "./strength/coefficients";
 import { movementMemberIds } from "./strength/movement";
 import { workoutRecords, type RecordSet } from "./strength/records";
 
-const SELECT = "id, user_id, session_id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, e1rm, is_warmup, created_at, workout_session!inner(performed_at, finished_at)";
+const SELECT = "id, user_id, session_id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, e1rm, is_warmup, is_deload, created_at, workout_session!inner(performed_at, finished_at)";
 const PAGE_SIZE = 500;
 
 // Both the live cards and completion flow use this read path. Page through all history:

@@ -830,3 +830,11 @@ A missing file exits 1. Vercel keeps the previous production deployment. The fir
 deploy of this change fails until `npx supabase db push`, because the read function
 is itself a migration. CI, local, and preview builds do not call the hosted project.
 `npm run test:db` still proves only a local stack. See [Deployment](../DEPLOY.md).
+
+### Deload record eligibility (2026-10-10)
+
+Deload sets are training activity but do not establish or beat rep, e1RM or top-weight
+record baselines. Persist explicit phase classification on sessions and saved sets so
+historical eligibility survives program edits/deletion. Track strength comparisons skip
+recovery observations while retaining activity dates, workout counts and volume. A deload-only
+history has no strength baseline; the next normal workout compares with prior normal work.

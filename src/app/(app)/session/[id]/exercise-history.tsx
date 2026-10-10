@@ -99,6 +99,7 @@ function HistoryContent({
                 <p className="mt-1 text-caption text-muted">
                   <time dateTime={row.created_at}>{new Date(row.created_at).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}</time>
                   {row.is_warmup && " · Warm-up"}
+                  {row.is_deload && " · Deload"}
                 </p>
                 <dl className="mt-3 grid grid-cols-3 gap-2 text-body tabular-nums">
                   <div><dt className="text-caption text-muted">{isBodyweight ? "Added lb" : "Weight (lb)"}</dt><dd>{row.weight}</dd></div>

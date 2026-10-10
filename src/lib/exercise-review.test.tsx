@@ -50,6 +50,7 @@ function monthSourceFrom(sessions: ReviewSession[]): ReviewMonthSource {
         rir: set.rir,
         e1rm: session.bestE1rm,
         is_warmup: false,
+        is_deload: session.isDeload ?? false,
         created_at: session.performedAt,
         workout_session: { performed_at: session.performedAt, finished_at: session.performedAt },
       })),
@@ -77,6 +78,22 @@ function ready(
 }
 
 describe("exercise review", () => {
+  it("labels recovery history and compares the next normal workout across the deload", () => {
+    const sessions = sessionsFrom([
+      { id: "n", sessionId: "n", weight: 100, reps: 8, rir: 1, e1rm: 200,
+        performedAt: "2026-09-02T12:00:00Z", finishedAt: "2026-09-02T13:00:00Z" },
+      { id: "d", sessionId: "d", weight: 80, reps: 8, rir: 4, e1rm: 160, isDeload: true,
+        performedAt: "2026-09-09T12:00:00Z", finishedAt: "2026-09-09T13:00:00Z" },
+      { id: "r", sessionId: "r", weight: 105, reps: 8, rir: 1, e1rm: 205,
+        performedAt: "2026-09-16T12:00:00Z", finishedAt: "2026-09-16T13:00:00Z" },
+    ]);
+    const html = renderToStaticMarkup(ready(sessions));
+    expect(html).toContain("Deload");
+    expect(html).toContain("+5");
+    expect(html).not.toContain("-40");
+    expect(html).not.toContain("best 160");
+  });
+
   it("uses its own copy when the exercise is missing", () => {
     const html = renderToStaticMarkup(createElement(ExerciseReview, { status: "missing", reviewMonth: null }));
     expect(html).toContain("Exercise not found");

@@ -5,11 +5,14 @@
 export const EXERCISE_VISUAL_SRC = {
   "bb-back-squat": "/exercises/bb-back-squat.jpg",
   "bb-bench": "/exercises/bb-bench.jpg",
+  "bb-incline-bench": "/exercises/bb-incline-bench.jpg",
   "bb-rdl": "/exercises/bb-rdl.jpg",
   "db-shoulder-press": "/exercises/db-shoulder-press.jpg",
+  "db-split-squat": "/exercises/db-split-squat.jpg",
   "hack-squat": "/exercises/hack-squat.jpg",
   "lat-pulldown": "/exercises/lat-pulldown.jpg",
   "seated-cable-row": "/exercises/seated-cable-row.jpg",
+  "seated-leg-curl": "/exercises/seated-leg-curl.jpg",
 } as const;
 
 export type ExerciseVisualId = keyof typeof EXERCISE_VISUAL_SRC;

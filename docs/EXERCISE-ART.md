@@ -49,12 +49,15 @@ The committed assets in `public/exercises/` are the approved visual reference se
 | Reference | Use |
 | --- | --- |
 | `bb-bench.jpg` | Barbell plates, clothing, horizontal bench composition |
+| `bb-incline-bench.jpg` | Inclined bench support, upper-chest bar position |
 | `bb-back-squat.jpg` | Standing athlete, squat anatomy, rear three-quarter view |
 | `bb-rdl.jpg` | Hip hinge, clear bar-to-leg relationship |
 | `db-shoulder-press.jpg` | Female athlete, dumbbells, seated bench |
+| `db-split-squat.jpg` | Rear-foot elevation, split stance, two dumbbells |
 | `hack-squat.jpg` | Plate-loaded machine, pads, rails, steel highlights |
 | `lat-pulldown.jpg` | Tall cable machine and overhead pulley framing |
 | `seated-cable-row.jpg` | Seated cable movement, handles, low pulley |
+| `seated-leg-curl.jpg` | Photo-based machine geometry, broad thigh pad, upright front handles |
 
 Inspect the relevant image before generating. For a new illustration, use the prompt
 below and the observed reference styling. When editing an existing image, provide that
@@ -87,10 +90,11 @@ neon, bright halos, colored lighting, or extra limbs/equipment.
 Exercise-specific pose and equipment: {EXERCISE_BRIEF}
 ```
 
-## Exercise-specific review briefs
+## Exercise-specific generation briefs
 
-These three briefs were requested for previews on 2026-10-10. Their presence here does
-not mean the illustrations have been installed; check `EXERCISE_VISUAL_SRC` for shipped art.
+These three illustrations were reviewed and installed on 2026-10-10, using the latest
+photo-based seated leg curl instead of the rejected text-driven versions.
+`EXERCISE_VISUAL_SRC` records their exact seeded IDs and shipped file paths.
 
 ### Incline barbell bench press — `bb-incline-bench`
 

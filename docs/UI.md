@@ -31,9 +31,11 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   Map by seeded / template id, not name. See
   [exercise visuals](superpowers/specs/2026-09-28-exercise-visuals-design.md).
   Current art uses charcoal backgrounds, ivory ink shading, and muted burgundy accents.
-  Seven 640×360 JPEGs cover back squat, bench press, Romanian deadlift, dumbbell shoulder
-  press, hack squat, lat pulldown, and seated cable row. Assets fill the 16:9 frame without
-  extra CSS zoom so the athlete and equipment remain visible at both sizes. This replaces
+  640×360 JPEGs cover back squat, flat/incline barbell bench press, Romanian deadlift,
+  dumbbell shoulder press, Bulgarian split squat, hack squat, lat pulldown, seated cable
+  row, and seated leg curl. `EXERCISE_VISUAL_SRC` is the current asset inventory.
+  Assets fill the 16:9 frame without extra CSS zoom so the athlete and equipment remain
+  visible at both sizes. This replaces
   the cream-paper art and center zoom described in the historical spec.
   Use the [art generation specification](EXERCISE-ART.md) for reusable prompts, committed
   style references, exercise mechanics, export settings, and thumbnail review.

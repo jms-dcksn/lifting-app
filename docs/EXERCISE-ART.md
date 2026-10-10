@@ -115,24 +115,38 @@ ordinary lunge, or barbell squat. The seeded exercise uses dumbbells.
 
 ### Seated leg curl — `seated-leg-curl`
 
-Clear side/three-quarter view of an athletic male seated on a compact selectorized
-hamstring-curl machine, facing left. Burgundy fitted shirt, dark shorts, training shoes.
-Back supported by an upright backrest, hips on the seat, thighs approximately horizontal.
-A padded thigh restraint sits above the thighs just proximal to the knees. Show the
-contracted curl: both knees bent roughly 90–110 degrees, feet tucked down and slightly
-under the front edge of the seat. The moving ankle roller presses against the BACK of
-the lower legs just above the heels/Achilles, not against the front of the shins. Its
-lever rotates around a pivot aligned with the knees. Hands grip side handles; a compact
-weight stack and mechanically coherent linkage sit beside the machine. Use burgundy
-upholstery and dark steel. Keep both leg paths readable, with no pads cutting through
-anatomy. This is knee flexion, not a straight-leg extension or lying leg curl.
-At review, explicitly verify which side of the shins the roller contacts and that the
-moving lever's pivot sits at knee height. A seated athlete with a roller in front of the
-shins still depicts the wrong machine, even when the knees are bent.
-For an unambiguous left-facing side view, show the feet tucked down/back toward the right,
-the roller behind the ankles on their right, the knee-height pivot at the seat's left
-edge, and the weight stack behind the backrest on the far right. Keep the front surfaces
-of the shins clear. This clarified layout was used to correct the first preview.
+**Reference correction, 2026-10-10:** James rejected both earlier text-driven machine
+previews and supplied a real photograph. Use the photograph as the structural reference
+and restyle it; do not reuse the rejected illustrations or reconstruct the machine from
+a generic side-view description. Preserve visible frame topology, adjustment hardware,
+pad contacts, and the operating-arm arrangement before changing appearance.
+
+The supplied photograph shows an athletic woman with her hair in a bun, viewed from
+the front three-quarter angle. Her back rests against a slightly reclined backrest on
+the right. A substantial broad rectangular thigh restraint holds her thighs above the
+knees. Both hands hold upright vertical handles on top of that restraint mechanism in
+front of her, rather than handles beside her hips. The selectorized tower stands on the
+left, with a broad rounded top and a partially enclosed stack. The external operating
+arm is to the left of the legs. A single cylindrical ankle roller sits behind the lower
+calves below the seat, its end visible to their right. Her shins angle down and both
+white shoes are fully visible. Preserve this pose and construction; do not invent an
+A-frame, exposed cable routing, extra braces, or a different weight-stack position.
+
+Apply the charcoal/ivory ink style, burgundy fitted top and upholstery, dark leggings,
+and ivory shoes. Remove the gym background, signage, and camera/search overlay. Adapt
+the portrait reference to landscape by adding quiet charcoal background beside the
+assembly; retain the full athlete and machine. Reconstruct only minimally missing
+frame extremities, following the observed construction.
+
+Research source: [Hammer Strength Select Seated Leg Curl, HS-SLC](https://www.lifefitness.com/en-us/catalog/strength-training/selectorized/hammer-strength-select-seated-leg-curl).
+The manufacturer confirms adjustable back and thigh pads and an adjustable start
+position. The supplied photograph governs this preview's visible geometry; its exact
+machine model was not established. Avoid mixing components from different models.
+
+Machine-specific rule for future artwork: find a real product/use photograph before
+generation, pass it directly as an image reference, and preserve its geometry. Written
+mechanics checks support the reference; they do not substitute for it. The earlier
+seated-curl prompts were insufficient even after moving the roller behind the ankles.
 
 ## Review and integration checklist
 

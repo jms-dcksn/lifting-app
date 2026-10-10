@@ -58,6 +58,7 @@ and add a trigger here only when a new task branch appears.
 | Visual map of experiences, request path, or why a performance/scale choice exists | [Architecture map](docs/architecture.html) |
 | Strength, calibration, catalog identity, program loading, data ownership, auth | [Architecture](docs/ARCHITECTURE.md) and [decisions](docs/DECISIONS.md) |
 | UI primitives, motion, overlays, server/client boundaries | [UI conventions](docs/UI.md) |
+| Exercise artwork generation, styling, or replacement | [Exercise art specification](docs/EXERCISE-ART.md) and [UI conventions](docs/UI.md) |
 | Program templates or weekly phases | [Architecture: programs](docs/ARCHITECTURE.md#programs-and-prescriptions); [Strong Foundations](docs/STRONG-FOUNDATIONS.md) for that template |
 | Active swaps or Fluid adaptation events | [Exercise swaps](docs/EXERCISE-SWAPS.md) |
 | Home preview, planner cookies, or session creation | [Workout planning](docs/WORKOUT-PLANNING.md) |

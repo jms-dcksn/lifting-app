@@ -35,6 +35,8 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   press, hack squat, lat pulldown, and seated cable row. Assets fill the 16:9 frame without
   extra CSS zoom so the athlete and equipment remain visible at both sizes. This replaces
   the cream-paper art and center zoom described in the historical spec.
+  Use the [art generation specification](EXERCISE-ART.md) for reusable prompts, committed
+  style references, exercise mechanics, export settings, and thumbnail review.
 - Program tiles wrap visible content in their detail `Link`; the Remove control is a
   positioned sibling. An empty overlay link beneath positioned text lets that text
   intercept taps, making the tile appear intermittently unresponsive.

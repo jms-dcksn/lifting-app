@@ -838,3 +838,12 @@ record baselines. Persist explicit phase classification on sessions and saved se
 historical eligibility survives program edits/deletion. Track strength comparisons skip
 recovery observations while retaining activity dates, workout counts and volume. A deload-only
 history has no strength baseline; the next normal workout compares with prior normal work.
+
+## Charcoal exercise illustrations (2026-10-10)
+
+James selected style B from the exercise art review: charcoal backgrounds, ivory ink
+shading, and muted burgundy accents. Replace the four cream-paper illustrations and add
+the approved Romanian deadlift, dumbbell shoulder press, and seated cable row designs
+to their existing seeded identities. Keep the shared 16:9 frame and identity inheritance;
+remove the former 35% center zoom because the fuller compositions already fill the frame.
+Serve all seven as 640×360 JPEGs. See [UI conventions](UI.md) for the current art contract.

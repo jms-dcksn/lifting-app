@@ -65,7 +65,7 @@ async function assemble(
       .order("position", { ascending: true }),
     supabase
       .from("program_phase")
-      .select("id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
+      .select("id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier, is_deload")
       .eq("program_id", row.id)
       .order("position", { ascending: true }),
   ]);
@@ -114,6 +114,7 @@ async function assemble(
       targetRirMin: phase.target_rir_min,
       targetRirMax: phase.target_rir_max,
       setMultiplier: phase.set_multiplier,
+      isDeload: phase.is_deload,
     })),
     days: (days ?? []).map((d) => ({
       id: d.id,

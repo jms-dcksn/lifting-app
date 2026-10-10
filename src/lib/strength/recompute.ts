@@ -3,6 +3,7 @@
 // `set_log` is the source of truth; `user_exercise_stat.current_e1rm` is a cache that
 // must always be rebuildable from it. Pure — verify with tsx, reuse on the server.
 
+import { isProgressionSet } from "./eligibility";
 import { computeE1rm } from "./e1rm";
 import type { ExerciseDef } from "./coefficients";
 
@@ -10,6 +11,8 @@ export interface LoggedSetInput {
   weight: number; // recorded load (added load for bodyweight; negative = assisted)
   reps: number;
   rir: number | null;
+  is_warmup?: boolean;
+  is_deload?: boolean;
 }
 
 // Bodyweight/assisted convention: the bar is your body. The recorded weight is added
@@ -41,7 +44,7 @@ export function recomputeStat(
 ): RecomputedStat {
   let best = 0;
   for (const s of sets) {
-    if (s.reps <= 0) continue;
+    if (!isProgressionSet({ isWarmup: s.is_warmup, isDeload: s.is_deload }) || s.reps <= 0) continue;
     const load = effectiveLoad(def, s.weight, bodyweight);
     if (load == null || load <= 0) continue;
     const e = computeE1rm(load, s.reps, s.rir ?? 2);

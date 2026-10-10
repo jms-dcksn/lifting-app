@@ -1,3 +1,4 @@
+import { isProgressionSet } from "./strength/eligibility";
 import { dateKey, parseDateKey } from "./bodyweight";
 import { inLocalDays } from "./app-chrome";
 
@@ -11,6 +12,7 @@ export type ReviewSetRow = {
   reps: number;
   rir: number | null;
   e1rm: number | null;
+  isDeload?: boolean;
   performedAt: string;
   finishedAt: string | null;
   programId?: string | null;
@@ -30,6 +32,7 @@ export type ReviewSession = {
   performedAt: string;
   dateKey: string;
   bestE1rm: number | null;
+  isDeload?: boolean;
   programId: string | null;
   programName: string | null;
   sets: ReviewSessionSet[];
@@ -68,6 +71,7 @@ export function groupReviewSessions(
         performedAt: row.performedAt,
         dateKey: dateKey(new Date(row.performedAt), timeZone),
         bestE1rm: null,
+        isDeload: row.isDeload ?? false,
         programId: row.programId ?? null,
         programName: null,
         sets: [],
@@ -81,7 +85,7 @@ export function groupReviewSessions(
       rir: row.rir,
       brand: row.brand ?? null,
     });
-    if (row.e1rm != null && (session.bestE1rm == null || row.e1rm > session.bestE1rm)) {
+    if (isProgressionSet(row) && row.e1rm != null && (session.bestE1rm == null || row.e1rm > session.bestE1rm)) {
       session.bestE1rm = row.e1rm;
     }
   }
@@ -132,7 +136,8 @@ export function reviewChartPoints(
   sessions: ReviewSession[],
   range: ReviewChartRange,
 ): ReviewChartPoint[] {
-  const window = range === "last8" ? sessions.slice(-REVIEW_CHART_SESSIONS) : sessions;
+  const eligible = sessions.filter((session) => session.bestE1rm != null);
+  const window = range === "last8" ? eligible.slice(-REVIEW_CHART_SESSIONS) : eligible;
   return window.flatMap((session) =>
     session.bestE1rm == null
       ? []

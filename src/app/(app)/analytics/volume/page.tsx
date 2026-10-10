@@ -29,6 +29,7 @@ type AnalyticsQueryRow = {
   e1rm: number | null;
   created_at: string;
   is_warmup: boolean;
+  is_deload: boolean;
   program_slot_id: string | null;
   set_index: number;
   workout_session:
@@ -60,7 +61,7 @@ export default async function VolumePage({
     supabase
       .from("set_log")
       .select(
-        "id, session_id, program_slot_id, exercise_id, equipment_instance_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup, workout_session!inner(performed_at, finished_at, program_id)",
+        "id, session_id, program_slot_id, exercise_id, equipment_instance_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup, is_deload, workout_session!inner(performed_at, finished_at, program_id)",
       )
       .eq("user_id", userId)
       .eq("is_warmup", false)
@@ -166,6 +167,7 @@ function normalizeRows(rows: AnalyticsQueryRow[]): AnalyticsSetRow[] {
         finishedAt: session.finished_at,
         programId: session.program_id,
         isWarmup: row.is_warmup,
+        isDeload: row.is_deload,
       },
     ];
   });

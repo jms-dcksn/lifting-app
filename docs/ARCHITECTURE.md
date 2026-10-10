@@ -182,3 +182,31 @@ Card 2–4 defaults unless James reverses them.
   contracts. Follow their feature docs rather than reusing a capped dashboard query.
 - Monthly PR totals replay canonical workout records; monthly strength compares stored eligible
   e1RMs. Flat monthly changes are descriptive, not a stall diagnosis.
+
+## Deload observations
+
+`program_phase.is_deload` explicitly identifies recovery phases. The builder, built-in
+phases, template creation, cloning and `save_program` preserve it. Session insertion
+snapshots the effective classic phase into `workout_session.is_deload` using the stored
+`week_index`; Fluid sessions default to normal. The database copies this flag onto every
+`set_log` insert/update, including ad-hoc sets and substitutions, and suppresses calibration
+on deload sets. Trigger functions are security invoker, use owner-matched lookups and have
+no directly callable grants. Ordinary edits cannot override classification. Later phase
+edits or program deletion cannot reclassify an existing session or its saved sets.
+
+`strength/eligibility.ts` excludes warmups and deloads from strength observations.
+Track retains actual activity dates/counts but derives estimates, deltas, charts and PRs
+from eligible sets. Review keeps recovery sets visible and chooses the last eight eligible
+estimates before limiting its chart. Record replay excludes deloads as both candidates and
+baselines. Monthly PR/strength comparisons, Coach strength/rep comparisons, pooled strength,
+cache rebuilds and next-workout progression references use the same exclusion. Stall detection
+still breaks its series at recovery; it consumes saved classification instead of depending
+on mutable phase definitions. Tonnage, working-set counts and adherence retain deload work.
+Stored set e1RMs remain intact, including their historical bodyweight information.
+
+Migration `20261010171247_deload_progression.sql` backfills exact `Deload` phase names and
+known half-volume/four-RIR `Recovery` / `Recover & review` phases, then rebuilds affected
+strength caches from saved eligible estimates. It clears affected personal coefficients
+for re-anchoring at the next normal stat write. Missing program/week context and ambiguous
+custom phases remain normal pending review; `supabase/tests/deload_legacy_review.sql` lists
+those candidates without inferring recovery from actual load or effort.

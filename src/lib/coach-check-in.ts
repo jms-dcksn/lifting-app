@@ -58,6 +58,7 @@ export interface CoachSessionInput {
   programDayId: string | null;
   programDayName: string | null;
   weekIndex: number | null;
+  isDeload?: boolean;
   readiness: number | null;
   jointPain: JointPain | null;
   note: string | null;
@@ -73,6 +74,7 @@ export interface CoachSetInput {
   rir: number | null;
   e1rm: number | null;
   isWarmup: boolean;
+  isDeload?: boolean;
   createdAt: string;
 }
 
@@ -561,7 +563,7 @@ function buildExerciseTrends(context: BuildContext): ExerciseTrendReport[] {
   );
   const byExerciseSession = new Map<string, Map<string, number>>();
   for (const set of context.sets) {
-    if (set.isWarmup || !finishedIds.has(set.sessionId) || set.e1rm == null || set.e1rm <= 0) {
+    if (set.isWarmup || set.isDeload || !finishedIds.has(set.sessionId) || set.e1rm == null || set.e1rm <= 0) {
       continue;
     }
     const bySession = byExerciseSession.get(set.exerciseId) ?? new Map<string, number>();
@@ -675,6 +677,7 @@ function bestRepsByLoad(
     const session = context.sessionById.get(set.sessionId);
     if (
       set.isWarmup
+      || set.isDeload
       || !session
       || !finishedSessionIds.has(set.sessionId)
       || !timestampInWindow(session.performedAt, window, context.timeZone)

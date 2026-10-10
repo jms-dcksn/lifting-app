@@ -74,7 +74,7 @@ function from(table: string) {
     then: (resolve: (result: unknown) => unknown) => {
       if ((mutation && failWrite) || (!mutation && failRead)) return Promise.resolve(resolve({ data: null, error: { message: "offline" } }));
       if (mutation === "insert") {
-        const inserted = { id: `saved-${++sequence}`, equipment_instance_id: null, is_warmup: false,
+        const inserted = { id: `saved-${++sequence}`, equipment_instance_id: null, is_warmup: false, is_deload: false,
           created_at: `2026-09-12T10:${String(sequence).padStart(2, "0")}:00Z`, ...payload };
         tables[table].push(inserted);
         rows = [inserted];
@@ -105,16 +105,28 @@ beforeEach(() => {
   tables = {
     workout_session: [
       { id: "previous", user_id: "user", performed_at: "2026-09-10T10:00:00Z", finished_at: "2026-09-10T11:00:00Z" },
-      { id: "active", user_id: "user", performed_at: startedAt, finished_at: null, readiness: 4, joint_pain: null, notes: null },
+      { id: "active", user_id: "user", performed_at: startedAt, finished_at: null, is_deload: false, readiness: 4, joint_pain: null, notes: null },
     ],
     set_log: [{ id: "prior", user_id: "user", session_id: "previous", program_slot_id: "old-slot", exercise_id: "bb-row",
-      equipment_instance_id: null, weight: 100, reps: 8, rir: 1, e1rm: computeE1rm(100, 8, 1), is_warmup: false,
+      equipment_instance_id: null, weight: 100, reps: 8, rir: 1, e1rm: computeE1rm(100, 8, 1), is_warmup: false, is_deload: false,
       created_at: "2026-09-10T10:01:00Z" }],
     user_exercise_stat: [],
   };
 });
 
 describe("persisted workout achievement flow", () => {
+  it("persists deload classification through logging, editing and finishing without PRs", async () => {
+    tables.workout_session[1].is_deload = true;
+    await logSet({ ...input, exerciseId: "lat-pulldown__nautilus__selectorized" });
+    const saved = tables.set_log.at(-1)!;
+    expect(saved).toMatchObject({ is_deload: true, is_calibration: false });
+    await editSet({ setId: String(saved.id), weight: 200, reps: 12, rir: 1 });
+    expect(saved.is_deload).toBe(true);
+    expect((await records()).achievements).toEqual([]);
+    await finishSession("active", { jointPain: "none", note: "Recovery" });
+    expect((await records()).achievements).toEqual([]);
+  });
+
   it("saves, revalidates live cards, and returns the identical achievements on finish/reopen", async () => {
     await logSet(input);
     const live = (await records()).achievements;
@@ -216,7 +228,7 @@ describe("persisted workout achievement flow", () => {
       reps: 10,
       rir: 1,
       e1rm: computeE1rm(140, 10, 1),
-      is_warmup: false,
+      is_warmup: false, is_deload: false,
       created_at: "2026-08-01T10:01:00Z",
     };
     tables.set_log.push(leftover);
@@ -244,7 +256,7 @@ describe("persisted workout achievement flow", () => {
       reps: 8,
       rir: 1,
       e1rm: computeE1rm(185, 8, 1),
-      is_warmup: false,
+      is_warmup: false, is_deload: false,
       created_at: "2026-08-01T10:01:00Z",
     };
     tables.set_log.push(leftover);

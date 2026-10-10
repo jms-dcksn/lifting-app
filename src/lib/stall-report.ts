@@ -4,7 +4,7 @@ import type { ExerciseDef } from "./strength/coefficients";
 import { defaultPatience, detectPlateau, foldPrescription, type AdaptationRow, type PhaseExposure } from "./strength/plateau";
 import { eligibleRecordSet, recordScope, type RecordSet } from "./strength/records";
 
-export type StallSession = Pick<CoachSessionInput, "id" | "performedAt" | "finishedAt" | "programId" | "programDayId" | "weekIndex">;
+export type StallSession = Pick<CoachSessionInput, "id" | "performedAt" | "finishedAt" | "programId" | "programDayId" | "weekIndex" | "isDeload">;
 export interface StallSlot extends CoachSlotInput { plateauPatience?: number | null }
 export interface StallAdaptation extends AdaptationRow { id: string; slotId: string; exerciseId?: string }
 export interface StallHistory {
@@ -35,9 +35,10 @@ export interface StallAssessment {
   points: StallPoint[];
 }
 
-export function isDeload(phase: { name: string; description: string | null; setMultiplier: number | null } | null) {
-  return !!phase && ((phase.setMultiplier != null && phase.setMultiplier < 1)
-    || `${phase.name} ${phase.description ?? ""}`.toLowerCase().includes("deload"));
+export function isDeload(phase: { isDeload?: boolean; name: string; description: string | null; setMultiplier: number | null } | null) {
+  // Persisted false wins over legacy naming/volume heuristics.
+  return phase?.isDeload ?? (!!phase && ((phase.setMultiplier != null && phase.setMultiplier < 1)
+    || `${phase.name} ${phase.description ?? ""}`.toLowerCase().includes("deload")));
 }
 
 /** One contiguous slot/identity/prescription series. Never filter away intervening swaps. */
@@ -82,7 +83,7 @@ export function buildStallAssessments(history: StallHistory, catalog: Record<str
       repMin = prescription.repMin;
       repMax = prescription.repMax;
       phaseName = prescription.phase?.name ?? null;
-      deload = isDeload(prescription.phase);
+      deload = session.isDeload ?? (sets.some(set => set.is_deload) || isDeload(prescription.phase));
       const nextContext = JSON.stringify([recordScope(last), prescription.phase?.id ?? null,
         folded.phaseStartAt, repMin, repMax, prescription.targetRirMin, prescription.targetRirMax, prescription.targetSets]);
       if (nextContext !== context) points = [];

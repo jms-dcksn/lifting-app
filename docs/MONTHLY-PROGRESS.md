@@ -206,3 +206,8 @@ unsupported signals stay hidden. Check narrow/mobile fit and keyboard month navi
 columns/joins were checked read-only against the live schema. Browser access reaches
 the magic-link sign-in screen; authenticated visual verification remains pending.
 No synthetic user records were written.
+
+Deload classification is now persisted on sessions and sets. Monthly strength and PR
+comparisons exclude those sets, without treating intentional recovery as a data-quality
+failure. Workout/adherence counts and exercise-review volume retain recovery work. Shared
+stall assessments consume the saved flag and still reset evidence at deload boundaries.

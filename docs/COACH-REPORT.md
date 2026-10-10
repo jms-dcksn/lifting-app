@@ -150,3 +150,8 @@ Caller audit before removal:
 
 No deployment settings needed deletion. Local route variables were removed where
 present; the Supabase secret was preserved. This audit does not deploy the removal.
+
+Saved session/set deload flags suppress normal overload and exclude recovery from strength
+and fixed-load progress comparisons. Volume, adherence and executed-set evidence remain
+visible. Stall series still reset at recovery, including after phase edits. Historical
+deload classification is snapshotted; full historical slot prescriptions remain mutable.

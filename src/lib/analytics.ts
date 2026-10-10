@@ -1,3 +1,4 @@
+import { isProgressionSet } from "./strength/eligibility";
 import { dateKey } from "./bodyweight";
 import type { ExerciseDef, Pattern } from "./strength/coefficients";
 import {
@@ -24,6 +25,7 @@ export interface AnalyticsSetRow {
   finishedAt?: string | null;
   programId?: string | null;
   isWarmup?: boolean;
+  isDeload?: boolean;
 }
 
 export interface SessionTonnagePoint {
@@ -196,7 +198,7 @@ export function e1rmPrFeed(rows: AnalyticsSetRow[], catalog: ExerciseDefs = {}):
   const prs: E1rmPr[] = [];
 
   for (const row of chronologicalRows(rows)) {
-    if (row.isWarmup || row.e1rm == null || row.e1rm <= 0) continue;
+    if (!isProgressionSet(row) || row.e1rm == null || row.e1rm <= 0) continue;
 
     const key = feedExerciseId(row, catalog);
     const prior = bestByExercise.get(key);
@@ -219,7 +221,7 @@ export function weightPrs(rows: AnalyticsSetRow[], catalog: ExerciseDefs = {}): 
   const bestByExercise = new Map<string, WeightPr>();
 
   for (const row of chronologicalRows(rows)) {
-    if (row.isWarmup) continue;
+    if (!isProgressionSet(row)) continue;
 
     const key = feedExerciseId(row, catalog);
     const prior = bestByExercise.get(key);
@@ -267,7 +269,7 @@ export function exerciseSummaries(rows: AnalyticsSetRow[], catalog: ExerciseDefs
       identity.sessions.set(row.sessionId, session);
     }
 
-    if (row.e1rm != null && (session.bestE1rm == null || row.e1rm > session.bestE1rm)) {
+    if (isProgressionSet(row) && row.e1rm != null && (session.bestE1rm == null || row.e1rm > session.bestE1rm)) {
       session.bestE1rm = row.e1rm;
     }
   }
@@ -389,7 +391,7 @@ export function patternStrengthTrend(
     { performedAt: string; bestByExercise: Map<string, number> }
   >();
   for (const row of chronologicalRows(rows)) {
-    if (row.isWarmup || row.e1rm == null || row.e1rm <= 0) continue;
+    if (!isProgressionSet(row) || row.e1rm == null || row.e1rm <= 0) continue;
     let session = sessions.get(row.sessionId);
     if (!session) {
       session = { performedAt: row.performedAt, bestByExercise: new Map() };

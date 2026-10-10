@@ -75,7 +75,7 @@ export default async function HistoryPage({
 
   const { data: rows, error } = await supabase
     .from("set_log")
-    .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, program_slot_id, is_warmup, workout_session!inner(performed_at, finished_at, program_id)")
+    .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, program_slot_id, is_warmup, is_deload, workout_session!inner(performed_at, finished_at, program_id)")
     .eq("user_id", userId)
     .in("exercise_id", memberIds)
     .eq("is_warmup", false)
@@ -100,6 +100,7 @@ export default async function HistoryPage({
       equipmentInstanceId: row.equipment_instance_id ?? null,
       programSlotId: row.program_slot_id ?? null,
       isWarmup: row.is_warmup ?? false,
+      isDeload: row.is_deload ?? false,
       createdAt: row.created_at,
     };
   });
@@ -267,6 +268,7 @@ function recordSetsFrom(
     equipmentInstanceId: string | null;
     programSlotId: string | null;
     isWarmup: boolean;
+    isDeload: boolean;
     createdAt: string;
   }[],
   userId: string,
@@ -283,6 +285,7 @@ function recordSetsFrom(
     rir: row.rir,
     e1rm: row.e1rm,
     is_warmup: row.isWarmup,
+    is_deload: row.isDeload,
     created_at: row.createdAt,
     workout_session: { performed_at: row.performedAt, finished_at: row.finishedAt },
   }));

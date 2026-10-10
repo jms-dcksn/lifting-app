@@ -13,6 +13,7 @@ import {
 import { movementId, movementTemplate, rollsUp } from "./strength/movement";
 
 export interface MonthlySession {
+  is_deload?: boolean;
   id: string;
   user_id: string;
   performed_at: string;
@@ -120,7 +121,7 @@ export function buildMonthlyReport(input: {
   for (const set of sets) {
     const day = dateKey(new Date(set.workout_session.performed_at), timeZone);
     const period = inWindow(day, current) ? "current" : inWindow(day, prior) ? "prior" : null;
-    if (!period || set.is_warmup) continue;
+    if (!period || set.is_warmup || set.is_deload) continue;
     const values = eligibleRecordSet(set, input.catalog[set.exercise_id]);
     if (!values) { quality.excludedWorkingSets++; continue; }
     const key = recordComparisonKey(set, input.catalog);

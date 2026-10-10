@@ -157,7 +157,7 @@ function ReadyBody({
   rolling?: boolean;
 }) {
   const today = reviewToday(sessions);
-  const previous = sessions.length >= 2 ? sessions.at(-2) : null;
+  const previous = sessions.slice(0, -1).findLast((session) => session.bestE1rm != null) ?? null;
   const recent = sessions.length >= 2 ? reviewRecentWindow(sessions, now) : null;
   const clock = now ?? new Date();
   const defaults = reviewCompareDefaults(reviewMonth, clock);
@@ -208,6 +208,7 @@ function ReadyBody({
                 </span>
               )}
             </div>
+            {session.isDeload && <p className="text-caption text-muted">Deload</p>}
             <SetList sets={session.sets} isBodyweight={isBodyweight} rolling={rolling} />
           </Card>
         ))}
@@ -236,6 +237,7 @@ function LastCard({
     <Card>
       <div className="mb-2 flex items-center gap-1">
         <CardLabel>Last</CardLabel>
+        {session.isDeload && <><span className="text-caption text-muted">Deload</span><InfoButton title="Deload">Excluded from strength progression and PRs. Working sets still count toward training volume.</InfoButton></>}
         <InfoButton title="Last">
           {rolling
             ? "This is the last finished workout for this movement. Each set names the station it was loaded on. Estimated 1RM uses the stored value from that day, not today's bodyweight."

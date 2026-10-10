@@ -74,6 +74,7 @@ export function ProgramBuilder({
         targetRirMin: 2,
         targetRirMax: 2,
         setMultiplier: null,
+        isDeload: false,
       });
       return d;
     });
@@ -204,6 +205,7 @@ export function ProgramBuilder({
             targetRirMin: phase.targetRirMin,
             targetRirMax: phase.targetRirMax,
             setMultiplier: phase.setMultiplier,
+            isDeload: phase.isDeload ?? false,
           })),
           days: draft.days.map<SaveDayInput>((d) => ({
             id: d.id,
@@ -309,7 +311,7 @@ export function ProgramBuilder({
               <div className="flex items-center gap-1">
                 <h2 className="text-heading">Weekly phases</h2>
                 <InfoButton title="Weekly phases">
-                  A phase can change RIR and working-set volume for a week range.
+                  A phase can change RIR and working-set volume for a week range. Mark recovery phases as deload to exclude their sets from strength progression and PRs.
                 </InfoButton>
               </div>
               {draft.phases.length < MAX_PHASES && (
@@ -358,6 +360,11 @@ export function ProgramBuilder({
                     <option value="0.75">75%</option>
                     <option value="0.5">50%</option>
                   </select>
+                </label>
+                <label className="flex min-h-11 items-center gap-2 text-body">
+                  <input type="checkbox" checked={phase.isDeload ?? false}
+                    onChange={(event) => updatePhase(phase.id, { isDeload: event.target.checked })} />
+                  Deload
                 </label>
                 <textarea
                   value={phase.description ?? ""}

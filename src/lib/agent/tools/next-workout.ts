@@ -130,6 +130,7 @@ async function loadProgressionByExercise(
     .select("session_id, program_slot_id, exercise_id, weight, reps, rir, e1rm, set_index, created_at, workout_session!inner(performed_at, finished_at)")
     .eq("user_id", userId)
     .eq("is_warmup", false)
+    .eq("is_deload", false)
     .in("exercise_id", exerciseIds)
     .not("workout_session.finished_at", "is", null)
     .order("created_at", { ascending: false })

@@ -415,6 +415,7 @@ export type Database = {
       }
       program_phase: {
         Row: {
+          is_deload: boolean
           created_at: string
           description: string | null
           id: string
@@ -429,6 +430,7 @@ export type Database = {
           week_start: number
         }
         Insert: {
+          is_deload?: boolean
           created_at?: string
           description?: string | null
           id?: string
@@ -443,6 +445,7 @@ export type Database = {
           week_start: number
         }
         Update: {
+          is_deload?: boolean
           created_at?: string
           description?: string | null
           id?: string
@@ -524,6 +527,7 @@ export type Database = {
       }
       set_log: {
         Row: {
+          is_deload: boolean
           created_at: string
           e1rm: number | null
           equipment_instance_id: string | null
@@ -541,6 +545,7 @@ export type Database = {
           weight: number
         }
         Insert: {
+          is_deload?: boolean
           created_at?: string
           e1rm?: number | null
           equipment_instance_id?: string | null
@@ -558,6 +563,7 @@ export type Database = {
           weight: number
         }
         Update: {
+          is_deload?: boolean
           created_at?: string
           e1rm?: number | null
           equipment_instance_id?: string | null
@@ -651,6 +657,7 @@ export type Database = {
       }
       workout_session: {
         Row: {
+          is_deload: boolean
           exercise_swaps: Json
           finished_at: string | null
           id: string
@@ -664,6 +671,7 @@ export type Database = {
           week_index: number | null
         }
         Insert: {
+          is_deload?: boolean
           exercise_swaps?: Json
           finished_at?: string | null
           id?: string
@@ -677,6 +685,7 @@ export type Database = {
           week_index?: number | null
         }
         Update: {
+          is_deload?: boolean
           exercise_swaps?: Json
           finished_at?: string | null
           id?: string

@@ -37,7 +37,7 @@ export async function loadStallHistory(db: Client, userId: string, now = new Dat
   return { userId,
     sessions: saved.sessions.filter(s => s.user_id === userId && dateKey(new Date(s.performed_at)) <= endDate).map(s => ({
       id: s.id, performedAt: s.performed_at, finishedAt: s.finished_at,
-      programId: s.program_id ?? null, programDayId: s.program_day_id ?? null, weekIndex: s.week_index ?? null,
+      programId: s.program_id ?? null, programDayId: s.program_day_id ?? null, weekIndex: s.week_index ?? null, isDeload: s.is_deload,
     })),
     sets: saved.sets,
     slots: slots.flatMap(s => {
@@ -47,7 +47,7 @@ export async function loadStallHistory(db: Client, userId: string, now = new Dat
     }),
     phases: phases.map(p => ({ id: p.id, programId: p.program_id, position: p.position, name: p.name,
       description: p.description, weekStart: p.week_start, weekEnd: p.week_end,
-      targetRirMin: p.target_rir_min, targetRirMax: p.target_rir_max, setMultiplier: p.set_multiplier })),
+      targetRirMin: p.target_rir_min, targetRirMax: p.target_rir_max, setMultiplier: p.set_multiplier, isDeload: p.is_deload })),
     adaptations: adaptations.filter(a => dateKey(new Date(a.created_at)) <= endDate).map(a => ({
       id: a.id, slotId: a.program_slot_id, exerciseId: a.exercise_id, action: a.action as StallAdaptation["action"],
       newExerciseId: a.new_exercise_id, newRepMin: a.new_rep_min, newRepMax: a.new_rep_max, createdAt: a.created_at,

@@ -44,21 +44,26 @@ export function bindReadTools(supabase: Client, userId: string) {
       schema: z.object({}),
     }),
     tool(
-      async ({ exerciseId, name, equipmentInstanceId }) =>
+      async ({ exerciseId, name, equipmentInstanceId, all, offset, matchOffset, matchKeys }) =>
         asJson(await exerciseReview(supabase, userId, {
           exerciseId: exerciseId || undefined,
           name: name || undefined,
+          all, offset, matchOffset, matchKeys,
           equipmentInstanceId: equipmentInstanceId === undefined ? undefined : equipmentInstanceId,
         })),
       {
         name: "exerciseReview",
         description:
-          "Load Exercise review for one exact exercise plus equipment instance: Last session, 21-day window, and last-8 e1RM chart. Prefer name when unsure; omit exerciseId unless it came from focusedExerciseId or a prior tool result. Do not invent ids. Names may differ in word order, plurality, or nickname (rdl, ohp, db, bb). If the result needsDisambiguation, ask the user which listed exercise they mean. Do not blend machines. A trend needs at least two e1RM points. If recent21Days is null or kind is gap, delta is null, or chartLast8 has fewer than two points, say there is no trend and still report last when it is present.",
+          "Return all relevant exercise/movement/station matches with finished non-warmup logged-set counts and eligible e1RM availability. Names accept aliases, plurals and typos; use an id only from focused context or a user-chosen prior match. preferred_history requires disclosure of alternatives, the only-logged-match reason, an evidence-based answer and confirmation. clarification_needed requires choices and an offer of separate summaries. Explicit lifts never substitute. Large match lists have nextMatchOffset and totalMatches; disclose remaining choices and continue or ask to narrow. all: true returns up to three separately labeled reviews per call; nextOffset transparently continues them. Machines/cables/instances stay separate. recentComparison and historicalTrend are independent; a 21-day gap can still have a dated older trend. Deload sets are logged but excluded from comparisons.",
         schema: z.object({
           exerciseId: z.string().optional()
             .describe("Known catalog exercise id from focusedExerciseId or a prior tool result only. Omit if unsure."),
           name: z.string().optional()
             .describe("Exercise name in natural language. Word order, plurals, and nicknames are ok (e.g. incline bench press, rdl, db bench)."),
+          matchOffset: z.number().int().min(0).optional().describe("Use nextMatchOffset to inspect the next page of candidate metadata. Do not hide remaining choices."),
+          matchKeys: z.array(z.string()).optional().describe("For all: true, the original prior matches' keys; revalidate and restrict summaries to those choices."),
+          all: z.boolean().optional().describe("User requested separate summaries of all matches for the original name."),
+          offset: z.number().int().min(0).optional().describe("Use nextOffset from an all-review result to continue."),
           equipmentInstanceId: z.string().nullable().optional()
             .describe("Equipment instance id, or null for no instance"),
         }),

@@ -64,7 +64,7 @@ and add a trigger here only when a new task branch appears.
 | Home preview, planner cookies, or session creation | [Workout planning](docs/WORKOUT-PLANNING.md) |
 | PR pills, completion recaps, or historical set edits | [Workout records](docs/DECISIONS.md#workout-records) |
 | Exercise review Last card, 21-day window, or e1RM chart | [Exercise review spec](docs/superpowers/specs/2026-09-19-exercise-review-design.md); [Features](docs/FEATURES.md) |
-| Movement-level e1RM/PR rollup for non-machine families | [2026-09-29 rollup spec](docs/superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md). Proposed, pending James. Do not implement until the card for that slice is answered. Current records stay exact. |
+| Movement-level e1RM/PR rollup for non-machine families | [2026-09-29 rollup spec](docs/superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md). Card 1 shipped: ordinary-pound records/review use movement scope. Cables, session targets and stall/Fluid keep their separate Card 2–4 defaults; do not widen those scopes without an approved decision. |
 | Coach report, proposals, Track Coach UI, or weeklyCoach tool | [Coach contract](docs/COACH-REPORT.md) and [architecture: strength](docs/ARCHITECTURE.md#strength-and-exercise-identity) |
 | Agent chat, LangChain tools, or AI Coach slices | [AI Coach](docs/AI-COACH.md) and [AI Coach explainer](docs/ai-coach.html) |
 | Track Explore destinations (Coach, Body, Volume) | [Track body and volume plan](docs/superpowers/plans/2026-09-19-track-body-volume.md); [Features](docs/FEATURES.md) |

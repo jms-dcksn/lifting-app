@@ -1,158 +1,168 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getCatalogMap } from "@/lib/catalog";
-import {
-  movementId,
-  movementMemberIds,
-  movementTemplate,
-  rollsUp,
-} from "@/lib/strength/movement";
-import {
-  groupReviewSessions,
-  reviewChartPoints,
-  reviewRecentWindow,
-  reviewToday,
-  withProgramNames,
-} from "@/lib/exercise-review-sessions";
-import {
-  resolveReviewEquipment,
-  reviewEquipmentChoices,
-  reviewEquipmentLabel,
-  rowsForReviewEquipment,
-} from "@/lib/review-equipment";
+import { movementId, movementMemberIds, movementTemplate, rollsUp } from "@/lib/strength/movement";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
+import { groupReviewSessions, reviewChartPoints, reviewRecentWindow, reviewToday, withProgramNames } from "@/lib/exercise-review-sessions";
+import { reviewEquipmentChoices, reviewEquipmentLabel } from "@/lib/review-equipment";
 import type { Database } from "@/lib/supabase/types";
 
 type Client = SupabaseClient<Database>;
+type MatchDefinition = Pick<ExerciseDef, "id" | "name"> & Partial<ExerciseDef>;
+type SessionJoin = { performed_at: string; finished_at: string | null; program_id?: string | null };
+export type ReviewInput = {
+  exerciseId?: string;
+  name?: string;
+  equipmentInstanceId?: string | null;
+  all?: boolean;
+  offset?: number;
+  matchOffset?: number;
+  matchKeys?: string[];
+};
+const PAGE_SIZE = 500;
+export const REVIEW_BATCH_SIZE = 3;
+export const REVIEW_MATCH_PAGE_SIZE = 30;
 
-type SessionJoin = {
-  performed_at: string;
-  finished_at: string | null;
-  program_id?: string | null;
+type HistoryRow = Parameters<typeof groupReviewSessions>[0][number] & {
+  exerciseId: string;
+  equipmentInstanceId: string | null;
 };
 
-export async function exerciseReview(
-  supabase: Client,
-  userId: string,
-  input: { exerciseId?: string; name?: string; equipmentInstanceId?: string | null },
-) {
-  const [catalog, loggedExerciseIds] = await Promise.all([
-    getCatalogMap(supabase, userId),
-    loggedExerciseIdsFor(supabase, userId),
-  ]);
-  const resolved = resolveExerciseIdentity(catalog, { ...input, loggedExerciseIds });
-  if (!("exerciseId" in resolved)) return resolved;
-  const requestedId = resolved.exerciseId;
-  const requestedDef = catalog[requestedId];
-  const template = requestedDef ? movementTemplate(requestedDef, catalog) : undefined;
-  const rolling = template ? rollsUp(template) : false;
-  const exerciseId = requestedDef && rolling ? movementId(requestedDef) : requestedId;
-  const def = catalog[exerciseId] ?? requestedDef;
-  const memberIds = movementMemberIds(exerciseId, catalog);
-
-  const { data: rows, error } = await supabase
-    .from("set_log")
-    .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, program_slot_id, is_warmup, is_deload, workout_session!inner(performed_at, finished_at, program_id)")
-    .eq("user_id", userId)
-    .in("exercise_id", memberIds)
-    .eq("is_warmup", false)
-    .not("workout_session.finished_at", "is", null)
-    .order("created_at", { ascending: true });
-  if (error) throw new Error(error.message);
-
-  const history = (rows ?? []).map((row) => {
-    const workout = sessionJoin(row.workout_session);
-    return {
-      id: row.id,
-      sessionId: row.session_id,
-      weight: row.weight,
-      reps: row.reps,
-      rir: row.rir,
-      e1rm: row.e1rm,
-      isDeload: row.is_deload,
-      performedAt: workout.performed_at,
-      finishedAt: workout.finished_at,
-      programId: workout.program_id ?? null,
-      equipmentInstanceId: row.equipment_instance_id ?? null,
-    };
-  });
-
-  const now = new Date();
-  const identities = rolling ? [] : reviewEquipmentChoices(history, now);
-  const requested = input.equipmentInstanceId === undefined ? undefined : input.equipmentInstanceId;
-  const selectedEquipment = rolling
-    ? null
-    : resolveReviewEquipment(requested, history, now);
-  const selectedHistory = rolling ? history : rowsForReviewEquipment(history, selectedEquipment);
-  const grouped = groupReviewSessions(selectedHistory, now);
-  const programIds = [...new Set(grouped.map((session) => session.programId).filter((id): id is string => id != null))];
-  const programNames = new Map<string, string>();
-  if (programIds.length > 0) {
-    const { data: programs, error: programError } = await supabase
-      .from("program")
-      .select("id, name")
-      .in("id", programIds);
-    if (programError) throw new Error(programError.message);
-    for (const program of programs ?? []) {
-      const label = program.name?.trim();
-      if (label) programNames.set(program.id, label);
+export async function exerciseReview(supabase: Client, userId: string, input: ReviewInput) {
+  const catalog = await getCatalogMap(supabase, userId);
+  const resolved = resolveExerciseIdentity(catalog, input);
+  if ("error" in resolved) return { ...resolved, selectionStatus: "no_match" as const, matches: [] };
+  const ids = "exerciseId" in resolved ? [resolved.exerciseId] : resolved.matches.map((match) => match.id);
+  const memberIds = [...new Set(ids.flatMap((id) => movementMemberIds(id, catalog)))];
+  const history: HistoryRow[] = [];
+  // Chunk ids to bound URL length; paginate to cover the server's row limit.
+  for (let chunk = 0; chunk < memberIds.length; chunk += 100) {
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const { data, error } = await supabase.from("set_log")
+        .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, is_warmup, is_deload, workout_session!inner(performed_at, finished_at, program_id)")
+        .eq("user_id", userId).in("exercise_id", memberIds.slice(chunk, chunk + 100))
+        .eq("is_warmup", false).not("workout_session.finished_at", "is", null)
+        .order("id", { ascending: true }).range(from, from + PAGE_SIZE - 1);
+      if (error) throw new Error(error.message);
+      for (const row of data ?? []) {
+        if (row.user_id !== userId || row.is_warmup) continue;
+        const workout = sessionJoin(row.workout_session);
+        history.push({ id: row.id, sessionId: row.session_id, exerciseId: row.exercise_id,
+          weight: row.weight, reps: row.reps, rir: row.rir, e1rm: row.e1rm, isDeload: row.is_deload,
+          performedAt: workout.performed_at, finishedAt: workout.finished_at,
+          programId: workout.program_id ?? null, equipmentInstanceId: row.equipment_instance_id ?? null });
+      }
+      if ((data?.length ?? 0) < PAGE_SIZE) break;
     }
   }
-  const sessions = withProgramNames(grouped, programNames);
-  let equipmentLabel: string | null = null;
-  if (selectedEquipment) {
-    const { data: instances, error: instanceError } = await supabase
-      .from("equipment_instance")
-      .select("id, label, gym")
-      .eq("user_id", userId)
-      .eq("id", selectedEquipment)
-      .maybeSingle();
-    if (instanceError) throw new Error(instanceError.message);
-    equipmentLabel = reviewEquipmentLabel(instances ?? undefined, selectedEquipment);
+  const now = new Date();
+  const discovered = reviewCandidates(catalog, ids, history, input, now);
+  const candidates = input.all && input.matchKeys
+    ? discovered.filter((candidate) => input.matchKeys!.includes(candidate.key)) : discovered;
+  if (input.all && input.matchKeys?.some((key) => !candidates.some((candidate) => candidate.key === key))) {
+    return { source: "exerciseReview" as const, selectionStatus: "no_match" as const, matches: [],
+      error: "A prior choice is no longer available for this user/request. Search again before summarizing all." };
   }
-
-  return summarizeExerciseReview({
-    exerciseId,
-    exerciseName: def?.name ?? exerciseId,
-    equipmentInstanceId: selectedEquipment,
-    equipmentLabel,
-    identities,
-    sessions,
-    rolling,
+  const instanceIds = [...new Set(candidates.flatMap((candidate) => candidate.equipmentInstanceId ? [candidate.equipmentInstanceId] : []))];
+  const labels = new Map<string, string>();
+  for (let start = 0; start < instanceIds.length; start += 100) {
+    const { data, error } = await supabase.from("equipment_instance").select("id, label, gym")
+      .eq("user_id", userId).in("id", instanceIds.slice(start, start + 100));
+    if (error) throw new Error(error.message);
+    for (const instance of data ?? []) labels.set(instance.id, reviewEquipmentLabel(instance, instance.id)!);
+  }
+  const matches = candidates.map(({ sessions, ...candidate }) => {
+    const equipmentLabel = candidate.equipmentInstanceId ? labels.get(candidate.equipmentInstanceId) ?? candidate.equipmentInstanceId : null;
+    return { ...candidate, name: equipmentLabel ? `${candidate.name} — ${equipmentLabel}` : candidate.name,
+      equipmentLabel, history: historyAvailability(sessions) };
   });
+  const logged = matches.filter((match) => match.history.loggedSetCount > 0);
+  const selected = matches.length === 1 ? matches[0] : logged.length === 1 ? logged[0] : undefined;
+  const selectionStatus = input.all ? "all" : matches.length === 1
+    ? input.exerciseId ? "explicit" : "unique"
+    : selected ? "preferred_history" : "clarification_needed";
+  const matchOffset = Math.max(0, Math.floor(input.matchOffset ?? 0));
+  const visibleMatches = matches.slice(matchOffset, matchOffset + REVIEW_MATCH_PAGE_SIZE);
+  const nextMatchOffset = matchOffset + visibleMatches.length < matches.length ? matchOffset + visibleMatches.length : null;
+  const base = { source: "exerciseReview" as const, requested: input, asOf: now.toISOString(),
+    matches: visibleMatches, totalMatches: matches.length, matchOffset, nextMatchOffset,
+    matchesComplete: matches.length <= REVIEW_MATCH_PAGE_SIZE,
+    selectionStatus: !input.all && matches.length > REVIEW_MATCH_PAGE_SIZE ? "more_matches" : selectionStatus,
+    needsDisambiguation: !input.all && !selected,
+    recommendation: selected ? { id: selected.id, equipmentInstanceId: selected.equipmentInstanceId,
+      reason: matches.length === 1 ? "only_relevant_match" : "only_match_with_logged_sets" } : null };
+  const offset = Math.max(0, Math.floor(input.offset ?? 0));
+  const chosen = input.all ? candidates.slice(offset, offset + REVIEW_BATCH_SIZE)
+    : selected && matches.length <= REVIEW_MATCH_PAGE_SIZE ? candidates.filter((candidate) => candidate.key === selected.key) : [];
+  const programIds = [...new Set(chosen.flatMap((candidate) => candidate.sessions.flatMap((session) => session.programId ? [session.programId] : [])))];
+  const programNames = new Map<string, string>();
+  for (let start = 0; start < programIds.length; start += 100) {
+    const { data, error } = await supabase.from("program").select("id, name")
+      .eq("user_id", userId).in("id", programIds.slice(start, start + 100));
+    if (error) throw new Error(error.message);
+    for (const program of data ?? []) if (program.name?.trim()) programNames.set(program.id, program.name.trim());
+  }
+  const reviews = chosen.map((candidate) => summarizeExerciseReview({ exerciseId: candidate.id,
+    exerciseName: catalog[candidate.id]?.name ?? candidate.name,
+    equipmentInstanceId: candidate.equipmentInstanceId,
+    equipmentLabel: candidate.equipmentInstanceId ? labels.get(candidate.equipmentInstanceId) ?? candidate.equipmentInstanceId : null,
+    sessions: withProgramNames(candidate.sessions, programNames), rolling: candidate.scope === "movement", now }));
+  if (input.all) return { ...base, reviews, nextOffset: offset + chosen.length < candidates.length ? offset + chosen.length : null,
+    totalMatches: candidates.length };
+  return reviews[0] ? { ...base, ...reviews[0] } : base;
+}
+
+function reviewCandidates(catalog: Record<string, ExerciseDef>, ids: string[], history: HistoryRow[], input: ReviewInput, now: Date) {
+  const candidates = new Map<string, { key: string; id: string; name: string; scope: "movement" | "station";
+    equipmentInstanceId: string | null; sessions: ReturnType<typeof groupReviewSessions> }>();
+  for (const requestedId of ids) {
+    const requested = catalog[requestedId]!;
+    const rolling = rollsUp(movementTemplate(requested, catalog));
+    const id = rolling ? movementId(requested) : requestedId;
+    const members = new Set(movementMemberIds(id, catalog));
+    const rows = history.filter((row) => members.has(row.exerciseId));
+    const equipment = rolling ? [null] : input.equipmentInstanceId !== undefined
+      ? [input.equipmentInstanceId] : reviewEquipmentChoices(rows, now);
+    if (equipment.length === 0) equipment.push(null);
+    for (const equipmentInstanceId of equipment) {
+      const key = rolling ? `movement:${id}` : `station:${id}:${equipmentInstanceId ?? ""}`;
+      if (candidates.has(key)) continue;
+      candidates.set(key, { key, id, name: catalog[id]?.name ?? requested.name,
+        scope: rolling ? "movement" : "station", equipmentInstanceId,
+        sessions: groupReviewSessions(rolling ? rows : rows.filter((row) => row.equipmentInstanceId === equipmentInstanceId), now) });
+    }
+  }
+  return [...candidates.values()];
+}
+
+export function historyAvailability(sessions: ReturnType<typeof groupReviewSessions>) {
+  const points = reviewChartPoints(sessions, "all");
+  return { loggedSetCount: sessions.reduce((sum, session) => sum + session.sets.length, 0),
+    sessionCount: sessions.length, eligiblePointCount: points.length,
+    latestActivityDate: sessions.at(-1)?.dateKey ?? null, latestEligibleDate: points.at(-1)?.dateKey ?? null };
 }
 
 export function summarizeExerciseReview(input: {
-  exerciseId: string;
-  exerciseName: string;
-  equipmentInstanceId: string | null;
-  equipmentLabel: string | null;
-  identities: Array<string | null>;
-  sessions: ReturnType<typeof withProgramNames>;
-  rolling?: boolean;
+  exerciseId: string; exerciseName: string; equipmentInstanceId: string | null; equipmentLabel: string | null;
+  identities?: Array<string | null>; sessions: ReturnType<typeof withProgramNames>; rolling?: boolean; now?: Date;
 }) {
   const last = reviewToday(input.sessions);
-  const recent = reviewRecentWindow(input.sessions);
+  const recent = reviewRecentWindow(input.sessions, input.now);
   const chart = reviewChartPoints(input.sessions, "last8");
-  return {
-    source: "exerciseReview" as const,
-    exerciseId: input.exerciseId,
-    exerciseName: input.exerciseName,
-    equipmentInstanceId: input.equipmentInstanceId,
-    equipmentLabel: input.equipmentLabel,
-    identityNote: input.rolling
-      ? "Movement scope across every station in this family. Machines and cables stay exact."
+  return { source: "exerciseReview" as const, exerciseId: input.exerciseId, exerciseName: input.exerciseName,
+    equipmentInstanceId: input.equipmentInstanceId, equipmentLabel: input.equipmentLabel,
+    identityNote: input.rolling ? "Movement scope across every station in this family. Machines and cables stay exact."
       : "Exact exercise plus equipment instance. Instances are not blended.",
-    last: last
-      ? {
-          dateKey: last.dateKey,
-          programName: last.programName,
-          bestE1rm: last.bestE1rm,
-          isDeload: last.isDeload ?? false,
-          sets: last.sets,
-        }
-      : null,
-    recent21Days: recent,
-    chartLast8: chart,
-  };
+    availability: { ...historyAvailability(input.sessions), recentComparison: recent?.kind === "sessions" && recent.delta != null,
+      historicalTrend: chart.length >= 2 },
+    latestEligibleE1rm: chart.at(-1) ?? null,
+    deloadNote: "Deload sets are logged activity but excluded from eligible e1RM comparisons; null comparison values do not mean the stored e1RM is absent.",
+    historicalDelta: chart.length >= 2 ? chart.at(-1)!.e1rm - chart[0]!.e1rm : null,
+    last: last ? { dateKey: last.dateKey, programName: last.programName, bestE1rm: last.bestE1rm,
+      isDeload: last.isDeload ?? false, sets: last.sets.slice(0, 12), setCount: last.sets.length } : null,
+    recent21Days: recent?.kind === "sessions" ? { ...recent, sessionCount: recent.sessions.length,
+      sessions: recent.sessions.slice(-8).map(({ sets, ...session }) => ({ ...session, setCount: sets.length })) } : recent,
+    detailNote: "Last includes up to 12 sets; recent session details include up to 8 sessions. Counts and comparisons use all eligible ledger rows.",
+    chartLast8: chart };
 }
 
 export type ResolvedExerciseIdentity =
@@ -190,8 +200,6 @@ const MODIFIER_REJECT: Record<string, string> = {
   flat: "incline",
 };
 
-const MIN_SCORE = 0.5;
-const RESOLVE_MARGIN = 0.12;
 const EXTRA_NAME_TOKEN = 0.07;
 
 function tokenize(value: string): string[] {
@@ -262,14 +270,14 @@ type CatalogDoc = {
   tokens: string[];
 };
 
-function catalogDocs(catalog: Record<string, { id: string; name: string }>): CatalogDoc[] {
+function catalogDocs(catalog: Record<string, MatchDefinition>): CatalogDoc[] {
   return Object.values(catalog).map((def) => {
     const nameTokens = tokenize(def.name);
     return {
       id: def.id,
       name: def.name,
       nameTokens,
-      tokens: [...nameTokens, ...tokenize(def.id)],
+      tokens: [...nameTokens, ...tokenize(def.id), ...tokenize(def.brand ?? ""), ...tokenize(def.machineType ?? ""), ...tokenize(def.equipment ?? "")],
     };
   });
 }
@@ -323,30 +331,9 @@ function scoreNames(docs: CatalogDoc[], content: string[], rejected: string | un
     const joins = queryJoins(content);
     const uncovered = doc.nameTokens.filter((nameToken) => !nameTokenCovered(nameToken, content, joins)).length;
     const score = matched / total - uncovered * EXTRA_NAME_TOKEN;
-    if (score >= MIN_SCORE) scored.push({ id: doc.id, name: doc.name, score, nameTokens: doc.nameTokens });
+    scored.push({ id: doc.id, name: doc.name, score, nameTokens: doc.nameTokens });
   }
   return scored.sort((left, right) => right.score - left.score || left.name.localeCompare(right.name));
-}
-
-function preferBarbell(queryTokens: string[], content: string[], scored: ScoredName[]): ScoredName[] {
-  if (queryTokens.some((token) => EQUIPMENT_TOKENS.has(token)) || scored.length <= 1) return scored;
-  const barbell = scored.filter((row) => row.nameTokens.includes("barbell"));
-  if (barbell.length === 0) return scored;
-  return scored.filter((row) => {
-    if (row.nameTokens.includes("barbell")) return true;
-    return content.some((token, index) => {
-      const joins = joinsAround(content, index);
-      const hit = tokenHitsDoc(token, joins, row.nameTokens);
-      const covered = barbell.some((other) => tokenHitsDoc(token, joins, other.nameTokens));
-      return hit && !covered;
-    });
-  });
-}
-
-function preferLogged(scored: ScoredName[], logged: ReadonlySet<string> | null): ScoredName[] {
-  if (!logged || logged.size === 0) return scored;
-  const hit = scored.filter((row) => logged.has(row.id));
-  return hit.length > 0 ? hit : scored;
 }
 
 function unknownTokenBlocks(content: string[], docs: CatalogDoc[]): boolean {
@@ -355,17 +342,8 @@ function unknownTokenBlocks(content: string[], docs: CatalogDoc[]): boolean {
   return content.some((token, index) => !tokenHitsDoc(token, joinsAround(content, index), docs.flatMap((doc) => doc.tokens)));
 }
 
-async function loggedExerciseIdsFor(supabase: Client, userId: string): Promise<string[]> {
-  const { data, error } = await supabase
-    .from("user_exercise_stat")
-    .select("exercise_id")
-    .eq("user_id", userId);
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => row.exercise_id);
-}
-
 export function resolveExerciseIdentity(
-  catalog: Record<string, { id: string; name: string }>,
+  catalog: Record<string, MatchDefinition>,
   input: { exerciseId?: string; name?: string; loggedExerciseIds?: readonly string[] },
 ): ResolvedExerciseIdentity {
   const knownId = input.exerciseId?.trim();
@@ -387,13 +365,6 @@ export function resolveExerciseIdentity(
     };
   }
 
-  const logged = input.loggedExerciseIds ? new Set(input.loggedExerciseIds) : null;
-  const entries = Object.values(catalog);
-  const exact = entries.find((def) => def.name.toLowerCase() === needle.toLowerCase());
-  if (exact && (!logged || logged.size === 0 || logged.has(exact.id))) {
-    return { exerciseId: exact.id };
-  }
-
   const rawTokens = tokenize(needle);
   const queryTokens = expandAliases(rawTokens);
   const content = queryTokens.filter((token) => !(token in MODIFIER_REJECT));
@@ -413,10 +384,19 @@ export function resolveExerciseIdentity(
   }
 
   const rejected = queryTokens.map((token) => MODIFIER_REJECT[token]).find(Boolean);
-  const ranked = preferLogged(
-    preferBarbell(queryTokens, content, scoreNames(docs, content, rejected)),
-    logged,
-  );
+  const ranked = scoreNames(docs, content, rejected).filter((row) => {
+    const def = catalog[row.id]!;
+    const template = def.baseExerciseId ? catalog[def.baseExerciseId] ?? def : def;
+    // Equipment can be metadata even when it is absent from the display name.
+    if (queryTokens.some((token) => EQUIPMENT_TOKENS.has(token) && token !== "weighted"
+      && template.equipment && template.equipment !== token)) return false;
+    if (template.pattern === "calf" && !queryTokens.includes("calf")) return false;
+    return content.every((token, index) => {
+      if (token === "press" && queryTokens.includes("bench")) return true;
+      if (EQUIPMENT_TOKENS.has(token) && template.equipment === token) return true;
+      return tokenHitsDoc(token, joinsAround(content, index), docs.find((doc) => doc.id === row.id)!.tokens);
+    });
+  });
   const top = ranked[0];
   if (!top) {
     return {
@@ -424,12 +404,11 @@ export function resolveExerciseIdentity(
       error: `No exercise matched “${needle}”.`,
     };
   }
-  const close = ranked.filter((row) => top.score - row.score < RESOLVE_MARGIN);
-  if (close.length === 1) return { exerciseId: close[0]!.id };
+  if (ranked.length === 1) return { exerciseId: ranked[0]!.id };
   return {
     source: "exerciseReview" as const,
     needsDisambiguation: true,
-    matches: close.slice(0, 8).map(({ id, name }) => ({ id, name })),
+    matches: ranked.map(({ id, name }) => ({ id, name })),
   };
 }
 

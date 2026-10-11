@@ -100,11 +100,10 @@ describe("agent read tools", () => {
     expect("needsDisambiguation" in resolved || "matches" in resolved).toBe(true);
   });
 
-  it("resolves incline bench phrasing to bb-incline-bench, not flat bb-bench", () => {
+  it("resolves explicit barbell incline phrasing without substituting flat bench", () => {
     const catalog = Object.fromEntries(EXERCISES.map((def) => [def.id, def]));
     const queries = [
       "incline barbell bench press",
-      "Incline bench",
       "barbell incline bench",
     ];
     for (const name of queries) {

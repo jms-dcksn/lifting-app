@@ -1,4 +1,6 @@
 import { readFileSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
 import { awaitAllCallbacks } from "@langchain/core/callbacks/promises";
 import { Client } from "langsmith";
@@ -7,229 +9,179 @@ import type { Database } from "@/lib/supabase/types";
 import { enrichScreenContext } from "../context";
 import type { AgentMessage } from "../messages";
 import { runAgentTurn } from "../run";
-import { bindAgentTools } from "../tools";
-import { askJev } from "./jev";
-import {
-  LIVE_DATASET,
-  LIVE_EVAL_PROJECT,
-  LIVE_EXAMPLES,
-  gradeFoundExercise,
-  gradeRightTool,
-  gradeToolCount,
-  outputFromTurn,
-  scoreNoul,
-  type ExpectedReview,
-  type LiveExample,
-  type LiveTurnOutput,
-} from "./live";
+import { bindReadTools } from "../tools";
+import { agentModelId } from "../policy";
+import { gradeSupportedFigures } from "./evidence-grade";
+import { askJev, jevModelId } from "./jev";
+import { LIVE_DATASET, LIVE_EVAL_PROJECT, LIVE_EXAMPLES, LIVE_FOLLOW_UP_EXAMPLES, LIVE_POLICY_VERSION,
+  REFERENCE_MATCH_THRESHOLD, REVIEW_JUDGE_QUESTIONS, gradeFoundExercise, gradeRightTool, gradeToolCount,
+  outputFromTurn, reviewJudgeRequest, reviewRecord, scoreNoul,
+  type ExpectedReview, type LiveExample, type LiveTurnOutput } from "./live";
 
 const DEFAULT_EVAL_EMAIL = "jms.dcksn88@gmail.com";
+const SOURCE = "lifting-app/LIVE_EXAMPLES";
+const DEVELOPMENT_PROJECT = "uggyizzzczwwxkgnwuse";
+const PRODUCTION_PROJECT = "jtcppebmosaffaajtgow";
+const DATASET_DESCRIPTION = "Live exercise review policy checks with explicit source sync; live facts are graded against tool evidence, not numeric gold.";
+export type LiveScenarioOutput = LiveTurnOutput & { turns: LiveTurnOutput[] };
 
-const DATASET_DESCRIPTION = "Live Coach reads: exerciseReview e1RM trend and disambiguation. Gold is the lift the question means. Local experiments trace to lifting-app-agent-evals.";
-
-type JudgeArgs = {
-  inputs: Record<string, unknown>;
-  outputs: Record<string, unknown>;
-  referenceOutputs?: Record<string, unknown>;
-};
+export function validateEvalTarget(url: string, expectedProject = DEVELOPMENT_PROJECT) {
+  const parsed = new URL(url);
+  if (parsed.protocol !== "https:" || parsed.hostname !== `${expectedProject}.supabase.co` || expectedProject === PRODUCTION_PROJECT) {
+    throw new Error("Live eval requires the configured development project. Check NEXT_PUBLIC_SUPABASE_URL and EVAL_DB_PROJECT_REF.");
+  }
+  return expectedProject;
+}
 
 export async function runLiveExperiment() {
   loadLocalEnv();
   process.env.LANGSMITH_PROJECT = LIVE_EVAL_PROJECT;
   process.env.LANGSMITH_TRACING = "true";
-
-  const missing = [
-    "LANGSMITH_API_KEY",
-    "AI_GATEWAY_API_KEY",
-    "SUPABASE_SECRET_KEY",
-    "NEXT_PUBLIC_SUPABASE_URL",
-    "JEV_API_KEY",
-  ].filter((key) => !process.env[key]?.trim());
-  if (missing.length) {
-    throw new Error(
-      `Live eval needs ${missing.join(", ")} in the shell or .env.local. The chat route's LangSmith project is left alone; this script traces to ${LIVE_EVAL_PROJECT}.`,
-    );
-  }
-
-  const email = process.env.EVAL_USER_EMAIL?.trim() || DEFAULT_EVAL_EMAIL;
-  const supabase = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SECRET_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-  const userId = await userIdForEmail(supabase, email);
-
-  console.log(`\nDataset: ${LIVE_DATASET} (${LIVE_EXAMPLES.length} examples)`);
-  console.log(`Traces: ${LIVE_EVAL_PROJECT} (not the Vercel project)`);
-  console.log(`User: ${email}\n`);
-
+  const missing = ["LANGSMITH_API_KEY", "AI_GATEWAY_API_KEY", "SUPABASE_SECRET_KEY", "NEXT_PUBLIC_SUPABASE_URL", "JEV_API_KEY"]
+    .filter((key) => !process.env[key]?.trim());
+  if (missing.length) throw new Error(`Live eval needs ${missing.join(", ")} in the shell or .env.local.`);
+  const databaseProject = validateEvalTarget(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.EVAL_DB_PROJECT_REF?.trim() || DEVELOPMENT_PROJECT);
+  const supabase = createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } });
+  const userId = await userIdForEmail(supabase, process.env.EVAL_USER_EMAIL?.trim() || DEFAULT_EVAL_EMAIL);
   const client = new Client();
-  await syncLiveExamples(client);
-
-  const screenContext = await enrichScreenContext(supabase, userId, {
-    pathname: "/",
-    activeProgramId: null,
-    openSessionId: null,
-    focusedExerciseId: null,
-  });
-
-  const results = await evaluate(
-    async (inputs: { question: string; id?: string }): Promise<LiveTurnOutput> => {
-      const question = inputs.question;
-      const exampleId = typeof inputs.id === "string" ? inputs.id : "live";
-      console.log(`\n${exampleId}: ${question}`);
-      const persisted: AgentMessage[] = [{
-        id: "eval-user",
-        role: "user",
-        parts: [{ type: "text", text: question }],
-        createdAt: new Date().toISOString(),
-      }];
-      const generated = await runAgentTurn({
-        persisted,
-        threadId: `eval-${exampleId}`,
-        screenContext,
-        tools: bindAgentTools(supabase, userId),
-        traceMetadata: { source: "local-eval", dataset: LIVE_DATASET },
-      });
-      const output = outputFromTurn(generated);
-      console.log(`Tool calls (${output.toolCalls.length}): ${output.toolCalls.map((call) => call.name).join(", ") || "none"}`);
-      console.log(`Answer:\n${output.answer || "(empty)"}\n`);
-      return output;
-    },
-    {
-      data: LIVE_DATASET,
-      experimentPrefix: "exercise-review",
-      maxConcurrency: 1,
-      metadata: { source: "local-eval" },
-      evaluators: [
-        (args: JudgeArgs) => {
-          const grade = gradeRightTool({
-            toolCalls: toolCallsFrom(args.outputs),
-            expectedTools: stringList(args.referenceOutputs?.expectedTools),
-          });
-          return { key: "right_tool", ...grade };
-        },
-        (args: JudgeArgs) => {
-          const grade = gradeToolCount(
-            toolCallsFrom(args.outputs).length,
-            numberFrom(args.referenceOutputs?.maxToolCalls, 3),
-          );
-          return { key: "tool_call_count", ...grade };
-        },
-        (args: JudgeArgs) => {
-          const expected = reviewFrom(args.referenceOutputs?.review);
-          if (!expected) return { key: "found_exercise", score: 0, comment: "example has no review expectation" };
-          const grade = gradeFoundExercise({
-            toolResults: toolResultsFrom(args.outputs),
-            expected,
-          });
-          return { key: "found_exercise", ...grade };
-        },
-        async (args: JudgeArgs) => {
-          const question = typeof args.inputs.question === "string" ? args.inputs.question : "";
-          const referenceText = typeof args.referenceOutputs?.reference === "string"
-            ? args.referenceOutputs.reference
-            : "";
-          const answer = typeof args.outputs.answer === "string" ? args.outputs.answer : "";
-          const instructions = instructionsFrom(args.referenceOutputs?.instructions);
-          const nouls = await askJev({
-            state: { question, reference: referenceText, answer },
-            questions: {
-              matches_reference: {
-                type: "noul",
-                instructions,
-                criteria: {
-                  true: instructions.pass,
-                  false: instructions.fail,
-                },
-              },
-            },
-          });
-          const noul = nouls.matches_reference;
-          if (noul === undefined) throw new Error("Jev did not return matches_reference");
-          const grade = scoreNoul(noul);
-          return { key: "reference_match", ...grade };
-        },
-      ],
-    },
-  );
-
-  for await (const row of results) {
-    const scores = row.evaluationResults.results
-      .map((result) => `${result.key}=${result.score} (${result.comment ?? ""})`)
-      .join("\n");
-    console.log(scores);
+  const dataset = await client.readDataset({ datasetName: LIVE_DATASET });
+  const version = await client.readDatasetVersion({ datasetId: dataset.id,
+    ...(process.env.EVAL_DATASET_VERSION?.trim() ? { asOf: process.env.EVAL_DATASET_VERSION.trim() } : { tag: "latest" }) });
+  const examples = [];
+  for await (const example of client.listExamples({ datasetId: dataset.id, asOf: version.as_of })) {
+    if (example.outputs?.policyVersion !== LIVE_POLICY_VERSION || !reviewFrom(example.outputs.review)) {
+      throw new Error("Dataset has old or incomplete policy references. Preview explicit sync, then apply reviewed changes before running.");
+    }
+    examples.push(example);
   }
+  if (!examples.length) throw new Error("Live dataset is empty; sync explicitly first.");
+  const snapshot = await trainingSnapshot(supabase, userId);
+  const codeSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+  const dirty = Boolean(execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim());
+  const metadata = { source: "local-eval", policyVersion: LIVE_POLICY_VERSION, datasetVersion: version.as_of,
+    agentModel: agentModelId(), judgeModel: jevModelId(), judgeThreshold: REFERENCE_MATCH_THRESHOLD,
+    judgeConfiguration: REVIEW_JUDGE_QUESTIONS, judgeModelIsFloating: jevModelId().endsWith("latest"), codeSha, dirty, databaseProject, userId,
+    asOf: new Date().toISOString(), trainingSnapshot: snapshot };
+  console.log(`Dataset ${LIVE_DATASET}@${version.as_of}: ${examples.length} scenarios; development project ${databaseProject}; model ${metadata.agentModel}`);
+  const screenContext = await enrichScreenContext(supabase, userId, { pathname: "/", activeProgramId: null, openSessionId: null, focusedExerciseId: null });
+  const results = await evaluate(async (inputs: { question: string; id?: string; followUps?: string[] }): Promise<LiveScenarioOutput> => {
+    const persisted: AgentMessage[] = [];
+    const turns: LiveTurnOutput[] = [];
+    for (const [index, question] of [inputs.question, ...(inputs.followUps ?? [])].entries()) {
+      persisted.push({ id: `user-${index}`, role: "user", parts: [{ type: "text", text: question }], createdAt: new Date().toISOString() });
+      const generated = await runAgentTurn({ persisted, threadId: `eval-${inputs.id ?? "live"}`, screenContext,
+        tools: bindReadTools(supabase, userId), traceMetadata: { source: "local-eval", dataset: LIVE_DATASET, datasetVersion: version.as_of } });
+      turns.push(outputFromTurn(generated));
+      for (const [messageIndex, message] of generated.entries()) persisted.push({ ...message,
+        id: `turn-${index}-${messageIndex}`, createdAt: new Date().toISOString() });
+    }
+    return { ...turns.at(-1)!, turns };
+  }, { data: examples, experimentPrefix: "exercise-review", maxConcurrency: 1, metadata,
+    evaluators: [async (args: { inputs: Record<string, unknown>; outputs: Record<string, unknown>; referenceOutputs?: Record<string, unknown> }) => {
+      const outputs = args.outputs as unknown as LiveScenarioOutput;
+      const reference = args.referenceOutputs ?? {};
+      return { results: await gradeScenario(args.inputs, outputs, reference) };
+    }] });
+  for await (const row of results) console.log(row.evaluationResults.results.map((result) => `${result.key}=${result.score} (${result.comment ?? ""})`).join("\n"));
+  const after = await trainingSnapshot(supabase, userId);
+  const experiment = await client.readProject({ projectName: results.experimentName });
+  await client.updateProject(experiment.id, { metadata: { ...experiment.extra?.metadata, ...metadata,
+    trainingSnapshotAfter: after, trainingDataChangedDuringRun: after.sha256 !== snapshot.sha256 } });
   await awaitAllCallbacks();
 }
 
-export async function syncLiveDataset() {
-  loadLocalEnv();
-  if (!process.env.LANGSMITH_API_KEY?.trim()) {
-    throw new Error("Live dataset sync needs LANGSMITH_API_KEY in the shell or .env.local.");
-  }
-  await syncLiveExamples(new Client());
-}
-
-export async function syncLiveExamples(client: Client) {
-  let datasetId: string;
-  try {
-    const dataset = await client.readDataset({ datasetName: LIVE_DATASET });
-    datasetId = dataset.id;
-  } catch {
-    const dataset = await client.createDataset(LIVE_DATASET, {
-      description: DATASET_DESCRIPTION,
-    });
-    datasetId = dataset.id;
-  }
-  await client.updateDataset({ datasetId, description: DATASET_DESCRIPTION });
-
-  const existing: Array<{ id: string; inputs?: Record<string, unknown> }> = [];
-  for await (const example of client.listExamples({ datasetId })) {
-    existing.push({ id: example.id, inputs: example.inputs });
-  }
-
-  const wantedIds = new Set(LIVE_EXAMPLES.map((example) => example.id));
-  const wantedQuestions = new Set(LIVE_EXAMPLES.map((example) => example.question));
-  const stale = existing.filter((row) => {
-    const id = row.inputs?.id;
-    const question = row.inputs?.question;
-    const idOk = typeof id === "string" && wantedIds.has(id);
-    const questionOk = typeof question === "string" && wantedQuestions.has(question);
-    return !idOk && !questionOk;
-  });
-  for (const row of stale) await client.deleteExample(row.id);
-  const current = existing.filter((row) => !stale.includes(row));
-
-  for (const example of LIVE_EXAMPLES) {
-    const inputs = { id: example.id, question: example.question };
-    const outputs = exampleOutputs(example);
-    const match = current.find((row) =>
-      row.inputs?.id === example.id || row.inputs?.question === example.question
-    );
-    if (match) {
-      await client.updateExample({ id: match.id, inputs, outputs });
-      continue;
+export async function gradeScenario(inputs: Record<string, unknown>, output: LiveScenarioOutput, reference: Record<string, unknown>) {
+  const turns = output.turns ?? [output];
+  const followUps = Array.isArray(reference.followUps) ? reference.followUps as Array<Record<string, unknown>> : [];
+  const questions = [String(inputs.question ?? ""), ...(Array.isArray(inputs.followUps) ? inputs.followUps.map(String) : [])];
+  if (turns.length !== questions.length) throw new Error("Scenario turn count differs from dataset input.");
+  const grades: Array<{ key: string; score: number; comment: string }> = [];
+  for (const [index, turn] of turns.entries()) {
+    const expectation = index === 0 ? reference : followUps[index - 1];
+    const expected = reviewFrom(expectation?.review);
+    if (!expected) throw new Error("Scenario is missing review expectation.");
+    const prefix = turns.length > 1 ? `turn_${index + 1}_` : "";
+    grades.push({ key: `${prefix}right_tool`, ...gradeRightTool({ toolCalls: turn.toolCalls, expectedTools: ["exerciseReview"] }) },
+      { key: `${prefix}tool_call_count`, ...gradeToolCount(turn.toolCalls.length, Number(expectation.maxToolCalls ?? 3)) },
+      { key: `${prefix}supported_figures`, ...gradeSupportedFigures(turn) },
+      { key: `${prefix}found_exercise`, ...gradeFoundExercise({ toolResults: turn.toolResults, expected }) });
+    const request = reviewJudgeRequest(questions[index]!, String(reference.reference ?? ""), turn);
+    const scores = await askJev({ ...request, state: { ...request.state, conversationQuestions: questions.slice(0, index + 1) } });
+    for (const key of Object.keys(REVIEW_JUDGE_QUESTIONS)) {
+      const raw = scores[key];
+      if (raw === undefined) throw new Error(`Jev missing ${key}`);
+      grades.push({ key: `${prefix}${key}_raw`, score: raw, comment: `model ${jevModelId()}; policy ${LIVE_POLICY_VERSION}` },
+        { key: `${prefix}${key}`, ...scoreNoul(raw) });
     }
-    await client.createExample({ dataset_id: datasetId, inputs, outputs });
+    grades.push({ key: `${prefix}reference_match`, ...scoreNoul(Math.min(gradeSupportedFigures(turn).score, scores.selection_correctness!, scores.evidence_support!, scores.availability_handling!)) });
   }
+  return grades;
 }
 
+export async function syncLiveDataset(options: { apply?: boolean; adopt?: boolean } = {}) {
+  loadLocalEnv();
+  if (!process.env.LANGSMITH_API_KEY?.trim()) throw new Error("Dataset sync needs LANGSMITH_API_KEY.");
+  const plan = await syncLiveExamples(new Client(), options);
+  console.log(JSON.stringify(plan, null, 2));
+}
+
+type ExistingExample = { id: string; inputs?: Record<string, unknown>; outputs?: Record<string, unknown>;
+  metadata?: Record<string, unknown> };
+export function planLiveSync(existing: ExistingExample[], adopt = false) {
+  return [...LIVE_EXAMPLES, ...LIVE_FOLLOW_UP_EXAMPLES].map((example) => {
+    const rows = existing.filter((candidate) => candidate.inputs?.id === example.id);
+    const ownedRows = rows.filter((candidate) => candidate.metadata?.source === SOURCE);
+    if (ownedRows.length > 1 || (adopt && !ownedRows.length && rows.length > 1)) {
+      throw new Error(`Multiple rows claim source id ${example.id}; resolve ownership before sync.`);
+    }
+    const row = ownedRows[0] ?? rows[0];
+    const owned = row?.metadata?.source === SOURCE;
+    return { example, row, action: !row ? "create" : owned || adopt ? "update" : "preserve" };
+  });
+}
+export async function syncLiveExamples(client: Client, options: { apply?: boolean; adopt?: boolean } = {}) {
+  let dataset;
+  try { dataset = await client.readDataset({ datasetName: LIVE_DATASET }); }
+  catch (error) {
+    if (!(error instanceof Error && /^Dataset\[.*\] not found$/.test(error.message))) throw error;
+    if (!options.apply) return { dataset: LIVE_DATASET, createDataset: true, changes: planLiveSync([]).map((item) => ({ id: item.example.id, action: item.action })) };
+    dataset = await client.createDataset(LIVE_DATASET, { description: DATASET_DESCRIPTION });
+  }
+  const existing: ExistingExample[] = [];
+  for await (const example of client.listExamples({ datasetId: dataset.id })) existing.push(example);
+  const plan = planLiveSync(existing, options.adopt);
+  const changes = plan.map((item) => ({ id: item.example.id, action: item.action,
+    before: item.row ? { inputs: item.row.inputs, outputs: item.row.outputs } : null,
+    after: { inputs: exampleInputs(item.example), outputs: exampleOutputs(item.example) } }));
+  if (options.apply) {
+    for (const item of plan) {
+      if (item.action === "preserve") continue;
+      const payload = { inputs: exampleInputs(item.example), outputs: exampleOutputs(item.example),
+        metadata: { ...item.row?.metadata, source: SOURCE, policyVersion: LIVE_POLICY_VERSION } };
+      if (item.row) await client.updateExample({ id: item.row.id, ...payload });
+      else await client.createExample({ dataset_id: dataset.id, ...payload });
+    }
+  }
+  // No deletion: UI examples and historical versions/annotations remain intact.
+  return { dataset: LIVE_DATASET, applied: Boolean(options.apply), changes };
+}
+function exampleInputs(example: LiveExample) {
+  return { id: example.id, question: example.question, ...(example.followUps ? { followUps: example.followUps.map((turn) => turn.question) } : {}) };
+}
 function exampleOutputs(example: LiveExample) {
-  return {
-    expectedTools: example.expectedTools,
-    maxToolCalls: example.maxToolCalls,
-    reference: example.reference,
-    instructions: example.instructions,
-    review: example.review,
-  };
+  return { expectedTools: example.expectedTools, maxToolCalls: example.maxToolCalls, reference: example.reference,
+    instructions: example.instructions, review: example.review, policyVersion: LIVE_POLICY_VERSION, followUps: example.followUps };
 }
-
-async function userIdForEmail(
-  supabase: ReturnType<typeof createClient<Database>>,
-  email: string,
-) {
-  for (let page = 1; page <= 10; page += 1) {
+export function reviewFrom(value: unknown): ExpectedReview | null {
+  const record = reviewRecord(value);
+  if (record?.outcome === "resolved" && typeof record.exerciseId === "string") return { outcome: "resolved", exerciseId: record.exerciseId };
+  if (record?.outcome === "disambiguate" && Array.isArray(record.matchIds)) return { outcome: "disambiguate", matchIds: record.matchIds.map(String) };
+  if (record?.outcome === "policy" && Array.isArray(record.requiredMatchIds)) return { outcome: "policy", requiredMatchIds: record.requiredMatchIds.map(String) };
+  return null;
+}
+async function userIdForEmail(supabase: ReturnType<typeof createClient<Database>>, email: string) {
+  for (let page = 1; ; page += 1) {
     const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 });
     if (error) throw new Error(error.message);
     const match = data.users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
@@ -238,76 +190,33 @@ async function userIdForEmail(
   }
   throw new Error(`No auth user for ${email}`);
 }
-
-function instructionsFrom(value: unknown) {
-  if (!value || typeof value !== "object") throw new Error("example is missing reference instructions");
-  const record = value as { pass?: unknown; fail?: unknown };
-  if (typeof record.pass !== "string" || typeof record.fail !== "string") {
-    throw new Error("example reference instructions are missing pass and fail");
+async function trainingSnapshot(supabase: ReturnType<typeof createClient<Database>>, userId: string) {
+  const hash = createHash("sha256");
+  let setCount = 0, exerciseCount = 0;
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await supabase.from("set_log").select("*, workout_session!inner(performed_at, finished_at)")
+      .eq("user_id", userId).order("id").range(offset, offset + 499);
+    if (error) throw new Error(error.message);
+    hash.update(JSON.stringify(data)); setCount += data?.length ?? 0;
+    if ((data?.length ?? 0) < 500) break;
   }
-  return { ...(value as Record<string, unknown>), pass: record.pass, fail: record.fail };
-}
-
-function reviewFrom(value: unknown): ExpectedReview | null {
-  if (!value || typeof value !== "object") return null;
-  const record = value as { outcome?: unknown; exerciseId?: unknown; matchIds?: unknown };
-  if (record.outcome === "resolved" && typeof record.exerciseId === "string") {
-    return { outcome: "resolved", exerciseId: record.exerciseId };
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await supabase.from("exercise").select("*").eq("user_id", userId).order("id").range(offset, offset + 499);
+    if (error) throw new Error(error.message);
+    hash.update(JSON.stringify(data)); exerciseCount += data?.length ?? 0;
+    if ((data?.length ?? 0) < 500) break;
   }
-  if (record.outcome === "disambiguate" && Array.isArray(record.matchIds)) {
-    const matchIds = record.matchIds.filter((id): id is string => typeof id === "string");
-    return { outcome: "disambiguate", matchIds };
-  }
-  return null;
+  return { sha256: hash.digest("hex"), setCount, ownedExerciseCount: exerciseCount };
 }
-
-function toolResultsFrom(outputs: Record<string, unknown>) {
-  const results = outputs.toolResults;
-  if (!Array.isArray(results)) return [];
-  return results.flatMap((result) => {
-    if (!result || typeof result !== "object" || !("name" in result)) return [];
-    const name = (result as { name?: unknown }).name;
-    if (typeof name !== "string") return [];
-    return [{ name, result: (result as { result?: unknown }).result }];
-  });
-}
-
-function toolCallsFrom(outputs: Record<string, unknown>) {
-  const calls = outputs.toolCalls;
-  if (!Array.isArray(calls)) return [];
-  return calls.flatMap((call) => {
-    if (!call || typeof call !== "object" || !("name" in call)) return [];
-    const name = (call as { name?: unknown }).name;
-    if (typeof name !== "string") return [];
-    return [{ name, args: (call as { args?: unknown }).args }];
-  });
-}
-
-function stringList(value: unknown) {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
-}
-
-function numberFrom(value: unknown, fallback: number) {
-  return typeof value === "number" ? value : fallback;
-}
-
-function loadLocalEnv() {
-  const path = ".env.local";
-  if (!existsSync(path)) return;
-  for (const line of readFileSync(path, "utf8").split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const split = trimmed.indexOf("=");
-    if (split < 1) continue;
+export function loadLocalEnv() {
+  if (!existsSync(".env.local")) return;
+  for (const line of readFileSync(".env.local", "utf8").split("\n")) {
+    const trimmed = line.trim(), split = trimmed.indexOf("=");
+    if (!trimmed || trimmed.startsWith("#") || split < 1) continue;
     const key = trimmed.slice(0, split).trim();
     if (process.env[key]?.trim()) continue;
     let value = trimmed.slice(split + 1).trim();
-    if (
-      (value.startsWith("\"") && value.endsWith("\""))
-      || (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
     if (value) process.env[key] = value;
   }
 }

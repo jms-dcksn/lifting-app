@@ -157,3 +157,21 @@ SQL checks: run `supabase/tests/deload_backfill.sql` with `psql -v ON_ERROR_STOP
 checkout/database immediately before this migration (the test applies it transactionally
 and rolls back); run `supabase/tests/deload_progression_rls.sql` after migrations to verify
 inheritance, RPC persistence, edits/deletion, calibration suppression and cross-user denial.
+
+
+## Local AI Coach evals
+
+Live experiments require the development URL and that project's local-only
+`SUPABASE_SECRET_KEY`, plus AI Gateway, LangSmith and Jev credentials. The runner checks
+`EVAL_DB_PROJECT_REF` against the URL and rejects the known production project.
+`EVAL_USER_EMAIL` selects the test user's owner-scoped reads. Browser/server app paths
+continue to use the signed-in client and RLS.
+
+Source sync and execution are separate. Preview with `npm run eval:agent:sync -- --adopt`;
+apply reviewed source-row adoption with `--adopt --apply`. `npm run eval:agent` resolves
+an immutable dataset version without overwriting examples. Optional `EVAL_DATASET_VERSION`
+selects an as-of timestamp. Experiments record configured models, rubric/version, code SHA,
+DB/user, as-of and hashed data summaries, including a before/after drift check.
+`JEV_MODEL` may choose a supported fixed model; default `jev-latest` is marked floating.
+See [AI Coach evals](docs/AI-COACH.md#evals) for ownership, per-turn budgets and archived-output
+regrading. No eval command is part of deployment or ordinary `npm test`.

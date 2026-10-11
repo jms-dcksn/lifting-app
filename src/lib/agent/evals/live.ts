@@ -1,383 +1,131 @@
 import type { AgentPart } from "../messages";
 
-/** Tracing project for local experiments. Vercel stays on its own project. */
 export const LIVE_EVAL_PROJECT = "lifting-app-agent-evals";
-
 export const LIVE_DATASET = "ai-coach-live";
-
+export const LIVE_POLICY_VERSION = "exercise-review-2026-10-11-v2";
+export const LIVE_JUDGE_VERSION = "exercise-review-correctness-2026-10-11-v1";
+export const REFERENCE_MATCH_THRESHOLD = 0.7;
 export const INCLINE_E1RM_QUESTION = "How is my e1RM trending on incline bench press";
-
 export const INCLINE_BENCH_ID = "bb-incline-bench";
 
-/** Handwritten gold. The live run copies this onto the dataset; it does not rebuild it from the tool. */
-export const INCLINE_E1RM_REFERENCE = `E1RM is currently ~190.3 lb for incline barbell bench press.
-
-Last recorded E1RM: 184.96 lb (2026-09-29)
-Best E1RM (in your last 21 days): 190.29 lb
-Trend vs 21-day best: -5.33 lb (last vs best)
-Recent e1RM points: 179.21 → 184.48 → 190.29 → 190.29 → 184.96`;
-
-/** Jev ignores the figures in the gold and checks shape plus that a trend was told to the user. */
-export const REFERENCE_MATCH_INSTRUCTIONS = {
-  question: "Does `answer` report an incline barbell bench e1RM trend in the same shape as `reference`?",
-  ignore: "Ignore exact pounds, dates, and how many chart points are listed.",
-  pass: "The reply names incline barbell bench and tells the user a trend: a recent level, a last session, and a direction or a short series of recent points.",
-  fail: "The reply says the exercise was not found, names a different lift, or never reports a trend.",
-};
-
-const CLARIFY_INSTRUCTIONS = {
-  question: "Does `answer` ask the user to choose among the exercises named in `reference`?",
-  ignore: "Ignore wording, markdown, and any Source line.",
-  pass: "The reply politely asks which exercise the user means and names each exercise listed in reference.",
-  fail: "The reply picks one exercise and reports a trend, or it names a lift that is not in reference.",
-};
-
-/** Jev noul at or above this counts as a correct answer. */
-export const REFERENCE_MATCH_THRESHOLD = 0.8;
-
 export type LiveToolCall = { name: string; args: unknown };
-
 export type LiveToolResult = { name: string; result: unknown };
-
-export type LiveTurnOutput = {
-  answer: string;
-  toolCalls: LiveToolCall[];
-  toolResults: LiveToolResult[];
-};
-
-/** What `resolveExerciseIdentity` returns for the user's phrase on the seed catalog. */
-export type SeedResolution =
-  | { exerciseId: string }
-  | {
-      source: "exerciseReview";
-      needsDisambiguation: true;
-      matches: Array<{ id: string; name: string }>;
-    }
-  | { source: "exerciseReview"; error: string };
-
-/** What the live judge expects from the exerciseReview results on the turn. */
+export type LiveTurnOutput = { answer: string; toolCalls: LiveToolCall[]; toolResults: LiveToolResult[] };
 export type ExpectedReview =
   | { outcome: "resolved"; exerciseId: string }
-  | { outcome: "disambiguate"; matchIds: string[] };
-
+  | { outcome: "disambiguate"; matchIds: string[] }
+  | { outcome: "policy"; requiredMatchIds: string[] };
 export type LiveExample = {
-  id: string;
-  /** Phrase inside the question. The resolver lock uses this, not the full sentence. */
-  name: string;
-  question: string;
-  expectedTools: string[];
-  maxToolCalls: number;
-  reference: string;
-  instructions: {
-    question: string;
-    ignore: string;
-    pass: string;
-    fail: string;
-  };
-  /** Resolver outcome on the seed catalog. A miss here can still have a resolved gold lift. */
-  seedResolution: SeedResolution;
-  review: ExpectedReview;
+  id: string; name: string; question: string; expectedTools: string[]; maxToolCalls: number;
+  reference: string; instructions: typeof REFERENCE_MATCH_INSTRUCTIONS; review: ExpectedReview;
+  followUps?: Array<{ question: string; maxToolCalls: number; review: ExpectedReview }>;
 };
 
-const SQUAT_MATCHES = [
-  { id: "bb-back-squat", name: "Barbell Back Squat" },
-  { id: "bb-front-squat", name: "Barbell Front Squat" },
-];
+export const REFERENCE_MATCH_INSTRUCTIONS = {
+  question: "Does the final answer satisfy the exercise-review policy using this turn's tool evidence?",
+  ignore: "Ignore formatting and harmless rounding, but verify every number, date, comparison scope and availability claim against evidence. Reference is policy, not numeric gold.",
+  pass: "Correct identity and selection, supported facts, and honest availability. Disclose all relevant alternatives and why only one has logged sets for an inferred choice, answer it and invite confirmation. Multiple logged matches require clarification or requested separate summaries; no history requires an honest no-data answer. Explicit intent controls.",
+  fail: "Any unsupported fact, wrong identity/instance, hidden alternatives, missing inferred-choice confirmation, silent substitution, false availability or blended machine evidence fails. A trend is not mandatory when evidence is insufficient.",
+};
+export const INCLINE_E1RM_REFERENCE = "Incline barbell and dumbbell remain visible. Ordinary-pound barbell station variants share one movement. If only barbell has sets, disclose both and that reason, answer its eligible history and confirm intent. Otherwise clarify or report no data. Do not require a fabricated numeric trend.";
 
-const DUMBBELL_BENCH_MATCHES = [
-  { id: "db-bench", name: "Dumbbell Bench Press" },
-  { id: "db-incline-bench", name: "Dumbbell Incline Bench" },
-];
-
-function ask(name: string) {
-  return `How is my e1RM trending on ${name}`;
+const policyReference = "Use all relevant matches and authoritative availability. Explicit constraints control. One history-bearing match permits a transparent preferred answer with alternatives, verified reason and confirmation. Multiple history-bearing matches need clarification with an offer of separate summaries. Zero history means no invented figures. Describe recent and historical evidence separately; last-minus-first is the recent delta. Deloads are logged activity excluded from strength comparisons.";
+function example(id: string, name: string, requiredMatchIds: string[], reference = policyReference): LiveExample {
+  return { id, name, question: `How is my e1RM trending on ${name}`, expectedTools: ["exerciseReview"], maxToolCalls: 3,
+    reference, instructions: REFERENCE_MATCH_INSTRUCTIONS, review: { outcome: "policy", requiredMatchIds } };
 }
-
-function trendReference(
-  exerciseName: string,
-  current: string,
-  last: string,
-  lastDate: string,
-  best: string,
-  delta: string,
-  points: string,
-) {
-  return `E1RM is currently ~${current} lb for ${exerciseName}.
-
-Last recorded E1RM: ${last} lb (${lastDate})
-Best E1RM (in your last 21 days): ${best} lb
-Trend vs 21-day best: ${delta} lb (last vs best)
-Recent e1RM points: ${points}`;
-}
-
-function trendInstructions(exerciseName: string) {
-  return {
-    question: `Does \`answer\` report a ${exerciseName} e1RM value and trend if available in a somewhat similar shape as \`reference\`?`,
-    ignore: REFERENCE_MATCH_INSTRUCTIONS.ignore,
-    pass: `The reply names ${exerciseName} and tells the user e1RM value and trend: a recent level, a last session, and a direction or a short series of recent points. Or if no trend exists, it tells the user.`,
-    fail: REFERENCE_MATCH_INSTRUCTIONS.fail,
-  };
-}
-
-function clarifyReference(matches: Array<{ name: string }>) {
-  const lines = matches.map((match) => `- ${match.name}`).join("\n");
-  return `Which exercise do you mean?\n\n${lines}`;
-}
-
-function disambiguation(matches: Array<{ id: string; name: string }>): SeedResolution {
-  return { source: "exerciseReview", needsDisambiguation: true, matches };
-}
-
-function resolvedExample(input: {
-  id: string;
-  name: string;
-  exerciseId: string;
-  spokenName: string;
-  figures: [string, string, string, string, string, string];
-}): LiveExample {
-  const [current, last, lastDate, best, delta, points] = input.figures;
-  return {
-    id: input.id,
-    name: input.name,
-    question: ask(input.name),
-    expectedTools: ["exerciseReview"],
-    maxToolCalls: 3,
-    reference: trendReference(input.spokenName, current, last, lastDate, best, delta, points),
-    instructions: trendInstructions(input.spokenName),
-    seedResolution: { exerciseId: input.exerciseId },
-    review: { outcome: "resolved", exerciseId: input.exerciseId },
-  };
-}
-
-function clarifyExample(input: {
-  id: string;
-  name: string;
-  matches: Array<{ id: string; name: string }>;
-}): LiveExample {
-  return {
-    id: input.id,
-    name: input.name,
-    question: ask(input.name),
-    expectedTools: ["exerciseReview"],
-    maxToolCalls: 3,
-    reference: clarifyReference(input.matches),
-    instructions: CLARIFY_INSTRUCTIONS,
-    seedResolution: disambiguation(input.matches),
-    review: { outcome: "disambiguate", matchIds: input.matches.map((match) => match.id) },
-  };
-}
-
-/**
- * Eleven live reads. Gold is the lift the question means. "rdl" and
- * "incline bench press" resolve on the seed catalog.
- * Back squat has one logged point for the eval user (checked 2026-10-03), so those
- * examples are the Nautilus and Cybex hack squats, which have chart trends.
- * On the seed catalog both phrases collapse to the hack-squat template. On the eval
- * user's catalog they resolve to the station rows that hold the sets.
- */
+// These expectations are authored from the contract, independently of the resolver.
 export const LIVE_EXAMPLES: LiveExample[] = [
-  {
-    id: "incline-bench",
-    name: "incline bench press",
-    question: INCLINE_E1RM_QUESTION,
-    expectedTools: ["exerciseReview"],
-    maxToolCalls: 3,
-    reference: INCLINE_E1RM_REFERENCE,
-    instructions: REFERENCE_MATCH_INSTRUCTIONS,
-    seedResolution: { exerciseId: INCLINE_BENCH_ID },
-    review: { outcome: "resolved", exerciseId: INCLINE_BENCH_ID },
-  },
-  {
-    ...resolvedExample({
-      id: "easy-nautilus-hack-squat",
-      name: "nautilus hack squat",
-      exerciseId: "hack-squat__nautilus__plate_loaded",
-      spokenName: "Hack Squat — Nautilus (plate)",
-      figures: ["441.2", "441.18", "2026-09-19", "441.18", "0", "381.68 → 380.58 → 393.70 → 405.95 → 424.33 → 441.18"],
-    }),
-    seedResolution: { exerciseId: "hack-squat" },
-  },
-  resolvedExample({
-    id: "easy-leg-press",
-    name: "leg press",
-    exerciseId: "leg-press",
-    spokenName: "leg press",
-    figures: ["540", "500", "2026-09-14", "560", "-60", "480 → 520 → 560 → 500"],
-  }),
-  resolvedExample({
-    id: "easy-romanian-deadlift",
-    name: "romanian deadlift",
-    exerciseId: "bb-rdl",
-    spokenName: "romanian deadlift",
-    figures: ["275", "260", "2026-09-16", "280", "-20", "250 → 265 → 280 → 260"],
-  }),
-  {
-    ...resolvedExample({
-      id: "medium-cybex-hack-squat",
-      name: "cybex hack squat",
-      exerciseId: "hack-squat__cybex__plate_loaded",
-      spokenName: "Hack Squat — Cybex (plate)",
-      figures: ["205.9", "205.88", "2026-10-03", "205.88", "0", "183.73 → 189.45 → 198.02 → 205.88"],
-    }),
-    seedResolution: { exerciseId: "hack-squat" },
-  },
-  resolvedExample({
-    id: "medium-bench-press",
-    name: "bench press",
-    exerciseId: "bb-bench",
-    spokenName: "barbell bench press",
-    figures: ["225", "215", "2026-09-20", "230", "-15", "200 → 215 → 230 → 215"],
-  }),
-  resolvedExample({
-    id: "medium-deadlift",
-    name: "deadlift",
-    exerciseId: "bb-deadlift",
-    spokenName: "barbell deadlift",
-    figures: ["405", "395", "2026-09-22", "415", "-20", "365 → 395 → 415 → 395"],
-  }),
-  clarifyExample({ id: "hard-squat", name: "squat", matches: SQUAT_MATCHES }),
-  clarifyExample({ id: "hard-barbell-squat", name: "barbell squat", matches: SQUAT_MATCHES }),
-  clarifyExample({
-    id: "hard-dumbbell-bench",
-    name: "dumbbell bench",
-    matches: DUMBBELL_BENCH_MATCHES,
-  }),
-  {
-    id: "alias-rdl",
-    name: "rdl",
-    question: ask("rdl"),
-    expectedTools: ["exerciseReview"],
-    maxToolCalls: 3,
-    reference: trendReference(
-      "romanian deadlift",
-      "318.3",
-      "318.25",
-      "2026-10-03",
-      "318.25",
-      "0",
-      "286.26 → 295.28 → 304.47 → 311.70 → 318.25",
-    ),
-    instructions: trendInstructions("romanian deadlift"),
-    seedResolution: { exerciseId: "bb-rdl" },
-    review: { outcome: "resolved", exerciseId: "bb-rdl" },
-  },
+  example("incline-bench", "incline bench press", ["bb-incline-bench", "db-incline-bench"], INCLINE_E1RM_REFERENCE),
+  example("easy-nautilus-hack-squat", "nautilus hack squat", [], "Keep Nautilus machine identity. An older dated chart can support a historical trend even with no 21-day comparison; never describe the older best as a current-window best."),
+  example("easy-leg-press", "leg press", ["leg-press"], "Keep separate machine brands/types/instances visible, excluding calf press apparatus hits. Prefer transparently only if exactly one has history; otherwise clarify and offer separate summaries. No template numeric gold."),
+  example("easy-romanian-deadlift", "romanian deadlift", ["bb-rdl"]),
+  example("medium-cybex-hack-squat", "cybex hack squat", [], "Keep Cybex identity. Latest deload workout differs from latest eligible e1RM; excluded does not mean not recorded."),
+  example("medium-bench-press", "bench press", ["bb-bench", "bb-incline-bench", "db-bench", "db-incline-bench"]),
+  example("medium-deadlift", "deadlift", ["bb-deadlift"], "No-history conventional deadlift must not acquire fictional 405-pound history. If a broader query also matches another deadlift, any preference must disclose all alternatives and the verified history reason, then confirm intent."),
+  example("hard-squat", "squat", ["bb-back-squat", "bb-front-squat", "hack-squat", "db-split-squat"]),
+  example("hard-barbell-squat", "barbell squat", ["bb-back-squat", "bb-front-squat"]),
+  example("hard-dumbbell-bench", "dumbbell bench", ["db-bench", "db-incline-bench"]),
+  example("alias-rdl", "rdl", ["bb-rdl"]),
+];
+export const LIVE_FOLLOW_UP_EXAMPLES: LiveExample[] = [
+  { ...example("confirm-squat", "barbell squat", ["bb-back-squat", "bb-front-squat"]),
+    followUps: [{ question: "Yes, back squat. Show that history.", maxToolCalls: 3, review: { outcome: "resolved", exerciseId: "bb-back-squat" } }] },
+  { ...example("correct-squat", "barbell squat", ["bb-back-squat", "bb-front-squat"]),
+    followUps: [{ question: "Front squat instead.", maxToolCalls: 3, review: { outcome: "resolved", exerciseId: "bb-front-squat" } }] },
+  { ...example("choose-cybex", "hack squat", ["hack-squat"]),
+    followUps: [{ question: "The Cybex one.", maxToolCalls: 3, review: { outcome: "policy", requiredMatchIds: [] } }] },
+  { ...example("show-both", "dumbbell bench", ["db-bench", "db-incline-bench"]),
+    followUps: [{ question: "Show both separately.", maxToolCalls: 3, review: { outcome: "policy", requiredMatchIds: ["db-bench", "db-incline-bench"] } }] },
 ];
 
-export function outputFromTurn(
-  messages: Array<{ role: string; parts: AgentPart[] }>,
-): LiveTurnOutput {
-  const toolCalls: LiveToolCall[] = [];
-  const toolResults: LiveToolResult[] = [];
-  const texts: string[] = [];
+export const REVIEW_JUDGE_QUESTIONS = {
+  reference_match: {
+    type: "noul" as const,
+    instructions: "Is the answer a correct response to the user's request, supported by this turn's tool evidence? Use the reference as guidance, not required wording or numeric gold. A relevant clarification question is a complete correct response: when multiple exercises have history, show the choices and ask which one; do not require a trend or review fields absent from the tool result. When preferring the only match with history, disclose alternatives and the reason, answer it and invite confirmation. Check only claims the answer makes, allowing reasonable rounding and calculations. Numbers, dates, trend direction, missing-data claims and exercise identity must agree with the evidence. Judge the final answer; an earlier correct lookup cannot excuse a later wrong lift. Ignore formatting, optional detail and source-line wording.",
+    criteria: { true: "Correct supported answer, honest no-data response, or appropriate clarification, with no material factual or exercise-selection errors.",
+      false: "Wrong exercise, hidden ambiguity or substitution, blended machine histories, invented or contradicted facts, or a false claim that data is unavailable." },
+  },
+};
+
+export function reviewJudgeRequest(question: string, reference: string, output: LiveTurnOutput) {
+  return { state: { question, reference, answer: output.answer, toolCalls: output.toolCalls, toolEvidence: output.toolResults,
+    policyVersion: LIVE_POLICY_VERSION, judgeVersion: LIVE_JUDGE_VERSION }, questions: REVIEW_JUDGE_QUESTIONS };
+}
+
+export function outputFromTurn(messages: Array<{ role: string; parts: AgentPart[] }>): LiveTurnOutput {
+  const toolCalls: LiveToolCall[] = [], toolResults: LiveToolResult[] = [];
+  let answer = "";
   for (const message of messages) {
+    const texts: string[] = [];
     for (const part of message.parts) {
       if (part.type === "tool-call") toolCalls.push({ name: part.name, args: part.args });
-      if (part.type === "tool-result" && !part.omitted) {
-        toolResults.push({ name: part.name, result: part.result });
-      }
-      if (part.type === "text" && message.role === "assistant" && part.text) texts.push(part.text);
+      if (part.type === "tool-result" && !part.omitted) toolResults.push({ name: part.name, result: part.result });
+      if (part.type === "text" && message.role === "assistant") texts.push(part.text);
     }
+    if (texts.length) answer = texts.join("\n").trim();
   }
-  return { answer: texts.join("\n").trim(), toolCalls, toolResults };
+  return { answer, toolCalls, toolResults };
 }
-
-export function gradeRightTool(input: {
-  toolCalls: LiveToolCall[];
-  expectedTools: string[];
-}) {
+export function gradeRightTool(input: { toolCalls: LiveToolCall[]; expectedTools: string[] }) {
   const names = input.toolCalls.map((call) => call.name);
-  const reasons: string[] = [];
-  for (const tool of input.expectedTools) {
-    if (!names.includes(tool)) reasons.push(`missing ${tool}`);
-  }
-  const called = names.length ? names.join(", ") : "none";
-  return {
-    score: reasons.length === 0 ? 1 : 0,
-    comment: reasons.length ? `${reasons.join("; ")} (called ${called})` : `called ${called}`,
-  };
+  const missing = input.expectedTools.filter((name) => !names.includes(name));
+  return { score: missing.length ? 0 : 1, comment: missing.length ? `missing ${missing.join(", ")}` : `called ${names.join(", ")}` };
 }
-
 export function gradeToolCount(count: number, maxToolCalls: number) {
-  return {
-    score: count <= maxToolCalls ? 1 : 0,
-    comment: `${count} tool call${count === 1 ? "" : "s"} (max ${maxToolCalls})`,
-  };
+  return { score: count <= maxToolCalls ? 1 : 0, comment: `${count} tool calls (max ${maxToolCalls})` };
 }
 
-export function gradeFoundExercise(input: {
-  toolResults: LiveToolResult[];
-  expected: ExpectedReview;
-}) {
-  const results = reviewRecords(input.toolResults);
-  if (results.length === 0) return { score: 0, comment: "no exerciseReview result" };
-  if (input.expected.outcome === "resolved") return gradeResolved(results, input.expected.exerciseId);
-  return gradeDisambiguation(results, input.expected.matchIds);
+export function reviewRecord(value: unknown): Record<string, unknown> | null {
+  if (typeof value === "string") { try { return reviewRecord(JSON.parse(value)); } catch { return null; } }
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 }
-
+export function gradeFoundExercise(input: { toolResults: LiveToolResult[]; expected: ExpectedReview }) {
+  const last = input.toolResults.filter((result) => result.name === "exerciseReview").at(-1);
+  const result = reviewRecord(last?.result);
+  if (!result || result.error) return { score: 0, comment: "no successful final exerciseReview result" };
+  const matches = Array.isArray(result.matches) ? result.matches.flatMap((value) => {
+    const match = reviewRecord(value); return match ? [match] : [];
+  }) : [];
+  const ids = matches.map((match) => match.id);
+  let pass: boolean;
+  if (input.expected.outcome === "resolved") pass = result.exerciseId === input.expected.exerciseId;
+  else if (input.expected.outcome === "disambiguate") pass = result.needsDisambiguation === true && input.expected.matchIds.every((id) => ids.includes(id));
+  else {
+    const logged = matches.filter((match) => Number(reviewRecord(match.history)?.loggedSetCount) > 0);
+    const status = result.selectionStatus;
+    const selected = matches.find((match) => match.id === result.exerciseId && match.equipmentInstanceId === result.equipmentInstanceId);
+    pass = input.expected.requiredMatchIds.every((id) => ids.includes(id)) && matches.length > 0
+      && (status === "all" ? Array.isArray(result.reviews)
+        : status === "preferred_history" ? matches.length > 1 && logged.length === 1 && selected?.key === logged[0]?.key
+          && reviewRecord(result.recommendation)?.reason === "only_match_with_logged_sets"
+        : status === "unique" || status === "explicit" ? matches.length === 1 && !!selected
+        : status === "clarification_needed" ? matches.length > 1 && logged.length !== 1 && !result.exerciseId
+        : false);
+  }
+  return { score: pass ? 1 : 0, comment: `final result: ${String(result.selectionStatus ?? result.exerciseId ?? "choices")}; matches ${ids.join(", ")}` };
+}
 export function scoreNoul(noul: number, threshold = REFERENCE_MATCH_THRESHOLD) {
-  const correct = noul >= threshold;
-  return {
-    score: correct ? 1 : 0,
-    comment: `noul ${noul.toFixed(3)} — ${correct ? "correct" : "incorrect"}`,
-  };
-}
-
-function gradeResolved(results: Record<string, unknown>[], exerciseId: string) {
-  if (results.some((result) => result.exerciseId === exerciseId)) {
-    return { score: 1, comment: `found ${exerciseId}` };
-  }
-  return { score: 0, comment: `expected ${exerciseId}; saw ${results.map(describeResult).join(" | ")}` };
-}
-
-function gradeDisambiguation(results: Record<string, unknown>[], matchIds: string[]) {
-  const hit = results.find((result) =>
-    result.needsDisambiguation === true && sameIds(matchIdsFrom(result), matchIds)
-  );
-  if (hit) return { score: 1, comment: `choices ${matchIds.join(", ")}` };
-  return { score: 0, comment: `expected ${matchIds.join(", ")}; saw ${results.map(describeResult).join(" | ")}` };
-}
-
-function reviewRecords(toolResults: LiveToolResult[]) {
-  return toolResults.flatMap((result) => {
-    if (result.name !== "exerciseReview") return [];
-    const record = asRecord(result.result);
-    return record ? [record] : [];
-  });
-}
-
-function describeResult(result: Record<string, unknown>) {
-  if (typeof result.exerciseId === "string") return result.exerciseId;
-  if (typeof result.error === "string") return result.error;
-  if (result.needsDisambiguation === true) {
-    const ids = matchIdsFrom(result);
-    return ids.length ? `choices ${ids.join(", ")}` : "choices none";
-  }
-  return "unrecognized";
-}
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  if (typeof value === "string") {
-    try {
-      return asRecord(JSON.parse(value));
-    } catch {
-      return null;
-    }
-  }
-  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  return value as Record<string, unknown>;
-}
-
-function matchIdsFrom(result: Record<string, unknown>) {
-  if (!Array.isArray(result.matches)) return [];
-  return result.matches.flatMap((match) => {
-    if (!match || typeof match !== "object" || !("id" in match)) return [];
-    const id = (match as { id?: unknown }).id;
-    return typeof id === "string" ? [id] : [];
-  });
-}
-
-function sameIds(left: string[], right: string[]) {
-  if (left.length !== right.length) return false;
-  const wanted = new Set(right);
-  return left.every((id) => wanted.has(id));
+  const correct = Number.isFinite(noul) && noul >= threshold;
+  return { score: correct ? 1 : 0, comment: `noul ${noul.toFixed(3)} — ${correct ? "correct" : "incorrect"}` };
 }

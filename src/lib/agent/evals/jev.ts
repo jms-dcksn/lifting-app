@@ -6,10 +6,14 @@ type NoulQuestion = {
   criteria?: { true?: string; false?: string };
 };
 
-type JevRequest = {
+export type JevRequest = {
   state: unknown;
   questions: Record<string, NoulQuestion>;
 };
+
+export function jevModelId() {
+  return process.env.JEV_MODEL?.trim() || "jev-latest";
+}
 
 export async function askJev(request: JevRequest) {
   const apiKey = process.env.JEV_API_KEY?.trim();
@@ -22,7 +26,7 @@ export async function askJev(request: JevRequest) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "jev-latest",
+      model: jevModelId(),
       state: request.state,
       questions: request.questions,
     }),
@@ -46,7 +50,7 @@ function noulAnswers(body: unknown) {
     const noul = answer && typeof answer === "object" && "noul" in answer
       ? (answer as { noul?: unknown }).noul
       : undefined;
-    if (typeof noul !== "number") throw new Error(`Jev answer ${id} has no noul`);
+    if (typeof noul !== "number" || !Number.isFinite(noul) || noul < 0 || noul > 1) throw new Error(`Jev answer ${id} has no noul`);
     nouls[id] = noul;
   }
   return nouls;

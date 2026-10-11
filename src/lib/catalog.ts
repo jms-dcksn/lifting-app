@@ -60,9 +60,15 @@ export const getCatalogMap = cache(async function getCatalogMap(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
 ): Promise<Record<string, ExerciseDef>> {
-  const { data, error } = await supabase.from("exercise").select(SELECT).eq("user_id", userId);
-  if (error) throw new Error("Unable to load exercise catalog. Please try again.");
-  return mergeCatalog((data ?? []) as DbExerciseRow[]);
+  const rows: DbExerciseRow[] = [];
+  for (let from = 0; ; from += 500) {
+    const { data, error } = await supabase.from("exercise").select(SELECT).eq("user_id", userId)
+      .order("id", { ascending: true }).range(from, from + 499);
+    if (error) throw new Error("Unable to load exercise catalog. Please try again.");
+    rows.push(...(data ?? []) as DbExerciseRow[]);
+    if ((data?.length ?? 0) < 500) break;
+  }
+  return mergeCatalog(rows);
 });
 
 export async function getCatalogList(

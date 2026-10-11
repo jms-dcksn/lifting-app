@@ -29,6 +29,7 @@ function fakeClient() {
       eq: () => chain,
       order: () => chain,
       limit: () => chain,
+      range: () => chain,
       maybeSingle: async () => ({ data: null, error: null }),
       then: (resolve: (r: unknown) => unknown) => Promise.resolve(resolve({ data: [], error: null })),
     };

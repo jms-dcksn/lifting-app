@@ -170,9 +170,9 @@ Build in order. A later slice may add tools; it may not weaken an invariant.
     session screen uses, so “why is this target X?” matches Home / planner / Start.
 - System prompt: answer from tool results; name the source once on a final `Source:` line; decline medical
   diagnosis (pain stays a review prompt, as Coach already does). One logged value is not a trend.
-  If `exerciseReview` has no 21-day comparison or fewer than two chart points, or another read tool
-  returns null / "not available" / `insufficient_data`, say that comparison is missing and then
-  report the last fact the tool did return.
+  Exercise review distinguishes a missing 21-day comparison from historical trend availability.
+  Two older eligible points support a dated historical trend even with a recent gap. Other read
+  tools still report null / "not available" / `insufficient_data` explicitly.
 - ~20 labeled eval questions you grade: expected tool(s) and cited numbers against
   fixtures. Co-locate under `src/lib/agent/`.
 
@@ -300,39 +300,128 @@ web search with a research-vs-prescribe split, onboarding that starts in the age
 in-session whispers, rolling summaries / context compaction, distilled user memory
 beyond last-N. Each is its own Decision Card; none is implied by shipping 0–4.
 
+## Exercise review matching and history
+
+The tool enumerates relevant identities before using history. Explicit equipment, movement
+modifiers, brands and IDs constrain matching; unspecified equipment retains alternatives.
+Aliases, plurals, word order and one-letter typos remain supported. Ordinary-pound variants
+share the existing movement comparison scope; barbell/dumbbell and flat/incline stay distinct.
+Machines, cables, brands, loading types and equipment instances remain separate. A calf press
+on a leg-press apparatus is not a leg-press movement match.
+
+Availability comes from paginated owner-scoped `set_log`, completed non-warmup sessions at
+or before the tool's `asOf`. A stats-cache row is neither necessary nor sufficient. Each match
+has logged-set/session counts, eligible-point count, and latest activity/eligible dates.
+
+- `explicit` / `unique`: one comparison identity, including a direct no-data answer.
+- `preferred_history`: multiple relevant identities, exactly one with logged sets. Return its
+  review and deterministic reason; the agent names alternatives, explains the preference,
+  answers and confirms intent. An inferred recommendation is not user confirmation.
+- `clarification_needed`: zero or multiple history-bearing alternatives. Ask which and offer
+  separate summaries, without selecting by recency or strength.
+- `more_matches`: over 30 identities. `totalMatches` and `nextMatchOffset` expose continuation;
+  inspect another page or ask the user to narrow. The visible page is not the full match list.
+- `all`: explicit user request for separate summaries. Use the original name and prior
+  `matchKeys` to revalidate the original choices. At most three reviews per call; `nextOffset`
+  exposes remaining reviews. Stop at the existing eight-call cap and offer continuation.
+
+Follow-up confirmation, correction, brand choice and “show both/all” all read fresh evidence.
+`last` is the latest workout; `latestEligibleE1rm` can be older. Deload sets remain logged
+activity but are excluded from strength comparisons. `availability.recentComparison` and
+`availability.historicalTrend` are independent. Recent delta is last minus first eligible
+point, not last minus best. Historical chart dates must be described as historical.
+
+To bound context, last-workout details include up to 12 sets, and recent details include up
+to eight sessions; counts, window best/delta and availability use the complete ledger. The
+response declares these detail limits. Review chart remains the canonical last eight eligible
+sessions. No schema or RLS policy changed.
+
+See [implementation and validation](AI-COACH-EVAL-IMPROVEMENTS.md) and the
+[original annotated experiment review](2026-10-11-ai-coach-annotated-eval-review.md).
+
 ## Evals
 
-Label as you dogfood. Slice 0 grades grounding (tool choice + cited numbers) against
-fixtures in `src/lib/agent/evals/`. Slice 2 grades ontology confidence and template
-invariants. Slice 4 grades “no write without confirm.”
+Fixed catalog/history/Chicago-clock tests are the regression gate. Scripted two-turn tests
+exercise `runAgentTurn` and real read-tool adapters with a local PostgREST transport. They
+verify orchestration and fresh reads, not the live model's ability to obey the prompt.
 
-Eleven live examples sit beside those fixtures in `LIVE_EXAMPLES`
-(`src/lib/agent/evals/live.ts`). `npm run eval:agent` runs each one against the real
-agent and the prod ledger for `EVAL_USER_EMAIL` (default the owner account), and
-writes dataset `ai-coach-live`. It does not insert `agent_thread` rows. Each run
-copies that example's handwritten reference onto the dataset.
+`LIVE_EXAMPLES` contains 11 independently authored first-turn policy cases; four additional
+scenarios cover confirmation, correction, machine brand selection and “show both”. Each turn
+has its own three-call diagnostic budget. Runtime still permits eight calls. References are
+policy expectations, not snapshots of a changing user's numbers. RDL alias/full-name share
+the same policy. Live facts must be supported by current tool evidence.
+`npm run eval:agent` defaults to the 11 first-turn cases. Use `eval:agent:follow-ups` for the
+four multi-turn scenarios, or `eval:agent:all` for all 15. These set `EVAL_SCENARIOS` to
+`follow-ups` or `all`; an unset value defaults to `first-turn`.
 
-The original question is still “How is my e1RM trending on incline bench press”.
-Ten more use the same sentence with a different exercise phrase:
+Dataset synchronization is separate from execution. `LIVE_EXAMPLES` and
+`LIVE_FOLLOW_UP_EXAMPLES` own source examples marked `metadata.source = lifting-app/LIVE_EXAMPLES`.
+UI edits persist during execution. Explicit sync updates marked source rows; legacy matching
+IDs are preserved unless `--adopt` is supplied. Manually added IDs are never deleted. Preview
+before apply; source-row UI edits can be overwritten by an explicitly applied sync.
 
-- Easy names: Nautilus hack squat, leg press, romanian deadlift.
-- Shorter names: Cybex hack squat, bench press, deadlift.
-- Hard, the tool asks which exercise: squat, barbell squat, dumbbell bench. The
-  reference lists those matches and asks the user to choose.
-- Nickname: “rdl”, which resolves to Romanian deadlift.
+```bash
+# Preview adoption of the existing 11 legacy source rows plus four new scenarios.
+npm run eval:agent:sync -- --adopt
+# Apply only after reviewing that preview; this does not run Coach or judges.
+npm run eval:agent:sync -- --adopt --apply
+# Run the 11 first-turn cases against development when desired.
+npm run eval:agent
+# Optional: run four follow-up scenarios, or all 15 scenarios.
+npm run eval:agent:follow-ups
+npm run eval:agent:all
+```
 
-Gold is that lift, never a scripted miss. “rdl” and “incline bench press” both
-resolve on the seed catalog.
-Back squat is not in the resolved set. The eval user has one back-squat point
-(checked 2026-10-03) and multi-point charts on Hack Squat — Nautilus (plate) and
-Hack Squat — Cybex (plate). Bare “hack squat” exact-matches the empty template, so
-the questions name the station (“nautilus hack squat”, “cybex hack squat”).
+The runner checks the URL against `EVAL_DB_PROJECT_REF` (default the development project),
+rejects the known production project, and looks up `EVAL_USER_EMAIL` with the local-only
+`SUPABASE_SECRET_KEY`. It uses read tools only and never inserts chat threads. No source sync
+occurs during execution. Selection uses source case IDs within that snapshot and preserves
+dataset-edited questions/references. Missing or duplicate selected IDs fail before Coach runs;
+unrelated manual rows are excluded. Old/incomplete selected references identify the case and
+print explicit sync commands. Follow-up references must cover every input turn.
 
-Four local judges score each run: `right_tool` (called `exerciseReview`),
-`tool_call_count` (at most 3), `found_exercise` (any exerciseReview result in the
-turn is the expected id or the expected disambiguation ids), and `reference_match`
-(a Jev noul, correct at 0.8 or above). A miss or a later call that names a different
-lift does not erase an earlier hit. Jev instructions are stored on the example. For
-a resolved lift, Jev ignores exact pounds and dates and checks that the reply names
-that lift and reports a trend. Traces go to `lifting-app-agent-evals`. Do not paste
-secrets into traces, issues, or chat.
+Each run resolves `EVAL_DATASET_VERSION` (optional timestamp; otherwise latest) to an immutable
+version and records it, actual configured agent/Jev models, policy/rubric, threshold, code SHA
+and dirty state, selected scenario set, DB project/user, as-of timestamp, and a hash/count summary of the owner ledger
+and catalog. A second hash records whether training data changed during the run. No keys or
+full private ledger are experiment metadata. This detects data drift; it does not freeze the DB.
+`JEV_MODEL` can select a supported fixed model. The default `jev-latest` is explicitly marked
+floating; recording that alias does not establish an immutable vendor model version.
+After sync, clear an `EVAL_DATASET_VERSION` pinned to an older snapshot or set it to the new
+version; applying sync never modifies an earlier immutable snapshot.
+
+One Jev correctness question produces `reference_match_raw`; `reference_match` is its direct
+pass/fail result at `REFERENCE_MATCH_THRESHOLD` (currently 0.7, inclusive). A supported answer,
+an honest no-data response, or an appropriate clarification can pass. For multiple matches
+with history, listing the relevant choices and asking which one is sufficient: no trend or
+resolved-review fields are required. Only claims actually made are checked. False missing-data
+claims remain factual errors; availability is no longer a separate judge. Formatting and
+optional detail do not decide correctness.
+
+`right_tool`, `tool_call_count`, `found_exercise`, and `supported_figures` are independent code
+diagnostics, not ingredients in a hidden aggregate. The figure check covers quoted pounds/ISO
+dates, not their semantic scope or direction. Identity uses the final review result. Jev gets
+question history, the answer and current-turn tool evidence. `LIVE_JUDGE_VERSION` and the full
+question configuration are recorded separately from `LIVE_POLICY_VERSION`, so changing a
+rubric does not force a dataset sync when references are still valid.
+
+This replaces the four overlapping judges after inspecting `exercise-review-d90a6a5f`
+(`bf61fa1d-bcc3-4400-b8df-4739077c1a35`). Its old aggregate passed 5/11; four of the six
+failures came solely from availability. The leg-press clarification scored selection 0.91,
+evidence 0.80 and availability 0.62: taking the minimum made a correct clarification fail.
+That tool result contained candidate history metadata, not a resolved trend review. Jev did
+not provide a rationale, so rubric mismatch is the diagnosis, not an observed internal reason.
+Original scores/annotations stay unchanged; the new rubric has not yet been calibrated live.
+
+To calibrate old outputs without calling Coach, explicitly regrade a private archived review:
+
+```bash
+npm run eval:agent:regrade -- --input /private/tmp/archive.json --output /private/tmp/revised-grades.json
+```
+
+Archive shape: `{ rows: [{ run: { id, inputs: { id, question }, outputs: { answer, toolCalls,
+toolResults } }, example: { inputs: { id } }, feedback }] }`. The command calls Jev, saves a
+new mode-600 file, and retains original feedback separately. It never changes historical
+labels or submits revised feedback to LangSmith. Original silent answers remain negatives;
+new transparent answers are new cases. Regrading, dataset apply and live execution have not
+been run as part of implementing this contract. Traces stay in `lifting-app-agent-evals`.

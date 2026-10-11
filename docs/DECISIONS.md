@@ -847,3 +847,37 @@ the approved Romanian deadlift, dumbbell shoulder press, and seated cable row de
 to their existing seeded identities. Keep the shared 16:9 frame and identity inheritance;
 remove the former 35% center zoom because the fuller compositions already fill the frame.
 Serve all seven as 640×360 JPEGs. See [UI conventions](UI.md) for the current art contract.
+
+## AI Coach history preference and match transparency (2026-10-11, approved direction)
+
+Implemented by the exercise-review update. Prefer exercises with logged data while exposing all
+relevant matches to the agent. The tool supplies authoritative history availability,
+comparison scope, and a deterministic recommendation; the agent explains the
+alternatives and choice. With one history-bearing match, it may answer immediately
+and ask whether that was intended. Explicit IDs and movement/equipment modifiers
+still control. Multiple history-bearing candidates require clarification or separate
+summaries; machine and cable numbers remain separate.
+
+Completed logged activity is distinct from eligible e1RM evidence. Stats-cache rows
+do not establish history, and deload values may be stored while excluded from strength
+comparisons. Update references and judges to require accurate choice disclosure and
+supported facts rather than force clarification for every ambiguous phrase. Keep the
+original human annotations as evidence of the old outputs. See the
+[implementation plan](AI-COACH-EVAL-IMPROVEMENTS.md) for delivery and verification.
+
+**One correctness judge after live review (2026-10-11).** The four-dimension minimum
+aggregate penalized appropriate leg-press clarification: selection and evidence passed,
+but a separate availability score vetoed it. James requested simpler grading and chose 0.7.
+`reference_match` now thresholds one Jev correctness Noul directly. Clarification and honest
+no-data responses are valid; only stated claims need evidence. Availability remains part of
+factual accuracy, with no separate completeness requirement. Code diagnostics remain separate.
+Version the rubric independently of the dataset policy and preserve historical feedback.
+
+
+### Movement scope wording reconciliation (2026-10-11)
+
+The September 21 exact-review lock and September 29 proposed wording above are historical.
+Card 1 shipped September 29: `comparisonScope`, `rollsUp` and `movementMemberIds` already group
+ordinary-pound records/review by movement. This update reuses that scope; it does not widen
+session targets, stall/Fluid, or raw machine/cable comparisons. Card 2–4 defaults remain in
+force. See the [current architecture](ARCHITECTURE.md#history-and-reporting).

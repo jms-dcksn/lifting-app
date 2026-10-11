@@ -29,6 +29,15 @@ recorded as such; configure a supported fixed model for stronger vendor reproduc
 Current commands and result contract are owned by [AI Coach](AI-COACH.md#evals).
 The original annotated review remains historical evidence; its labels are unchanged.
 
+**Judge simplification follow-up (2026-10-11):** James requested one understandable judge after
+experiment `bf61fa1d-bcc3-4400-b8df-4739077c1a35` passed only 5/11 under the minimum aggregate.
+Four failures were solely the separate availability score; the correctly supported leg-press
+clarification was one. The current implementation supersedes slice 3's four-dimension judge:
+one correctness Noul directly determines `reference_match`, with clarification explicitly
+accepted and only stated claims checked. James's 0.7 threshold is retained. Code diagnostics
+remain separate. Judge versioning leaves valid policy references intact; no resync is required
+for this rubric-only change. Original grades are preserved; new live calibration is pending.
+
 Implement the tool contract and its evaluation together. Prefer exercises with logged data,
 return all relevant matches to the agent, and explain any inferred selection before answering.
 Use the [annotated experiment review](2026-10-11-ai-coach-annotated-eval-review.md) as evidence;

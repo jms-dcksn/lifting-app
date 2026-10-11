@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { gradeScenario, loadLocalEnv, syncLiveDataset } from "../src/lib/agent/evals/live-experiment";
-import { LIVE_EXAMPLES, LIVE_POLICY_VERSION, type LiveTurnOutput } from "../src/lib/agent/evals/live";
+import { LIVE_EXAMPLES, LIVE_POLICY_VERSION, LIVE_JUDGE_VERSION, REFERENCE_MATCH_THRESHOLD, type LiveTurnOutput } from "../src/lib/agent/evals/live";
 
 async function main() {
 const [command, ...flags] = process.argv.slice(2);
@@ -29,7 +29,8 @@ if (command === "sync") {
       { reference: example.reference, review: example.review, maxToolCalls: example.maxToolCalls });
     rows.push({ runId: row.run.id, originalFeedback: row.feedback, revisedPolicy: LIVE_POLICY_VERSION, grades });
   }
-  writeFileSync(output, JSON.stringify({ policyVersion: LIVE_POLICY_VERSION, rows }, null, 2), { mode: 0o600, flag: "wx" });
+  writeFileSync(output, JSON.stringify({ policyVersion: LIVE_POLICY_VERSION, judgeVersion: LIVE_JUDGE_VERSION,
+    judgeThreshold: REFERENCE_MATCH_THRESHOLD, rows }, null, 2), { mode: 0o600, flag: "wx" });
 } else {
   throw new Error("Use sync [--adopt] [--apply] or regrade --input archive.json --output revised.json.");
 }

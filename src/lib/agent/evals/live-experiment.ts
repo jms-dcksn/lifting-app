@@ -13,7 +13,7 @@ import { bindReadTools } from "../tools";
 import { agentModelId } from "../policy";
 import { gradeSupportedFigures } from "./evidence-grade";
 import { askJev, jevModelId } from "./jev";
-import { LIVE_DATASET, LIVE_EVAL_PROJECT, LIVE_EXAMPLES, LIVE_FOLLOW_UP_EXAMPLES, LIVE_POLICY_VERSION,
+import { LIVE_DATASET, LIVE_EVAL_PROJECT, LIVE_EXAMPLES, LIVE_FOLLOW_UP_EXAMPLES, LIVE_POLICY_VERSION, LIVE_JUDGE_VERSION,
   REFERENCE_MATCH_THRESHOLD, REVIEW_JUDGE_QUESTIONS, gradeFoundExercise, gradeRightTool, gradeToolCount,
   outputFromTurn, reviewJudgeRequest, reviewRecord, scoreNoul,
   type ExpectedReview, type LiveExample, type LiveTurnOutput } from "./live";
@@ -59,7 +59,7 @@ export async function runLiveExperiment() {
   const dirty = Boolean(execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim());
   const metadata = { source: "local-eval", scenarioSet, policyVersion: LIVE_POLICY_VERSION, datasetVersion: version.as_of,
     agentModel: agentModelId(), judgeModel: jevModelId(), judgeThreshold: REFERENCE_MATCH_THRESHOLD,
-    judgeConfiguration: REVIEW_JUDGE_QUESTIONS, judgeModelIsFloating: jevModelId().endsWith("latest"), codeSha, dirty, databaseProject, userId,
+    judgeVersion: LIVE_JUDGE_VERSION, judgeConfiguration: REVIEW_JUDGE_QUESTIONS, judgeModelIsFloating: jevModelId().endsWith("latest"), codeSha, dirty, databaseProject, userId,
     asOf: new Date().toISOString(), trainingSnapshot: snapshot };
   console.log(`Dataset ${LIVE_DATASET}@${version.as_of}: ${selectedExamples.length} scenarios; development project ${databaseProject}; model ${metadata.agentModel}`);
   const screenContext = await enrichScreenContext(supabase, userId, { pathname: "/", activeProgramId: null, openSessionId: null, focusedExerciseId: null });
@@ -106,13 +106,11 @@ export async function gradeScenario(inputs: Record<string, unknown>, output: Liv
       { key: `${prefix}found_exercise`, ...gradeFoundExercise({ toolResults: turn.toolResults, expected }) });
     const request = reviewJudgeRequest(questions[index]!, String(reference.reference ?? ""), turn);
     const scores = await askJev({ ...request, state: { ...request.state, conversationQuestions: questions.slice(0, index + 1) } });
-    for (const key of Object.keys(REVIEW_JUDGE_QUESTIONS)) {
-      const raw = scores[key];
-      if (raw === undefined) throw new Error(`Jev missing ${key}`);
-      grades.push({ key: `${prefix}${key}_raw`, score: raw, comment: `model ${jevModelId()}; policy ${LIVE_POLICY_VERSION}` },
-        { key: `${prefix}${key}`, ...scoreNoul(raw) });
-    }
-    grades.push({ key: `${prefix}reference_match`, ...scoreNoul(Math.min(gradeSupportedFigures(turn).score, scores.selection_correctness!, scores.evidence_support!, scores.availability_handling!)) });
+    const raw = scores.reference_match;
+    if (raw === undefined) throw new Error("Jev missing reference_match");
+    grades.push({ key: `${prefix}reference_match_raw`, score: raw,
+      comment: `model ${jevModelId()}; judge ${LIVE_JUDGE_VERSION}; threshold ${REFERENCE_MATCH_THRESHOLD}` },
+      { key: `${prefix}reference_match`, ...scoreNoul(raw) });
   }
   return grades;
 }

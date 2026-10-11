@@ -865,6 +865,14 @@ supported facts rather than force clarification for every ambiguous phrase. Keep
 original human annotations as evidence of the old outputs. See the
 [implementation plan](AI-COACH-EVAL-IMPROVEMENTS.md) for delivery and verification.
 
+**One correctness judge after live review (2026-10-11).** The four-dimension minimum
+aggregate penalized appropriate leg-press clarification: selection and evidence passed,
+but a separate availability score vetoed it. James requested simpler grading and chose 0.7.
+`reference_match` now thresholds one Jev correctness Noul directly. Clarification and honest
+no-data responses are valid; only stated claims need evidence. Availability remains part of
+factual accuracy, with no separate completeness requirement. Code diagnostics remain separate.
+Version the rubric independently of the dataset policy and preserve historical feedback.
+
 
 ### Movement scope wording reconciliation (2026-10-11)
 

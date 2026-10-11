@@ -636,21 +636,24 @@ if (streamEvent.type === "done") {
   Cases --> Guard[Validate selected IDs and policy references]
   Guard --> Agent[Development read-only Agent turns]
   Agent --> Evidence[Final answer and current-turn tool evidence]
-  Evidence --> Selection[Selection correctness]
-  Evidence --> Facts[Evidence support]
-  Evidence --> Availability[Availability handling]
-  Evidence --> Helpful[Optional helpfulness]
-  Facts --> Raw[Raw scores and thresholded results]
-  Selection --> Raw
-  Availability --> Raw
+  Evidence --> Correctness[One Jev correctness question]
+  Correctness --> Raw[reference_match_raw]
+  Raw --> Pass[reference_match at 0.7]
+  Evidence --> Diagnostics[Separate code diagnostics]
   Archive[Old outputs and original annotations] --> Regrade[Explicit local regrade without Coach]
   Regrade --> Raw</pre>
         <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export function reviewJudgeRequest(question: string, reference: string, output: LiveTurnOutput) {
   return { state: { question, reference, answer: output.answer, toolCalls: output.toolCalls, toolEvidence: output.toolResults,
-    policyVersion: LIVE_POLICY_VERSION }, questions: REVIEW_JUDGE_QUESTIONS };
+    policyVersion: LIVE_POLICY_VERSION, judgeVersion: LIVE_JUDGE_VERSION }, questions: REVIEW_JUDGE_QUESTIONS };
 }</code></pre>
-        <p class="text-slate-700 max-w-3xl">The final review lookup controls the identity diagnostic; an earlier correct lookup cannot rescue a later wrong lift. Semantic judges check all factual scope and availability claims against tool results and question history. Raw scores remain visible at the unchanged 0.8 threshold. Helpfulness cannot rescue factual mistakes. A narrow local pounds/date guard is additional protection, not a complete natural-language judge.</p>
-        <p class="text-slate-700 max-w-3xl">Run metadata records model and judge configuration, dataset version, code SHA/dirty state, development DB/user, as-of and hashed ledger/catalog counts. Before/after hashes expose training-data drift. Secrets and full private ledger are absent from metadata. jev-latest remains a floating vendor alias unless a supported fixed model is configured.</p>
+        <p class="text-slate-700 max-w-3xl">The judge asks whether the response correctly handles the request using the returned evidence. A supported answer, honest no-data response or relevant clarification can pass. When several leg press stations have history, showing those choices and asking which one is a complete response; no trend is required yet. Only claims actually made are checked, including any missing-data claims. Availability and helpfulness have no separate grades.</p>
+        <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const raw = scores.reference_match;
+if (raw === undefined) throw new Error("Jev missing reference_match");
+grades.push({ key: `${prefix}reference_match_raw`, score: raw,
+  comment: `model ${jevModelId()}; judge ${LIVE_JUDGE_VERSION}; threshold ${REFERENCE_MATCH_THRESHOLD}` },
+  { key: `${prefix}reference_match`, ...scoreNoul(raw) });</code></pre>
+        <p class="text-slate-700 max-w-3xl">reference_match_raw is the single correctness Noul; reference_match passes at 0.7 or higher. Tool presence/count, final-result identity and the narrow pounds/date check are independent diagnostics. There is no minimum-of-several-judges aggregate. The earlier leg-press response had selection 0.91 and evidence 0.80 but availability 0.62, which vetoed an appropriate clarification. Historical grades remain unchanged; the simplified rubric still needs live calibration.</p>
+        <p class="text-slate-700 max-w-3xl">Run metadata records model, judge version/configuration, dataset version, code SHA/dirty state, development DB/user, as-of and hashed ledger/catalog counts. Before/after hashes expose training-data drift. Secrets and full private ledger are absent from metadata. jev-latest remains a floating vendor alias unless a supported fixed model is configured.</p>
         <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const scenarioSet = process.env.EVAL_SCENARIOS?.trim() || "first-turn";
 const selectedExamples = selectLiveExamples(examples, scenarioSet, version.as_of);</code></pre>
         <p class="text-slate-700 max-w-3xl"><code>npm run eval:agent:sync -- --adopt</code> previews legacy adoption. Add <code>--apply</code> only after review. <code>npm run eval:agent</code> runs the 11 first-turn cases; <code>npm run eval:agent:follow-ups</code> runs four multi-turn scenarios; <code>npm run eval:agent:all</code> runs all 15. Selection preserves dataset edits and excludes unrelated manual rows. Missing/duplicate selected IDs or stale references stop before Coach runs. After sync, clear an old <code>EVAL_DATASET_VERSION</code> pin or choose the new snapshot. <code>npm run eval:agent:regrade -- --input archive.json --output revised.json</code> judges stored outputs into a new private file without changing original feedback. No apply, regrade or live experiment ran during implementation.</p>

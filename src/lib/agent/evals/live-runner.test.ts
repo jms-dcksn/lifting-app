@@ -82,14 +82,34 @@ describe("deliberate dataset sync", () => {
 });
 
 describe("scenario judge wiring", () => {
-  it("stores raw dimensions and fails the aggregate when any required dimension fails", async () => {
-    vi.mocked(askJev).mockResolvedValue({ selection_correctness: 0.95, evidence_support: 0.2, availability_handling: 0.9, helpfulness: 1 });
+  it("uses one direct correctness score and preserves a factual failure", async () => {
+    vi.mocked(askJev).mockResolvedValue({ reference_match: 0.2 });
     const turn = { answer: "Invented 405 lb.", toolCalls: [{ name: "exerciseReview", args: { name: "front squat" } }],
       toolResults: [{ name: "exerciseReview", result: { exerciseId: "bb-front-squat", last: null } }] };
     const grades = await gradeScenario({ question: "front squat" }, { ...turn, turns: [turn] },
       { review: { outcome: "resolved", exerciseId: "bb-front-squat" }, maxToolCalls: 3 });
-    expect(grades.find((grade) => grade.key === "evidence_support_raw")?.score).toBe(0.2);
+    expect(grades.find((grade) => grade.key === "reference_match_raw")?.score).toBe(0.2);
     expect(grades.find((grade) => grade.key === "reference_match")?.score).toBe(0);
     expect(vi.mocked(askJev).mock.calls.at(-1)?.[0].state).toMatchObject({ toolEvidence: turn.toolResults });
+  });
+  it("grades station clarification without requiring a resolved review or trend fields", async () => {
+    vi.mocked(askJev).mockResolvedValue({ reference_match: 0.9 });
+    const turn = {
+      answer: "I found three leg press stations. Generic has no sets; Cybex and Nautilus have history. Which one did you mean?",
+      toolCalls: [{ name: "exerciseReview", args: { name: "leg press" } }],
+      toolResults: [{ name: "exerciseReview", result: { selectionStatus: "clarification_needed", needsDisambiguation: true,
+        matches: [{ id: "leg-press", history: { loggedSetCount: 0 } },
+          { id: "leg-press__cybex__plate_loaded", history: { loggedSetCount: 3 } },
+          { id: "leg-press__nautilus__plate_loaded", history: { loggedSetCount: 2 } }] } }],
+    };
+    const grades = await gradeScenario({ question: "How is my e1RM trending on leg press?" }, { ...turn, turns: [turn] },
+      { reference: "Clarify separate stations when multiple have history.", review: { outcome: "policy", requiredMatchIds: ["leg-press"] } });
+    expect(grades.find((grade) => grade.key === "reference_match")?.score).toBe(1);
+    expect(grades.map((grade) => grade.key)).toEqual([
+      "right_tool", "tool_call_count", "supported_figures", "found_exercise", "reference_match_raw", "reference_match",
+    ]);
+    const request = vi.mocked(askJev).mock.calls.at(-1)![0];
+    expect(Object.keys(request.questions)).toEqual(["reference_match"]);
+    expect(request.state).toMatchObject({ question: "How is my e1RM trending on leg press?", answer: turn.answer, toolEvidence: turn.toolResults });
   });
 });

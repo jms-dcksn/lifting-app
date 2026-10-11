@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LIVE_EXAMPLES, LIVE_FOLLOW_UP_EXAMPLES, gradeFoundExercise, gradeRightTool, gradeToolCount,
+import { LIVE_EXAMPLES, LIVE_FOLLOW_UP_EXAMPLES, REFERENCE_MATCH_THRESHOLD, gradeFoundExercise, gradeRightTool, gradeToolCount,
   outputFromTurn, reviewJudgeRequest, scoreNoul } from "./live";
 
 const preferred = { selectionStatus: "preferred_history", exerciseId: "bb-back-squat", equipmentInstanceId: null,
@@ -31,21 +31,21 @@ describe("live references and judges", () => {
     expect(gradeFoundExercise({ expected: { outcome: "disambiguate", matchIds: ["bb-back-squat", "bb-front-squat"] },
       toolResults: [{ name: "exerciseReview", result: { needsDisambiguation: true, matches: [...preferred.matches, { id: "hack-squat" }] } }] }).score).toBe(1);
   });
-  it("gives the judge current evidence, disjoint criteria and no mandatory invented trend", () => {
+  it("gives one correctness judge current evidence and accepts clarification", () => {
     const request = reviewJudgeRequest("squat trend", "policy", { answer: "No recent comparison.", toolCalls: [],
       toolResults: [{ name: "exerciseReview", result: preferred }] });
     expect(request.state.toolEvidence).toHaveLength(1);
-    expect(request.questions.selection_correctness.instructions).toContain("LAST exerciseReview");
-    expect(request.questions.evidence_support.instructions).toContain("Deload exclusion");
-    expect(request.questions.availability_handling.instructions).toContain("Two older eligible points");
+    expect(Object.keys(request.questions)).toEqual(["reference_match"]);
+    expect(request.questions.reference_match.instructions).toContain("clarification");
+    expect(request.questions.reference_match.instructions).toContain("only claims the answer makes");
     for (const question of Object.values(request.questions)) expect(question.criteria.true).not.toEqual(question.criteria.false);
   });
-  it("keeps procedural diagnostics and the 0.8 threshold", () => {
+  it("keeps procedural diagnostics and applies the configured threshold inclusively", () => {
     expect(gradeRightTool({ expectedTools: ["exerciseReview"], toolCalls: [] }).score).toBe(0);
     expect(gradeToolCount(3, 3).score).toBe(1);
     expect(gradeToolCount(4, 3).score).toBe(0);
-    expect(scoreNoul(0.8).score).toBe(1);
-    expect(scoreNoul(0.79).score).toBe(0);
+    expect(scoreNoul(REFERENCE_MATCH_THRESHOLD).score).toBe(1);
+    expect(scoreNoul(REFERENCE_MATCH_THRESHOLD - 0.01).score).toBe(0);
     expect(scoreNoul(NaN).score).toBe(0);
   });
   it("exports only the final assistant answer with the complete turn trajectory", () => {

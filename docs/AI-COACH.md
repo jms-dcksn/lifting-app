@@ -390,14 +390,28 @@ floating; recording that alias does not establish an immutable vendor model vers
 After sync, clear an `EVAL_DATASET_VERSION` pinned to an older snapshot or set it to the new
 version; applying sync never modifies an earlier immutable snapshot.
 
-Judges separate `selection_correctness`, `evidence_support`, `availability_handling`, and
-optional `helpfulness`, each retaining the raw Jev score and thresholded result. Required
-semantic dimensions and a narrow pounds/ISO-date guard determine `reference_match` at 0.8.
-`right_tool`, `tool_call_count`, and `found_exercise` are diagnostics. Identity uses the final
-review result, so an earlier correct lookup cannot rescue a later wrong one. The semantic
-judge receives the question history, final answer, tool calls and current-turn evidence;
-helpfulness cannot rescue wrong identities/facts. Deterministic figure checks do not prove
-semantic scope, direction or natural-language dates; those remain judge responsibilities.
+One Jev correctness question produces `reference_match_raw`; `reference_match` is its direct
+pass/fail result at `REFERENCE_MATCH_THRESHOLD` (currently 0.7, inclusive). A supported answer,
+an honest no-data response, or an appropriate clarification can pass. For multiple matches
+with history, listing the relevant choices and asking which one is sufficient: no trend or
+resolved-review fields are required. Only claims actually made are checked. False missing-data
+claims remain factual errors; availability is no longer a separate judge. Formatting and
+optional detail do not decide correctness.
+
+`right_tool`, `tool_call_count`, `found_exercise`, and `supported_figures` are independent code
+diagnostics, not ingredients in a hidden aggregate. The figure check covers quoted pounds/ISO
+dates, not their semantic scope or direction. Identity uses the final review result. Jev gets
+question history, the answer and current-turn tool evidence. `LIVE_JUDGE_VERSION` and the full
+question configuration are recorded separately from `LIVE_POLICY_VERSION`, so changing a
+rubric does not force a dataset sync when references are still valid.
+
+This replaces the four overlapping judges after inspecting `exercise-review-d90a6a5f`
+(`bf61fa1d-bcc3-4400-b8df-4739077c1a35`). Its old aggregate passed 5/11; four of the six
+failures came solely from availability. The leg-press clarification scored selection 0.91,
+evidence 0.80 and availability 0.62: taking the minimum made a correct clarification fail.
+That tool result contained candidate history metadata, not a resolved trend review. Jev did
+not provide a rationale, so rubric mismatch is the diagnosis, not an observed internal reason.
+Original scores/annotations stay unchanged; the new rubric has not yet been calibrated live.
 
 To calibrate old outputs without calling Coach, explicitly regrade a private archived review:
 

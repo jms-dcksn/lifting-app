@@ -3,7 +3,8 @@ import type { AgentPart } from "../messages";
 export const LIVE_EVAL_PROJECT = "lifting-app-agent-evals";
 export const LIVE_DATASET = "ai-coach-live";
 export const LIVE_POLICY_VERSION = "exercise-review-2026-10-11-v2";
-export const REFERENCE_MATCH_THRESHOLD = 0.8;
+export const LIVE_JUDGE_VERSION = "exercise-review-correctness-2026-10-11-v1";
+export const REFERENCE_MATCH_THRESHOLD = 0.7;
 export const INCLINE_E1RM_QUESTION = "How is my e1RM trending on incline bench press";
 export const INCLINE_BENCH_ID = "bb-incline-bench";
 
@@ -59,31 +60,17 @@ export const LIVE_FOLLOW_UP_EXAMPLES: LiveExample[] = [
 ];
 
 export const REVIEW_JUDGE_QUESTIONS = {
-  selection_correctness: {
+  reference_match: {
     type: "noul" as const,
-    instructions: "Compare the final answer to the LAST exerciseReview result and explicit user intent. Prior correct lookups cannot rescue a wrong final lift. For preferred_history disclose all alternatives, the verified only-logged reason and confirm intended exercise. For clarification_needed ask which and offer separate summaries. For all, label each returned review separately and disclose continuation. Machine brands/types/instances must not be blended. A match list is not automatically a failure.",
-    criteria: { true: "All identity/selection requirements satisfied.", false: "At least one wrong lift, hidden alternative, false preference reason, missing required confirmation, unwanted substitution or blended instance." },
-  },
-  evidence_support: {
-    type: "noul" as const,
-    instructions: "Check every factual claim against THIS turn's tool evidence, with harmless decimal rounding allowed. Verify numbers, dates, direction, exercise/equipment scope and claims about multiple matches. Historical chart points must not be called current-window points. Recent delta is last minus first eligible point, not last minus best. Deload exclusion does not imply stored e1RM was absent. Source attribution must be one final line. No data means no fabricated figures.",
-    criteria: { true: "Every factual claim is supported and attributed.", false: "At least one unsupported number/date/direction/scope/storage claim or missing/duplicated source attribution." },
-  },
-  availability_handling: {
-    type: "noul" as const,
-    instructions: "Check availability.recentComparison separately from historicalTrend. Two older eligible points permit a dated historical trend despite a 21-day gap. Zero/one eligible points cannot support a trend. Latest workout, latest eligible e1RM and window best are different. Deload/missing-RIR activity is logged even when strength comparison is unavailable. Report missing comparisons honestly and available last facts; never require an invented trend.",
-    criteria: { true: "Availability is accurately explained with available evidence.", false: "Invented trend, false no-activity claim, confusion of recent gap with no historical trend, or confusion of latest workout and latest eligible point." },
-  },
-  helpfulness: {
-    type: "noul" as const,
-    instructions: "Assess concise usefulness and the offer to summarize all when choices need clarification. This is optional helpfulness and cannot rescue identity or evidence failures.",
-    criteria: { true: "Concise useful answer with a sensible next step.", false: "Unhelpful or unclear despite adequate evidence." },
+    instructions: "Is the answer a correct response to the user's request, supported by this turn's tool evidence? Use the reference as guidance, not required wording or numeric gold. A relevant clarification question is a complete correct response: when multiple exercises have history, show the choices and ask which one; do not require a trend or review fields absent from the tool result. When preferring the only match with history, disclose alternatives and the reason, answer it and invite confirmation. Check only claims the answer makes, allowing reasonable rounding and calculations. Numbers, dates, trend direction, missing-data claims and exercise identity must agree with the evidence. Judge the final answer; an earlier correct lookup cannot excuse a later wrong lift. Ignore formatting, optional detail and source-line wording.",
+    criteria: { true: "Correct supported answer, honest no-data response, or appropriate clarification, with no material factual or exercise-selection errors.",
+      false: "Wrong exercise, hidden ambiguity or substitution, blended machine histories, invented or contradicted facts, or a false claim that data is unavailable." },
   },
 };
 
 export function reviewJudgeRequest(question: string, reference: string, output: LiveTurnOutput) {
   return { state: { question, reference, answer: output.answer, toolCalls: output.toolCalls, toolEvidence: output.toolResults,
-    policyVersion: LIVE_POLICY_VERSION }, questions: REVIEW_JUDGE_QUESTIONS };
+    policyVersion: LIVE_POLICY_VERSION, judgeVersion: LIVE_JUDGE_VERSION }, questions: REVIEW_JUDGE_QUESTIONS };
 }
 
 export function outputFromTurn(messages: Array<{ role: string; parts: AgentPart[] }>): LiveTurnOutput {

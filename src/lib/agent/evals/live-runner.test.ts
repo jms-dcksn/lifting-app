@@ -1,8 +1,42 @@
 import { describe, expect, it, vi } from "vitest";
 import { Client } from "langsmith";
-import { gradeScenario, planLiveSync, syncLiveExamples, validateEvalTarget } from "./live-experiment";
+import { gradeScenario, planLiveSync, selectLiveExamples, syncLiveExamples, validateEvalTarget } from "./live-experiment";
+import { LIVE_EXAMPLES, LIVE_FOLLOW_UP_EXAMPLES, LIVE_POLICY_VERSION } from "./live";
 import { askJev } from "./jev";
 vi.mock("./jev", () => ({ askJev: vi.fn(), jevModelId: () => "fixture-judge" }));
+
+describe("live scenario selection", () => {
+  const rows = [...LIVE_EXAMPLES, ...LIVE_FOLLOW_UP_EXAMPLES].map((example) => ({
+    id: `row-${example.id}`, inputs: { id: example.id, question: example.question,
+      followUps: example.followUps?.map((turn) => turn.question) },
+    outputs: { policyVersion: LIVE_POLICY_VERSION, review: example.review, followUps: example.followUps },
+  }));
+  it("defaults to the 11 first turns and leaves unrelated manual rows alone", () => {
+    const manual = { id: "manual", inputs: { id: "manual-test" } };
+    expect(selectLiveExamples([...rows, manual]).map((row) => row.inputs?.id)).toEqual(LIVE_EXAMPLES.map((example) => example.id));
+    expect(selectLiveExamples(rows, "follow-ups")).toHaveLength(4);
+    expect(selectLiveExamples(rows, "all")).toHaveLength(15);
+    expect(() => selectLiveExamples(rows, "typo")).toThrow("EVAL_SCENARIOS");
+  });
+  it("identifies stale references and supplies the explicit migration commands", () => {
+    const legacy = rows.slice(0, 11).map((row) => ({ ...row, outputs: undefined }));
+    expect(() => selectLiveExamples(legacy)).toThrow("incline-bench");
+    expect(() => selectLiveExamples(legacy)).toThrow("npm run eval:agent:sync -- --adopt");
+    expect(() => selectLiveExamples(legacy)).toThrow("EVAL_DATASET_VERSION");
+    expect(selectLiveExamples(rows.slice(0, 11))).toHaveLength(11);
+    const edited = rows.map((row) => ({ ...row, inputs: { ...row.inputs, question: "Dataset-edited question" } }));
+    expect(selectLiveExamples(edited)[0]?.inputs?.question).toBe("Dataset-edited question");
+  });
+  it("refuses missing or duplicated selected cases and incomplete follow-up references", () => {
+    expect(() => selectLiveExamples(rows.slice(1))).toThrow("Missing scenario incline-bench");
+    expect(() => selectLiveExamples([...rows, rows[0]!])).toThrow("Multiple rows");
+    const incomplete = rows.map((row) => ({ ...row, outputs: { ...row.outputs, followUps: undefined } }));
+    expect(selectLiveExamples(incomplete)).toHaveLength(11);
+    expect(() => selectLiveExamples(incomplete, "follow-ups")).toThrow("confirm-squat");
+    const missingTurns = incomplete.map((row) => ({ ...row, inputs: { ...row.inputs, followUps: undefined } }));
+    expect(() => selectLiveExamples(missingTurns, "follow-ups")).toThrow("confirm-squat");
+  });
+});
 
 describe("deliberate dataset sync", () => {
   it("preserves unowned UI rows and previews adoption of legacy source ids", () => {

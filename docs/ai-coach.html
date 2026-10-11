@@ -632,7 +632,9 @@ if (streamEvent.type === "done") {
   Source[Source policy cases] --> Preview[Explicit sync preview]
   Preview --> Apply[Reviewed apply to source-owned rows]
   Apply --> Version[Immutable dataset version]
-  Version --> Agent[Development read-only Agent turns]
+  Version --> Cases[Select 11 first turns by default]
+  Cases --> Guard[Validate selected IDs and policy references]
+  Guard --> Agent[Development read-only Agent turns]
   Agent --> Evidence[Final answer and current-turn tool evidence]
   Evidence --> Selection[Selection correctness]
   Evidence --> Facts[Evidence support]
@@ -649,7 +651,9 @@ if (streamEvent.type === "done") {
 }</code></pre>
         <p class="text-slate-700 max-w-3xl">The final review lookup controls the identity diagnostic; an earlier correct lookup cannot rescue a later wrong lift. Semantic judges check all factual scope and availability claims against tool results and question history. Raw scores remain visible at the unchanged 0.8 threshold. Helpfulness cannot rescue factual mistakes. A narrow local pounds/date guard is additional protection, not a complete natural-language judge.</p>
         <p class="text-slate-700 max-w-3xl">Run metadata records model and judge configuration, dataset version, code SHA/dirty state, development DB/user, as-of and hashed ledger/catalog counts. Before/after hashes expose training-data drift. Secrets and full private ledger are absent from metadata. jev-latest remains a floating vendor alias unless a supported fixed model is configured.</p>
-        <p class="text-slate-700 max-w-3xl"><code>npm run eval:agent:sync -- --adopt</code> previews legacy adoption. Add <code>--apply</code> only after review. <code>npm run eval:agent</code> runs the versioned development dataset; <code>npm run eval:agent:regrade -- --input archive.json --output revised.json</code> judges stored outputs into a new private file without changing original feedback. No apply, regrade or live experiment ran during implementation.</p>
+        <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const scenarioSet = process.env.EVAL_SCENARIOS?.trim() || "first-turn";
+const selectedExamples = selectLiveExamples(examples, scenarioSet, version.as_of);</code></pre>
+        <p class="text-slate-700 max-w-3xl"><code>npm run eval:agent:sync -- --adopt</code> previews legacy adoption. Add <code>--apply</code> only after review. <code>npm run eval:agent</code> runs the 11 first-turn cases; <code>npm run eval:agent:follow-ups</code> runs four multi-turn scenarios; <code>npm run eval:agent:all</code> runs all 15. Selection preserves dataset edits and excludes unrelated manual rows. Missing/duplicate selected IDs or stale references stop before Coach runs. After sync, clear an old <code>EVAL_DATASET_VERSION</code> pin or choose the new snapshot. <code>npm run eval:agent:regrade -- --input archive.json --output revised.json</code> judges stored outputs into a new private file without changing original feedback. No apply, regrade or live experiment ran during implementation.</p>
       </section>
 
       <section id="slice-2" class="space-y-4">

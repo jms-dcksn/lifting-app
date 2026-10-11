@@ -50,20 +50,18 @@ export async function runLiveExperiment() {
     ...(process.env.EVAL_DATASET_VERSION?.trim() ? { asOf: process.env.EVAL_DATASET_VERSION.trim() } : { tag: "latest" }) });
   const examples = [];
   for await (const example of client.listExamples({ datasetId: dataset.id, asOf: version.as_of })) {
-    if (example.outputs?.policyVersion !== LIVE_POLICY_VERSION || !reviewFrom(example.outputs.review)) {
-      throw new Error("Dataset has old or incomplete policy references. Preview explicit sync, then apply reviewed changes before running.");
-    }
     examples.push(example);
   }
-  if (!examples.length) throw new Error("Live dataset is empty; sync explicitly first.");
+  const scenarioSet = process.env.EVAL_SCENARIOS?.trim() || "first-turn";
+  const selectedExamples = selectLiveExamples(examples, scenarioSet, version.as_of);
   const snapshot = await trainingSnapshot(supabase, userId);
   const codeSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
   const dirty = Boolean(execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim());
-  const metadata = { source: "local-eval", policyVersion: LIVE_POLICY_VERSION, datasetVersion: version.as_of,
+  const metadata = { source: "local-eval", scenarioSet, policyVersion: LIVE_POLICY_VERSION, datasetVersion: version.as_of,
     agentModel: agentModelId(), judgeModel: jevModelId(), judgeThreshold: REFERENCE_MATCH_THRESHOLD,
     judgeConfiguration: REVIEW_JUDGE_QUESTIONS, judgeModelIsFloating: jevModelId().endsWith("latest"), codeSha, dirty, databaseProject, userId,
     asOf: new Date().toISOString(), trainingSnapshot: snapshot };
-  console.log(`Dataset ${LIVE_DATASET}@${version.as_of}: ${examples.length} scenarios; development project ${databaseProject}; model ${metadata.agentModel}`);
+  console.log(`Dataset ${LIVE_DATASET}@${version.as_of}: ${selectedExamples.length} scenarios; development project ${databaseProject}; model ${metadata.agentModel}`);
   const screenContext = await enrichScreenContext(supabase, userId, { pathname: "/", activeProgramId: null, openSessionId: null, focusedExerciseId: null });
   const results = await evaluate(async (inputs: { question: string; id?: string; followUps?: string[] }): Promise<LiveScenarioOutput> => {
     const persisted: AgentMessage[] = [];
@@ -77,7 +75,7 @@ export async function runLiveExperiment() {
         id: `turn-${index}-${messageIndex}`, createdAt: new Date().toISOString() });
     }
     return { ...turns.at(-1)!, turns };
-  }, { data: examples, experimentPrefix: "exercise-review", maxConcurrency: 1, metadata,
+  }, { data: selectedExamples, experimentPrefix: "exercise-review", maxConcurrency: 1, metadata,
     evaluators: [async (args: { inputs: Record<string, unknown>; outputs: Record<string, unknown>; referenceOutputs?: Record<string, unknown> }) => {
       const outputs = args.outputs as unknown as LiveScenarioOutput;
       const reference = args.referenceOutputs ?? {};
@@ -128,6 +126,30 @@ export async function syncLiveDataset(options: { apply?: boolean; adopt?: boolea
 
 type ExistingExample = { id: string; inputs?: Record<string, unknown>; outputs?: Record<string, unknown>;
   metadata?: Record<string, unknown> };
+export function selectLiveExamples<T extends ExistingExample>(examples: T[], scenarioSet = "first-turn", datasetVersion?: string): T[] {
+  if (!["first-turn", "follow-ups", "all"].includes(scenarioSet)) {
+    throw new Error("EVAL_SCENARIOS must be first-turn, follow-ups, or all.");
+  }
+  const cases = scenarioSet === "first-turn" ? LIVE_EXAMPLES : scenarioSet === "follow-ups" ? LIVE_FOLLOW_UP_EXAMPLES
+    : [...LIVE_EXAMPLES, ...LIVE_FOLLOW_UP_EXAMPLES];
+  const syncHelp = "Preview: npm run eval:agent:sync -- --adopt\nAfter reviewing: npm run eval:agent:sync -- --adopt --apply\n"
+    + "Then retry. If EVAL_DATASET_VERSION pins an older snapshot, clear it or choose the new version.";
+  return cases.map((scenario) => {
+    const matches = examples.filter((example) => example.inputs?.id === scenario.id);
+    if (!matches.length) throw new Error(`Missing scenario ${scenario.id} in ${LIVE_DATASET}.\n${syncHelp}`);
+    if (matches.length > 1) throw new Error(`Multiple rows have scenario id ${scenario.id}; resolve the duplicate before running.`);
+    const example = matches[0]!;
+    const followUps = example.inputs?.followUps ?? [];
+    const references = example.outputs?.followUps ?? [];
+    if (example.outputs?.policyVersion !== LIVE_POLICY_VERSION || !reviewFrom(example.outputs?.review)
+      || !Array.isArray(followUps) || followUps.length !== (scenario.followUps?.length ?? 0)
+      || !Array.isArray(references) || references.length !== followUps.length
+      || references.some((turn) => !reviewFrom(reviewRecord(turn)?.review))) {
+      throw new Error(`Dataset ${LIVE_DATASET}${datasetVersion ? `@${datasetVersion}` : ""} has old or incomplete policy references for ${scenario.id}.\n${syncHelp}`);
+    }
+    return example;
+  });
+}
 export function planLiveSync(existing: ExistingExample[], adopt = false) {
   return [...LIVE_EXAMPLES, ...LIVE_FOLLOW_UP_EXAMPLES].map((example) => {
     const rows = existing.filter((candidate) => candidate.inputs?.id === example.id);

@@ -350,6 +350,9 @@ scenarios cover confirmation, correction, machine brand selection and “show bo
 has its own three-call diagnostic budget. Runtime still permits eight calls. References are
 policy expectations, not snapshots of a changing user's numbers. RDL alias/full-name share
 the same policy. Live facts must be supported by current tool evidence.
+`npm run eval:agent` defaults to the 11 first-turn cases. Use `eval:agent:follow-ups` for the
+four multi-turn scenarios, or `eval:agent:all` for all 15. These set `EVAL_SCENARIOS` to
+`follow-ups` or `all`; an unset value defaults to `first-turn`.
 
 Dataset synchronization is separate from execution. `LIVE_EXAMPLES` and
 `LIVE_FOLLOW_UP_EXAMPLES` own source examples marked `metadata.source = lifting-app/LIVE_EXAMPLES`.
@@ -362,23 +365,30 @@ before apply; source-row UI edits can be overwritten by an explicitly applied sy
 npm run eval:agent:sync -- --adopt
 # Apply only after reviewing that preview; this does not run Coach or judges.
 npm run eval:agent:sync -- --adopt --apply
-# Explicitly run the pinned dataset version against development when desired.
+# Run the 11 first-turn cases against development when desired.
 npm run eval:agent
+# Optional: run four follow-up scenarios, or all 15 scenarios.
+npm run eval:agent:follow-ups
+npm run eval:agent:all
 ```
 
 The runner checks the URL against `EVAL_DB_PROJECT_REF` (default the development project),
 rejects the known production project, and looks up `EVAL_USER_EMAIL` with the local-only
 `SUPABASE_SECRET_KEY`. It uses read tools only and never inserts chat threads. No source sync
-occurs during execution. A dataset containing old/incomplete policy references fails before
-Coach runs; manually added examples need the same policy/output schema.
+occurs during execution. Selection uses source case IDs within that snapshot and preserves
+dataset-edited questions/references. Missing or duplicate selected IDs fail before Coach runs;
+unrelated manual rows are excluded. Old/incomplete selected references identify the case and
+print explicit sync commands. Follow-up references must cover every input turn.
 
 Each run resolves `EVAL_DATASET_VERSION` (optional timestamp; otherwise latest) to an immutable
 version and records it, actual configured agent/Jev models, policy/rubric, threshold, code SHA
-and dirty state, DB project/user, as-of timestamp, and a hash/count summary of the owner ledger
+and dirty state, selected scenario set, DB project/user, as-of timestamp, and a hash/count summary of the owner ledger
 and catalog. A second hash records whether training data changed during the run. No keys or
 full private ledger are experiment metadata. This detects data drift; it does not freeze the DB.
 `JEV_MODEL` can select a supported fixed model. The default `jev-latest` is explicitly marked
 floating; recording that alias does not establish an immutable vendor model version.
+After sync, clear an `EVAL_DATASET_VERSION` pinned to an older snapshot or set it to the new
+version; applying sync never modifies an earlier immutable snapshot.
 
 Judges separate `selection_correctness`, `evidence_support`, `availability_handling`, and
 optional `helpfulness`, each retaining the raw Jev score and thresholded result. Required

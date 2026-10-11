@@ -137,7 +137,8 @@ named `CURSOR_API_KEY`. Do not commit it.
 - Rotate the Supabase secret independently in Supabase and local eval settings. Updating
   a publishable key requires a rebuild/redeploy of clients that embed it.
 - Check `package.json` and deployment settings for build/runtime configuration. This checkout
-  has no pinned Node engine, `.nvmrc`, or `vercel.json`; verify the selected runtime at release.
+  has no pinned Node engine, `.nvmrc`, or `vercel.json`; CI uses Node 22 for Supabase's native
+  WebSocket support. Verify the selected deployment runtime at release.
 
 ### Deload progression migration
 
@@ -168,9 +169,10 @@ Live experiments require the development URL and that project's local-only
 continue to use the signed-in client and RLS.
 
 Source sync and execution are separate. Preview with `npm run eval:agent:sync -- --adopt`;
-apply reviewed source-row adoption with `--adopt --apply`. `npm run eval:agent` resolves
-an immutable dataset version without overwriting examples. Optional `EVAL_DATASET_VERSION`
-selects an as-of timestamp. Experiments record configured models, rubric/version, code SHA,
+apply reviewed source-row adoption with `--adopt --apply`. `npm run eval:agent` runs 11 first-turn
+cases from an immutable dataset version without overwriting examples. `eval:agent:follow-ups`
+runs four multi-turn scenarios; `eval:agent:all` runs all 15. Optional `EVAL_DATASET_VERSION`
+selects an as-of timestamp; clear an old pin after sync. Experiments record the scenario set, configured models, rubric/version, code SHA,
 DB/user, as-of and hashed data summaries, including a before/after drift check.
 `JEV_MODEL` may choose a supported fixed model; default `jev-latest` is marked floating.
 See [AI Coach evals](docs/AI-COACH.md#evals) for ownership, per-turn budgets and archived-output

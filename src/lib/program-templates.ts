@@ -77,13 +77,13 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
     tags: ["women", "beginner", "intermediate", "strength", "hypertrophy", "3-day", "glutes", "legs", "under-45-min"],
     weeks: 12,
     phases: [
-      { position: 0, name: "Learn & calibrate", description: "Leave three clean reps in reserve. Practice repeatable technique and calibrate each machine with light ramp-up sets before working sets.", weekStart: 1, weekEnd: 2, targetRirMin: 3, targetRirMax: 3, setMultiplier: null },
-      { position: 1, name: "Build consistency", description: "Leave two reps in reserve. Add reps within the prescribed range, then load when the suggested increase still allows clean reps at the target RIR.", weekStart: 3, weekEnd: 5, targetRirMin: 2, targetRirMax: 2, setMultiplier: null },
-      { position: 2, name: "Recovery", description: "One working set per exercise at four RIR. Reduce weight as needed; progression suggestions are optional during recovery.", weekStart: 6, weekEnd: 6, targetRirMin: 4, targetRirMax: 4, setMultiplier: 0.5 },
-      { position: 3, name: "Rebuild", description: "Return to two working sets with three reps in reserve. Recalibrate load after the easier week.", weekStart: 7, weekEnd: 7, targetRirMin: 3, targetRirMax: 3, setMultiplier: null },
-      { position: 4, name: "Progress", description: "Leave two reps in reserve and build on the first block's clean performances without adding sets.", weekStart: 8, weekEnd: 9, targetRirMin: 2, targetRirMax: 2, setMultiplier: null },
-      { position: 5, name: "Confident strength", description: "Work at one to two RIR; beginners should stay at two. End each set before technique breaks down. No forced reps or failure testing.", weekStart: 10, weekEnd: 11, targetRirMin: 1, targetRirMax: 2, setMultiplier: null },
-      { position: 6, name: "Recover & review", description: "One working set per exercise at four RIR, reducing load as needed. Review rep and load improvements before repeating the block.", weekStart: 12, weekEnd: 12, targetRirMin: 4, targetRirMax: 4, setMultiplier: 0.5 },
+      { position: 0, name: "Learn & calibrate", description: "Leave three clean reps in reserve. Practice repeatable technique and calibrate each machine with light ramp-up sets before working sets.", weekStart: 1, weekEnd: 2, targetRirMin: 3, targetRirMax: 3, setMultiplier: null, isDeload: false },
+      { position: 1, name: "Build consistency", description: "Leave two reps in reserve. Add reps within the prescribed range, then load when the suggested increase still allows clean reps at the target RIR.", weekStart: 3, weekEnd: 5, targetRirMin: 2, targetRirMax: 2, setMultiplier: null, isDeload: false },
+      { position: 2, name: "Recovery", description: "One working set per exercise at four RIR. Reduce weight as needed; progression suggestions are optional during recovery.", weekStart: 6, weekEnd: 6, targetRirMin: 4, targetRirMax: 4, setMultiplier: 0.5, isDeload: true },
+      { position: 3, name: "Rebuild", description: "Return to two working sets with three reps in reserve. Recalibrate load after the easier week.", weekStart: 7, weekEnd: 7, targetRirMin: 3, targetRirMax: 3, setMultiplier: null, isDeload: false },
+      { position: 4, name: "Progress", description: "Leave two reps in reserve and build on the first block's clean performances without adding sets.", weekStart: 8, weekEnd: 9, targetRirMin: 2, targetRirMax: 2, setMultiplier: null, isDeload: false },
+      { position: 5, name: "Confident strength", description: "Work at one to two RIR; beginners should stay at two. End each set before technique breaks down. No forced reps or failure testing.", weekStart: 10, weekEnd: 11, targetRirMin: 1, targetRirMax: 2, setMultiplier: null, isDeload: false },
+      { position: 6, name: "Recover & review", description: "One working set per exercise at four RIR, reducing load as needed. Review rep and load improvements before repeating the block.", weekStart: 12, weekEnd: 12, targetRirMin: 4, targetRirMax: 4, setMultiplier: 0.5, isDeload: true },
     ],
     days: [
       {
@@ -174,14 +174,14 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
     tags: ["personal", "HIT", "hypertrophy", "4-day", "specialization"],
     weeks: 12,
     phases: [
-      { position: 0, name: "Calibration", description: "Leave two clean reps in reserve while establishing repeatable loads and technique.", weekStart: 1, weekEnd: 1, targetRirMin: 2, targetRirMax: 2, setMultiplier: null },
-      { position: 1, name: "Build", description: "Push every working set to one rep in reserve without adding sets.", weekStart: 2, weekEnd: 3, targetRirMin: 1, targetRirMax: 1, setMultiplier: null },
-      { position: 2, name: "Intensification", description: "Work within zero to one RIR. Stop compound sets at technical failure and do not use forced reps.", weekStart: 4, weekEnd: 5, targetRirMin: 0, targetRirMax: 1, setMultiplier: null },
-      { position: 3, name: "Deload", description: "Perform half the normal working sets and keep three to four reps in reserve.", weekStart: 6, weekEnd: 6, targetRirMin: 3, targetRirMax: 4, setMultiplier: 0.5 },
-      { position: 4, name: "Recalibration", description: "Re-establish repeatable loads after the deload with two reps in reserve.", weekStart: 7, weekEnd: 7, targetRirMin: 2, targetRirMax: 2, setMultiplier: null },
-      { position: 5, name: "Build", description: "Push every working set to one rep in reserve without adding sets.", weekStart: 8, weekEnd: 9, targetRirMin: 1, targetRirMax: 1, setMultiplier: null },
-      { position: 6, name: "Intensification", description: "Work within zero to one RIR. Stop compound sets at technical failure and do not use forced reps.", weekStart: 10, weekEnd: 11, targetRirMin: 0, targetRirMax: 1, setMultiplier: null },
-      { position: 7, name: "Deload", description: "Perform half the normal working sets and keep three to four reps in reserve.", weekStart: 12, weekEnd: 12, targetRirMin: 3, targetRirMax: 4, setMultiplier: 0.5 },
+      { position: 0, name: "Calibration", description: "Leave two clean reps in reserve while establishing repeatable loads and technique.", weekStart: 1, weekEnd: 1, targetRirMin: 2, targetRirMax: 2, setMultiplier: null, isDeload: false },
+      { position: 1, name: "Build", description: "Push every working set to one rep in reserve without adding sets.", weekStart: 2, weekEnd: 3, targetRirMin: 1, targetRirMax: 1, setMultiplier: null, isDeload: false },
+      { position: 2, name: "Intensification", description: "Work within zero to one RIR. Stop compound sets at technical failure and do not use forced reps.", weekStart: 4, weekEnd: 5, targetRirMin: 0, targetRirMax: 1, setMultiplier: null, isDeload: false },
+      { position: 3, name: "Deload", description: "Perform half the normal working sets and keep three to four reps in reserve.", weekStart: 6, weekEnd: 6, targetRirMin: 3, targetRirMax: 4, setMultiplier: 0.5, isDeload: true },
+      { position: 4, name: "Recalibration", description: "Re-establish repeatable loads after the deload with two reps in reserve.", weekStart: 7, weekEnd: 7, targetRirMin: 2, targetRirMax: 2, setMultiplier: null, isDeload: false },
+      { position: 5, name: "Build", description: "Push every working set to one rep in reserve without adding sets.", weekStart: 8, weekEnd: 9, targetRirMin: 1, targetRirMax: 1, setMultiplier: null, isDeload: false },
+      { position: 6, name: "Intensification", description: "Work within zero to one RIR. Stop compound sets at technical failure and do not use forced reps.", weekStart: 10, weekEnd: 11, targetRirMin: 0, targetRirMax: 1, setMultiplier: null, isDeload: false },
+      { position: 7, name: "Deload", description: "Perform half the normal working sets and keep three to four reps in reserve.", weekStart: 12, weekEnd: 12, targetRirMin: 3, targetRirMax: 4, setMultiplier: 0.5, isDeload: true },
     ],
     days: [
       {

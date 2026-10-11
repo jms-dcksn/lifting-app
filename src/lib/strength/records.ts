@@ -1,3 +1,4 @@
+import { isProgressionSet } from "./eligibility";
 import type { ExerciseDef } from "./coefficients";
 import { computeE1rm, pctOf1RM } from "./e1rm";
 import {
@@ -19,6 +20,7 @@ export interface RecordSet {
   rir: number | null;
   e1rm: number | null;
   is_warmup: boolean;
+  is_deload?: boolean;
   created_at: string;
   workout_session: { performed_at: string; finished_at: string | null };
 }
@@ -80,7 +82,7 @@ export function historicalBodyweight(set: Pick<RecordSet, "weight" | "reps" | "r
 // cable / barbell-station *template* rows stay eligible on that exact id — history
 // policy does not rewrite them onto a variant, and needsStation is not a PR merge.
 export function eligibleRecordSet(set: RecordSet, def: ExerciseDef | undefined) {
-  if (!def || def.stationProfile === "machine" || set.is_warmup || !validSetNumbers(set)) return null;
+  if (!def || def.stationProfile === "machine" || !isProgressionSet({ isWarmup: set.is_warmup, isDeload: set.is_deload }) || !validSetNumbers(set)) return null;
   const weight = set.weight!;
   const reps = set.reps!;
   const bodyweight = def.equipment === "bodyweight" ? historicalBodyweight(set) : null;

@@ -40,7 +40,7 @@ version 1.2 `buildMonthlyReport`. Track links to it. No migration or new secrets
   the precise local-date cutoff. All earlier exercises are currently loaded to retain
   true baselines; incremental/materialized baselines are future optimization work.
 - No application cache or persisted monthly aggregate: revisiting the route rebuilds
-  from current saved sets. Existing weekly API/report contracts are unchanged.
+  from current saved sets. The existing Coach report contract is unchanged.
 
 ## Sample
 
@@ -159,7 +159,7 @@ week clipped to the month (and to today when the month is in progress).
 - Period weeks / Other weeks totals are descriptive counts and mean weekly weight change.
   They do not classify stalls, change PR totals, infer a cycle, or recommend training.
 - The card is omitted unless `sex = female` and `period_tracking_enabled`. Coach, exports,
-  and the weekly API are unchanged and still receive no period data.
+  and the weeklyCoach agent tool still receive no period data.
 
 `buildPeriodPerformanceOverlay` is the pure join. `MonthlyReport.currentWorkouts` lists
 finished sessions in the current window so the overlay can count training days without a
@@ -206,3 +206,8 @@ unsupported signals stay hidden. Check narrow/mobile fit and keyboard month navi
 columns/joins were checked read-only against the live schema. Browser access reaches
 the magic-link sign-in screen; authenticated visual verification remains pending.
 No synthetic user records were written.
+
+Deload classification is now persisted on sessions and sets. Monthly strength and PR
+comparisons exclude those sets, without treating intentional recovery as a data-quality
+failure. Workout/adherence counts and exercise-review volume retain recovery work. Shared
+stall assessments consume the saved flag and still reset evidence at deload boundaries.

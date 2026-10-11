@@ -13,6 +13,9 @@ import {
 } from "@/lib/exercise-review-sessions";
 import { reviewCompareDefaults } from "@/lib/exercise-review-months";
 import { reviewMonthSides, type ReviewMonthSource } from "@/lib/exercise-review-month-stats";
+import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
+import { exerciseCardLabel } from "@/lib/exercise-card-label";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { PinButton } from "../../pins/pin-button";
 import { MonthCompare } from "./month-compare";
@@ -33,10 +36,11 @@ export type ExerciseReviewProps = {
   equipmentChoices?: EquipmentChoice[];
 } & (
   | { status: "missing" }
-  | { status: "empty"; name: string; exerciseId?: string; baseExerciseId?: string | null; pin?: PinProps; rolling?: boolean }
+  | { status: "empty"; name: string; def?: ExerciseDef; exerciseId?: string; baseExerciseId?: string | null; pin?: PinProps; rolling?: boolean }
   | {
       status: "ready";
       name: string;
+      def?: ExerciseDef;
       exerciseId?: string;
       baseExerciseId?: string | null;
       isBodyweight: boolean;
@@ -62,7 +66,13 @@ export function ExerciseReview(props: ExerciseReviewProps) {
     );
   }
 
-  const { name, pin, reviewMonth, equipmentLabel, equipmentChoices } = props;
+  const { name, def, pin, reviewMonth, equipmentLabel, equipmentChoices } = props;
+  const labelLines = def
+    ? {
+        ...exerciseCardLabel(def),
+        ...(equipmentLabel ? { tertiary: equipmentLabel } : {}),
+      }
+    : { name };
   return (
     <ReviewShell reviewMonth={reviewMonth}>
       <header className="flex items-start justify-between gap-3">
@@ -72,10 +82,7 @@ export function ExerciseReview(props: ExerciseReviewProps) {
             baseExerciseId={props.baseExerciseId}
             size="lg"
           />
-          <div className="min-w-0">
-            <h1 className="text-display">{name}</h1>
-            {equipmentLabel && <p className="mt-1 text-caption text-muted">{equipmentLabel}</p>}
-          </div>
+          <ExerciseCardLabel as="h1" size="display" lines={labelLines} />
         </div>
         {pin && <PinButton exerciseId={pin.exerciseId} pinned={pin.pinned} name={pin.name} />}
       </header>
@@ -150,7 +157,7 @@ function ReadyBody({
   rolling?: boolean;
 }) {
   const today = reviewToday(sessions);
-  const previous = sessions.length >= 2 ? sessions.at(-2) : null;
+  const previous = sessions.slice(0, -1).findLast((session) => session.bestE1rm != null) ?? null;
   const recent = sessions.length >= 2 ? reviewRecentWindow(sessions, now) : null;
   const clock = now ?? new Date();
   const defaults = reviewCompareDefaults(reviewMonth, clock);
@@ -201,6 +208,7 @@ function ReadyBody({
                 </span>
               )}
             </div>
+            {session.isDeload && <p className="text-caption text-muted">Deload</p>}
             <SetList sets={session.sets} isBodyweight={isBodyweight} rolling={rolling} />
           </Card>
         ))}
@@ -229,6 +237,7 @@ function LastCard({
     <Card>
       <div className="mb-2 flex items-center gap-1">
         <CardLabel>Last</CardLabel>
+        {session.isDeload && <><span className="text-caption text-muted">Deload</span><InfoButton title="Deload">Excluded from strength progression and PRs. Working sets still count toward training volume.</InfoButton></>}
         <InfoButton title="Last">
           {rolling
             ? "This is the last finished workout for this movement. Each set names the station it was loaded on. Estimated 1RM uses the stored value from that day, not today's bodyweight."

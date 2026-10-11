@@ -38,6 +38,8 @@ export async function runAgentTurn(input: {
   tools: StructuredToolInterface[];
   model?: BaseChatModel;
   callbacks?: Callbacks;
+  /** Extra LangSmith run metadata. `thread_id` stays the conversation id. */
+  traceMetadata?: Record<string, string>;
   onEvent?: (event: AgentStreamEvent) => void;
 }): Promise<Array<Omit<AgentMessage, "id" | "createdAt">>> {
   const windowed = selectModelMessages(input.persisted);
@@ -60,7 +62,11 @@ export async function runAgentTurn(input: {
   // LangSmith groups a conversation's traces by metadata.thread_id.
   const run = await agent.streamEvents(
     { messages: toLangChainMessages(windowed) },
-    { version: "v3", metadata: { thread_id: input.threadId }, callbacks: input.callbacks },
+    {
+      version: "v3",
+      metadata: { ...input.traceMetadata, thread_id: input.threadId },
+      callbacks: input.callbacks,
+    },
   );
 
   const emit = input.onEvent ?? (() => {});

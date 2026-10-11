@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   load: vi.fn(), client: vi.fn(), program: vi.fn(), set: vi.fn(), del: vi.fn(), revalidate: vi.fn(),
+  swapProgram: vi.fn(),
 }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ set: mocks.set, delete: mocks.del }) }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
@@ -9,6 +10,10 @@ vi.mock("next/navigation", () => ({ redirect: (path: string) => { throw new Erro
 vi.mock("./supabase/server", () => ({ createClient: mocks.client }));
 vi.mock("./program", () => ({ getActiveProgram: mocks.program }));
 vi.mock("./next-workout", () => ({ loadNextWorkout: mocks.load }));
+vi.mock("@/app/(app)/session/actions", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/app/(app)/session/actions")>();
+  return { ...actual, swapProgramSlotExercise: mocks.swapProgram };
+});
 
 import { saveWorkoutChoice } from "@/app/(app)/workout/next/actions";
 import { startNextSession, startPlannedSession } from "@/app/(app)/session/actions";
@@ -38,8 +43,16 @@ describe("planning and starting boundary", () => {
   it("saves a choice without creating a session and preserves other slots", async () => {
     await saveWorkoutChoice("current", "second", "b");
     expect(from).not.toHaveBeenCalled();
+    expect(mocks.swapProgram).not.toHaveBeenCalled();
     expect(JSON.parse(mocks.set.mock.calls[0][1])).toEqual({ key: "current", choices: { first: "a", second: "b" } });
     expect(mocks.set.mock.calls[0][2]).toMatchObject({ httpOnly: true, sameSite: "lax" });
+  });
+  it("saves program scope through swapProgramSlotExercise and clears the slot cookie override", async () => {
+    mocks.load.mockResolvedValue({ ...next(), choices: { first: "a", second: "c" } });
+    await saveWorkoutChoice("current", "second", "b", "program");
+    expect(mocks.swapProgram).toHaveBeenCalledWith({ programSlotId: "second", exerciseId: "b" });
+    expect(JSON.parse(mocks.set.mock.calls[0][1])).toEqual({ key: "current", choices: { first: "a" } });
+    expect(from).not.toHaveBeenCalled();
   });
   it("resets only the selected slot", async () => {
     await saveWorkoutChoice("current", "first", null);

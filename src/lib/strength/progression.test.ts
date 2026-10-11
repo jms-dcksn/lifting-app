@@ -8,6 +8,7 @@ import {
 } from "@/lib/strength/progression";
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
+import { resolvePrescription } from "@/lib/periodization";
 
 const defs = EXERCISE_BY_ID;
 const slot: SlotPrescription = { repMin: 8, repMax: 12, targetRir: 2 };
@@ -50,11 +51,81 @@ describe("startingWeight", () => {
 describe("sessionTarget", () => {
   const stats = [stat("bb-bench", { currentE1rm: 200, confidenceN: 3 })];
 
+  it("reduces load at the prior rep count for a phase-resolved deload", () => {
+    const prescription = resolvePrescription(
+      { targetSets: 3, repMin: 6, repMax: 8, targetRir: 1 },
+      6,
+      [{
+        id: "deload", position: 0, name: "Deload", description: null,
+        weekStart: 6, weekEnd: 6, targetRirMin: 3, targetRirMax: 4,
+        setMultiplier: 0.5,
+      }],
+    );
+    const target = sessionTarget(
+      defs["bb-bench"], prescription, { weight: 150, reps: 7, rir: 1 },
+      defs, stats, null,
+    );
+
+    // The load table gives 150 / 0.786 × 0.707 = 134.9 lb, rounded to 135.
+    expect(target).toMatchObject({ weight: 135, targetReps: 7, targetRir: 4 });
+  });
+
   it("delegates to the recommender at rep_min with no prior performance", () => {
     const t = sessionTarget(defs["bb-bench"], slot, null, defs, stats, null)!;
     expect(t.source).toBe("recommendation");
     expect(t.targetReps).toBe(slot.repMin);
     expect(t.confidence).toBeDefined();
+  });
+
+  it("uses the canonical two-RIR default for legacy recovery references", () => {
+    const target = sessionTarget(
+      defs["bb-bench"], { repMin: 6, repMax: 8, targetRir: 4 },
+      { weight: 150, reps: 7, rir: null }, defs, stats, null,
+    );
+
+    expect(target).toMatchObject({ weight: 140, targetReps: 7, targetRir: 4 });
+  });
+
+  it("withholds a bodyweight recovery load when bodyweight is unknown", () => {
+    expect(sessionTarget(
+      defs["weighted-pullup"], { repMin: 6, repMax: 8, targetRir: 4 },
+      { weight: 35, reps: 7, rir: 1 }, defs, stats, null,
+    )).toBeNull();
+  });
+
+  it.each([
+    { reps: 4, rir: 1, targetRir: 4, weight: 160, targetReps: 6 },
+    { reps: 8, rir: 1, targetRir: 4, weight: 165, targetReps: 8 },
+    { reps: 10, rir: 1, targetRir: 4, weight: 180, targetReps: 8 },
+    { reps: 7, rir: 4, targetRir: 4, weight: 185, targetReps: 7 },
+    { reps: 7, rir: 1, targetRir: 5, weight: 160, targetReps: 7 },
+    { reps: 7, rir: 1, targetRir: 3, weight: 185, targetReps: 8 },
+    { reps: 8, rir: 1, targetRir: 3, weight: 190, targetReps: 6 },
+  ])("keeps recovery targets in range and preserves progression below four RIR: $reps reps @ $targetRir target RIR", ({ reps, rir, targetRir, weight, targetReps }) => {
+    const target = sessionTarget(
+      defs["bb-bench"], { repMin: 6, repMax: 8, targetRir },
+      { weight: 185, reps, rir }, defs, stats, null,
+    );
+
+    expect(target).toMatchObject({ weight, targetReps, targetRir });
+  });
+
+  it("rounds a recovery pull-up's added load with decimal bodyweight", () => {
+    const target = sessionTarget(
+      defs["weighted-pullup"], { repMin: 6, repMax: 8, targetRir: 4 },
+      { weight: 35, reps: 7, rir: 1 }, defs, stats, 149.2,
+    );
+
+    expect(target).toMatchObject({ weight: 15, targetReps: 7, targetRir: 4 });
+  });
+
+  it("allows assisted bodyweight recovery targets", () => {
+    const target = sessionTarget(
+      defs["weighted-pullup"], { repMin: 6, repMax: 8, targetRir: 4 },
+      { weight: 0, reps: 7, rir: 1 }, defs, stats, 180,
+    );
+
+    expect(target).toMatchObject({ weight: -20, targetReps: 7, targetRir: 4 });
   });
 
   it("returns null with no prior performance and no pattern history", () => {

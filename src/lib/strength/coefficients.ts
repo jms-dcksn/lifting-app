@@ -137,6 +137,9 @@ const SEEDS: ExerciseDef[] = [
   { id: "db-incline-bench", name: "Dumbbell Incline Bench", pattern: "horizontal_press", equipment: "dumbbell", coefficient: 0.36, increment: 5, stationProfile: "none" },
   { id: "weighted-dip", name: "Weighted Dip", pattern: "horizontal_press", equipment: "bodyweight", coefficient: 1.05, increment: 5, stationProfile: "none" },
   { id: "machine-chest-press", name: "Machine Chest Press", pattern: "horizontal_press", equipment: "machine", coefficient: 0.9, needsCalibration: true, increment: 5, stationProfile: "machine" },
+  { id: "machine-incline-chest-press", name: "Machine Incline Chest Press", pattern: "horizontal_press", equipment: "machine", coefficient: 0.82, needsCalibration: true, increment: 5, stationProfile: "machine" },
+  { id: "machine-decline-chest-press", name: "Machine Decline Chest Press", pattern: "horizontal_press", equipment: "machine", coefficient: 0.9, needsCalibration: true, increment: 5, stationProfile: "machine" },
+  { id: "machine-seated-dip", name: "Machine Seated Dip / Triceps Press", pattern: "horizontal_press", equipment: "machine", coefficient: 0.9, needsCalibration: true, increment: 5, stationProfile: "machine" },
   { id: "pec-deck", name: "Pec Deck / Chest Fly", pattern: "horizontal_press", equipment: "machine", coefficient: 0.5, needsCalibration: true, increment: 10, stationProfile: "machine" },
 
   // --- Vertical press (ref: barbell overhead press) ---
@@ -147,11 +150,14 @@ const SEEDS: ExerciseDef[] = [
   // --- Horizontal pull (ref: barbell row) ---
   { id: "bb-row", name: "Barbell Row", pattern: "horizontal_pull", equipment: "barbell", coefficient: 1.0, isReference: true, increment: 5, stationProfile: "none" },
   { id: "db-row", name: "Dumbbell Row", pattern: "horizontal_pull", equipment: "dumbbell", coefficient: 0.45, increment: 5, stationProfile: "none" },
-  { id: "machine-row", name: "Machine Row (ISO-Lateral)", pattern: "horizontal_pull", equipment: "machine", coefficient: 0.9, needsCalibration: true, increment: 5, stationProfile: "machine" },
+  { id: "machine-row", name: "Machine Horizontal Row (ISO-Lateral)", pattern: "horizontal_pull", equipment: "machine", coefficient: 0.9, needsCalibration: true, increment: 5, stationProfile: "machine" },
+  { id: "machine-low-row", name: "Machine Low Row", pattern: "horizontal_pull", equipment: "machine", coefficient: 0.9, needsCalibration: true, increment: 5, stationProfile: "machine" },
   { id: "seated-cable-row", name: "Seated Cable Row", pattern: "horizontal_pull", equipment: "cable", coefficient: 0.85, needsCalibration: true, increment: 10, stationProfile: "cable" },
 
   // --- Vertical pull (ref: lat pulldown) ---
   { id: "lat-pulldown", name: "Lat Pulldown (Cable)", pattern: "vertical_pull", equipment: "cable", coefficient: 1.0, isReference: true, needsCalibration: true, increment: 10, stationProfile: "cable" },
+  { id: "machine-lat-pulldown", name: "Machine Lat Pulldown", pattern: "vertical_pull", equipment: "machine", coefficient: 1.0, needsCalibration: true, increment: 10, stationProfile: "machine" },
+  { id: "machine-pullover", name: "Machine Pullover", pattern: "vertical_pull", equipment: "machine", coefficient: 0.7, needsCalibration: true, increment: 5, stationProfile: "machine" },
   { id: "weighted-pullup", name: "Weighted Pull-up", pattern: "vertical_pull", equipment: "bodyweight", coefficient: 1.3, increment: 5, stationProfile: "none" },
   { id: "high-row", name: "High Row", pattern: "vertical_pull", equipment: "machine", coefficient: 1.1, needsCalibration: true, increment: 5, stationProfile: "machine" },
 
@@ -180,9 +186,13 @@ const SEEDS: ExerciseDef[] = [
   // --- Knee extension / flexion ---
   { id: "leg-extension", name: "Leg Extension", pattern: "knee_extension", equipment: "machine", coefficient: 1.0, isReference: true, needsCalibration: true, increment: 10, stationProfile: "machine" },
   { id: "seated-leg-curl", name: "Seated Leg Curl", pattern: "knee_flexion", equipment: "machine", coefficient: 1.0, isReference: true, needsCalibration: true, increment: 10, stationProfile: "machine" },
+  { id: "lying-leg-curl", name: "Lying Leg Curl", pattern: "knee_flexion", equipment: "machine", coefficient: 1.0, needsCalibration: true, increment: 10, stationProfile: "machine" },
+  { id: "kneeling-leg-curl", name: "Kneeling Leg Curl", pattern: "knee_flexion", equipment: "machine", coefficient: 0.5, needsCalibration: true, increment: 5, stationProfile: "machine" },
 
   // --- Calf ---
   { id: "standing-calf-raise", name: "Standing Calf Raise", pattern: "calf", equipment: "machine", coefficient: 1.0, isReference: true, needsCalibration: true, increment: 10, stationProfile: "machine" },
+  { id: "seated-calf-raise", name: "Seated Calf Raise", pattern: "calf", equipment: "machine", coefficient: 0.6, needsCalibration: true, increment: 5, stationProfile: "machine" },
+  { id: "machine-calf-extension", name: "Machine Calf Extension / Calf Press", pattern: "calf", equipment: "machine", coefficient: 1.0, needsCalibration: true, increment: 10, stationProfile: "machine" },
 
   // --- Traps (ref: barbell shrug) ---
   { id: "bb-shrug", name: "Barbell Shrug", pattern: "traps", equipment: "barbell", coefficient: 1.0, isReference: true, increment: 5, stationProfile: "none" },
@@ -192,8 +202,10 @@ const SEEDS: ExerciseDef[] = [
   { id: "bb-curl", name: "Barbell Curl", pattern: "elbow_flexion", equipment: "barbell", coefficient: 1.0, isReference: true, increment: 5, stationProfile: "none" },
   { id: "db-curl", name: "Dumbbell Curl", pattern: "elbow_flexion", equipment: "dumbbell", coefficient: 0.45, increment: 5, stationProfile: "none" },
   { id: "cable-curl", name: "Cable Curl", pattern: "elbow_flexion", equipment: "cable", coefficient: 0.9, needsCalibration: true, increment: 10, stationProfile: "cable" },
+  { id: "machine-preacher-curl", name: "Machine Preacher Curl", pattern: "elbow_flexion", equipment: "machine", coefficient: 0.9, needsCalibration: true, increment: 5, stationProfile: "machine" },
   { id: "hammer-rope-curl", name: "Hammer Rope Curls", pattern: "elbow_flexion", equipment: "cable", coefficient: 1.0, needsCalibration: true, increment: 10, stationProfile: "cable" },
   { id: "cable-pushdown", name: "Cable Triceps Pushdown", pattern: "elbow_extension", equipment: "cable", coefficient: 1.0, isReference: true, needsCalibration: true, increment: 10, stationProfile: "cable" },
+  { id: "machine-triceps-extension", name: "Machine Triceps Extension (Preacher Pad)", pattern: "elbow_extension", equipment: "machine", coefficient: 1.0, needsCalibration: true, increment: 5, stationProfile: "machine" },
   { id: "db-skullcrusher", name: "Dumbbell Skullcrusher", pattern: "elbow_extension", equipment: "dumbbell", coefficient: 0.5, increment: 5, stationProfile: "none" },
 
   // --- Delts ---

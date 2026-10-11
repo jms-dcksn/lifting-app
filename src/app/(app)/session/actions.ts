@@ -71,7 +71,8 @@ async function recomputeAndUpsertStat(
     .select("weight, reps, rir, session_id")
     .eq("user_id", userId)
     .eq("exercise_id", exerciseId)
-    .eq("is_warmup", false);
+    .eq("is_warmup", false)
+    .eq("is_deload", false);
 
   const { currentE1rm } = recomputeStat(def, sets ?? [], bodyweight);
 
@@ -196,7 +197,7 @@ export async function logSet(input: LogSetInput) {
       // The session id comes from the client — confirm it is this user's session.
       supabase
         .from("workout_session")
-        .select("id")
+        .select("id, is_deload")
         .eq("id", input.sessionId)
         .eq("user_id", userId)
         .maybeSingle(),
@@ -207,7 +208,9 @@ export async function logSet(input: LogSetInput) {
         .from("set_log")
         .select("id", { count: "exact", head: true })
         .eq("user_id", userId)
-        .eq("exercise_id", input.exerciseId),
+        .eq("exercise_id", input.exerciseId)
+        .eq("is_deload", false)
+        .eq("is_warmup", false),
     ]);
   if (!session) throw new Error("Session not found");
 
@@ -227,7 +230,8 @@ export async function logSet(input: LogSetInput) {
       reps: input.reps,
       rir: input.rir,
       e1rm,
-      is_calibration: !!def.needsCalibration && (priorEver ?? 0) === 0,
+      is_deload: session.is_deload ?? false,
+      is_calibration: !session.is_deload && !!def.needsCalibration && (priorEver ?? 0) === 0,
       idempotency_key: input.idempotencyKey ?? null,
     })
     .select("id, exercise_id, weight, reps, rir, set_index, e1rm")
@@ -598,4 +602,25 @@ export async function swapSessionExercise(input: {
     revalidatePath("/");
     revalidatePath("/program", "layout");
   }
+}
+
+// Program-scope swap before a session exists (planner). Uses the same slot/adaptation writes
+// as swap_session_exercise(scope='program') without touching workout_session.
+export async function swapProgramSlotExercise(input: {
+  programSlotId: string;
+  exerciseId: string;
+}): Promise<void> {
+  const { supabase, userId } = await requireUser();
+  const catalog = await getCatalogMap(supabase, userId);
+  const exercise = catalog[input.exerciseId];
+  if (!isLoggableExercise(exercise)) throw new Error("Choose a specific exercise or machine first.");
+  const { error } = await supabase.rpc("swap_program_slot_exercise", {
+    p_slot_id: input.programSlotId,
+    p_exercise_id: exercise.id,
+    p_pattern: exercise.pattern,
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath("/workout/next");
+  revalidatePath("/program", "layout");
 }

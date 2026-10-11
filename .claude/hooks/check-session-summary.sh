@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Stop hook (targeted safety net): if the latest commit isn't reflected in
-# .claude/LAST_SESSION.md, block the turn from ending and ask to run the
-# session-summary step of the ship-phase skill.
+# Stop hook: if HEAD is not named in .claude/LAST_SESSION.md, block the turn
+# and ask for the close-session skill (docs refresh + session handoff).
 #
-# Quiet on non-build turns: if no new commit since the summary was last
-# written, HEAD is already referenced in the summary and this exits silently.
+# Quiet when this commit is already recorded. Uncommitted work does not block;
+# close-session still records a dirty tree when it runs.
 set -euo pipefail
 
 input=$(cat)
@@ -25,7 +24,7 @@ if [ -f "$summary" ] && grep -q "$head" "$summary"; then
   exit 0
 fi
 
-reason="You have committed work (HEAD ${head}) that is not yet recorded in .claude/LAST_SESSION.md. Run step 5 of the ship-phase skill: overwrite .claude/LAST_SESSION.md to describe this session and include the exact line 'Commit: ${head}'. Then you may stop."
+reason="HEAD ${head} is not recorded in .claude/LAST_SESSION.md. Run the close-session skill: refresh the owning docs for this session, then overwrite .claude/LAST_SESSION.md so it describes the work, checks, and tree, and includes the exact line 'Commit: ${head}'. Then you may stop."
 
 jq -n --arg r "$reason" '{decision:"block", reason:$r}'
 exit 0

@@ -19,7 +19,7 @@ vi.mock("@/app/(app)/exercise/actions", () => ({
   createCustomExercise: mocks.create,
 }));
 
-import { ExercisePicker } from "@/app/(app)/program/exercise-picker";
+import { ExercisePicker, StationPicker } from "@/app/(app)/program/exercise-picker";
 
 const catalog = [
   EXERCISE_BY_ID["machine-chest-press"],
@@ -82,6 +82,23 @@ function setEquipment(value: string) {
     select.dispatchEvent(new Event("change", { bubbles: true }));
   });
 }
+
+describe("StationPicker", () => {
+  it("opens the station form directly without the exercise list", () => {
+    act(() => {
+      root.render(
+        <StationPicker
+          template={EXERCISE_BY_ID["machine-chest-press"]}
+          onPick={() => {}}
+          onClose={() => {}}
+        />,
+      );
+    });
+    expect(host.textContent).toContain("Choose brand & type");
+    expect(host.textContent).not.toContain("Search exercises");
+    expect(host.textContent).not.toContain("Add custom exercise");
+  });
+});
 
 describe("ExercisePicker station forms", () => {
   it("opens brand + type for machines and keeps the plate/stack control", () => {

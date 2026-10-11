@@ -73,7 +73,8 @@ describe("HistoryPage route", () => {
   it("keeps Exercise review when month is invalid instead of bouncing to Month review", async () => {
     const html = renderToStaticMarkup(await render("bb-bench", { month: "not-a-month" }));
     expect(mocks.redirect).not.toHaveBeenCalled();
-    expect(html).toContain("Barbell Bench Press");
+    expect(html).toContain("Bench Press");
+    expect(html).toContain("Barbell");
     expect(html).toContain("No working sets logged yet.");
     expect(html).not.toContain("/analytics/month");
     expect(html).not.toContain("Month review could not load");
@@ -82,7 +83,8 @@ describe("HistoryPage route", () => {
   it("keeps Exercise review for a valid month query and adds the back link", async () => {
     const html = renderToStaticMarkup(await render("bb-bench", { month: "2026-09", equipment: "none" }));
     expect(mocks.redirect).not.toHaveBeenCalled();
-    expect(html).toContain("Barbell Bench Press");
+    expect(html).toContain("Bench Press");
+    expect(html).toContain("Barbell");
     expect(html).toContain("No working sets logged yet.");
     expect(html).toContain('href="/analytics/month?month=2026-09"');
     expect(html).not.toContain("140.0 lb → 150.0 lb");

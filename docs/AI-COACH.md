@@ -1,8 +1,8 @@
 # AI Coach
 
 A memory-backed agent that lives in the app. It wraps the deterministic Coach; it does not
-replace it. Track Coach (`/analytics/coach`), `CoachCheckInReport`, and
-`GET /api/coach/v1/weekly` stay the factual check-in and private export. The agent is the
+replace it. Track Coach (`/analytics/coach`) and `CoachCheckInReport` provide the
+factual check-in through `loadCoachUi`. The agent is the
 language, intake, navigation, and draft layer on top of existing loaders and actions.
 
 **Status:** Slice 0 shipped 2026-09-20. Chat became multi-thread on 2026-09-27
@@ -27,7 +27,7 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 | Surface | Persistent entry + `Sheet` on Lift / Track / Program / You. Full screen at `/coach?thread=`. Both carry chat history and New chat. No fifth tab. Hidden wherever `hideAppChrome` is true. |
 | Jev | Skip in Slice 0. Slice 2 uses it to classify program constraints, not to emit a program. |
 | Models | Vercel AI Gateway, server-only. LangSmith is the trace sink. |
-| Data | Logged-in user client + RLS. Domain tools wrap existing loaders. Not the weekly Coach secret, not a generic SQL tool, not embeddings over `set_log`. |
+| Data | Logged-in user client + RLS. Domain tools wrap existing loaders. No elevated database client, generic SQL tool, or embeddings over `set_log`. |
 | Authority | Engine owns numbers and prescriptions. Agent owns language, intake, drafts, and navigation. |
 | Privacy | Period observations stay out unless a later, separate opt-in. Same default as Coach. |
 | Context | Full transcript per thread in Postgres. Each model turn gets system prompt + that thread's last N messages. No summarization, compaction, or distilled user-memory in Slice 0. |
@@ -38,7 +38,7 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
   (`sessionTarget()`, `buildCoachCheckInReport`, `buildCoachRecommendations`,
   `groupReviewSessions`, `loadStallAssessments`). The prompt does not recompute them.
 - Tools take the user-scoped Supabase client from the request session. They never receive
-  `SUPABASE_SECRET_KEY` or `COACH_API_TOKEN`.
+  `SUPABASE_SECRET_KEY`.
 - Program persistence goes through `saveProgram`, `createFromTemplate`, or clone. Slot IDs
   stay id-preserving. Slice 2 writes inactive drafts; saving in the builder still activates.
 - New capability = a domain tool (+ eval cases), not a new aggregation forked from Coach.
@@ -57,6 +57,8 @@ those functions; they are not the public interface. Policy (`period` excluded, w
 allow-list, tool-call budget) lives in one module and is applied by the route.
 
 Streaming UI uses existing primitives (`Sheet`, `IconButton`, type scale, copy density).
+The persistent entry uses a speech bubble with two four-point sparkles (`IconChat`)
+to identify AI chat, inside the standard 44px Coach button.
 Your turns sit on the right; Coach sits on the left. The sheet and `/coach` open the most
 recent thread at its latest message, and the composer stays pinned. The model writes
 markdown, and the sheet renders bold, lists, and gain percents. A single trailing
@@ -131,7 +133,9 @@ sheet fetches its snapshot each time it opens.
 `AI_GATEWAY_API_KEY` (or Vercel OIDC `VERCEL_OIDC_TOKEN`), `LANGSMITH_API_KEY`,
 `LANGSMITH_TRACING`, and `LANGSMITH_PROJECT=lifting-app-agent`. Optional `AGENT_MODEL`.
 None may use a `NEXT_PUBLIC_` prefix. Listed in `.env.local.example` and
-[DEPLOY.md](../DEPLOY.md). Local LangSmith project is dedicated to this agent.
+[DEPLOY.md](../DEPLOY.md). The chat route's LangSmith project is dedicated to this
+agent. Local experiments use a second project, `lifting-app-agent-evals`, so reruns
+do not land in the Vercel firehose. `JEV_API_KEY` is read only by that eval script.
 
 ## Slices
 
@@ -165,7 +169,10 @@ Build in order. A later slice may add tools; it may not weaken an invariant.
   - `nextWorkout` → `loadNextWorkout` plus the same `sessionTarget()` hydration the
     session screen uses, so “why is this target X?” matches Home / planner / Start.
 - System prompt: answer from tool results; name the source once on a final `Source:` line; decline medical
-  diagnosis (pain stays a review prompt, as Coach already does).
+  diagnosis (pain stays a review prompt, as Coach already does). One logged value is not a trend.
+  If `exerciseReview` has no 21-day comparison or fewer than two chart points, or another read tool
+  returns null / "not available" / `insufficient_data`, say that comparison is missing and then
+  report the last fact the tool did return.
 - ~20 labeled eval questions you grade: expected tool(s) and cited numbers against
   fixtures. Co-locate under `src/lib/agent/`.
 
@@ -295,7 +302,37 @@ beyond last-N. Each is its own Decision Card; none is implied by shipping 0–4.
 
 ## Evals
 
-Label as you dogfood. Slice 0 grades grounding (tool choice + cited numbers). Slice 2
-grades ontology confidence and template invariants. Slice 4 grades “no write without
-confirm.” Inspect traces in the dedicated LangSmith project; do not paste capability
-URLs, secrets, or weekly Coach tokens into traces, issues, or chat.
+Label as you dogfood. Slice 0 grades grounding (tool choice + cited numbers) against
+fixtures in `src/lib/agent/evals/`. Slice 2 grades ontology confidence and template
+invariants. Slice 4 grades “no write without confirm.”
+
+Eleven live examples sit beside those fixtures in `LIVE_EXAMPLES`
+(`src/lib/agent/evals/live.ts`). `npm run eval:agent` runs each one against the real
+agent and the prod ledger for `EVAL_USER_EMAIL` (default the owner account), and
+writes dataset `ai-coach-live`. It does not insert `agent_thread` rows. Each run
+copies that example's handwritten reference onto the dataset.
+
+The original question is still “How is my e1RM trending on incline bench press”.
+Ten more use the same sentence with a different exercise phrase:
+
+- Easy names: Nautilus hack squat, leg press, romanian deadlift.
+- Shorter names: Cybex hack squat, bench press, deadlift.
+- Hard, the tool asks which exercise: squat, barbell squat, dumbbell bench. The
+  reference lists those matches and asks the user to choose.
+- Nickname: “rdl”, which resolves to Romanian deadlift.
+
+Gold is that lift, never a scripted miss. “rdl” and “incline bench press” both
+resolve on the seed catalog.
+Back squat is not in the resolved set. The eval user has one back-squat point
+(checked 2026-10-03) and multi-point charts on Hack Squat — Nautilus (plate) and
+Hack Squat — Cybex (plate). Bare “hack squat” exact-matches the empty template, so
+the questions name the station (“nautilus hack squat”, “cybex hack squat”).
+
+Four local judges score each run: `right_tool` (called `exerciseReview`),
+`tool_call_count` (at most 3), `found_exercise` (any exerciseReview result in the
+turn is the expected id or the expected disambiguation ids), and `reference_match`
+(a Jev noul, correct at 0.8 or above). A miss or a later call that names a different
+lift does not erase an earlier hit. Jev instructions are stored on the example. For
+a resolved lift, Jev ignores exact pounds and dates and checks that the reply names
+that lift and reports a trend. Traces go to `lifting-app-agent-evals`. Do not paste
+secrets into traces, issues, or chat.

@@ -142,6 +142,13 @@ load for bodyweight movements before converting back to added/assisted load, and
 at the prior logged load. This keeps both the active-session target and weekly Coach proposal
 inside the programmed range without rewarding an overweight set.
 
+**Recovery targets use the load model rather than double progression.** Prescriptions at
+4+ RIR recalculate load from the selected recent performance, retaining its rep count
+within the programmed range and never increasing its load. The threshold covers both
+Deload and Recovery phases without depending on names. Legacy missing RIR defaults to 2;
+unknown bodyweight yields no recovery target. Below 4 RIR, progression remains unchanged.
+This keeps session numbers and the agent's shared target output aligned with easier effort.
+
 **Repeated weekly exercises share a bounded progression window.** The latest performance for
 the exact `(program_slot_id, exercise_id)` remains the anchor, preserving different rep ranges
 and swap chains. From that anchor forward, `selectProgressionReference()` chooses the highest
@@ -327,14 +334,11 @@ weekly exercises remain distinguishable. The only new mutable state is the user'
 accepted/dismissed/deferred response keyed to that evidence snapshot. Accepting does not rewrite
 a program: the established slot/exercise log chain remains the source of the next workout target.
 
-**The scheduled Coach API is a narrow capability, not a second account session.** Issue #9 exposes
-the canonical report and proposal layer through one read-only route. A server-held Supabase secret
-is necessary because a scheduled task has no browser session, but every elevated query still
-includes the one configured user scope. The public credential is a separately revocable,
-high-entropy capability token compared via fixed-length SHA-256 digests and never returned or
-logged. Bearer auth is preferred; a query capability is retained only because ChatGPT scheduled
-tasks do not currently expose custom request headers. Both forms receive the same no-store,
-noindex response policy and cannot mutate training or recommendation-decision state.
+**Retire the unused weekly HTTP export (2026-10-08, #182).** The private export
+experiment from #9 is removed after the [caller audit](COACH-REPORT.md#http-export-retirement-182-2026-10-08) found no active caller.
+Track Coach and `weeklyCoach` retain the shared session-scoped `loadCoachUi` path.
+`SUPABASE_SECRET_KEY` remains for local live agent evals; there is no elevated
+application read path.
 
 **Bodyweight observations are date-keyed; `profile.bodyweight` is the preserved fallback.**
 `bodyweight_log` permits one observation per user per calendar date. A repeated date replaces
@@ -474,6 +478,17 @@ documents or add offline sync. iPhone still needs the Home Screen app (iOS 16.4+
 cannot guarantee lock-screen delivery. Native push remains out of scope (#43).
 
 ## Phase C decisions (machine brands, types, custom exercises)
+
+**Machine catalog expansion (2026-10-08).** The 12 additions approved in the
+[catalog research](2026-10-08-machine-exercise-catalog-research.md) are shared code templates;
+owner-specific brand/type rows continue to be created by `resolveVariant`. No bulk inserts
+or schema changes. Pullover shares `vertical_pull` (lat-focused shoulder extension), and
+seated dip shares `horizontal_press` with weighted dips rather than isolated elbow extension.
+Coefficients and load increments are rough starting defaults, not manufacturer-verified
+load conversions; every new machine calibrates. Kneeling curl is a one-leg movement;
+log the machine's loaded weight, with each side tracked consistently. Existing `machine-row`
+is displayed as "Machine Horizontal Row (ISO-Lateral)"; its ID and stored variant names
+remain intact. Custom lying-curl and calf-press records are not merged into new templates.
 
 Spec: `docs/superpowers/specs/2026-06-21-machine-brands-types-custom-exercises-design.md`;
 plan: `docs/superpowers/plans/2026-06-21-machine-brands-types-custom-exercises.md`.
@@ -684,16 +699,15 @@ is [AI-COACH.md](AI-COACH.md). Locks below are the hard-to-reverse calls; slice 
 live in that doc.
 
 **Wrap the deterministic Coach.** Track Coach, `CoachCheckInReport`, proposals, and the
-weekly API remain the source of weekly facts. The agent narrates and acts on that output.
-Replacing `/analytics/coach` would throw away a tested contract the private API also uses.
+agent’s `weeklyCoach` tool remain the source of weekly facts. The agent narrates and acts on that output.
+Replacing `/analytics/coach` would throw away the tested contract shared by the agent.
 
 **Stay in this TypeScript app.** Every tool worth calling is already a TS loader or action
 (`loadCoachUi`, `getActiveProgram`, `loadNextWorkout`, `sessionTarget()`, `saveProgram`,
 `startNextSession`). A Python sidecar would re-expose that surface. Deep Agents waits
 until Slice 5; LangChain TypeScript is enough for the loop.
 
-**User session + RLS, not the weekly secret.** The agent is an in-app user. The weekly API
-is a single-account capability URL with a service-role client. Domain tools wrap existing
+**User session + RLS.** The agent is an in-app user. Domain tools wrap existing
 loaders so period data, slot identity, and owner scope cannot drift. Conversation memory
 is new `agent_thread` / `agent_message` rows, not embeddings over `set_log`. Slice 0
 keeps the full transcript in those tables and sends only the last N messages to the
@@ -802,3 +816,34 @@ stations, and progression-math rewrites are out of scope.
 [Movement rollup](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
 asks four separate questions. Card 1 is records and review. Card 3 is targets.
 Card 4 is stall and Fluid. None of them is approved by this note.
+
+## Hosted migration gate (2026-10-04)
+
+Merging to `main` deploys the Next.js app through Vercel. `supabase db push` is still
+the only apply, and it runs from a linked checkout. The production build reads the
+hosted ledger before `next build`. `scripts/check-hosted-migrations.ts` calls
+`public.deployment_applied_migration_versions` with the publishable key. The function
+returns the requested versions that `supabase_migrations.schema_migrations` already
+records. `anon` can execute it and cannot select the ledger table.
+
+A missing file exits 1. Vercel keeps the previous production deployment. The first
+deploy of this change fails until `npx supabase db push`, because the read function
+is itself a migration. CI, local, and preview builds do not call the hosted project.
+`npm run test:db` still proves only a local stack. See [Deployment](../DEPLOY.md).
+
+### Deload record eligibility (2026-10-10)
+
+Deload sets are training activity but do not establish or beat rep, e1RM or top-weight
+record baselines. Persist explicit phase classification on sessions and saved sets so
+historical eligibility survives program edits/deletion. Track strength comparisons skip
+recovery observations while retaining activity dates, workout counts and volume. A deload-only
+history has no strength baseline; the next normal workout compares with prior normal work.
+
+## Charcoal exercise illustrations (2026-10-10)
+
+James selected style B from the exercise art review: charcoal backgrounds, ivory ink
+shading, and muted burgundy accents. Replace the four cream-paper illustrations and add
+the approved Romanian deadlift, dumbbell shoulder press, and seated cable row designs
+to their existing seeded identities. Keep the shared 16:9 frame and identity inheritance;
+remove the former 35% center zoom because the fuller compositions already fill the frame.
+Serve all seven as 640×360 JPEGs. See [UI conventions](UI.md) for the current art contract.

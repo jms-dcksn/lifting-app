@@ -13,21 +13,18 @@ the 2026-09-13 documentation review.
 
 | Variable | Used by |
 | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Browser/SSR clients and weekly Coach loader |
+| `NEXT_PUBLIC_SUPABASE_URL` | Browser/SSR clients and local live evals |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser/SSR clients; owner access enforced by RLS |
-| `SUPABASE_SECRET_KEY` | Server-only weekly Coach loader; bypasses RLS |
-| `COACH_API_USER_ID` | Weekly API's sole allowed account |
-| `COACH_API_TOKEN` | Weekly API capability authentication |
+| `SUPABASE_SECRET_KEY` | Local live agent evals only; bypasses RLS |
 | `AI_GATEWAY_API_KEY` | Server-only Vercel AI Gateway key for the in-app agent. Vercel deployments may use `VERCEL_OIDC_TOKEN` instead |
 | `LANGSMITH_API_KEY` | Server-only LangSmith key. Agent traces go here |
 | `LANGSMITH_TRACING` | Set `true` to emit traces. The route also enables this when a LangSmith key is present |
 | `LANGSMITH_PROJECT` | Dedicated project name. Default and recommended: `lifting-app-agent` |
 | `AGENT_MODEL` | Optional Gateway model id (`provider/model`). Default `openai/gpt-5.4` |
 
-The first two are required for the app and exposed in the browser bundle. The Coach
-trio enables the private weekly API and must stay server-only. Without valid Coach
-configuration, that endpoint returns 503. See [Coach API](docs/COACH-REPORT.md#weekly-coach-api)
-for high-entropy token requirements, supported auth, privacy, and rotation.
+The first two are required for the app and exposed in the browser bundle.
+`SUPABASE_SECRET_KEY` stays server-only for `npm run eval:agent`; the application
+does not use it. The retired weekly HTTP export has no deployment configuration.
 
 The AI Coach / agent keys are also server-only. Never prefix them with `NEXT_PUBLIC_`.
 Without a Gateway key (or OIDC token), `POST /api/agent/chat` returns 503. Apply both
@@ -58,7 +55,16 @@ are relevant, including phases, feedback, bodyweight history, Coach decisions, e
 and atomic calendar writes. Period tracking (#33) adds `profile.sex`, consent columns, and
 `period_observation`; apply that migration before deploying the You (`/settings`) UI that
 reads those fields. Rest-complete tone (`profile.rest_tone_enabled`, default true) is a
-later profile column; apply its migration before relying on the Settings checkbox. Vercel's build does not run database migrations. Breaking consent-copy
+later profile column; apply its migration before relying on the Settings checkbox.
+
+The production build runs `scripts/check-hosted-migrations.ts` before `next build`.
+That script reads `deployment_applied_migration_versions` with the publishable key. It does not apply SQL.
+If a file in `supabase/migrations` is missing from the hosted ledger, the build exits 1 and the previous production deployment keeps serving.
+Clear it with `npx supabase db push` from a linked checkout of main, then redeploy.
+The first production deploy of this change fails until that push, because the read function is itself a migration. CI, local, and preview builds do not call the hosted project.
+`npm run test:db` still only proves a local stack.
+
+Breaking consent-copy
 changes should bump `period_consent_version` and require re-consent.
 
 Enable email magic-link Auth. Set Site URL and allowed redirect URLs for the production
@@ -99,11 +105,55 @@ through Vercel's integration. `.github/workflows/ci.yml` runs lint, typecheck, V
 build on every pull request, plus the pgTAP ownership suite against a local Supabase stack, so
 an RLS regression on a covered table fails the build.
 
+## Pull request security review
+
+The Cursor workflow is temporarily disabled in GitHub Actions as of 2026-10-06,
+pending a replacement. Its workflow and SDK runner remain for reference. Re-enable it
+only when the replacement is ready; the behavior below describes the enabled workflow.
+
+`.github/workflows/security-review.yml` runs when a pull request is opened from a branch in
+this repository, and again when new commits are pushed to it. A newer push cancels the
+in-flight Actions job, and the runner cancels that cloud run. The job stays green when the
+agent finishes, including when it opens a follow-up pull request. It fails when the agent
+cannot start or the run errors.
+
+The agent resolves Composer 2.5 with `Cursor.models.list()` on each run. If it changes
+code, Cursor opens a follow-up pull request from the source pull request's head. The
+review prompt tells the agent to retarget that pull request onto the source branch. The
+workflow does not receive the key on fork pull requests. It skips a follow-up whose body
+contains `security-review-follow-up`, and a `cursor/` branch titled `Security review for #`.
+
+The workflow reads the Actions secret `CURSOR_API_KEY`. Mint a user key at
+[Cursor Dashboard → Integrations](https://cursor.com/dashboard/integrations), or a team
+service-account key under Team Settings → Service accounts. Team Admin API keys do not
+work. The GitHub connection for that key must include `jms-dcksn/lifting-app`, with
+permission to push branches and open pull requests. Store the key as a repository secret
+named `CURSOR_API_KEY`. Do not commit it.
+
 ## Operations
 
 - Application rollback does not undo database migrations; use a reviewed forward migration
   when schema repair is necessary.
-- Rotate the Coach token and Supabase secret independently using the Coach contract. Updating
-  a publishable key also requires a rebuild/redeploy of clients that embed it.
+- Rotate the Supabase secret independently in Supabase and local eval settings. Updating
+  a publishable key requires a rebuild/redeploy of clients that embed it.
 - Check `package.json` and deployment settings for build/runtime configuration. This checkout
   has no pinned Node engine, `.nvmrc`, or `vercel.json`; verify the selected runtime at release.
+
+### Deload progression migration
+
+Apply `20261010171247_deload_progression.sql` before deploying the deload-aware app.
+It adds phase/session/set flags and invoker triggers, updates `save_program`, backfills
+unambiguous surviving phase/week context and rebuilds affected strength caches. It preserves
+saved e1RMs and RLS. Affected personal calibration coefficients are cleared and re-anchored
+on the next eligible stat write. Existing open sessions are included in the backfill.
+
+Review `supabase/tests/deload_legacy_review.sql` for missing context or ambiguous custom
+phases. Historical classification cannot be reconstructed reliably after phase edits or
+program deletion; the migration does not infer it from low loads or high RIR. The report
+is read-only; corrections require an explicitly scoped follow-up migration. Changing a
+phase in the builder only classifies future sessions.
+
+SQL checks: run `supabase/tests/deload_backfill.sql` with `psql -v ON_ERROR_STOP=1` on a
+checkout/database immediately before this migration (the test applies it transactionally
+and rolls back); run `supabase/tests/deload_progression_rls.sql` after migrations to verify
+inheritance, RPC persistence, edits/deletion, calibration suppression and cross-user denial.

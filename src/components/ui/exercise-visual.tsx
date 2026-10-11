@@ -38,7 +38,7 @@ export function ExerciseVisual({
         <img
           src={src}
           alt=""
-          className="size-full origin-center scale-[1.35] object-cover object-center"
+          className="size-full object-cover object-center"
         />
       ) : (
         <IconDumbbell size={size === "lg" ? 28 : 20} />

@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { IconButton } from "@/components/ui/icon-button";
 import { IconPin } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
@@ -16,7 +18,13 @@ export interface PinEditorItem {
   pinned: boolean;
 }
 
-export function PinEditorButton({ items }: { items: PinEditorItem[] }) {
+export function PinEditorButton({
+  items,
+  catalog,
+}: {
+  items: PinEditorItem[];
+  catalog?: Record<string, ExerciseDef>;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -25,14 +33,20 @@ export function PinEditorButton({ items }: { items: PinEditorItem[] }) {
       </IconButton>
       {open && (
         <Sheet ariaLabel="Edit pins" onClose={() => setOpen(false)}>
-          <PinEditorBody items={items} />
+          <PinEditorBody items={items} catalog={catalog} />
         </Sheet>
       )}
     </>
   );
 }
 
-function PinEditorBody({ items }: { items: PinEditorItem[] }) {
+function PinEditorBody({
+  items,
+  catalog,
+}: {
+  items: PinEditorItem[];
+  catalog?: Record<string, ExerciseDef>;
+}) {
   const dismiss = useSheetDismiss();
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -73,8 +87,8 @@ function PinEditorBody({ items }: { items: PinEditorItem[] }) {
         autoComplete="off"
       />
       {error && <p role="alert" className="text-caption text-danger">{error}</p>}
-      <Section title="Compounds" items={compounds} pinned={pinned} pendingId={pendingId} onToggle={toggle} />
-      <Section title="More lifts" items={extras} pinned={pinned} pendingId={pendingId} onToggle={toggle} />
+      <Section title="Compounds" items={compounds} pinned={pinned} pendingId={pendingId} catalog={catalog} onToggle={toggle} />
+      <Section title="More lifts" items={extras} pinned={pinned} pendingId={pendingId} catalog={catalog} onToggle={toggle} />
       <Button type="button" variant="ghost" disabled={pending} onClick={dismiss}>
         Done
       </Button>
@@ -87,12 +101,14 @@ function Section({
   items,
   pinned,
   pendingId,
+  catalog,
   onToggle,
 }: {
   title: string;
   items: PinEditorItem[];
   pinned: Record<string, boolean>;
   pendingId: string | null;
+  catalog?: Record<string, ExerciseDef>;
   onToggle: (item: PinEditorItem) => void;
 }) {
   if (items.length === 0) return null;
@@ -104,7 +120,17 @@ function Section({
           <li key={item.exerciseId} className="flex items-center justify-between gap-3 py-1">
             <span className="flex min-w-0 items-center gap-3">
               <ExerciseVisual exerciseId={item.exerciseId} />
-              <span className="min-w-0 truncate text-body">{item.name}</span>
+              {catalog?.[item.exerciseId] ? (
+                <ExerciseCardLabel
+                  as="span"
+                  size="body"
+                  def={catalog[item.exerciseId]}
+                  catalog={catalog}
+                  className="truncate"
+                />
+              ) : (
+                <span className="min-w-0 truncate text-body">{item.name}</span>
+              )}
             </span>
             <IconButton
               variant="ghost"

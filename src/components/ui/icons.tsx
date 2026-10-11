@@ -125,10 +125,15 @@ export function IconChat({ size }: IconProps) {
   return (
     <Svg size={size}>
       <path
-        d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v7A2.5 2.5 0 0 1 16.5 16H10l-4 3.5V16H7.5A2.5 2.5 0 0 1 5 13.5v-7Z"
+        d="M11 5H7a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3v3l4-3h5a3 3 0 0 0 3-3v-3"
         stroke="currentColor"
         strokeWidth="1.75"
+        strokeLinecap="round"
         strokeLinejoin="round"
+      />
+      <path
+        d="m17 2 1.1 2.9L21 6l-2.9 1.1L17 10l-1.1-2.9L13 6l2.9-1.1L17 2Zm5-1 0.5 1.5L24 3l-1.5 0.5L22 5l-0.5-1.5L20 3l1.5-0.5L22 1Z"
+        fill="currentColor"
       />
     </Svg>
   );

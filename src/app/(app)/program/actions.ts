@@ -48,6 +48,7 @@ export interface SavePhaseInput {
   targetRirMin: number | null;
   targetRirMax: number | null;
   setMultiplier: number | null;
+  isDeload?: boolean;
 }
 
 export interface SaveProgramInput {
@@ -99,6 +100,7 @@ export async function saveProgram(input: SaveProgramInput) {
       targetRirMin: phase.targetRirMin,
       targetRirMax: phase.targetRirMax,
       setMultiplier: phase.setMultiplier,
+      isDeload: phase.isDeload ?? false,
     })),
     days: input.days.map((d) => ({
       id: d.id,
@@ -175,7 +177,7 @@ export async function cloneProgram(id: string): Promise<string> {
 
   const { data: phases } = await supabase
     .from("program_phase")
-    .select("name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
+    .select("name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier, is_deload")
     .eq("program_id", id)
     .order("position", { ascending: true });
 
@@ -218,6 +220,7 @@ export async function cloneProgram(id: string): Promise<string> {
       targetRirMin: phase.target_rir_min,
       targetRirMax: phase.target_rir_max,
       setMultiplier: phase.set_multiplier,
+      isDeload: phase.is_deload,
     })),
     days: (days ?? []).map((day) => ({
       id: dayIdMap.get(day.id)!,

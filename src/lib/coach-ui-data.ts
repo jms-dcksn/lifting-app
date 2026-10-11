@@ -27,6 +27,7 @@ type CoachQueryRow = {
   e1rm: number | null;
   created_at: string;
   is_warmup: boolean;
+  is_deload: boolean;
   program_slot_id: string | null;
   set_index: number;
 };
@@ -49,14 +50,14 @@ export async function loadCoachUi(
   ] = await Promise.all([
     client
       .from("set_log")
-      .select("session_id, program_slot_id, exercise_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup")
+      .select("session_id, program_slot_id, exercise_id, set_index, weight, reps, rir, e1rm, created_at, is_warmup, is_deload")
       .eq("user_id", userId)
       .eq("is_warmup", false)
       .order("created_at", { ascending: true }),
     client.from("profile").select("bodyweight").eq("id", userId).maybeSingle(),
     client
       .from("workout_session")
-      .select("id, performed_at, finished_at, program_id, program_day_id, week_index, readiness, joint_pain, notes")
+      .select("id, performed_at, finished_at, program_id, program_day_id, week_index, is_deload, readiness, joint_pain, notes")
       .eq("user_id", userId),
     loadWeightHistory(client, userId, today),
     client.from("program_day").select("id, program_id, name").eq("user_id", userId),
@@ -66,7 +67,7 @@ export async function loadCoachUi(
       .eq("user_id", userId),
     client
       .from("program_phase")
-      .select("id, program_id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
+      .select("id, program_id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier, is_deload")
       .eq("user_id", userId),
     client
       .from("coach_recommendation_decision")
@@ -99,6 +100,7 @@ export async function loadCoachUi(
       ? dayById.get(session.program_day_id)?.name ?? null
       : null,
     weekIndex: session.week_index,
+    isDeload: session.is_deload,
     readiness: session.readiness,
     jointPain: session.joint_pain as CoachSessionInput["jointPain"],
     note: session.notes,
@@ -113,6 +115,7 @@ export async function loadCoachUi(
     rir: row.rir,
     e1rm: row.e1rm,
     isWarmup: row.is_warmup,
+    isDeload: row.is_deload,
     createdAt: row.created_at,
   }));
   const coachSlots: CoachSlotInput[] = (slotRows ?? []).flatMap((slot) => {
@@ -140,6 +143,7 @@ export async function loadCoachUi(
     targetRirMin: phase.target_rir_min,
     targetRirMax: phase.target_rir_max,
     setMultiplier: phase.set_multiplier,
+      isDeload: phase.is_deload,
   }));
   const coachReport = buildCoachCheckInReport({
     programName: program?.name,

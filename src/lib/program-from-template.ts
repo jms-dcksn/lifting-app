@@ -20,6 +20,7 @@ export type ProgramTree = {
     targetRirMin: number | null;
     targetRirMax: number | null;
     setMultiplier: number | null;
+    isDeload: boolean;
   }>;
   days: Array<{
     id: string;
@@ -67,6 +68,7 @@ export function buildProgramTreeFromTemplate(
       targetRirMin: phase.targetRirMin,
       targetRirMax: phase.targetRirMax,
       setMultiplier: phase.setMultiplier,
+      isDeload: phase.isDeload ?? false,
     })),
     days: template.days.map((day) => ({
       id: crypto.randomUUID(),
@@ -108,6 +110,7 @@ export function buildProgramTreeFromDraft(
       targetRirMin: phase.targetRirMin,
       targetRirMax: phase.targetRirMax,
       setMultiplier: phase.setMultiplier,
+      isDeload: phase.isDeload ?? false,
     })),
     days: draft.days.map((day) => ({
       id: crypto.randomUUID(),

@@ -62,3 +62,7 @@ next-env.d.ts
 docs/*
 !docs/*.md
 !docs/*.html
+
+lessons/*
+
+reference/*

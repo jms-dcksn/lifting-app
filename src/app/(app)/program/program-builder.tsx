@@ -6,6 +6,7 @@ import type { ExerciseDef } from "@/lib/strength/coefficients";
 import type { Program } from "@/lib/program";
 import { validateProgramPhases, type ProgramPhase } from "@/lib/periodization";
 import { Button } from "@/components/ui/button";
+import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
@@ -73,6 +74,7 @@ export function ProgramBuilder({
         targetRirMin: 2,
         targetRirMax: 2,
         setMultiplier: null,
+        isDeload: false,
       });
       return d;
     });
@@ -203,6 +205,7 @@ export function ProgramBuilder({
             targetRirMin: phase.targetRirMin,
             targetRirMax: phase.targetRirMax,
             setMultiplier: phase.setMultiplier,
+            isDeload: phase.isDeload ?? false,
           })),
           days: draft.days.map<SaveDayInput>((d) => ({
             id: d.id,
@@ -308,7 +311,7 @@ export function ProgramBuilder({
               <div className="flex items-center gap-1">
                 <h2 className="text-heading">Weekly phases</h2>
                 <InfoButton title="Weekly phases">
-                  A phase can change RIR and working-set volume for a week range.
+                  A phase can change RIR and working-set volume for a week range. Mark recovery phases as deload to exclude their sets from strength progression and PRs.
                 </InfoButton>
               </div>
               {draft.phases.length < MAX_PHASES && (
@@ -357,6 +360,11 @@ export function ProgramBuilder({
                     <option value="0.75">75%</option>
                     <option value="0.5">50%</option>
                   </select>
+                </label>
+                <label className="flex min-h-11 items-center gap-2 text-body">
+                  <input type="checkbox" checked={phase.isDeload ?? false}
+                    onChange={(event) => updatePhase(phase.id, { isDeload: event.target.checked })} />
+                  Deload
                 </label>
                 <textarea
                   value={phase.description ?? ""}
@@ -415,7 +423,17 @@ export function ProgramBuilder({
                         exerciseId={slot.exerciseId}
                         baseExerciseId={byId[slot.exerciseId]?.baseExerciseId}
                       />
-                      <span className="min-w-0 truncate text-body font-medium">{exerciseName(byId, slot.exerciseId)}</span>
+                      {byId[slot.exerciseId] ? (
+                        <ExerciseCardLabel
+                          as="span"
+                          size="body"
+                          def={byId[slot.exerciseId]}
+                          catalog={byId}
+                          className="truncate"
+                        />
+                      ) : (
+                        <span className="min-w-0 truncate text-body font-medium">{slot.exerciseId}</span>
+                      )}
                     </span>
                     <span className="flex items-center gap-1">
                       <ReorderButtons

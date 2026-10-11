@@ -49,6 +49,39 @@ export function shouldResolveStation(
   return resolveStations && needsStation(def);
 }
 
+// Seeded template for swapping station identity without changing the programmed movement.
+export function stationTemplateFor(
+  def: Pick<ExerciseDef, "id" | "baseExerciseId" | "stationProfile"> | undefined,
+  catalog: Record<string, ExerciseDef>,
+): ExerciseDef | null {
+  if (!def) return null;
+  if (needsStation(def)) return catalog[def.id] ?? null;
+  const baseId = def.baseExerciseId;
+  if (!baseId) return null;
+  const template = catalog[baseId];
+  return template && needsStation(template) ? template : null;
+}
+
+export function canSwapStation(
+  def: Pick<ExerciseDef, "id" | "baseExerciseId" | "stationProfile"> | undefined,
+  catalog: Record<string, ExerciseDef>,
+): boolean {
+  return stationTemplateFor(def, catalog) != null;
+}
+
+// Unresolved templates: "Choose machine". Resolved variants: "Swap machine" (etc.).
+export function swapStationLabel(
+  def: Pick<ExerciseDef, "id" | "baseExerciseId" | "stationProfile"> | undefined,
+  catalog: Record<string, ExerciseDef>,
+): string | null {
+  const template = stationTemplateFor(def, catalog);
+  const profile = template?.stationProfile;
+  if (!profile || profile === "none") return null;
+  if (def && needsStation(def)) return chooseStationCopy(profile);
+  const noun = profile === "machine" ? "machine" : profile;
+  return `Swap ${noun}`;
+}
+
 // Smallest useful resolve helper: session/planner forms lock cable to selectorized
 // and barbell stations to their profile tag. Machines keep the plate/stack choice.
 export function stationResolveInput(

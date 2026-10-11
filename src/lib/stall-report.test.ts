@@ -17,6 +17,15 @@ const change = (overrides: Partial<StallAdaptation> = {}): StallAdaptation => ({
   newRepMin: 12, newRepMax: 15, createdAt: "2026-09-17T12:00:00Z", ...overrides });
 
 describe("shared context-aware stalls", () => {
+  it("uses persisted deload boundaries even after phase edits or removal", () => {
+    const h = fixture();
+    h.sessions[3] = { ...h.sessions[3], isDeload: true } as typeof h.sessions[number];
+    h.sets[3].is_deload = true;
+    expect(assess(h).points.map(p => p.sessionId)).toEqual(["s4"]);
+    h.sessions[4] = { ...h.sessions[4], isDeload: true } as typeof h.sessions[number];
+    h.sets[4].is_deload = true;
+    expect(assess(h)).toMatchObject({ state: "deload", points: [] });
+  });
   it("requires four stalled barbell exposures and fourteen elapsed training days", () => {
     expect(assess(fixture())).toMatchObject({ state: "plateau", patience: 4, stalledExposures: 4, stalledSinceDays: 20, lastImprovementAt: "2026-09-01T12:00:00Z" });
     expect(assess(fixture(4)).state).toBe("insufficient_data");

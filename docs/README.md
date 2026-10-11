@@ -7,18 +7,20 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Purpose | Owner |
 | --- | --- |
 | Setup and product overview | [README](../README.md) |
+| Pull request security review workflow | [Deployment](../DEPLOY.md#pull-request-security-review) |
 | Environment, migration and deployment operations | [DEPLOY](../DEPLOY.md) |
 | Visual map of experiences, request path, and why the system stays fast | [Architecture map](architecture.html) |
 | Current module boundaries and engine/data invariants | [Architecture](ARCHITECTURE.md) |
 | Shared components and UI gotchas | [UI conventions](UI.md) |
 | Copy density (proposed) | [2026-09-16 spec](superpowers/specs/2026-09-16-visual-copy-density-design.md) |
 | Exercise review (Slices A–F shipped) | [2026-09-19 spec](superpowers/specs/2026-09-19-exercise-review-design.md) |
-| Exercise illustrations (shared visual) | [2026-09-28 spec](superpowers/specs/2026-09-28-exercise-visuals-design.md) |
+| Exercise artwork generation and styling | [Charcoal art specification](EXERCISE-ART.md); [UI conventions](UI.md) |
+| Exercise illustrations (historical shared-visual design) | [2026-09-28 spec](superpowers/specs/2026-09-28-exercise-visuals-design.md) |
 | Station composition (Approved / shipped) | [2026-09-21 spec](superpowers/specs/2026-09-21-station-composition-design.md); [Features §6](FEATURES.md) |
 | Ordinary-pound movement e1RM/PR rollup (specified, not shipped) | [2026-09-29 spec](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md) |
 | Shipped behavior | [Features](FEATURES.md) |
 | Rationale and record eligibility | [Decisions](DECISIONS.md) |
-| Weekly facts, proposals, private API | [Coach report](COACH-REPORT.md) |
+| Weekly facts, proposals, session-scoped consumers | [Coach report](COACH-REPORT.md) |
 | In-app agent, chat overlay, or AI Coach slices | [AI Coach](AI-COACH.md), [explainer](ai-coach.html) |
 | Active substitutions / pre-workout choices | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
 | Weight observations, charts and goal distance | [Calendar](WEIGHT-CALENDAR.md), [trends](WEIGHT-TRENDS.md) |

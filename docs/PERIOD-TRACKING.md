@@ -272,7 +272,7 @@ period extends beyond the window (user can browse adjacent months to see continu
   - Change stall classification or plateau detection.
   - Alter "Best e1RM" or "Monthly change" calculations.
   - Affect PR totals or workout records.
-  - Appear in Coach recommendations or weekly API responses.
+  - Appear in Coach recommendations or weeklyCoach tool responses.
   - Modify bodyweight trend calculations or goal distance.
 - Weight and strength data remain authoritative; period markers add optional visual context for
   interpretation by the lifter.

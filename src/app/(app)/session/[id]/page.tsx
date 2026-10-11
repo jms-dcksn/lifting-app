@@ -45,7 +45,7 @@ export default async function SessionPage({
 
   const { data: session } = await supabase
     .from("workout_session")
-    .select("id, performed_at, week_index, finished_at, program_id, program_day_id, readiness, joint_pain, notes, exercise_swaps")
+    .select("id, performed_at, week_index, finished_at, program_id, program_day_id, readiness, joint_pain, notes, exercise_swaps, is_deload")
     .eq("id", id)
     .eq("user_id", userId)
     .maybeSingle();
@@ -64,7 +64,7 @@ export default async function SessionPage({
     session.program_id
       ? supabase
           .from("program_phase")
-          .select("id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier")
+          .select("id, position, name, description, week_start, week_end, target_rir_min, target_rir_max, set_multiplier, is_deload")
           .eq("program_id", session.program_id)
           .order("position", { ascending: true })
       : Promise.resolve({ data: [] }),
@@ -132,6 +132,7 @@ export default async function SessionPage({
         .select("session_id, program_slot_id, exercise_id, weight, reps, rir, e1rm, set_index, created_at, workout_session!inner(performed_at, finished_at)")
         .eq("user_id", userId)
         .eq("is_warmup", false)
+        .eq("is_deload", false)
         .neq("session_id", id)
         .in("exercise_id", historyExerciseIds)
         .lt("workout_session.performed_at", session.performed_at)
@@ -261,6 +262,7 @@ export default async function SessionPage({
     targetRirMin: phase.target_rir_min,
     targetRirMax: phase.target_rir_max,
     setMultiplier: phase.set_multiplier,
+    isDeload: phase.is_deload,
   }));
   const sessionWeek = session.week_index ?? 1;
   const activePhase = phaseForWeek(phases, sessionWeek);
@@ -327,6 +329,7 @@ export default async function SessionPage({
       week={sessionWeek}
       weeks={program?.weeks ?? 5}
       phase={activePhase}
+      isDeload={session.is_deload}
       bodyweight={bodyweight}
       defaultRestSeconds={profile?.default_rest_seconds ?? 120}
       alreadyFinished={!!session.finished_at}

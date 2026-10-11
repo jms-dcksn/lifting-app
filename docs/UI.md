@@ -30,6 +30,18 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   from `/exercises/{id}.jpg`; everything else uses `IconDumbbell` in the same box.
   Map by seeded / template id, not name. See
   [exercise visuals](superpowers/specs/2026-09-28-exercise-visuals-design.md).
+  Current art uses charcoal backgrounds, ivory ink shading, and muted burgundy accents.
+  640×360 JPEGs cover back squat, flat/incline barbell bench press, Romanian deadlift,
+  dumbbell shoulder press, Bulgarian split squat, hack squat, lat pulldown, seated cable
+  row, and seated leg curl. `EXERCISE_VISUAL_SRC` is the current asset inventory.
+  Assets fill the 16:9 frame without extra CSS zoom so the athlete and equipment remain
+  visible at both sizes. This replaces
+  the cream-paper art and center zoom described in the historical spec.
+  Use the [art generation specification](EXERCISE-ART.md) for reusable prompts, committed
+  style references, exercise mechanics, export settings, and thumbnail review.
+- Program tiles wrap visible content in their detail `Link`; the Remove control is a
+  positioned sibling. An empty overlay link beneath positioned text lets that text
+  intercept taps, making the tile appear intermittently unresponsive.
 - `Skeleton` supports route loading states. `withViewTransition` animates builder reorder
   with a plain-update fallback. All motion respects reduced-motion preferences.
 - `Calendar` supplies the shared date grid; [weight calendar](WEIGHT-CALENDAR.md) owns its

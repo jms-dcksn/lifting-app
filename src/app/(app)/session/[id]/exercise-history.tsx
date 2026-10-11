@@ -2,26 +2,57 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { Sheet, useSheetDismiss } from "@/components/ui/sheet";
 import { getExerciseHistory } from "../actions";
 
-export function ExerciseHistory({ exerciseId, sessionId, name, isBodyweight, onClose }: {
+export function ExerciseHistory({
+  exerciseId,
+  sessionId,
+  name,
+  def,
+  catalog,
+  isBodyweight,
+  onClose,
+}: {
   exerciseId: string;
   sessionId: string;
   name: string;
+  def?: ExerciseDef;
+  catalog?: Record<string, ExerciseDef>;
   isBodyweight: boolean;
   onClose: () => void;
 }) {
   return (
     <Sheet onClose={onClose} ariaLabel={`${name} history`}>
-      <HistoryContent exerciseId={exerciseId} sessionId={sessionId} name={name} isBodyweight={isBodyweight} />
+      <HistoryContent
+        exerciseId={exerciseId}
+        sessionId={sessionId}
+        name={name}
+        def={def}
+        catalog={catalog}
+        isBodyweight={isBodyweight}
+      />
     </Sheet>
   );
 }
 
-function HistoryContent({ exerciseId, sessionId, name, isBodyweight }: {
-  exerciseId: string; sessionId: string; name: string; isBodyweight: boolean;
+function HistoryContent({
+  exerciseId,
+  sessionId,
+  name,
+  def,
+  catalog,
+  isBodyweight,
+}: {
+  exerciseId: string;
+  sessionId: string;
+  name: string;
+  def?: ExerciseDef;
+  catalog?: Record<string, ExerciseDef>;
+  isBodyweight: boolean;
 }) {
   const dismiss = useSheetDismiss();
   const [rows, setRows] = useState<Awaited<ReturnType<typeof getExerciseHistory>> | null>(null);
@@ -42,7 +73,14 @@ function HistoryContent({ exerciseId, sessionId, name, isBodyweight }: {
       <header className="flex shrink-0 items-start justify-between gap-3 pb-4">
         <div className="flex min-w-0 items-start gap-3">
           <ExerciseVisual exerciseId={exerciseId} size="lg" />
-          <h2 className="text-heading">{name} history</h2>
+          <div className="min-w-0">
+            {def ? (
+              <ExerciseCardLabel as="h2" size="heading" def={def} catalog={catalog} />
+            ) : (
+              <h2 className="text-heading">{name}</h2>
+            )}
+            <p className="text-caption text-muted">History</p>
+          </div>
         </div>
         <Button variant="secondary" size="sm" onClick={dismiss}>Close</Button>
       </header>
@@ -61,6 +99,7 @@ function HistoryContent({ exerciseId, sessionId, name, isBodyweight }: {
                 <p className="mt-1 text-caption text-muted">
                   <time dateTime={row.created_at}>{new Date(row.created_at).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}</time>
                   {row.is_warmup && " · Warm-up"}
+                  {row.is_deload && " · Deload"}
                 </p>
                 <dl className="mt-3 grid grid-cols-3 gap-2 text-body tabular-nums">
                   <div><dt className="text-caption text-muted">{isBodyweight ? "Added lb" : "Weight (lb)"}</dt><dd>{row.weight}</dd></div>

@@ -32,7 +32,7 @@ export async function loadExerciseHistory(
   sessionId: string,
 ) {
   const { data, error } = await supabase.from("set_log")
-    .select("id, exercise_id, weight, reps, rir, is_warmup, created_at")
+    .select("id, exercise_id, weight, reps, rir, is_warmup, is_deload, created_at")
     .eq("user_id", userId)
     .in("exercise_id", exerciseIds)
     .neq("session_id", sessionId)

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { weeklyCoach } from "./weekly-coach";
 import { activeProgram } from "./active-program";
 import { resolveExerciseIdentity, summarizeExerciseReview } from "./exercise-review";
@@ -47,6 +47,10 @@ vi.mock("@/lib/program", () => ({
 }));
 
 describe("agent read tools", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("weeklyCoach wraps loadCoachUi and omits the catalog", async () => {
     const result = await weeklyCoach({} as never, "user-1");
     expect(result.source).toBe("weeklyCoach");
@@ -62,6 +66,8 @@ describe("agent read tools", () => {
   });
 
   it("exerciseReview keeps exact identity and Last / 21-day / chart summaries", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-20T12:00:00.000Z"));
     const sessions = groupReviewSessions([
       {
         id: "a",
@@ -74,7 +80,7 @@ describe("agent read tools", () => {
         finishedAt: "2026-09-18T13:00:00.000Z",
         programId: "p",
       },
-    ], new Date("2026-09-20T12:00:00.000Z"));
+    ]);
     const summary = summarizeExerciseReview({
       exerciseId: "bb-back-squat",
       exerciseName: "Barbell Back Squat",
@@ -92,6 +98,49 @@ describe("agent read tools", () => {
     const catalog = Object.fromEntries(EXERCISES.map((def) => [def.id, def]));
     const resolved = resolveExerciseIdentity(catalog, { name: "squat" });
     expect("needsDisambiguation" in resolved || "matches" in resolved).toBe(true);
+  });
+
+  it("resolves incline bench phrasing to bb-incline-bench, not flat bb-bench", () => {
+    const catalog = Object.fromEntries(EXERCISES.map((def) => [def.id, def]));
+    const queries = [
+      "incline barbell bench press",
+      "Incline bench",
+      "barbell incline bench",
+    ];
+    for (const name of queries) {
+      const resolved = resolveExerciseIdentity(catalog, { name });
+      expect(resolved).toEqual({ exerciseId: "bb-incline-bench" });
+    }
+  });
+
+  it("does not map incline barbell bench press to flat bb-bench", () => {
+    const catalog = Object.fromEntries(EXERCISES.map((def) => [def.id, def]));
+    const resolved = resolveExerciseIdentity(catalog, {
+      exerciseId: "bb-incline-barbell-bench-press",
+      name: "incline barbell bench press",
+    });
+    expect(resolved).toEqual({ exerciseId: "bb-incline-bench" });
+    expect(resolved).not.toEqual({ exerciseId: "bb-bench" });
+  });
+
+  it("ignores invented exerciseId and resolves by name", () => {
+    const catalog = Object.fromEntries(EXERCISES.map((def) => [def.id, def]));
+    const resolved = resolveExerciseIdentity(catalog, {
+      exerciseId: "bb-incline-barbell-bench-press",
+      name: "barbell incline bench",
+    });
+    expect(resolved).toEqual({ exerciseId: "bb-incline-bench" });
+  });
+
+  it("returns a clear error for invented exerciseId without a name", () => {
+    const catalog = Object.fromEntries(EXERCISES.map((def) => [def.id, def]));
+    const resolved = resolveExerciseIdentity(catalog, {
+      exerciseId: "bb-incline-barbell-bench-press",
+    });
+    expect(resolved).toMatchObject({
+      source: "exerciseReview",
+      error: expect.stringContaining("Unknown exercise id"),
+    });
   });
 
   it("nextWorkout targets use the same sessionTarget path", () => {

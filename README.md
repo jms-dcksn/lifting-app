@@ -69,8 +69,6 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/lib/coach-check-in.ts` — versioned canonical coach report plus its clipboard formatter
 - `src/lib/coach-recommendations.ts` — deterministic, evidence-backed weekly proposals with
   deload/pain/RIR/plateau guardrails; ranked by confidence × impact into Do first / Also tiers
-- `src/lib/coach-api.ts` / `src/lib/coach-weekly-data.ts` — authenticated, read-only weekly Coach
-  API contract and explicitly user-scoped server data loader
 - `src/lib/bodyweight.ts` — pure seven-day bodyweight windows, sparse averages, and week-over-week trend
 - `src/lib/current-bodyweight.ts` — latest-observation lookup with preserved profile baseline fallback
 - `src/lib/session-feedback.ts` — readiness/pain/note contract and input validation
@@ -83,7 +81,6 @@ Enable the Email (magic-link) provider in the Supabase Auth dashboard.
 - `src/app/(app)/exercise/actions.ts` — `resolveVariant` (find-or-create a station brand/tag variant) and `createCustomExercise` server actions
 - `src/app/(app)/settings/` — bodyweight history/trend, goal weight, default rest-between-sets, rest-complete tone editor, period tracking, and sign out (You tab)
 - `src/app/(app)/analytics/` — Track: 2-column compound scoreboard (catalog reference lifts; station defaults keep template keys and use family-latest numbers/href); Explore menu (this week's PRs, all-lifts search, month review, Coach, Body, Volume)
-- `src/app/api/coach/v1/weekly/` — private, no-store endpoint for the scheduled Coach check-in
 - `src/lib/agent/` — in-app AI Coach: policy, prompts, thread helpers, and read tools wrapping existing loaders
 - `src/app/api/agent/chat/` — auth-gated streaming chat; `src/app/(app)/coach/` is the full-screen chat with chat history
 - `docs/COACH-REPORT.md` — exact v1 windows, metrics, trend rules, privacy contract, and limitations

@@ -19,8 +19,8 @@ TypeScript strength engine. Workouts require connectivity; there is no offline s
   unapproved hard-to-reverse architecture, spending, external-facing changes, new scope, or unvalidated underlying assumptions:
   recommendation, reason, risk, and decision needed.
 - Keep credentials in ignored environment files or deployment settings. Preserve owner-scoped
-  RLS. The weekly Coach API is the sole elevated application read path; its queries require
-  explicit user predicates. Keep it read-only, no-store, and noindex.
+  RLS. Track Coach and agent tools use the signed-in user’s client. Keep
+  `SUPABASE_SECRET_KEY` confined to local live agent evals.
 - Keep `set_log` authoritative and strength statistics rebuildable. Preserve exact exercise
   identity and historical bodyweight when comparing records or editing saved sets.
 - Use existing UI primitives and semantic tokens. Keep strength/report calculations pure and
@@ -39,14 +39,17 @@ in Node, including pure logic and mocked action/data-boundary tests. Co-locate t
 SQL ownership/atomicity checks live in `supabase/tests/` with execution notes in feature docs.
 `npm run test:db` runs the pgTAP ownership suite (`supabase/tests/*_rls.sql`) against a local
 stack and needs Docker; CI runs the same command. Other scripts there are manual `psql -f` checks.
+A migration is on the hosted project only after `npx supabase db push`, and the production build
+blocks when `supabase/migrations` disagrees with that ledger. See [Deployment](DEPLOY.md).
 For application changes run tests, lint, typecheck, and build; verify changed UI flows in a
 browser when authenticated state is available. For docs-only edits, check references and
 claims against source. Record what was actually verified and any remaining limits.
 
-Use [ship-phase](.agents/skills/ship-phase/SKILL.md) when building or wrapping up a planned
-phase. Refresh the owning docs and write `.claude/LAST_SESSION.md` with the current HEAD,
-changes, checks, open work, and commit/push status. Keep `CLAUDE.md` exactly `@AGENTS.md`;
-put new detail in the relevant reference and add a trigger here only when needed.
+Use [close-session](.agents/skills/close-session/SKILL.md) when a session changes the repo
+or a commit lands. It refreshes the owning docs and overwrites `.claude/LAST_SESSION.md`
+with this session's work, checks, and current HEAD. The Stop hook blocks until that file
+names HEAD. Keep `CLAUDE.md` exactly `@AGENTS.md`; put new detail in the owning reference
+and add a trigger here only when a new task branch appears.
 
 ## Read before changing
 
@@ -55,13 +58,14 @@ put new detail in the relevant reference and add a trigger here only when needed
 | Visual map of experiences, request path, or why a performance/scale choice exists | [Architecture map](docs/architecture.html) |
 | Strength, calibration, catalog identity, program loading, data ownership, auth | [Architecture](docs/ARCHITECTURE.md) and [decisions](docs/DECISIONS.md) |
 | UI primitives, motion, overlays, server/client boundaries | [UI conventions](docs/UI.md) |
+| Exercise artwork generation, styling, or replacement | [Exercise art specification](docs/EXERCISE-ART.md) and [UI conventions](docs/UI.md) |
 | Program templates or weekly phases | [Architecture: programs](docs/ARCHITECTURE.md#programs-and-prescriptions); [Strong Foundations](docs/STRONG-FOUNDATIONS.md) for that template |
 | Active swaps or Fluid adaptation events | [Exercise swaps](docs/EXERCISE-SWAPS.md) |
 | Home preview, planner cookies, or session creation | [Workout planning](docs/WORKOUT-PLANNING.md) |
 | PR pills, completion recaps, or historical set edits | [Workout records](docs/DECISIONS.md#workout-records) |
 | Exercise review Last card, 21-day window, or e1RM chart | [Exercise review spec](docs/superpowers/specs/2026-09-19-exercise-review-design.md); [Features](docs/FEATURES.md) |
 | Movement-level e1RM/PR rollup for non-machine families | [2026-09-29 rollup spec](docs/superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md). Proposed, pending James. Do not implement until the card for that slice is answered. Current records stay exact. |
-| Coach report, proposals, Track Coach UI, or private weekly API | [Coach contract](docs/COACH-REPORT.md) and [architecture: strength](docs/ARCHITECTURE.md#strength-and-exercise-identity) |
+| Coach report, proposals, Track Coach UI, or weeklyCoach tool | [Coach contract](docs/COACH-REPORT.md) and [architecture: strength](docs/ARCHITECTURE.md#strength-and-exercise-identity) |
 | Agent chat, LangChain tools, or AI Coach slices | [AI Coach](docs/AI-COACH.md) and [AI Coach explainer](docs/ai-coach.html) |
 | Track Explore destinations (Coach, Body, Volume) | [Track body and volume plan](docs/superpowers/plans/2026-09-19-track-body-volume.md); [Features](docs/FEATURES.md) |
 | Weight writes, date moves, or shared calendar | [Weight calendar](docs/WEIGHT-CALENDAR.md) |
@@ -69,6 +73,7 @@ put new detail in the relevant reference and add a trigger here only when needed
 | Tape measurements, site chips, or Body inches chart | [Body measurements](docs/BODY-MEASUREMENTS.md) |
 | Monthly comparisons, PR totals, stall classification, or period × performance weeks | [Monthly progress](docs/MONTHLY-PROGRESS.md); Coach/Fluid/monthly share `stall-report.ts`; [period tracking](docs/PERIOD-TRACKING.md) |
 | Setup, environment variables, migrations, or deployment | [Deployment](DEPLOY.md) |
+| Pull request security review workflow | [Deployment](DEPLOY.md#pull-request-security-review) |
 | Feature scope or selecting planned work | [Features](docs/FEATURES.md) and [build plan](docs/PLAN.md); verify old checklist status against code |
 
 <!-- OPENWIKI:START -->

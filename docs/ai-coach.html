@@ -33,12 +33,32 @@
       <section class="space-y-4">
         <h2 class="font-serif text-2xl">The path of one question</h2>
         <p class="text-slate-700 max-w-3xl">
-          You tap the chat button (or open <code class="font-mono text-sm">/coach</code>).
+          You tap the speech-bubble button with two four-point sparkles (or open <code class="font-mono text-sm">/coach</code>).
           The browser sends your words to a server route. That route proves you are signed in,
           writes your message to Postgres, asks LangChain to think, and streams the reply back.
           LangChain may call a tool. Each tool is a thin wrapper around an existing loader.
           LangSmith records the trace so you can see which tools ran.
         </p>
+        <div class="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4">
+          <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M11 5H7a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3v3l4-3h5a3 3 0 0 0 3-3v-3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="m17 2 1.1 2.9L21 6l-2.9 1.1L17 10l-1.1-2.9L13 6l2.9-1.1L17 2Zm5-1 0.5 1.5L24 3l-1.5 0.5L22 5l-0.5-1.5L20 3l1.5-0.5L22 1Z" fill="currentColor" />
+            </svg>
+          </span>
+          <p class="text-sm text-slate-700">The bubble signals conversation; the sparkles identify AI assistance. The icon inherits the button color, and the button keeps its accessible name, Coach.</p>
+        </div>
+        <div class="code-rail rounded-lg bg-slate-900 text-slate-100 p-4 overflow-x-auto">
+          <p class="text-xs text-slate-400 mb-2">src/components/agent/agent-entry.tsx</p>
+          <pre class="text-sm"><code>&lt;IconButton
+  type="button"
+  aria-label="Coach"
+  className="fixed right-4 z-30 bottom-[calc(4.25rem+env(safe-area-inset-bottom)+0.75rem)] bg-background"
+  onClick={() =&gt; setOpen(true)}
+&gt;
+  &lt;IconChat /&gt;
+&lt;/IconButton&gt;</code></pre>
+        </div>
         <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
           <pre class="mermaid">
 flowchart LR
@@ -222,8 +242,52 @@ stateDiagram-v2
         </div>
       </section>
 
+      <section class="space-y-4">
+        <h2 class="font-serif text-2xl">Recovery targets match recovery effort</h2>
+        <p class="text-slate-700 max-w-3xl">
+          The nextWorkout tool and active session share the same target engine. At four
+          or more reps in reserve, it recalculates load from recent performance instead
+          of adding a rep or weight. It keeps the prior reps inside the programmed range,
+          rounds to an achievable load, and caps it at the prior load. Phase names do not
+          control this rule; both Deload and Recovery prescriptions work.
+        </p>
+        <div class="grid gap-3 md:grid-cols-3" aria-label="Recovery target calculation">
+          <div class="rounded-lg border border-slate-300 bg-white p-4">
+            <p class="text-xs uppercase tracking-wider text-slate-500">1. Recent performance</p>
+            <p>150 lb × 7 at 1 RIR</p>
+          </div>
+          <div class="rounded-lg border border-slate-300 bg-white p-4">
+            <p class="text-xs uppercase tracking-wider text-slate-500">2. Load model</p>
+            <p>Estimate strength, then solve for 7 reps at 4 RIR.</p>
+          </div>
+          <div class="rounded-lg border-2 border-slate-900 bg-white p-4">
+            <p class="text-xs uppercase tracking-wider text-slate-500">3. Shared target</p>
+            <p>135 lb × 7 at 4 RIR</p>
+          </div>
+        </div>
+        <p class="text-sm text-slate-700">
+          Bodyweight work converts total load back to added or assisted load. Unknown
+          bodyweight means no recovery load suggestion. Missing historical RIR uses two.
+          Below four target RIR, normal progression stays unchanged. The agent narrates
+          the returned numbers; it does not calculate a separate deload percentage.
+        </p>
+        <h3 class="font-mono text-sm">src/lib/strength/progression.ts — recovery rep intent</h3>
+        <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const recovery = slot.targetRir &gt;= 4;
+  if (recovery || last.reps &lt; slot.repMin) {
+    const targetReps = recovery
+      ? Math.max(slot.repMin, Math.min(slot.repMax, last.reps))
+      : slot.repMin;</code></pre>
+      </section>
+
       <section class="space-y-6">
         <h2 class="font-serif text-2xl">Code from the landed files</h2>
+        <p>Track Coach and <code>weeklyCoach</code> share <code>loadCoachUi</code> through the signed-in user’s session and RLS. The unused HTTP export and its secret client were removed in #182. <code>SUPABASE_SECRET_KEY</code> remains only for local live evals.</p>
+        <pre class="mermaid">flowchart LR
+  T[Track Coach] --> L[loadCoachUi]
+  W[weeklyCoach tool] --> L
+  L --> C[Session client]
+  C --> R[Owner RLS]
+  R --> F[Canonical report and proposals]</pre>
         <p class="text-slate-700">These snippets are from the landed files. If they drift, the HTML is wrong — update it.</p>
 
         <article class="space-y-2">
@@ -254,7 +318,7 @@ export const TOOL_CALL_BUDGET = 8;</code></pre>
         </article>
 
         <article class="space-y-2">
-          <h3 class="font-mono text-sm">src/app/api/agent/chat/route.ts — cookie auth, not the weekly secret</h3>
+          <h3 class="font-mono text-sm">src/app/api/agent/chat/route.ts — cookie authentication</h3>
           <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const handlers = createAgentChatHandlers({
   async auth() {
     const supabase = await createClient();
@@ -265,7 +329,7 @@ export const TOOL_CALL_BUDGET = 8;</code></pre>
 });</code></pre>
           <p class="text-sm text-slate-600">
             Unauthenticated requests get 401 before any tool runs. Tools never receive
-            <code class="font-mono">SUPABASE_SECRET_KEY</code> or <code class="font-mono">COACH_API_TOKEN</code>.
+            <code class="font-mono">SUPABASE_SECRET_KEY</code>.
           </p>
         </article>
 
@@ -368,6 +432,70 @@ alter table public.agent_message
   foreign key (thread_id, user_id)
   references public.agent_thread (id, user_id)
   on delete cascade;</code></pre>
+        </article>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">Name resolution — exerciseReview</h3>
+          <p class="text-sm text-slate-600 max-w-3xl">
+            The user says a lift. They do not know the catalog id. The resolver
+            stays in process, over the merged catalog, and asks when two lifts
+            stay close. A word that matches nothing, such as “face pulls”, is
+            not found. If the phrase is an exact catalog name and that row is
+            logged, or nothing is logged, that row wins. Otherwise a logged
+            station can beat the empty template: “hack squat” with only a
+            Nautilus history resolves to that station, and asks when Cybex has
+            sets too.
+          </p>
+          <p class="text-sm text-slate-600 max-w-3xl">
+            The expanded machine catalog keeps cable and lever pulldowns separate.
+            With no logged station preference, “lat pull down” asks which one;
+            “cable lat pull down” and “machine lat pull down” select their respective
+            templates. Choosing a machine brand and loading type creates an owned
+            Supabase variant through the existing station flow. Each new machine
+            requires calibration; old custom exercise histories remain separate.
+          </p>
+          <pre class="mermaid bg-white border border-slate-200 p-4 text-sm overflow-x-auto">flowchart LR
+  Query["lat pull down"] --> Choice["Cable or machine?"]
+  Choice --> Cable["lat-pulldown: cable"]
+  Choice --> Machine["machine-lat-pulldown: machine"]
+  Machine --> Station["Choose brand and loading type"]
+  Station --> Owned["Owned exercise row in Supabase"]
+  Owned --> Calibrate["Calibrate this machine"]</pre>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>// src/lib/strength/coefficients.ts
+{ id: "machine-lat-pulldown", name: "Machine Lat Pulldown", pattern: "vertical_pull", equipment: "machine", coefficient: 1.0, needsCalibration: true, increment: 10, stationProfile: "machine" },
+{ id: "machine-pullover", name: "Machine Pullover", pattern: "vertical_pull", equipment: "machine", coefficient: 0.7, needsCalibration: true, increment: 5, stationProfile: "machine" },</code></pre>
+          <pre class="mermaid bg-white border border-slate-200 p-4 text-sm overflow-x-auto">flowchart LR
+  Phrase["rdl, curls, incline bench press"] --> Expand["nicknames, plurals, one-letter typos"]
+  Expand --> Score["rare overlapping words score higher"]
+  Score --> Barbell["unspecified equipment prefers barbell"]
+  Barbell --> Logged["tie-break toward user_exercise_stat"]
+  Logged --> Pick{"one lift clear of the next?"}
+  Pick -->|yes| Review["exercise id"]
+  Pick -->|no| Ask["needsDisambiguation, up to 8 names"]</pre>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>const ALIASES: Record&lt;string, readonly string[]&gt; = {
+  rdl: ["romanian", "deadlift"],
+  rdls: ["romanian", "deadlift"],
+  ohp: ["overhead", "press"],
+  bss: ["bulgarian", "split"],
+  db: ["dumbbell"],
+  bb: ["barbell"],
+  pullup: ["pull", "up"],
+  pullups: ["pull", "up"],
+  military: ["overhead"],
+};
+
+const close = ranked.filter((row) => top.score - row.score &lt; RESOLVE_MARGIN);
+if (close.length === 1) return { exerciseId: close[0]!.id };
+return {
+  source: "exerciseReview" as const,
+  needsDisambiguation: true,
+  matches: close.slice(0, 8).map(({ id, name }) => ({ id, name })),
+};</code></pre>
+          <p class="text-sm text-slate-600">
+            Source: <code class="font-mono text-sm">src/lib/agent/tools/exercise-review.ts</code>.
+            Seed names live in <code class="font-mono text-sm">coefficients.ts</code>, not in the
+            <code class="font-mono text-sm">exercise</code> table, so this match does not use SQL
+            <code class="font-mono text-sm">LIKE</code>.
+          </p>
         </article>
         <article class="space-y-2">
           <h3 class="font-mono text-sm">Movement rollup — exerciseReview (Card 1, 2026-09-29)</h3>
@@ -548,6 +676,66 @@ if (streamEvent.type === "done") {
         </article>
       </section>
 
+      <section class="space-y-4">
+        <h2 class="font-serif text-2xl">A missing trend is said out loud</h2>
+        <p class="text-slate-700 max-w-3xl">
+          One e1RM point is not a trend. The system prompt tells the model to say so when
+          <code class="font-mono text-sm">exerciseReview</code> returns a gap, a null delta, or fewer than
+          two chart points, and then to report the last session if one exists. The same rule covers
+          the other read tools: Coach text that says “not available”, a null next-workout target,
+          and no active program. Each tool description names the field that means “missing”.
+        </p>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/prompt.ts — say the comparison is missing</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>- One logged value is not a trend. If the user asked how something is changing and the tool has no comparison, say that no trend is available, then give the last fact the tool did return.
+  - exerciseReview: recent21Days is null, recent21Days.kind is "gap", recent21Days.delta is null, or chartLast8 has fewer than two points.</code></pre>
+        </article>
+
+        <h2 class="font-serif text-2xl">Eleven live examples</h2>
+        <p class="text-slate-700 max-w-3xl">
+          Fixture evals grade canned Coach numbers. <code class="font-mono text-sm">npm run eval:agent</code>
+          runs the real model and the prod ledger for each row in
+          <code class="font-mono text-sm">LIVE_EXAMPLES</code>. Every question is
+          “How is my e1RM trending on …” with a different exercise phrase: Nautilus hack squat,
+          leg press, and romanian deadlift; Cybex hack squat, bench press, and deadlift;
+          three ambiguous names (squat, barbell squat, dumbbell bench); and the nickname “rdl”.
+          The original incline-bench question stays. Each example has its own handwritten reference.
+          The run copies those onto dataset <code class="font-mono text-sm">ai-coach-live</code>.
+          Gold is the lift the question means. “rdl” and “incline bench press” both resolve on the
+          seed catalog. Back squat is out of the resolved set:
+          that account has one point there, and the hack-squat stations have charts.
+          Jev ignores exact pounds. For a resolved lift it checks that the reply names that lift
+          and reports a trend. For an ambiguous name it checks that the reply asks the user to
+          choose the exercises in the reference.
+          <code class="font-mono text-sm">found_exercise</code> passes when any
+          <code class="font-mono text-sm">exerciseReview</code> result in the turn matches.
+          A miss, or a later call that names something else, does not erase an earlier hit.
+          The script does not save a chat thread. Traces go to
+          <code class="font-mono text-sm">lifting-app-agent-evals</code>, not the project Vercel uses.
+        </p>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 overflow-x-auto">
+          <pre class="mermaid">
+flowchart LR
+  Q["11 dataset examples"] --> Agent["runAgentTurn"]
+  Agent --> DB[("Prod ledger")]
+  Agent --> Exp["Experiment exercise-review"]
+  Ref["Handwritten reference"] --> Judges
+  Exp --> Judges["right_tool, tool count, found_exercise, Jev"]
+  classDef sink fill:#0f172a,color:#f8fafc,stroke:#0f172a;
+  class DB,Exp sink
+          </pre>
+        </div>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/evals/live.ts — any exerciseReview result in the turn</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>function gradeResolved(results: Record&lt;string, unknown&gt;[], exerciseId: string) {
+  if (results.some((result) => result.exerciseId === exerciseId)) {
+    return { score: 1, comment: `found ${exerciseId}` };
+  }
+  return { score: 0, comment: `expected ${exerciseId}; saw ${results.map(describeResult).join(" | ")}` };
+}</code></pre>
+        </article>
+      </section>
+
       <section id="slice-2" class="space-y-4">
         <h2 class="font-serif text-2xl">Slice 2 — Program intake → draft</h2>
         <p class="text-slate-700 max-w-3xl">
@@ -689,6 +877,33 @@ const intakeChips = intakeChipsFromParts(messages.flatMap((message) => message.p
           <li>Replace Track Coach at <code class="font-mono text-sm">/analytics/coach</code>.</li>
           <li>Summarize, compact, or embed the conversation.</li>
         </ul>
+      </section>
+      <section class="rounded-xl border border-stone-300 bg-white p-6">
+        <h2 class="text-2xl font-semibold">Deload evidence</h2>
+        <p class="mt-3">Recovery workouts remain training activity. Saved deload flags exclude
+        their sets from strength trends, rep improvements, PRs and next-workout references.
+        Gallery programs and Coach drafts preserve explicit deload flags through the shared
+        program-tree builders before persistence.
+        The weekly Coach holds normal overload recommendations during a saved deload; stall
+        evidence restarts afterward. Program edits cannot turn recovery into weak progress.</p>
+        <pre class="mermaid">
+flowchart LR
+  Phase[Explicit phase flag] --> Session[Saved session snapshot]
+  Session --> Sets[Saved set flags]
+  Sets --> Activity[Volume and adherence include recovery]
+  Sets --> Filter[Strength observations exclude recovery]
+  Filter --> Tools[exerciseReview and nextWorkout]
+        </pre>
+        <p class="mt-3">The exercise-review tool returns the label even when no eligible
+        estimate exists. The chart filters before selecting its last eight estimates.</p>
+        <pre class="code-rail mt-3 overflow-auto bg-stone-100 p-4"><code>// src/lib/agent/tools/exercise-review.ts
+bestE1rm: last.bestE1rm,
+isDeload: last.isDeload ?? false,
+sets: last.sets,
+
+// src/lib/exercise-review-sessions.ts
+const eligible = sessions.filter((session) =&gt; session.bestE1rm != null);
+const window = range === "last8" ? eligible.slice(-REVIEW_CHART_SESSIONS) : eligible;</code></pre>
       </section>
     </main>
   </body>

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { Input } from "@/components/ui/input";
 import { cx } from "@/components/ui/cx";
 import { exerciseReviewHref } from "@/lib/exercise-review-href";
@@ -19,7 +21,13 @@ export interface ExerciseListItem {
   delta: number | null;
 }
 
-export function ExerciseList({ items }: { items: ExerciseListItem[] }) {
+export function ExerciseList({
+  items,
+  catalog,
+}: {
+  items: ExerciseListItem[];
+  catalog?: Record<string, ExerciseDef>;
+}) {
   const [query, setQuery] = useState("");
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -55,7 +63,17 @@ export function ExerciseList({ items }: { items: ExerciseListItem[] }) {
               <span className="flex min-w-0 items-center gap-3">
                 <ExerciseVisual exerciseId={item.exerciseId} />
                 <span className="min-w-0">
-                  <span className="block truncate text-body font-medium">{item.name}</span>
+                  {catalog?.[item.exerciseId] ? (
+                    <ExerciseCardLabel
+                      as="span"
+                      size="body"
+                      def={catalog[item.exerciseId]}
+                      catalog={catalog}
+                      className="truncate"
+                    />
+                  ) : (
+                    <span className="block truncate text-body font-medium">{item.name}</span>
+                  )}
                   <span className="block text-caption capitalize text-muted">
                     {item.pattern.replace(/_/g, " ")} · {item.sessionCount} session
                     {item.sessionCount === 1 ? "" : "s"} · {shortDate(item.lastPerformedAt)}

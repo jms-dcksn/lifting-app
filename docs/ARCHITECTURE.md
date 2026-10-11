@@ -15,6 +15,11 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
   loads. Preserve this model rather than replacing it with a bare Epley/Brzycki formula.
 - `coefficients.ts` owns seeded exercises and population coefficients. `recommend.ts` pools
   reference-lift strength by movement pattern and uses Bayesian shrinkage (`PRIOR_WEIGHT`).
+  The expanded machine catalog includes supported-arm curls/extensions, lever pulldown,
+  pullover, incline/decline press, seated dip, low row, lying/kneeling leg curls and separate
+  seated calf raise/footplate calf extension. Pullover uses `vertical_pull`; seated dip uses
+  `horizontal_press`, matching the existing weighted dip. All require station resolution
+  and calibration. Existing custom exercises retain their own identities and history.
 - `catalog.ts` merges seeds with the owner's station variants and custom exercises; seeds
   win ID collisions. Use the merged catalog in screens and stat rebuilds. `exercise_id` is
   a text slug, intentionally not a foreign key. `exercise-id.ts` owns variant/custom IDs.
@@ -57,10 +62,15 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
    a bounded window; choose the highest-e1RM performance at or after it. With no same-slot
    exposure, use the best of four recent exposures. Ties favor recency; unavailable e1RM
    falls back to recent performance. An old all-time best cannot override this window.
-2. No usable reference delegates to the recommender at `rep_min`. A first set below the
+2. No usable reference delegates to the recommender at `rep_min`. At 4+ target RIR,
+   recalculate load from the selected performance's e1RM at its prior rep count clamped
+   to the prescribed range, capped at the prior load. Missing RIR defaults to 2. Bodyweight
+   loads include current bodyweight before converting back to rounded added/assisted load;
+   unknown or non-positive effective load yields no recovery target.
+3. Below 4 target RIR, a first set below the
    floor recalibrates load without increasing it; reaching `rep_max` adds the exercise's
    increment and resets reps to the floor; otherwise hold weight and target one more rep.
-3. The bump test is reps-only. Coach effort reductions use first-set RIR; hard back-off
+4. The bump test is reps-only. Coach effort reductions use first-set RIR; hard back-off
    sets must not lower an accurately loaded top set.
 
 Grouping by exact exercise stays. Card 3 of the
@@ -115,16 +125,14 @@ SSR. Email magic-link login exchanges its code in `src/app/auth/callback/route.t
 `createClient()`, `getCatalogMap()`, and `getCurrentBodyweight()` are wrapped in React
 `cache()`, so a request loads each once. `cache()` keys on argument identity, so the shared
 client instance is what lets layout, page, and action calls hit the same entry; keep it
-memoized. The Coach API's elevated client is separate and unaffected.
+memoized.
 `src/proxy.ts` calls `updateSession()` from `src/lib/supabase/middleware.ts` on matched
 requests and propagates refreshed cookies. It does not redirect unauthenticated users:
 the app layout and authenticated actions enforce access via `getClaims()`.
 
-The sole elevated application read path is `GET /api/coach/v1/weekly`:
-route → `createCoachWeeklyHandler()` → `loadCoachWeekly()` → server-only secret client.
-Every query retains an explicit `COACH_API_USER_ID` predicate because the secret bypasses
-RLS. Preserve capability auth and no-store/noindex responses. Configuration, privacy,
-and rotation live in [Coach report](COACH-REPORT.md#weekly-coach-api) and [deployment](../DEPLOY.md).
+Track Coach and the agent’s `weeklyCoach` tool share `loadCoachUi` with the signed-in
+user’s client and owner-scoped RLS. There is no elevated application read path.
+`SUPABASE_SECRET_KEY` is retained only for local live agent evals.
 
 The in-app agent is a separate cookie-auth path: `POST /api/agent/chat` → LangChain loop →
 read tools wrapping `loadCoachUi`, `getActiveProgram`, Exercise review grouping, and
@@ -168,9 +176,37 @@ Card 2–4 defaults unless James reverses them.
   `loadWorkoutRecords`. Compare against history finished before the session's start.
   Record kinds are rep PRs, top-weight (max effective load), and e1RM.
   Read [workout records](DECISIONS.md#workout-records) before changing eligibility or precision.
-- Coach snapshot/export and weekly API share `coach-check-in.ts` plus deterministic proposals
+- Coach snapshot/clipboard and the agent’s `weeklyCoach` tool share `coach-check-in.ts` plus deterministic proposals
   in `coach-recommendations.ts`. Accept/dismiss/defer persists review state, not prescriptions.
 - Weight calendar, trend, and monthly loaders have separate complete-history and date-window
   contracts. Follow their feature docs rather than reusing a capped dashboard query.
 - Monthly PR totals replay canonical workout records; monthly strength compares stored eligible
   e1RMs. Flat monthly changes are descriptive, not a stall diagnosis.
+
+## Deload observations
+
+`program_phase.is_deload` explicitly identifies recovery phases. The builder, built-in
+phases, template creation, cloning and `save_program` preserve it. Session insertion
+snapshots the effective classic phase into `workout_session.is_deload` using the stored
+`week_index`; Fluid sessions default to normal. The database copies this flag onto every
+`set_log` insert/update, including ad-hoc sets and substitutions, and suppresses calibration
+on deload sets. Trigger functions are security invoker, use owner-matched lookups and have
+no directly callable grants. Ordinary edits cannot override classification. Later phase
+edits or program deletion cannot reclassify an existing session or its saved sets.
+
+`strength/eligibility.ts` excludes warmups and deloads from strength observations.
+Track retains actual activity dates/counts but derives estimates, deltas, charts and PRs
+from eligible sets. Review keeps recovery sets visible and chooses the last eight eligible
+estimates before limiting its chart. Record replay excludes deloads as both candidates and
+baselines. Monthly PR/strength comparisons, Coach strength/rep comparisons, pooled strength,
+cache rebuilds and next-workout progression references use the same exclusion. Stall detection
+still breaks its series at recovery; it consumes saved classification instead of depending
+on mutable phase definitions. Tonnage, working-set counts and adherence retain deload work.
+Stored set e1RMs remain intact, including their historical bodyweight information.
+
+Migration `20261010171247_deload_progression.sql` backfills exact `Deload` phase names and
+known half-volume/four-RIR `Recovery` / `Recover & review` phases, then rebuilds affected
+strength caches from saved eligible estimates. It clears affected personal coefficients
+for re-anchoring at the next normal stat write. Missing program/week context and ambiguous
+custom phases remain normal pending review; `supabase/tests/deload_legacy_review.sql` lists
+those candidates without inferring recovery from actual load or effort.

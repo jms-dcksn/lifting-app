@@ -7,7 +7,8 @@ import { cx } from "@/components/ui/cx";
 import { IconHistory, IconPlus, IconSend } from "@/components/ui/icons";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
-import { clientActionsFromParts } from "@/lib/agent/client-tools";
+import { clientActionsFromParts, pendingConfirmFromMessages } from "@/lib/agent/client-tools";
+import { startNextSession } from "@/app/(app)/session/actions";
 import { parseScreenContextFromPath } from "@/lib/agent/context";
 import {
   canNavigate,
@@ -173,10 +174,18 @@ export function AgentChat({
           <AgentTranscript
             {...view}
             confirmedCallIds={confirmedCallIds}
-            onConfirmStarted={(callId) => {
+            onConfirm={async (callId) => {
+              const pending = pendingConfirmFromMessages(view.messages);
+              if (!pending || pending.callId !== callId) return;
+              if (pending.tool === "startNextWorkout") {
+                await startNextSession();
+              } else if (pending.href) {
+                router.push(pending.href);
+              }
               setConfirmedCallIds((current) => new Set(current).add(callId));
               onNavigate?.();
             }}
+            onChipSelect={(label) => setDraft((current) => (current ? `${current} ${label}` : label))}
           />
         ) : null}
       </div>

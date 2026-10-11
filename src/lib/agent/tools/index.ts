@@ -11,6 +11,7 @@ import {
   openProgram,
   startNextWorkoutRequest,
 } from "./navigation";
+import { draftProgramFromIntake } from "./draft-program";
 import { weeklyCoach } from "./weekly-coach";
 
 type Client = SupabaseClient<Database>;
@@ -24,6 +25,7 @@ export function bindAgentTools(supabase: Client, userId: string) {
   return [
     ...bindReadTools(supabase, userId),
     ...bindClientTools(),
+    ...bindWriteTools(supabase, userId),
   ];
 }
 
@@ -71,6 +73,30 @@ export function bindReadTools(supabase: Client, userId: string) {
   ];
 }
 
+function bindWriteTools(supabase: Client, userId: string) {
+  return [
+    tool(async (input) => asJson(await draftProgramFromIntake(supabase, userId, input)), {
+      name: "draftProgramFromIntake",
+      description:
+        "Recommend an existing PROGRAM_TEMPLATES gallery program from intake (days, goal, style, equipment, emphasis, omissions), patch exercises lightly, and persist an inactive draft. Low confidence returns follow-up chips instead of guessing a split. Does not invent custom programs. Returns an Open in builder confirm chip — the app does not navigate until the user taps it. Never activates an existing active program.",
+      schema: z.object({
+        days: z.union([z.number().int().min(3).max(6), z.enum(["3", "4", "5", "6"])]).optional()
+          .describe("Training days per week (3–6)"),
+        goal: z.enum(["strength", "hypertrophy", "general"]).optional()
+          .describe("Primary goal"),
+        style: z.enum(["classic", "fluid"]).optional()
+          .describe("Classic phased blocks or fluid adaptation"),
+        equipment: z.enum(["full_gym", "home_dumbbells", "machines_only"]).optional()
+          .describe("Available equipment"),
+        emphasis: z.enum(["balanced", "glutes", "upper", "lower", "arms", "back"]).optional()
+          .describe("Optional emphasis"),
+        omissions: z.array(z.string()).optional()
+          .describe("Exercises or movement patterns to avoid, e.g. bb-rdl or deadlifts"),
+      }),
+    }),
+  ];
+}
+
 function bindClientTools() {
   return [
     tool(async ({ exerciseId, equipmentInstanceId }) =>
@@ -109,6 +135,7 @@ function bindClientTools() {
 
 export {
   activeProgram,
+  draftProgramFromIntake,
   exerciseReview,
   nextWorkout,
   openCoachCheckIn,

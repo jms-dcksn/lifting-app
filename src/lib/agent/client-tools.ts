@@ -11,15 +11,18 @@ import type { AgentPart } from "./messages";
 export { CLIENT_NAV_TOOL_NAMES, CONFIRM_TOOL_NAMES };
 export type { ClientNavToolName, ConfirmToolName };
 
+export type NavigatingToolName = ClientNavToolName;
+
 export type ClientNavigateAction = {
   type: "navigate";
   href: string;
-  tool: ClientNavToolName;
+  tool: NavigatingToolName;
 };
 
 export type ClientConfirmAction = {
   type: "confirm";
   tool: ConfirmToolName;
+  href?: string;
 };
 
 export type ClientAction = ClientNavigateAction | ClientConfirmAction;
@@ -59,11 +62,16 @@ export function parseClientAction(part: AgentPart): ClientAction | null {
     const href = (result as { href?: unknown }).href;
     if (typeof href !== "string" || !href.startsWith("/")) return null;
     if (!isClientNavTool(part.name)) return null;
-    return { type: "navigate", href, tool: part.name };
+    return { type: "navigate", href, tool: part.name as NavigatingToolName };
   }
   if (action === "confirm") {
     if (!isConfirmTool(part.name)) return null;
-    return { type: "confirm", tool: part.name };
+    const href = (result as { href?: unknown }).href;
+    return {
+      type: "confirm",
+      tool: part.name,
+      href: typeof href === "string" && href.startsWith("/") ? href : undefined,
+    };
   }
   return null;
 }
@@ -78,11 +86,47 @@ export function clientActionsFromParts(parts: AgentPart[]): ClientAction[] {
 }
 
 export function latestConfirmCallId(messages: Array<{ parts: AgentPart[] }>): string | null {
-  let latest: string | null = null;
+  return pendingConfirmFromMessages(messages)?.callId ?? null;
+}
+
+export type PendingConfirm = {
+  callId: string;
+  tool: ConfirmToolName;
+  href?: string;
+  label: string;
+};
+
+export function confirmLabel(tool: ConfirmToolName): string {
+  if (tool === "draftProgramFromIntake") return "Open in builder";
+  return "Start workout";
+}
+
+export function pendingConfirmFromMessages(
+  messages: Array<{ parts: AgentPart[] }>,
+): PendingConfirm | null {
+  let latestCall: { callId: string; tool: ConfirmToolName } | null = null;
   for (const message of messages) {
     for (const part of message.parts) {
-      if (part.type === "tool-call" && isConfirmTool(part.name)) latest = part.id;
+      if (part.type === "tool-call" && isConfirmTool(part.name)) {
+        latestCall = { callId: part.id, tool: part.name };
+      }
     }
   }
-  return latest;
+  if (!latestCall) return null;
+
+  let href: string | undefined;
+  for (const message of messages) {
+    for (const part of message.parts) {
+      if (part.type !== "tool-result" || part.id !== latestCall.callId) continue;
+      const action = parseClientAction(part);
+      if (action?.type === "confirm") href = action.href;
+    }
+  }
+
+  return {
+    callId: latestCall.callId,
+    tool: latestCall.tool,
+    href,
+    label: confirmLabel(latestCall.tool),
+  };
 }

@@ -1,14 +1,15 @@
 "use client";
 
 import { useTransition } from "react";
-import { startNextSession } from "@/app/(app)/session/actions";
 
 export function AgentConfirmChip({
   label,
-  onStarted,
+  pendingLabel,
+  onConfirm,
 }: {
   label: string;
-  onStarted?: () => void;
+  pendingLabel?: string;
+  onConfirm: () => void | Promise<void>;
 }) {
   const [pending, start] = useTransition();
 
@@ -18,13 +19,12 @@ export function AgentConfirmChip({
       disabled={pending}
       onClick={() => {
         start(async () => {
-          await startNextSession();
-          onStarted?.();
+          await onConfirm();
         });
       }}
       className="inline-flex min-h-11 items-center rounded-card border border-border-strong bg-surface px-4 text-body font-medium disabled:opacity-50"
     >
-      {pending ? "Starting…" : label}
+      {pending ? (pendingLabel ?? "Working…") : label}
     </button>
   );
 }

@@ -249,6 +249,84 @@ describe("agent chrome", () => {
     expect(host.textContent).toContain("and squat?");
   });
 
+
+  it.each(["sheet", "page"] as const)("shows immediate activity in %s before the server responds", async (variant) => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+    act(() => { root.render(<AgentChat variant={variant} initial={saved} />); });
+    type("How was my week?");
+    await submit();
+    expect(host.querySelector("[role=status]")?.textContent).toBe("Coach is working.");
+    expect(host.querySelectorAll(".coach-dot")).toHaveLength(3);
+    expect([...host.querySelectorAll(".uppercase")].map((node) => node.textContent)).toEqual(["You", "You", "Coach"]);
+  });
+
+
+  it.each(["sheet", "page"] as const)("keeps one Coach bubble through tools and answer in %s", async (variant) => {
+    let controller!: ReadableStreamDefaultController<Uint8Array>;
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(new ReadableStream<Uint8Array>({
+      start(value) { controller = value; },
+    }))));
+    act(() => { root.render(<AgentChat variant={variant} initial={saved} />); });
+    type("Compare lifts");
+    await submit();
+    const status = host.querySelector("[role=status]");
+    const bubble = host.querySelector(".overflow-y-auto .mr-auto");
+    async function emit(event: AgentStreamEvent) {
+      await act(async () => {
+        controller.enqueue(new TextEncoder().encode(encodeSse(event)));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+    }
+    await emit({ type: "tool-start", callId: "a", name: "weeklyCoach" });
+    await emit({ type: "tool-start", callId: "b", name: "exerciseReview" });
+    expect(status?.textContent).toContain("Checking your weekly report");
+    expect(status?.textContent).toContain("Reviewing your exercise history");
+    await emit({ type: "tool-end", callId: "a", outcome: "complete" });
+    expect(status?.textContent).toBe("Reviewing your exercise history.");
+    await emit({ type: "tool-end", callId: "b", outcome: "error" });
+    expect(status?.textContent).toBe("Could not review your exercise history.");
+    expect(host.querySelectorAll(".coach-dot")).toHaveLength(3);
+    const scroller = host.querySelector<HTMLDivElement>(".overflow-y-auto")!;
+    Object.defineProperties(scroller, { scrollHeight: { value: 1000 }, clientHeight: { value: 300 } });
+    act(() => { scroller.scrollTop = 100; scroller.dispatchEvent(new Event("scroll", { bubbles: true })); });
+    await emit({ type: "text", text: "Three sessions completed." });
+    expect(scroller.scrollTop).toBe(100);
+    expect(host.querySelector(".overflow-y-auto .mr-auto")).toBe(bubble);
+    expect(host.querySelectorAll(".overflow-y-auto .mr-auto")).toHaveLength(1);
+    expect(host.querySelector("[role=status]")).toBe(status);
+    expect(status?.textContent).not.toContain("Three sessions");
+    expect(bubble?.textContent).toContain("Three sessions completed.");
+    const answer: AgentMessage = { id: "answer", role: "assistant", createdAt: "2026-10-12T00:00:00Z", parts: [{ type: "text", text: "Three sessions completed." }] };
+    await emit({ type: "done", messages: [answer] });
+    await act(async () => { controller.close(); });
+    expect(host.querySelectorAll(".coach-dot")).toHaveLength(0);
+    expect(status?.textContent).toBe("");
+    expect(host.querySelectorAll(".overflow-y-auto .mr-auto")).toHaveLength(1);
+    expect(button("New chat")?.disabled).toBe(false);
+  });
+
+  it.each(["error", "drop"] as const)("clears activity after %s and allows another send", async (ending) => {
+    let controller!: ReadableStreamDefaultController<Uint8Array>;
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(new ReadableStream<Uint8Array>({
+      start(value) { controller = value; },
+    }))));
+    act(() => { root.render(<AgentChat variant="sheet" initial={saved} />); });
+    type("How was my week?");
+    await submit();
+    await act(async () => {
+      if (ending === "error") controller.enqueue(new TextEncoder().encode(encodeSse({ type: "error", message: "Coach unavailable." })));
+      controller.close();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(host.querySelectorAll(".coach-dot")).toHaveLength(0);
+    expect(host.querySelector("[role=status]")?.textContent).toBe("");
+    expect(host.querySelector(".text-danger")?.textContent).toBe(ending === "error" ? "Coach unavailable." : "Connection lost.");
+    type("Try again");
+    await submit();
+    expect(host.querySelectorAll(".coach-dot")).toHaveLength(3);
+    await act(async () => { controller.close(); });
+  });
+
   it("hands the text back when a send fails before the server saves it", async () => {
     vi.stubGlobal("fetch", vi.fn<typeof fetch>(async () => new Response(null, { status: 503 })));
     act(() => {

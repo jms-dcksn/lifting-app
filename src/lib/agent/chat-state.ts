@@ -1,3 +1,4 @@
+import type { ToolActivity } from "./activity";
 import type { AgentScreenContext } from "./context";
 import type { AgentMessage } from "./messages";
 import type { AgentStreamEvent } from "./stream";
@@ -25,7 +26,7 @@ type Turn = {
   optimisticId: string;
   text: string;
   streamingText: string;
-  pendingTool: string | null;
+  tools: ToolActivity[];
 };
 
 export type ChatScreen =
@@ -89,7 +90,8 @@ export function transcriptView(conversation: Conversation, turn: Turn | null) {
     messages,
     pendingText: turn && !confirmed ? turn.text : undefined,
     streamingText: turn?.streamingText,
-    pendingTool: turn?.pendingTool,
+    pending: turn !== null,
+    tools: turn?.tools ?? [],
   };
 }
 
@@ -116,7 +118,7 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
         ...state,
         screen: {
           ...screen,
-          turn: { optimisticId: action.optimisticId, text: action.text, streamingText: "", pendingTool: null },
+          turn: { optimisticId: action.optimisticId, text: action.text, streamingText: "", tools: [] },
         },
         error: null,
       };
@@ -188,9 +190,16 @@ function applyEvent(
     case "text":
       return chat(conversation, { ...turn, streamingText: turn.streamingText + event.text });
     case "tool-start":
-      return chat(conversation, { ...turn, pendingTool: event.name });
+      return chat(conversation, {
+        ...turn,
+        tools: [...turn.tools.filter((tool) => tool.callId !== event.callId),
+          { callId: event.callId, name: event.name, outcome: "running" }],
+      });
     case "tool-end":
-      return chat(conversation, { ...turn, pendingTool: null });
+      return chat(conversation, {
+        ...turn,
+        tools: turn.tools.map((tool) => tool.callId === event.callId ? { ...tool, outcome: event.outcome } : tool),
+      });
     case "done":
       if (conversation.kind === "draft") return chat(conversation, null);
       return chat({ ...conversation, messages: mergeById(conversation.messages, event.messages) }, null);

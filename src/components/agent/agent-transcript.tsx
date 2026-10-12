@@ -1,5 +1,6 @@
 "use client";
 
+import { toolActivityLabel, type ToolActivity } from "@/lib/agent/activity";
 import { pendingConfirmFromMessages } from "@/lib/agent/client-tools";
 import { intakeChipsFromParts } from "@/lib/agent/intake-chips";
 import { STARTER_PROMPTS } from "@/lib/agent/starter-prompts";
@@ -12,7 +13,8 @@ export function AgentTranscript({
   messages,
   pendingText,
   streamingText,
-  pendingTool,
+  pending = false,
+  tools = [],
   confirmedCallIds = new Set<string>(),
   onConfirm,
   onChipSelect,
@@ -20,7 +22,8 @@ export function AgentTranscript({
   messages: AgentMessage[];
   pendingText?: string;
   streamingText?: string;
-  pendingTool?: string | null;
+  pending?: boolean;
+  tools?: ToolActivity[];
   confirmedCallIds?: ReadonlySet<string>;
   onConfirm?: (callId: string) => void | Promise<void>;
   onChipSelect?: (label: string) => void;
@@ -28,7 +31,7 @@ export function AgentTranscript({
   const pendingConfirm = pendingConfirmFromMessages(messages);
   const showConfirm = pendingConfirm !== null && !confirmedCallIds.has(pendingConfirm.callId);
   const intakeChips = intakeChipsFromParts(messages.flatMap((message) => message.parts));
-  const showStarterPrompts = messages.length === 0 && !pendingText && !streamingText && !pendingTool;
+  const showStarterPrompts = messages.length === 0 && !pendingText && !streamingText && !pending;
   if (showStarterPrompts) {
     return (
       <div className="space-y-3">
@@ -65,12 +68,9 @@ export function AgentTranscript({
           <YouBubble text={pendingText} />
         </li>
       ) : null}
-      {pendingTool ? (
-        <li className="text-caption text-faint">Looking up {toolLabel(pendingTool)}</li>
-      ) : null}
-      {streamingText ? (
+      {pending || streamingText ? (
         <li>
-          <CoachReply text={streamingText} />
+          <CoachReply text={streamingText ?? ""} activity={pending ? tools : undefined} />
         </li>
       ) : null}
       {showConfirm && pendingConfirm ? (
@@ -125,7 +125,11 @@ function YouBubble({ text }: { text: string }) {
   );
 }
 
-function CoachReply({ text, tools = [] }: { text: string; tools?: string[] }) {
+function CoachReply({ text, tools = [], activity }: {
+  text: string;
+  tools?: string[];
+  activity?: ToolActivity[];
+}) {
   const { body, sources } = splitCoachReply(text);
   return (
     <div className="mr-auto flex max-w-[92%] flex-col items-start gap-1.5">
@@ -133,9 +137,24 @@ function CoachReply({ text, tools = [] }: { text: string; tools?: string[] }) {
         <p className="text-caption text-faint">Checked {tools.map(toolLabel).join(" · ")}</p>
       ) : null}
       <p className="text-caption font-semibold uppercase tracking-wide">Coach</p>
-      {body ? (
+      {body || activity ? (
         <div className="relative overflow-hidden rounded-card border border-border-strong bg-surface px-3 py-2.5 text-body before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-calibrate">
-          <CoachMarkdown body={body} />
+          {body ? <CoachMarkdown body={body} /> : null}
+          {activity ? (
+            <div className={body ? "mt-3" : undefined}>
+              {activity.length > 0 ? (
+                <ul className="mb-2 space-y-1 text-caption text-muted" aria-hidden="true">
+                  {activity.map((tool) => <li key={tool.callId}>{toolActivityLabel(tool)}</li>)}
+                </ul>
+              ) : null}
+              <span className="flex h-5 items-center gap-1.5" aria-hidden="true">
+                {[0, 1, 2].map((dot) => (
+                  <span key={dot} className="coach-dot size-1.5 rounded-full bg-muted"
+                    style={{ animationDelay: `${dot * 140}ms` }} />
+                ))}
+              </span>
+            </div>
+          ) : null}
         </div>
       ) : null}
       {sources.length > 0 ? <p className="text-caption text-faint">{sources.join(" · ")}</p> : null}

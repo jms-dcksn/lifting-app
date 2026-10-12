@@ -4,8 +4,8 @@ import type { AgentMessage } from "./messages";
 export type AgentStreamEvent =
   | { type: "thread"; thread: ThreadSummary; userMessage: AgentMessage }
   | { type: "text"; text: string }
-  | { type: "tool-start"; name: string }
-  | { type: "tool-end"; name: string }
+  | { type: "tool-start"; callId: string; name: string }
+  | { type: "tool-end"; callId: string; outcome: "complete" | "error" }
   | { type: "done"; messages: AgentMessage[] }
   | { type: "error"; message: string };
 

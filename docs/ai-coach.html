@@ -538,6 +538,65 @@ export function splitCoachReply(text: string): { body: string; sources: string[]
         </article>
       </section>
 
+      <section id="turn-activity" class="space-y-4">
+        <h2 class="font-serif text-2xl">Turn activity — immediate dots, real tool progress (#203)</h2>
+        <p class="text-sm text-slate-600 max-w-3xl">Send immediately creates one Coach bubble in the sheet and full-screen chat. Three dots remain through initial latency, tool execution, pauses, and streamed text. The reply grows inside the same bubble. Progress explains observed execution; it does not display or invent the model's reasoning.</p>
+        <div class="grid gap-3 md:grid-cols-4" aria-label="Coach activity lifecycle">
+          <div class="rounded-xl border border-slate-300 bg-white p-4"><strong>1. Send</strong><p class="mt-2 text-sm">The reducer creates an in-flight turn before the server responds. The bubble already has three dots.</p></div>
+          <div class="rounded-xl border border-slate-300 bg-white p-4"><strong>2. Execute tools</strong><p class="mt-2 text-sm">LangChain's execution channel supplies call IDs, tool names and completion or failure. Overlapping calls stay separate.</p></div>
+          <div class="rounded-xl border border-slate-300 bg-white p-4"><strong>3. Stream answer</strong><p class="mt-2 text-sm">Text and progress share one Coach bubble. Dots remain until the turn ends, including pauses after a tool finishes.</p></div>
+          <div class="rounded-xl border border-slate-300 bg-white p-4"><strong>4. End the turn</strong><p class="mt-2 text-sm">Done shows saved messages. An error or dropped connection clears activity and unlocks another send.</p></div>
+        </div>
+        <p class="text-sm text-slate-600 max-w-3xl">A completed tool means its invocation returned, not that a workout started or a program was activated. Navigation tools prepare links. Missing intake still needs an answer from the agent. The server sends no raw arguments, results, exception details, or private reasoning as progress.</p>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/run.ts — actual execution, not argument generation</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>    for await (const event of run) {
+      // Ignore nested agents; only report this agent&#x27;s real tool execution.
+      if (event.method !== &quot;tools&quot; || event.params.namespace.length &gt; run.path.length + 1) continue;
+      const data = event.params.data as ToolsEventData;
+      if (data.event === &quot;tool-started&quot;) {
+        emit({ type: &quot;tool-start&quot;, callId: data.tool_call_id, name: data.tool_name });
+      } else if (data.event === &quot;tool-finished&quot; || data.event === &quot;tool-error&quot;) {
+        emit({
+          type: &quot;tool-end&quot;,
+          callId: data.tool_call_id,
+          outcome: data.event === &quot;tool-error&quot; ? &quot;error&quot; : &quot;complete&quot;,
+        });
+      }
+    }</code></pre>
+          <p class="text-sm text-slate-600">The parallel native tool projection is drained with rejection handlers: LangChain creates output promises even when this execution channel supplies the UI events. This avoids unhandled tool-output rejections.</p>
+        </article>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/lib/agent/chat-state.ts — each call owns its status</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>    case &quot;tool-start&quot;:
+      return chat(conversation, {
+        ...turn,
+        tools: [...turn.tools.filter((tool) =&gt; tool.callId !== event.callId),
+          { callId: event.callId, name: event.name, outcome: &quot;running&quot; }],
+      });
+    case &quot;tool-end&quot;:
+      return chat(conversation, {
+        ...turn,
+        tools: turn.tools.map((tool) =&gt; tool.callId === event.callId ? { ...tool, outcome: event.outcome } : tool),
+      });</code></pre>
+        </article>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/components/agent/agent-transcript.tsx — one pending reply</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>      {pending || streamingText ? (
+        &lt;li&gt;
+          &lt;CoachReply text={streamingText ?? &quot;&quot;} activity={pending ? tools : undefined} /&gt;
+        &lt;/li&gt;
+      ) : null}</code></pre>
+          <p class="text-sm text-slate-600">The polite status region in AgentChat announces waiting or tool changes without reading every token. Decorative dots are hidden from assistive technology and stop animating for reduced motion. Scrolling up preserves the reader's position.</p>
+        </article>
+        <div class="rounded-xl border border-slate-300 bg-white p-4 space-y-2">
+          <h3 class="font-semibold">Keep Gateway + LangChain</h3>
+          <p class="text-sm text-slate-600">Sanitized fixtures through the installed ChatOpenAI adapter and v3 agent show plain reasoning fields reach message.reasoning; structured reasoning_details alone does not. Our answer events consume only message.text. This is enough to justify keeping the integration for activity, not enough to establish live reasoning for any provider.</p>
+          <p class="text-sm text-slate-600">Policy defaults to openai/gpt-5.4; the local override inspected on October 12 is deepseek/deepseek-v4.1-flash. Both exist in Gateway's public model catalog. Deployment overrides, live readable reasoning, latency and costs were not probed. Reasoning UI is optional and remains unshipped. Same-Gateway Responses is the next narrow candidate if summaries become necessary.</p>
+          <p class="text-sm text-slate-600">The complete capability matrix and primary sources are in <a class="underline" href="AI-COACH-STREAMING.md">AI-COACH-STREAMING.md</a>. No paid calls or provider migration were made.</p>
+        </div>
+      </section>
+
       <section id="slice-1" class="space-y-4">
         <h2 class="font-serif text-2xl">Slice 1 — Screen context and navigation</h2>
         <p class="text-slate-700 max-w-3xl">

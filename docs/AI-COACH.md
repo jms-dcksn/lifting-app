@@ -68,6 +68,37 @@ and New chat. The sheet adds Full screen, which opens the same conversation at
 Full screen are disabled while a turn streams. Take stream/message protocol from
 LangChain / agent-chat-ui; do not take that chrome.
 
+### Turn activity (#203)
+
+Send creates one Coach bubble immediately, before the server confirms the thread.
+Three dots remain visible through initial latency, tool execution, pauses, and answer
+streaming. The answer grows inside that same bubble. Both the Sheet and `/coach` use
+`AgentChat`/`AgentTranscript`; history renders saved messages without activity.
+
+`runAgentTurn` maps LangChain v3's **tools execution channel**, rather than finalized
+model tool arguments, to `tool-start { callId, name }` and
+`tool-end { callId, outcome: complete | error }`. The reducer keeps separate entries
+by call ID, including overlapping calls to the same tool, and shows plain-language
+running/completed/failed labels. Complete means the invocation returned; a domain
+result such as `needs_intake` still needs interpretation by the agent. Labels for
+navigation tools describe preparing/finding a link, not navigation or session creation.
+Arguments, output, exception details, and reasoning are excluded from progress SSE.
+The native tool-output projections are drained with rejection handlers because
+LangChain creates those promises even when progress uses the execution channel.
+
+The in-flight turn owns activity. Only `done`, `error`, or a failed/closed connection
+clears it; a tool ending does not imply the turn ended. Another send starts with no
+old tool status. The existing scroll behavior follows the reply while near the bottom
+and leaves the reader in place after scrolling up. A stable polite status region
+announces generic waiting or tool changes, never answer tokens or dot frames. Dot
+animation is disabled for reduced motion.
+
+**Integration decision:** keep Gateway + LangChain. No provider, model, permissions,
+or reasoning configuration change. [Streaming capability review](AI-COACH-STREAMING.md)
+records installed-source and fixture evidence, current model configuration, alternatives,
+and remaining live-verification limits. Optional reasoning UI requires a separate
+approved probe establishing useful provider output; generic activity always works.
+
 ### Threads
 
 Owner-scoped `agent_thread` and `agent_message` with the same RLS pattern as other
@@ -115,7 +146,7 @@ response is no-store and noindex.
 | `POST` without a Gateway key | 503 with no writes. |
 
 GET never writes. A turn streams SSE in a fixed order: `thread` (the saved summary and
-user message), then `text` / `tool-start` / `tool-end`, then `done` (the saved
+user message), then `text` / `tool-start` / `tool-end` (call IDs and execution outcomes), then `done` (the saved
 messages) or `error`.
 
 The client is one reducer (`chatReducer` in `src/lib/agent/chat-state.ts`) over three

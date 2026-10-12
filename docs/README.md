@@ -21,7 +21,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Shipped behavior | [Features](FEATURES.md) |
 | Rationale and record eligibility | [Decisions](DECISIONS.md) |
 | Weekly facts, proposals, session-scoped consumers | [Coach report](COACH-REPORT.md) |
-| In-app agent, chat overlay, or AI Coach slices | [AI Coach](AI-COACH.md), [explainer](ai-coach.html) |
+| In-app agent, chat overlay, or AI Coach slices | [AI Coach](AI-COACH.md), [explainer](ai-coach.html); [streaming capability review](AI-COACH-STREAMING.md) |
 | Planned exercise-review matching and eval improvements | [Implementation plan](AI-COACH-EVAL-IMPROVEMENTS.md), [annotated review](2026-10-11-ai-coach-annotated-eval-review.md) |
 | Active substitutions / pre-workout choices | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
 | Weight observations, charts and goal distance | [Calendar](WEIGHT-CALENDAR.md), [trends](WEIGHT-TRENDS.md) |

@@ -21,6 +21,7 @@ import {
   type ThreadSummary,
 } from "@/lib/agent/chat-state";
 import type { AgentMessage } from "@/lib/agent/messages";
+import { coachActivityLabel } from "@/lib/agent/activity";
 import { readSseEvents } from "@/lib/agent/stream";
 import { AgentTranscript } from "./agent-transcript";
 
@@ -189,6 +190,9 @@ export function AgentChat({
           />
         ) : null}
       </div>
+      <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {view?.pending ? coachActivityLabel(view.tools) : ""}
+      </p>
       {screen.name === "chat" ? (
         <form onSubmit={send} className="flex shrink-0 items-center gap-2 bg-background px-4 py-3">
           <Input

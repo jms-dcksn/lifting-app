@@ -86,8 +86,8 @@ describe("runAgentTurn", () => {
       { role: "assistant", parts: [{ type: "text", text: "All set." }] },
     ]);
     expect(events.filter((event) => event.type !== "text")).toEqual([
-      { type: "tool-start", name: "echo" },
-      { type: "tool-end", name: "echo" },
+      { type: "tool-start", name: "echo", callId: "call-1" },
+      { type: "tool-end", callId: "call-1", outcome: "complete" },
     ]);
     expect(new Set(starts)).toEqual(new Set([
       `chain:${THREAD_ID}`,
@@ -95,4 +95,62 @@ describe("runAgentTurn", () => {
       `tool:${THREAD_ID}`,
     ]));
   });
+  it("streams overlapping executions before either output and closes each by call id", async () => {
+    const events: AgentStreamEvent[] = [];
+    const releases: Array<() => void> = [];
+    let bothStarted!: () => void;
+    const started = new Promise<void>((resolve) => { bothStarted = resolve; });
+    const lookup = tool(async () => {
+      await new Promise<void>((resolve) => {
+        releases.push(resolve);
+        if (releases.length === 2) bothStarted();
+      });
+      return "ok";
+    }, { name: "lookup", description: "Read data.", schema: z.object({}) });
+    const turn = runAgentTurn({
+      persisted: [], threadId: THREAD_ID, tools: [lookup],
+      model: new ScriptedChatModel([
+        new AIMessage({ content: "", tool_calls: [
+          { id: "a", name: "lookup", args: {}, type: "tool_call" },
+          { id: "b", name: "lookup", args: {}, type: "tool_call" },
+        ] }),
+        new AIMessage("Done."),
+      ]),
+      onEvent: (event) => events.push(event),
+    });
+    await started;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const beforeOutputs = [...events];
+    releases[1]();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const afterSecond = [...events];
+    releases[0]();
+    await turn;
+    expect(beforeOutputs).toEqual([
+      { type: "tool-start", name: "lookup", callId: "a" },
+      { type: "tool-start", name: "lookup", callId: "b" },
+    ]);
+    expect(afterSecond).toContainEqual({ type: "tool-end", callId: "b", outcome: "complete" });
+    expect(afterSecond).not.toContainEqual({ type: "tool-end", callId: "a", outcome: "complete" });
+    expect(events).toContainEqual({ type: "tool-end", callId: "a", outcome: "complete" });
+  });
+
+  it("reports execution failure without leaking tool errors or arguments", async () => {
+    const events: AgentStreamEvent[] = [];
+    const broken = tool(async () => { throw new Error("private database detail"); }, {
+      name: "broken", description: "Fails.", schema: z.object({}),
+    });
+    await runAgentTurn({
+      persisted: [], threadId: THREAD_ID, tools: [broken],
+      model: new ScriptedChatModel([
+        new AIMessage({ content: "", tool_calls: [{ id: "bad", name: "broken", args: {}, type: "tool_call" }] }),
+        new AIMessage("Could not read data."),
+      ]),
+      onEvent: (event) => events.push(event),
+    }).catch(() => {});
+    expect(events).toContainEqual({ type: "tool-start", name: "broken", callId: "bad" });
+    expect(events).toContainEqual({ type: "tool-end", callId: "bad", outcome: "error" });
+    expect(JSON.stringify(events)).not.toContain("private database detail");
+  });
+
 });

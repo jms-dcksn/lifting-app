@@ -210,12 +210,24 @@ body:has(dialog.sheet[open]) {
   background: var(--surface);
 }
 
+@keyframes coach-dot {
+  0%, 60%, 100% { transform: none; opacity: 0.45; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
+.coach-dot {
+  animation: coach-dot 1.2s ease-in-out infinite;
+}
+
 /* route-change reorder via View Transitions stays snappy and local */
 ::view-transition-group(*) {
   animation-duration: 200ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .coach-dot {
+    animation: none;
+  }
+
   *,
   ::before,
   ::after,

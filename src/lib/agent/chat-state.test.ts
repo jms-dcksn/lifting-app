@@ -78,26 +78,27 @@ describe("chatReducer", () => {
       optimisticId: "local-1",
       text: "How was my week?",
     });
-    expect(view(sending)).toEqual({ messages: [], pendingText: "How was my week?", streamingText: "", pendingTool: null });
+    expect(view(sending)).toEqual({ messages: [], pendingText: "How was my week?", streamingText: "", pending: true, tools: [] });
 
     const streaming = run(
       sending,
       { type: "event", event: { type: "thread", thread, userMessage: user } },
       { type: "event", event: { type: "text", text: "3/4 " } },
-      { type: "event", event: { type: "tool-start", name: "weeklyCoach" } },
+      { type: "event", event: { type: "tool-start", name: "weeklyCoach", callId: "week" } },
     );
     expect(view(streaming)).toEqual({
       messages: [user],
       pendingText: undefined,
       streamingText: "3/4 ",
-      pendingTool: "weeklyCoach",
+      pending: true,
+      tools: [{ name: "weeklyCoach", callId: "week", outcome: "running" }],
     });
     expect(streaming.threads.map((summary) => summary.id)).toEqual([A, B]);
 
     const answer = message("m2", "assistant", "3/4 sessions.");
     const done = run(
       streaming,
-      { type: "event", event: { type: "tool-end", name: "weeklyCoach" } },
+      { type: "event", event: { type: "tool-end", callId: "week", outcome: "complete" } },
       { type: "event", event: { type: "done", messages: [user, answer] } },
     );
     expect(done.screen).toEqual({
@@ -195,7 +196,45 @@ describe("chatReducer", () => {
       messages: [earlier, user],
       pendingText: undefined,
       streamingText: undefined,
-      pendingTool: undefined,
+      pending: false,
+      tools: [],
     });
   });
+  it("keeps concurrent same-name tools separate and waits between tools and answer", () => {
+    const sending = run(savedA, { type: "send", optimisticId: "local", text: "Compare lifts" });
+    const busy = run(sending,
+      { type: "event", event: { type: "tool-start", callId: "a", name: "exerciseReview" } },
+      { type: "event", event: { type: "tool-start", callId: "b", name: "exerciseReview" } },
+      { type: "event", event: { type: "tool-end", callId: "b", outcome: "error" } },
+      { type: "event", event: { type: "tool-end", callId: "unknown", outcome: "complete" } },
+    );
+    expect(view(busy)?.tools).toEqual([
+      { callId: "a", name: "exerciseReview", outcome: "running" },
+      { callId: "b", name: "exerciseReview", outcome: "error" },
+    ]);
+    const waiting = run(busy, { type: "event", event: { type: "tool-end", callId: "a", outcome: "complete" } });
+    expect(view(waiting)?.pending).toBe(true);
+    expect(view(waiting)?.streamingText).toBe("");
+    const replying = run(waiting, { type: "event", event: { type: "text", text: "Bench improved." } });
+    expect(view(replying)?.pending).toBe(true);
+    expect(view(replying)?.streamingText).toBe("Bench improved.");
+  });
+
+  it.each(["done", "error", "closed"] as const)("clears activity on %s and accepts the next send", (ending) => {
+    const busy = run(savedA,
+      { type: "send", optimisticId: "local", text: "Check" },
+      { type: "event", event: { type: "tool-start", callId: "a", name: "weeklyCoach" } },
+    );
+    const action: ChatAction = ending === "closed"
+      ? { type: "closed", error: "Connection lost." }
+      : { type: "event", event: ending === "done" ? { type: "done", messages: [] } : { type: "error", message: "Failed" } };
+    const ended = run(busy, action);
+    expect(view(ended)?.pending).toBe(false);
+    expect(view(ended)?.tools).toEqual([]);
+    const next = run(ended, { type: "send", optimisticId: "next", text: "Try again" });
+    expect(view(next)?.pending).toBe(true);
+    expect(view(next)?.tools).toEqual([]);
+    expect(next.error).toBeNull();
+  });
+
 });

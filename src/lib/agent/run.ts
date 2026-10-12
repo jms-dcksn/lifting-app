@@ -1,4 +1,5 @@
 import { createAgent, toolCallLimitMiddleware } from "langchain";
+import type { ToolsEventData } from "@langchain/langgraph";
 import { ChatOpenAI } from "@langchain/openai";
 import type { Callbacks } from "@langchain/core/callbacks/manager";
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
@@ -78,17 +79,26 @@ export async function runAgentTurn(input: {
     }
   })();
   const toolLoop = (async () => {
-    for await (const call of run.toolCalls) {
-      emit({ type: "tool-start", name: call.name });
-      try {
-        await call.output;
-      } catch {
-        // Tool errors still close the start/end pair so the UI does not hang.
+    for await (const event of run) {
+      // Ignore nested agents; only report this agent's real tool execution.
+      if (event.method !== "tools" || event.params.namespace.length > run.path.length + 1) continue;
+      const data = event.params.data as ToolsEventData;
+      if (data.event === "tool-started") {
+        emit({ type: "tool-start", callId: data.tool_call_id, name: data.tool_name });
+      } else if (data.event === "tool-finished" || data.event === "tool-error") {
+        emit({
+          type: "tool-end",
+          callId: data.tool_call_id,
+          outcome: data.event === "tool-error" ? "error" : "complete",
+        });
       }
-      emit({ type: "tool-end", name: call.name });
     }
   })();
 
-  const [output] = await Promise.all([run.output, messageLoop, toolLoop]);
+  // Native tool projections also reject their output promises on execution failure.
+  const toolOutputs = (async () => {
+    for await (const call of run.toolCalls) void call.output.catch(() => {});
+  })();
+  const [output] = await Promise.all([run.output, messageLoop, toolLoop, toolOutputs]);
   return newMessagesAfter(windowed, output.messages);
 }

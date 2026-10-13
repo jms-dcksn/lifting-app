@@ -30,6 +30,42 @@
         </p>
       </header>
 
+      <section id="exception-plan" class="space-y-4 rounded-lg border border-slate-300 p-5">
+        <h2 class="font-serif text-2xl">Approved next direction: quiet progression, useful exceptions</h2>
+        <p class="text-slate-700">Planned, not shipped. Keep every existing engine calculation.
+          AI Coach becomes the coaching entry point. PRs, ordinary target increases and scheduled
+          recovery stay quiet. Significant pain, repeated effort mismatch, confirmed plateaus and
+          current sustained decline can open one continuing situation for review.</p>
+        <pre class="mermaid">
+flowchart LR
+  Engine[Existing deterministic engines] --> Policy[Planned exception policy]
+  Policy --> Quiet[Ordinary progression: workout targets only]
+  Policy --> Episode[One continuing exception]
+  Episode --> Inbox[In-app notification]
+  Inbox --> Chat[Coach explanation]
+  Chat --> Evidence[See details]
+  Chat --> Confirm[Meaningful choice]
+  Confirm --> Check[Revalidate and apply]
+        </pre>
+        <p class="text-slate-700">The current priority ranking is not notification eligibility:
+          it intentionally puts some successful load increases near the top. These are real
+          current source lines, not the proposed implementation:</p>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>// src/lib/coach-recommendations.ts — current ranking
+case "reduce_load":
+  return 9;
+case "plateau_review":
+  return 7;
+case "add_load":
+  return 6 + compoundBonus;</code></pre>
+        <p class="text-slate-700">The new policy must use typed causes and source evidence.
+          A one-off target reduction is usually quiet; two consecutive effort misses deserve an
+          explanation. Significant pain currently triggers session-level review, not a calculated
+          pain-specific load. A rep-range change or swap offers a meaningful choice instead of
+          generic Accept. Reading a notification never applies a training change.</p>
+        <p><a class="underline" href="AI-COACH-EXCEPTIONS-PLAN.md">Implementation plan and issue dependencies</a>.
+          Storage and action authorization are designed before their migrations are approved.</p>
+      </section>
+
       <section class="space-y-4">
         <h2 class="font-serif text-2xl">The path of one question</h2>
         <p class="text-slate-700 max-w-3xl">

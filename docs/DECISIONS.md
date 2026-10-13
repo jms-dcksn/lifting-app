@@ -694,6 +694,10 @@ logs) require consent re-prompt and separate opt-in.
 
 ## AI Coach (2026-09-20)
 
+The surface/build-order decision below is superseded for future work by
+[exception-only coaching (2026-10-13)](#exception-only-coaching-2026-10-13).
+The deterministic engine, owner scope and model/data boundaries remain.
+
 The in-app agent is a new scope slice, not a rewrite of the Coach loop. The build contract
 is [AI-COACH.md](AI-COACH.md). Locks below are the hard-to-reverse calls; slice checklists
 live in that doc.
@@ -740,6 +744,34 @@ action, such as the Slice 1 confirm chip. Record gold stays on actual records.
 
 **Period data stays off-limits** until a separate opt-in, matching the Coach V1 export
 exclusion and Settings consent copy.
+
+## Exception-only coaching (2026-10-13)
+
+**Keep the engine; move the entry point to AI Coach.** The approved direction replaces
+the manual Track Coach Accept/Accept all chore with conversation, optional evidence details
+and meaningful choices. Current behavior remains until the replacement is verified.
+Implementation: [AI-COACH-EXCEPTIONS-PLAN.md](AI-COACH-EXCEPTIONS-PLAN.md), epic #206 under #136.
+
+**Happy path stays silent.** PRs, earned load/rep increases, one down session, scheduled
+deloads, expected calibration and insufficient history do not create Coach notifications.
+Notify significant pain, repeated effort mismatch, confirmed plateau interventions and
+current sustained decline. Notification policy is separate from the existing proposal rank.
+
+**One situation, one episode.** New exposures revise evidence rather than producing another
+alert automatically. Group related signals; respect snooze/preferences. Reading an alert
+does not apply a change or resolve pain. Pain is currently session-level review evidence,
+not an engine-calculated pain-specific reduction.
+
+**Targets calculate; structural choices confirm.** Normal and supported effort-reduction
+targets derive through shared canonical code without requiring chat. Rep-range changes and
+exercise swaps remain explicit actions with current evidence/ownership revalidation.
+Do not alter logged history or repeatedly mutate slots to store computed target suggestions.
+
+**Start in-app.** V1 uses authenticated refresh and persistent inbox state with deterministic
+copy; normal chat generation happens when the user opens the conversation. No scheduled
+happy-path previews/recaps, new provider, privileged worker or capability-token endpoint.
+Native push remains later. The concrete persistence/action design and its Decision Card
+are #212; this product decision does not choose or apply a database schema.
 
 ## AI Coach threads (2026-09-27)
 

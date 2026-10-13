@@ -5,9 +5,16 @@ replace it. Track Coach (`/analytics/coach`) and `CoachCheckInReport` provide th
 factual check-in through `loadCoachUi`. The agent is the
 language, intake, navigation, and draft layer on top of existing loaders and actions.
 
+**Approved next direction (2026-10-13, not shipped):** AI Coach becomes the coaching
+entry point. Keep the deterministic engine; notify only significant pain, repeated effort
+mismatch, confirmed plateau interventions and current sustained decline. Normal progression,
+PRs and scheduled recovery stay silent. Replace routine Accept/Accept all with grounded
+conversation, optional evidence details and meaningful confirmed choices. Delivery slices
+and dependencies: [exception-only implementation plan](AI-COACH-EXCEPTIONS-PLAN.md).
+
 **Status:** Slice 0 shipped 2026-09-20. Chat became multi-thread on 2026-09-27
 ([Threads](#threads)). Slice 1 (screen context and navigation) shipped 2026-09-29.
-Later slices are still specified, not built. Rationale lives in
+Slice 2 (gallery intake to inactive draft) shipped; later slices remain planned. Rationale lives in
 [Decisions](DECISIONS.md#ai-coach-2026-09-20) and
 [AI Coach threads](DECISIONS.md#ai-coach-threads-2026-09-27). The teaching surface
 is [ai-coach.html](ai-coach.html) — update that HTML whenever agent behavior changes.
@@ -19,8 +26,8 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 
 | Decision | Lock |
 | --- | --- |
-| Job vs Coach | Wrap. Narrate and act on engine output. Keep `/analytics/coach`. |
-| Build order | Slice 0 first, then 1–5 in order. |
+| Job vs Coach | Keep the engine/report. Current Track Coach remains until the planned exception conversation replaces its routine acceptance entry; evidence details stay accessible. |
+| Build order | Shipped Slices 0–2 precede the exception plan A–F. Independent read tools can proceed separately. Sophistication follows dogfood and its own decisions. |
 | Runtime | TypeScript in this Next.js app. No Python service. |
 | Library | LangChain TypeScript for the agent loop and ecosystem. Tools and prompts are plain TS so the loop can change. Deep Agents is out until Slice 5. |
 | Writes | Slice 0 was read-only. Slice 2 drafts inactive programs via `draftProgramFromIntake`. Confirm-chip `startNextSession` shipped in Slice 1. Live mutations wait for Slice 4. |
@@ -292,32 +299,39 @@ identities are valid, and the active program is unchanged until the user saves.
 
 ### Slice 3 — Weekly narrative
 
+Planning update: #140 owns on-demand narrative quality and grounding; `weeklyCoach` already
+exists. Proactive weekly recap #200 is superseded. Exception delivery belongs to #195/#206.
+
 **Intent.** Manual “run check-in” in the thread, wrapping the existing report.
 
 **In**
 
-- A tool that loads `loadCoachUi` and narrates it. Optional later: first-open-of-week
-  auto-run (no new push channel required).
-- “Want me to take you to next steps?” uses Slice 1 navigation to `/analytics/coach`.
+- Narrate the existing `loadCoachUi` tool output with explicit current/prior calendar windows.
+- Explain relevant exceptions in the conversation; optional evidence details remain reachable.
 
 **Out**
 
-- Replacing `/analytics/coach` or changing `CoachCheckInReport`. Accepting proposals
-  (Slice 4). Email/push delivery.
+- Changing `CoachCheckInReport` or applying interventions. Scheduled first-open recaps,
+  email/push delivery and happy-path notifications.
 
 **Done when** the narrative cites the same adherence, trends, and proposal keys as the
 Track snapshot for the same window.
 
 ### Slice 4 — Confirmed writes
 
-**Intent.** The agent can change settings, proposal review state, and swaps the way the
-UI already does.
+Planning update: #141 and the [exception plan](AI-COACH-EXCEPTIONS-PLAN.md#slice-e--conversation-details-and-confirmed-interventions)
+replace routine proposal acceptance with meaningful, revalidated choices. No new actions ship
+with this planning update.
+
+**Intent.** The agent explains an exception and offers a meaningful intervention, while
+separately requested settings writes retain explicit confirmation.
 
 **In**
 
-- Tools that call existing actions with an in-transcript confirm: settings patches,
-  Coach accept/dismiss/defer (`coach_recommendation_decision` only), swaps that follow
-  [exercise swaps](EXERCISE-SWAPS.md).
+- Episode-linked conversation and evidence details; explicit rep-range/swap actions that
+  follow [exercise swaps](EXERCISE-SWAPS.md) and the approved #212 action contract.
+- Separately requested settings patches with in-transcript confirmation. Delivery-state
+  acknowledgement/snooze is distinct from an applied training change.
 - Cost caps and tighter tool budgets now that writes exist.
 
 **Out**
@@ -329,7 +343,7 @@ abandoned confirm leaves data unchanged.
 
 ### Slice 5 — Sophistication
 
-Only after Slice 0–4 dogfood. Candidates: Deep Agents / a program-design subagent,
+After baseline and the exception journey are dogfooded. Candidates: Deep Agents / a program-design subagent,
 web search with a research-vs-prescribe split, onboarding that starts in the agent,
 in-session whispers, rolling summaries / context compaction, distilled user memory
 beyond last-N. Each is its own Decision Card; none is implied by shipping 0–4.

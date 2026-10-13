@@ -105,7 +105,11 @@ the Track Coach workflow and clipboard export to add coaching actions.
 
 Every proposal carries an opaque key, program-day context, action, rationale, evidence
 window/count, supporting first-set summary, confidence, and a plain-language data-sufficiency
-statement. Accept, dismiss, and defer
+statement. `loadReductionReason` is `repeated_effort_miss` or `below_rep_floor` for
+`reduce_load`, and null otherwise. The repeated-effort calculation lives in
+`strength/effort.ts`; `strength/trend.ts` shares the report's factual trend rule with the
+pure exception policy. Proposal keys, ranking, formatter and review actions retain their
+existing behavior. Accept, dismiss, and defer
 write only to `coach_recommendation_decision`; they never alter a program, slot, set, or session.
 A deferred proposal is hidden for seven days, while a new exposure produces a new proposal key.
 
@@ -125,6 +129,12 @@ as `now`; low-confidence hold-load / chase-reps on isolation scores as `next`. P
 effort misses, and plateau reviews stay at the top. Mixed lists use Do first / Also tiers in
 the UI and clipboard. Double-progression still comes from `sessionTarget()`; ranking does not
 invent a second progression rule.
+
+`coach-exceptions.ts` now classifies meaningful exceptions from exact canonical history,
+current prescription/context and an explicit evidence window. It does not select by the
+proposal's priority, key or wording, and never interprets an accepted review as an applied
+change. It produces internal source-referenced candidates only; no inbox or delivery is
+connected yet. See [AI Coach eligibility](AI-COACH.md#deterministic-exception-eligibility-210).
 
 ## Shared stall evidence
 

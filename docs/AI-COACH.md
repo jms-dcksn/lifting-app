@@ -12,6 +12,9 @@ PRs and scheduled recovery stay silent. Replace routine Accept/Accept all with g
 conversation, optional evidence details and meaningful confirmed choices. Delivery slices
 and dependencies: [exception-only implementation plan](AI-COACH-EXCEPTIONS-PLAN.md).
 
+**Exception policy (#210):** the pure classifier is implemented. Inbox delivery, shared
+effective targets and the coaching entry-point switch remain planned.
+
 **Status:** Slice 0 shipped 2026-09-20. Chat became multi-thread on 2026-09-27
 ([Threads](#threads)). Slice 1 (screen context and navigation) shipped 2026-09-29.
 Slice 2 (gallery intake to inactive draft) shipped; later slices remain planned. Rationale lives in
@@ -49,6 +52,45 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 - Program persistence goes through `saveProgram`, `createFromTemplate`, or clone. Slot IDs
   stay id-preserving. Slice 2 writes inactive drafts; saving in the builder still activates.
 - New capability = a domain tool (+ eval cases), not a new aggregation forked from Coach.
+
+## Deterministic exception eligibility (#210)
+
+`src/lib/coach-exceptions.ts` exports `classifyCoachExceptions()`, policy version `1.0`.
+It consumes an owner-validated history snapshot (including set IDs and `set_index`),
+current active-program slots with exact exercise/equipment instance and program week,
+completed-session pain feedback, and explicit `asOf`/`evidenceSince` dates. It performs
+no fetches or writes and is not yet wired to an inbox or the chat tools. Future authenticated
+loaders must supply current ownership/context; this pure function is not an authorization gate.
+
+- Significant pain produces one session-scoped review candidate and takes precedence over
+  lift signals. It neither guesses the affected lift nor supplies a pain-specific load.
+- `buildStallAssessments()` supplies the contiguous exact slot/exercise/instance series.
+  Its typed `context` records program/day, phase, adaptation boundary, reps, RIR and sets;
+  the classifier requires that context to match the current folded prescription.
+- The last two comparable first working sets can qualify as repeated effort misses, using
+  `strength/effort.ts`, also used by Coach recommendations. Two below-floor sets qualify
+  only when each independently produces a lower `sessionTarget()` load. Historical
+  bodyweight is recovered from each saved set; assistance keeps its negative-load convention.
+- `detectPlateau()` preserves patience and the 14-day minimum. Classic proposes review;
+  Fluid uses its existing rep-change/swap ladder and two-exposure plateau snooze;
+  an overlapping decline cannot bypass that snooze.
+- `strength/trend.ts` shares the factual report's four-exposure, greater-than-1% trend rule.
+  Current decline uses the exact eligible series and stays quiet when recent fixed-load
+  rep gains show progress. Ordinary PRs/load/rep gains, isolated misses, recovery and
+  insufficient evidence produce no candidate.
+
+Related effort, plateau and decline signals are grouped into one candidate per exact slot
+context, with effort before plateau before decline. Each signal retains session/set references,
+first-set identity and evidence dates. Numeric reduction targets include weight/reps/RIR;
+plateau and decline actions do not invent a numeric target. All signal status is
+`recommended`: the classifier cannot attest to a current workout target or applied intervention.
+Legacy Accept/dismiss/defer decisions do not enter the classifier. `loadReductionReason` now
+distinguishes `repeated_effort_miss` from `below_rep_floor` on generated Coach recommendations.
+
+`evidenceSince` bounds supporting evidence, not just the latest exposure. The caller must
+choose it explicitly; no bootstrap age or reminder cadence is introduced here. An empty
+result never resolves an existing pain/performance episode. Retention, episode identity,
+replay and delivery belong to #212/#195; effective workout targets belong to #211.
 
 ## Module
 

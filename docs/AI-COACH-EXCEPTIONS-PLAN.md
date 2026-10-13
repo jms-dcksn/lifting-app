@@ -1,6 +1,7 @@
 # AI Coach: exception-only coaching implementation plan
 
-Status: product direction approved 2026-10-13; implementation is not shipped.
+Status: product direction approved 2026-10-13. Slice A's pure classifier is implemented;
+target consistency, persistence, conversations and the entry-point switch remain planned.
 Delivery owner: [#206](https://github.com/jms-dcksn/lifting-app/issues/206), under [#136](https://github.com/jms-dcksn/lifting-app/issues/136).
 
 ## Outcome
@@ -40,7 +41,7 @@ strength formula. Repeated reads of one exposure do not satisfy it.
 
 ## What source currently does
 
-Checked against main `2b919d7fca044b220a48fc8358dcaa1f4c61a79c`.
+Original implementation baseline checked against main `2b919d7fca044b220a48fc8358dcaa1f4c61a79c`.
 
 - `src/lib/strength/progression.ts`: `sessionTarget()` already calculates ordinary progression,
   below-floor recalibration and recovery loads automatically.
@@ -57,9 +58,8 @@ Checked against main `2b919d7fca044b220a48fc8358dcaa1f4c61a79c`.
 - Significant pain in finished sessions in the report window produces a session-level
   `pain_review` and suppresses other Coach proposals. It does not calculate reduced loads
   or automatically suppress the separate session target engine.
-- `src/lib/coach-check-in.ts`: current code uses Monday–Sunday calendar reporting windows;
-  the current Coach report doc still describes rolling seven-day windows. Correct that doc
-  during this planning change. Program weeks used for targets are a separate concept.
+- `src/lib/coach-check-in.ts`: reporting uses Monday–Sunday calendar weeks, documented in
+  the Coach report contract. Program weeks used for targets are a separate concept.
 
 ## Implementation boundaries
 
@@ -70,10 +70,10 @@ Keep four distinct responsibilities:
 3. **Episode/inbox lifecycle:** persistence, revalidation, suppression and delivery identity.
 4. **AI Coach:** grounded explanation, details navigation and meaningful confirmed actions.
 
-Proposed domain interfaces, not committed APIs:
+Domain boundaries (only classification is implemented):
 
 ```ts
-classifyCoachExceptions(evidence, policy): ExceptionCandidate[]
+classifyCoachExceptions(input: CoachExceptionInput): CoachExceptionCandidate[]
 resolveEffectiveWorkoutTarget(context): EffectiveTarget | null
 reconcileCoachEpisodes(userClient, candidates, asOf): ReconciliationResult
 openCoachEpisode(userClient, episodeId): ConversationDestination
@@ -180,12 +180,19 @@ legacy decision data without interpreting acceptance as an applied intervention.
 ### Slice A — Deterministic exception policy
 
 Issue: [#210](https://github.com/jms-dcksn/lifting-app/issues/210).
-Independent first step; no persistence or model calls.
+Implemented first step; no persistence, delivery integration or model calls.
 
 Introduce typed reason/evidence envelopes and pure classification. Cover every row of the
 policy table, both reduction causes and all Fluid actions. Verify current comparability,
 staleness, overlapping signals and confidence/data sufficiency. Do not change the underlying
 PR, progression or plateau formulas.
+
+Contract: [deterministic eligibility](AI-COACH.md#deterministic-exception-eligibility-210).
+The caller supplies an explicit evidence cutoff and current exact slot context; every
+supporting exposure must be inside that window. The classifier returns recommended
+signals with source references, groups overlaps per slot and preserves session-scoped pain.
+It never resolves episodes or claims a recommendation is applied/current. Bootstrap cutoff
+and lifecycle choices still belong to C/D; B supplies the effective workout target later.
 
 ### Slice B — Effective target consistency
 
@@ -288,5 +295,5 @@ notes rather than deleting evidence of earlier decisions.
   review entry before the replacement works. Record observed delivery counts and suppression
   reasons without adding raw pain notes to notification payloads/logs.
 
-This session creates the plan and reconciles issues/docs only. No migrations, training-data
-writes, scheduled jobs or application behavior changes are performed.
+The original planning change introduced no application behavior. Slice A adds a pure,
+tested policy without migrations, training-data writes, scheduled jobs or delivery changes.

@@ -9,6 +9,7 @@ import { dateKey } from "./bodyweight";
 import { resolvePrescription } from "./periodization";
 import { isDeload, type StallAssessment } from "./stall-report";
 import type { ExerciseDef, Pattern } from "./strength/coefficients";
+import { repeatedEffortReduction, type LoadReductionReason } from "./strength/effort";
 import {
   selectProgressionReference,
   sessionTarget,
@@ -31,6 +32,7 @@ export type RecommendationPriority = "now" | "next";
 export interface CoachRecommendation {
   key: string;
   kind: CoachRecommendationKind;
+  loadReductionReason: LoadReductionReason | null;
   exerciseId: string | null;
   exerciseName: string | null;
   programDayName: string | null;
@@ -242,23 +244,13 @@ function recommendationForSlot(
     });
   }
 
-  const repeatedHardMisses = exposures.slice(-2).length === 2
-    && exposures.slice(-2).every(
-      (exposure) =>
-        exposure.firstSet.rir != null && exposure.firstSet.rir < exposure.targetRirMin,
-  );
-  if (repeatedHardMisses) {
-    // Negative bodyweight loads mean assistance; subtracting an increment correctly adds
-    // assistance. External loads remain bounded at zero.
-    const targetWeight = definition.equipment === "bodyweight"
-      ? latest.firstSet.weight - definition.increment
-      : Math.max(0, latest.firstSet.weight - definition.increment);
-    const targetReps = Math.max(
-      latestPrescription.repMin,
-      Math.min(latestPrescription.repMax, latest.firstSet.reps),
-    );
+  const effortReduction = repeatedEffortReduction(definition, latestPrescription,
+    exposures.map(exposure => ({ ...exposure.firstSet, targetRirMin: exposure.targetRirMin })));
+  if (effortReduction) {
+    const { weight: targetWeight, targetReps } = effortReduction;
     return recommendation({
       kind: "reduce_load",
+      loadReductionReason: "repeated_effort_miss",
       slotId: slot.id,
       exerciseId,
       exerciseName,
@@ -355,6 +347,7 @@ function recommendationForSlot(
     if (targetWeight < referenceSet.weight) {
       return recommendation({
         kind: "reduce_load",
+        loadReductionReason: "below_rep_floor",
         slotId: slot.id,
         exerciseId,
         exerciseName,
@@ -523,6 +516,7 @@ function evidenceFields(input: BuildCoachRecommendationsInput, exposures: Exposu
 
 function recommendation(input: {
   kind: CoachRecommendationKind;
+  loadReductionReason?: LoadReductionReason;
   slotId: string;
   exerciseId: string | null;
   exerciseName: string | null;
@@ -551,6 +545,7 @@ function recommendation(input: {
       ...input.summary,
     ].join("|")),
     kind: input.kind,
+    loadReductionReason: input.loadReductionReason ?? null,
     exerciseId: input.exerciseId,
     exerciseName: input.exerciseName,
     programDayName: input.programDayName,

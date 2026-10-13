@@ -1,8 +1,30 @@
 import type { CoachPhaseInput, CoachSessionInput, CoachSlotInput } from "./coach-check-in";
-import { resolvePrescription } from "./periodization";
+import { resolvePrescription, type EffectivePrescription } from "./periodization";
 import type { ExerciseDef } from "./strength/coefficients";
 import { defaultPatience, detectPlateau, foldPrescription, type AdaptationRow, type PhaseExposure } from "./strength/plateau";
 import { eligibleRecordSet, recordScope, type RecordSet } from "./strength/records";
+
+export interface StallContext {
+  programId: string;
+  programDayId: string;
+  exerciseId: string;
+  equipmentInstanceId: string | null;
+  phaseId: string | null;
+  adaptationStartAt: string | null;
+  repMin: number;
+  repMax: number;
+  targetRirMin: number;
+  targetRirMax: number;
+  targetSets: number;
+}
+
+export function stallContext(slot: StallSlot, exerciseId: string, equipmentInstanceId: string | null,
+  prescription: EffectivePrescription, adaptationStartAt: string | null): StallContext {
+  return { programId: slot.programId, programDayId: slot.programDayId, exerciseId, equipmentInstanceId,
+    phaseId: prescription.phase?.id ?? null, adaptationStartAt, repMin: prescription.repMin,
+    repMax: prescription.repMax, targetRirMin: prescription.targetRirMin,
+    targetRirMax: prescription.targetRirMax, targetSets: prescription.targetSets };
+}
 
 export type StallSession = Pick<CoachSessionInput, "id" | "performedAt" | "finishedAt" | "programId" | "programDayId" | "weekIndex" | "isDeload">;
 export interface StallSlot extends CoachSlotInput { plateauPatience?: number | null }
@@ -33,6 +55,7 @@ export interface StallAssessment {
   repMin: number;
   repMax: number;
   points: StallPoint[];
+  context: StallContext | null;
 }
 
 export function isDeload(phase: { isDeload?: boolean; name: string; description: string | null; setMultiplier: number | null } | null) {
@@ -60,6 +83,7 @@ export function buildStallAssessments(history: StallHistory, catalog: Record<str
     const phases = history.phases.filter(p => p.programId === slot.programId);
     let points: StallPoint[] = [];
     let context: string | null = null;
+    let evidenceContext: StallContext | null = null;
     let exerciseId = slot.exerciseId;
     let equipmentInstanceId: string | null = null;
     let phaseName: string | null = null;
@@ -84,8 +108,8 @@ export function buildStallAssessments(history: StallHistory, catalog: Record<str
       repMax = prescription.repMax;
       phaseName = prescription.phase?.name ?? null;
       deload = session.isDeload ?? (sets.some(set => set.is_deload) || isDeload(prescription.phase));
-      const nextContext = JSON.stringify([recordScope(last), prescription.phase?.id ?? null,
-        folded.phaseStartAt, repMin, repMax, prescription.targetRirMin, prescription.targetRirMax, prescription.targetSets]);
+      evidenceContext = stallContext(slot, exerciseId, equipmentInstanceId, prescription, folded.phaseStartAt);
+      const nextContext = JSON.stringify(evidenceContext);
       if (nextContext !== context) points = [];
       context = nextContext;
       // Mixed-identity sessions and missing historical estimates break evidence continuity.
@@ -117,6 +141,6 @@ export function buildStallAssessments(history: StallHistory, catalog: Record<str
       state: deload ? "deload" : result.plateaued ? "plateau" : points.length < patience + 1 ? "insufficient_data" : "monitoring",
       patience, stalledExposures: result.stalledExposures, stalledSinceDays: result.stalledSinceDays,
       lastImprovementAt: points[points.length - 1 - result.stalledExposures]?.sessionAt ?? null,
-      phaseName, repMin, repMax, points };
+      phaseName, repMin, repMax, points, context: evidenceContext };
   });
 }

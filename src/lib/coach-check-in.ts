@@ -6,6 +6,8 @@ import {
   type Pattern,
 } from "./strength/coefficients";
 import { movementId, movementTemplate, rollsUp } from "./strength/movement";
+import { classifyPerformanceTrend, type TrendClassification } from "./strength/trend";
+export type { TrendClassification } from "./strength/trend";
 
 export const COACH_REPORT_VERSION = "1.0" as const;
 export const COACH_REPORT_TIMEZONE = "America/Chicago";
@@ -13,12 +15,6 @@ export const WORKOUT_DURATION_TARGET_MINUTES = 45;
 const MAX_PLAUSIBLE_DURATION_MINUTES = 240;
 const MIN_PLAUSIBLE_DURATION_MINUTES = 5;
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-export type TrendClassification =
-  | "gaining"
-  | "flat"
-  | "declining"
-  | "insufficient_data";
 
 export type SpecializationGroup =
   | "delts"
@@ -580,44 +576,11 @@ function buildExerciseTrends(context: BuildContext): ExerciseTrendReport[] {
           performedAt: context.sessionById.get(sessionId)?.performedAt ?? "",
         }))
         .sort((a, b) => a.performedAt.localeCompare(b.performedAt));
-      const evidence = exposures.slice(-4);
-      if (evidence.length < 4) {
-        return {
-          exerciseId,
-          exerciseName: context.definitions[exerciseId]?.name ?? exerciseId,
-          classification: "insufficient_data" as const,
-          exposureCount: exposures.length,
-          evidenceExposureCount: evidence.length,
-          recentAverageE1rm: null,
-          previousAverageE1rm: null,
-          changePercent: null,
-        };
-      }
-
-      const previous = evidence.slice(0, 2).map((exposure) => exposure.e1rm);
-      const recent = evidence.slice(2).map((exposure) => exposure.e1rm);
-      const previousAverage = average(previous) as number;
-      const recentAverage = average(recent) as number;
-      const threshold = 0.01;
-      // Both recent marks must clear both prior marks in the same direction. One poor or
-      // exceptional session therefore cannot manufacture a declining/gaining classification.
-      const gaining = Math.min(...recent) > Math.max(...previous) * (1 + threshold);
-      const declining = Math.max(...recent) < Math.min(...previous) * (1 - threshold);
-      const classification: TrendClassification = gaining
-        ? "gaining"
-        : declining
-          ? "declining"
-          : "flat";
-
       return {
         exerciseId,
         exerciseName: context.definitions[exerciseId]?.name ?? exerciseId,
-        classification,
         exposureCount: exposures.length,
-        evidenceExposureCount: 4,
-        recentAverageE1rm: recentAverage,
-        previousAverageE1rm: previousAverage,
-        changePercent: ((recentAverage - previousAverage) / previousAverage) * 100,
+        ...classifyPerformanceTrend(exposures.map(exposure => exposure.e1rm)),
       };
     })
     .sort((a, b) => {

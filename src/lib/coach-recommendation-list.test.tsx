@@ -18,6 +18,7 @@ vi.mock("@/app/(app)/analytics/actions", () => ({
 import { CoachRecommendationList } from "@/app/(app)/analytics/coach-recommendation-list";
 
 const first: CoachRecommendation = {
+  loadReductionReason: null,
   key: "rec_aaaaaaaaaaaaaaaa",
   kind: "add_load",
   exerciseId: "bb-bench",

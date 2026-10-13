@@ -32,15 +32,15 @@
 
       <section id="exception-plan" class="space-y-4 rounded-lg border border-slate-300 p-5">
         <h2 class="font-serif text-2xl">Approved next direction: quiet progression, useful exceptions</h2>
-        <p class="text-slate-700">Planned, not shipped. Keep every existing engine calculation.
+        <p class="text-slate-700">Delivery remains planned. The pure exception classifier is implemented; keep every existing engine calculation.
           AI Coach becomes the coaching entry point. PRs, ordinary target increases and scheduled
           recovery stay quiet. Significant pain, repeated effort mismatch, confirmed plateaus and
           current sustained decline can open one continuing situation for review.</p>
         <pre class="mermaid">
 flowchart LR
-  Engine[Existing deterministic engines] --> Policy[Planned exception policy]
+  Engine[Existing deterministic engines] --> Policy[Implemented pure exception policy]
   Policy --> Quiet[Ordinary progression: workout targets only]
-  Policy --> Episode[One continuing exception]
+  Policy -. Planned .-> Episode[One continuing exception]
   Episode --> Inbox[In-app notification]
   Inbox --> Chat[Coach explanation]
   Chat --> Evidence[See details]
@@ -57,13 +57,62 @@ case "plateau_review":
   return 7;
 case "add_load":
   return 6 + compoundBonus;</code></pre>
-        <p class="text-slate-700">The new policy must use typed causes and source evidence.
+        <p class="text-slate-700">The implemented policy uses typed causes and source evidence.
           A one-off target reduction is usually quiet; two consecutive effort misses deserve an
           explanation. Significant pain currently triggers session-level review, not a calculated
           pain-specific load. A rep-range change or swap offers a meaningful choice instead of
           generic Accept. Reading a notification never applies a training change.</p>
         <p><a class="underline" href="AI-COACH-EXCEPTIONS-PLAN.md">Implementation plan and issue dependencies</a>.
           Storage and action authorization are designed before their migrations are approved.</p>
+      </section>
+
+      <section id="exception-policy" class="space-y-4">
+        <h2 class="font-serif text-2xl">Exception eligibility — implemented foundation (#210)</h2>
+        <p class="text-slate-700">The policy takes a current, authorized history snapshot and returns
+          typed candidates. It runs no model, sends no notification and changes no workout. The
+          inbox and conversation journey come later. The engine still owns every number.</p>
+        <div class="grid gap-3 sm:grid-cols-3">
+          <div class="rounded-lg border border-slate-300 bg-white p-4"><h3 class="font-semibold">1. Keep context exact</h3><p class="mt-2 text-sm">Match slot, exercise, equipment instance, phase, adaptation and prescription. Reject recovery, stale or incomplete evidence.</p></div>
+          <div class="rounded-lg border border-slate-300 bg-white p-4"><h3 class="font-semibold">2. Require a meaningful signal</h3><p class="mt-2 text-sm">Two first-set effort misses; two independently reduced rep-floor targets; confirmed plateau; or four-exposure decline. Significant pain stays session-level.</p></div>
+          <div class="rounded-lg border border-slate-300 bg-white p-4"><h3 class="font-semibold">3. Return one candidate per slot</h3><p class="mt-2 text-sm">Group overlapping lift signals with source session/set IDs and evidence dates. Every action is recommended; none is asserted to be applied.</p></div>
+        </div>
+        <pre class="mermaid">
+flowchart TD
+  Snapshot[Owner-validated history and current slots] --> Pain{Significant pain?}
+  Pain -->|Yes| Review[Session-level review: no affected lift or numeric target]
+  Pain -->|No| Series[Canonical contiguous stall series]
+  Series --> Context{Current context matches and evidence is fresh?}
+  Context -->|No| Quiet[No candidate]
+  Context -->|Yes| Rules[Shared effort, target, plateau and trend rules]
+  Rules --> Normal[Normal progress, isolated miss or recovery: quiet]
+  Rules --> Group[Group meaningful signals per exact slot]
+  Group --> Candidate[Recommended candidate with source references]
+        </pre>
+        <p class="text-slate-700">The two load-reduction causes differ. One below-range set can quietly
+          recalibrate the next target. Two such sets qualify only if each independently calls for
+          a lower load. Two consecutive first-set RIR misses use the existing one-increment
+          reduction. Hard back-off sets do not count. The Coach proposal exposes that cause in
+          <code>loadReductionReason</code>; its Do first/Also ranking does not choose alerts.</p>
+        <h3 class="font-mono text-sm">src/lib/coach-exceptions.ts — current-context gate</h3>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>    const context = stallContext(slot, current.exerciseId, current.equipmentInstanceId, prescription, folded.phaseStartAt);
+    if (isDeload(prescription.phase) || prescription.targetRir &gt;= 4
+      || JSON.stringify(context) !== JSON.stringify(assessment.context)) continue;</code></pre>
+        <h3 class="font-mono text-sm">src/lib/coach-exceptions.ts — shared effort rule and honest status</h3>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>    const effort = repeatedEffortReduction(def, prescription, recent.map(exposure =&gt; ({
+      weight: exposure.first.weight!, reps: exposure.first.reps!, rir: exposure.first.rir,
+      targetRirMin: prescription.targetRirMin,
+    })));
+    const signals: CoachExceptionSignal[] = [];
+    if (effort) signals.push({ reason: &quot;repeated_effort_miss&quot;, action: &quot;reduce_load&quot;, target: { ...effort, targetRir: prescription.targetRir },
+      status: &quot;recommended&quot;, sources: recent.map(exposure =&gt; exposure.source) });</code></pre>
+        <p class="text-slate-700">The caller supplies <code>asOf</code> and <code>evidenceSince</code>;
+          all supporting exposures must be inside that window. No bootstrap age is chosen here.
+          An empty result never resolves a persisted pain episode. Historical bodyweight and
+          negative assistance loads retain their existing conventions. Fluid retains its
+          rep-change/swap ladder and two-exposure plateau snooze.</p>
+        <p class="text-slate-700">Current workout targets are a separate #211 integration. Persistence,
+          episode deduplication across refreshes and delivery are #212/#195. This classifier
+          excludes legacy accepted review decisions and returns recommended status only.</p>
       </section>
 
       <section class="space-y-4">

@@ -104,6 +104,7 @@ describe("monthly review presentation", () => {
         stalledSinceDays: 14,
         lastImprovementAt: "2026-09-02T12:00:00Z",
         phaseName: null,
+        context: null,
         repMin: 8,
         repMax: 12,
         points: [{

@@ -74,6 +74,9 @@ Send creates one Coach bubble immediately, before the server confirms the thread
 Three dots remain visible through initial latency, tool execution, pauses, and answer
 streaming. The answer grows inside that same bubble. Both the Sheet and `/coach` use
 `AgentChat`/`AgentTranscript`; history renders saved messages without activity.
+Saved message text is trimmed before deciding whether it needs a bubble. Empty or
+whitespace-only assistant messages show no Coach label; tool calls still show their
+quiet “Checked …” line. The pending bubble keeps its label and dots while waiting.
 
 `runAgentTurn` maps LangChain v3's **tools execution channel**, rather than finalized
 model tool arguments, to `tool-start { callId, name }` and

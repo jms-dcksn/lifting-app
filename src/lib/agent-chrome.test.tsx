@@ -170,6 +170,55 @@ describe("agent chrome", () => {
     expect([...host.querySelectorAll(".uppercase")].map((node) => node.textContent)).toEqual(["You", "Coach"]);
   });
 
+  it.each([
+    ["sheet", "history"],
+    ["page", "history"],
+    ["sheet", "done"],
+    ["page", "done"],
+  ] as const)("omits blank Coach labels in %s after %s", async (variant, delivery) => {
+    const messages: AgentMessage[] = [
+      userMessage("u1", "Why is my next hack squat target what it is?"),
+      {
+        id: "a1", role: "assistant", createdAt: "2026-10-12T00:00:01Z",
+        parts: [
+          { type: "text", text: " \n\t " },
+          { type: "tool-call", id: "target-1", name: "nextWorkout", args: {} },
+        ],
+      },
+      {
+        id: "t1", role: "tool", createdAt: "2026-10-12T00:00:02Z",
+        parts: [{ type: "tool-result", id: "target-1", name: "nextWorkout", result: {} }],
+      },
+      {
+        id: "a2", role: "assistant", createdAt: "2026-10-12T00:00:03Z",
+        parts: [{ type: "text", text: "\n" }, { type: "text", text: " \t" }],
+      },
+      {
+        id: "a3", role: "assistant", createdAt: "2026-10-12T00:00:04Z",
+        parts: [{ type: "text", text: "Your target is **150 lb for 6 reps at 2 RIR**.\n\nSource: nextWorkout → sessionTarget()" }],
+      },
+    ];
+    const open: AgentChatSnapshot["open"] = {
+      kind: "saved", threadId: A, title: "Hack squat target", messages: delivery === "history" ? messages : [],
+    };
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>(async () => sseResponse([
+      { type: "thread", thread: { id: A, title: open.title, updatedAt: messages[0].createdAt }, userMessage: messages[0] },
+      { type: "done", messages },
+    ])));
+    act(() => { root.render(<AgentChat variant={variant} initial={{ threads: [], open }} />); });
+    if (delivery === "done") {
+      type("Why is my next hack squat target what it is?");
+      await submit();
+    }
+
+    expect([...host.querySelectorAll(".uppercase")].map((node) => node.textContent)).toEqual(["You", "Coach"]);
+    expect(host.querySelectorAll(".overflow-y-auto .mr-auto")).toHaveLength(1);
+    expect(host.textContent).toContain("Checked next workout targets");
+    expect(host.querySelector("strong")?.textContent).toBe("150 lb for 6 reps at 2 RIR");
+    expect(host.textContent).toContain("nextWorkout → sessionTarget()");
+    expect(host.querySelectorAll(".coach-dot")).toHaveLength(0);
+  });
+
   it("opens on the latest message with the composer still on screen", () => {
     const scrollHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollHeight");
     const clientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientHeight");

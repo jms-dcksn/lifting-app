@@ -103,7 +103,7 @@ export function AgentTranscript({
 }
 
 function AgentBubble({ message }: { message: AgentMessage }) {
-  const text = textFromParts(message.parts);
+  const text = textFromParts(message.parts).trim();
   const tools = message.parts.flatMap((part) => (part.type === "tool-call" ? [part.name] : []));
   if (message.role === "tool") return null;
   if (message.role === "user") return text ? <YouBubble text={text} /> : null;

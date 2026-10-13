@@ -486,6 +486,29 @@ alter table public.agent_message
           client renders bold, bullets, and a green gain percent, and moves a final
           <code class="font-mono text-sm">Source:</code> line under the bubble.
         </p>
+        <p class="text-slate-700 max-w-3xl">
+          Saved assistant messages can contain only spaces or newlines between tool calls.
+          The renderer trims their combined text before choosing a bubble, so those rows
+          do not leave a bare COACH label above the answer. Tool lookups still show their
+          quiet status. A pending reply keeps its COACH label and dots while waiting.
+        </p>
+        <div class="grid gap-3 md:grid-cols-3" aria-label="Saved assistant message rendering">
+          <div class="rounded-xl border border-slate-300 bg-white p-4"><strong>Blank text + tools</strong><p class="mt-2 text-sm">Show “Checked …” without a Coach bubble.</p></div>
+          <div class="rounded-xl border border-slate-300 bg-white p-4"><strong>Blank text alone</strong><p class="mt-2 text-sm">Show no speaker label or bubble.</p></div>
+          <div class="rounded-xl border border-slate-300 bg-white p-4"><strong>Answer text</strong><p class="mt-2 text-sm">Show the Coach label, formatted answer, and source.</p></div>
+        </div>
+        <article class="space-y-2">
+          <h3 class="font-mono text-sm">src/components/agent/agent-transcript.tsx — ignore blank saved text</h3>
+          <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>  const text = textFromParts(message.parts).trim();
+  const tools = message.parts.flatMap((part) =&gt; (part.type === "tool-call" ? [part.name] : []));
+  if (message.role === "tool") return null;
+  if (message.role === "user") return text ? &lt;YouBubble text={text} /&gt; : null;
+  if (!text) {
+    if (tools.length === 0) return null;
+    return &lt;p className="text-caption text-faint"&gt;Checked {tools.map(toolLabel).join(" · ")}&lt;/p&gt;;
+  }
+  return &lt;CoachReply text={text} tools={tools} /&gt;;</code></pre>
+        </article>
         <div class="max-w-sm rounded-2xl border border-slate-300 bg-slate-950 text-stone-100 p-4 space-y-3 text-sm">
           <div class="text-right space-y-1">
             <p class="text-[11px] font-semibold tracking-wide text-amber-300">YOU</p>

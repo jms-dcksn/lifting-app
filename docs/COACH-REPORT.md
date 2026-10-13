@@ -136,6 +136,13 @@ proposal's priority, key or wording, and never interprets an accepted review as 
 change. It produces internal source-referenced candidates only; no inbox or delivery is
 connected yet. See [AI Coach eligibility](AI-COACH.md#deterministic-exception-eligibility-210).
 
+Current workout suggestions use shared effective targets (#211), including supported repeated
+effort reductions automatically. Historical report proposals and legacy decisions retain
+review semantics. `weeklyCoach.currentWorkout` and `nextWorkout` return current reasons and
+evidence separately; an earlier-phase proposal or accepted review cannot override these
+numbers or imply an applied program change. Pain stays session-level review without a
+pain-specific target. See [effective targets](AI-COACH.md#effective-workout-targets-211).
+
 ## Shared stall evidence
 
 Plateau reviews now consume `stall-report.ts` through the complete owner-scoped loader,

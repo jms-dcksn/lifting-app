@@ -72,7 +72,7 @@ export function bindReadTools(supabase: Client, userId: string) {
     tool(async () => asJson(await nextWorkout(supabase, userId)), {
       name: "nextWorkout",
       description:
-        "Load the next workout and sessionTarget() weights so “why is my next squat target X?” matches Home and the session screen. If workout is null, say there is no next workout. If a slot target is null, say that target is not set.",
+        "Load the current effective next-workout target suggestions, reasons and evidence, shared with Home, planner and the session screen. Repeated effort reductions are already included; never apply another reduction or infer a program change. If workout is null, say there is no next workout. If a slot target is null, say that target is not set.",
       schema: z.object({}),
     }),
   ];

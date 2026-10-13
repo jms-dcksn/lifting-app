@@ -12,8 +12,8 @@ PRs and scheduled recovery stay silent. Replace routine Accept/Accept all with g
 conversation, optional evidence details and meaningful confirmed choices. Delivery slices
 and dependencies: [exception-only implementation plan](AI-COACH-EXCEPTIONS-PLAN.md).
 
-**Exception policy (#210):** the pure classifier is implemented. Inbox delivery, shared
-effective targets and the coaching entry-point switch remain planned.
+**Foundations (#210/#211):** pure exception classification and shared effective workout
+targets are implemented. Inbox delivery and the coaching entry-point switch remain planned.
 
 **Status:** Slice 0 shipped 2026-09-20. Chat became multi-thread on 2026-09-27
 ([Threads](#threads)). Slice 1 (screen context and navigation) shipped 2026-09-29.
@@ -45,7 +45,7 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 ## Invariants
 
 - Strength, report, stall, and target figures come from canonical helpers
-  (`sessionTarget()`, `buildCoachCheckInReport`, `buildCoachRecommendations`,
+  (`resolveEffectiveWorkoutTarget()`, `sessionTarget()`, `buildCoachCheckInReport`, `buildCoachRecommendations`,
   `groupReviewSessions`, `loadStallAssessments`). The prompt does not recompute them.
 - Tools take the user-scoped Supabase client from the request session. They never receive
   `SUPABASE_SECRET_KEY`.
@@ -90,7 +90,43 @@ distinguishes `repeated_effort_miss` from `below_rep_floor` on generated Coach r
 `evidenceSince` bounds supporting evidence, not just the latest exposure. The caller must
 choose it explicitly; no bootstrap age or reminder cadence is introduced here. An empty
 result never resolves an existing pain/performance episode. Retention, episode identity,
-replay and delivery belong to #212/#195; effective workout targets belong to #211.
+replay and delivery belong to #212/#195. Effective targets use the implemented contract below.
+
+## Effective workout targets (#211)
+
+`effective-workout-target.ts` exposes a pure `resolveEffectiveWorkoutTarget()` result:
+nullable `target`, typed `reason`, bounded progression `reference`, source first-set `evidence`,
+and `status: current_target`. This is a calculated initial suggestion, not an applied program
+change. `sessionTarget()` remains the progression/recovery engine; `strength/effort.ts`
+supplies the existing one-increment repeated-effort reduction. Recovery/deload wins.
+
+Effort requires two consecutive eligible first working sets from `buildStallAssessments()`
+with exactly matching current slot/exercise/equipment, program/day, phase, adaptation and
+prescription. An old report proposal cannot override a new phase, chosen swap or unavailable
+target. Significant pain stays a separate session-level review; there is no pain formula.
+
+`workout-target-data.ts` uses the signed-in client's complete owner-scoped stall/history
+loader, now including `set_index`. The pure builder bounds finished, non-warmup/non-deload
+history before evaluation time and finds exact first sets. Client hydration retains each
+requested slot's anchor/best, each identity's four-exposure fresh-swap window and the current
+effort pair. This preserves best-recent targets without shipping every historical set.
+
+- `loadNextWorkout()` hydrates Home/planner results. Planner shows the nullable load/rep
+  target and **Why this target** details. Accept or a chat visit does not gate these numbers.
+- Active sessions use the same resolver against pre-start history. First-set entry uses the
+  effective suggestion; saved same-exercise weight/reps carry forward. Entered fields remain
+  local component state across refreshes. Explicit swaps/adaptations retain confirmation.
+- `nextWorkout` returns the same target, effective result and `targetExplanation`, with
+  `targetEngine: resolveEffectiveWorkoutTarget`. Open workouts use stored day/week/choices,
+  persisted deload and pre-start history. Missing stored exercise choices stay unavailable.
+- `weeklyCoach.currentWorkout` supplies those same current targets alongside historical
+  report/proposals/legacy decisions. The prompt uses this field for current-target claims,
+  never subtracts another increment and never equates accepted review with an applied change.
+
+Reasons are `starting_weight`, `add_load`, `add_rep`, `hold_load`, `below_rep_floor`,
+`recovery`, `repeated_effort_miss`, and `unavailable`. Suggestions preserve current bodyweight
+and negative assistance conventions. Reads never mutate source rows or slots: a 100 lb
+exposure reduced to 95 lb never becomes 90 lb through another read.
 
 ## Module
 
@@ -249,7 +285,7 @@ Build in order. A later slice may add tools; it may not weaken an invariant.
     (`groupReviewSessions` and the Last / 21-day / chart summaries). Ordinary-pound
     families load `movementMemberIds` and resolve to the template id. Machine and cable
     stay exact exercise plus equipment instance. See `docs/ai-coach.html`.
-  - `nextWorkout` → `loadNextWorkout` plus the same `sessionTarget()` hydration the
+  - `nextWorkout` → `loadNextWorkout` and the same effective-target composition the
     session screen uses, so “why is this target X?” matches Home / planner / Start.
 - System prompt: answer from tool results; name the source once on a final `Source:` line; decline medical
   diagnosis (pain stays a review prompt, as Coach already does). One logged value is not a trend.

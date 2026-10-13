@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
 import { canSwapStation, isLoggableExercise } from "@/lib/station";
 import {
-  selectProgressionReference,
-  sessionTarget,
   startingWeight,
   type ProgressionPerformance,
   type ProgressionReference,
   type SessionTarget,
 } from "@/lib/strength/progression";
+import { effectiveTargetExplanation, resolveEffectiveWorkoutTarget, type EffectiveWorkoutTarget, type WorkoutTargetHistory } from "@/lib/effective-workout-target";
+import type { StallContext } from "@/lib/stall-report";
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { rirLabel, type EffectivePrescription, type ProgramPhase } from "@/lib/periodization";
 import type { SessionFeedback } from "@/lib/session-feedback";
@@ -83,6 +83,7 @@ export interface SlotView {
   exerciseId: string; // last logged this session, else the program slot's exercise
   pattern: Pattern;
   prescription: Omit<EffectivePrescription, "phase">;
+  targetContext: StallContext | null;
   restSeconds: number | null;
   sets: LoggedSet[];
   pendingSuggestion: import("@/lib/fluid").PendingSuggestion | null;
@@ -103,7 +104,7 @@ export function ActiveSession({
   stats,
   recentIds,
   slots,
-  progressionByExercise,
+  targetHistory,
   catalog: initialCatalog,
   recordsPromise,
   pinnedIds,
@@ -121,7 +122,7 @@ export function ActiveSession({
   stats: ExerciseStat[];
   recentIds: string[];
   slots: SlotView[];
-  progressionByExercise: Record<string, ProgressionPerformance[]>;
+  targetHistory: WorkoutTargetHistory;
   catalog: Record<string, ExerciseDef>;
   recordsPromise: Promise<ExerciseRecords[] | null>;
   pinnedIds: string[];
@@ -227,7 +228,8 @@ export function ActiveSession({
           key={slot.programSlotId}
           sessionId={sessionId}
           slot={slot}
-          progressionByExercise={progressionByExercise}
+          targetHistory={targetHistory}
+          isDeload={isDeload}
           achievements={recordsForSlot(achievements, slot.programSlotId)}
           isCurrent={i === currentIndex}
           alreadyFinished={alreadyFinished}
@@ -282,7 +284,8 @@ function SlotCard({
   alreadyFinished,
   sessionId,
   slot,
-  progressionByExercise,
+  targetHistory,
+  isDeload,
   isCurrent,
   stats,
   bodyweight,
@@ -296,7 +299,8 @@ function SlotCard({
   alreadyFinished: boolean;
   sessionId: string;
   slot: SlotView;
-  progressionByExercise: Record<string, ProgressionPerformance[]>;
+  targetHistory: WorkoutTargetHistory;
+  isDeload: boolean;
   isCurrent: boolean;
   stats: ExerciseStat[];
   bodyweight: number | null;
@@ -374,30 +378,17 @@ function SlotCard({
   const isBodyweight = equipment === "bodyweight";
   const isMachine = equipment.startsWith("machine") || equipment === "cable";
 
-  const progressionReference = useMemo(
-    () => selectProgressionReference(
-      progressionByExercise[exerciseId] ?? [],
-      slot.programSlotId,
-    ),
-    [exerciseId, progressionByExercise, slot.programSlotId],
-  );
-
-  // Target computes client-side off hydrated stats and recent exercise-wide history, so a swap
-  // re-derives instantly and repeated weekly exercises share progress safely.
-  const target = useMemo(
-    () =>
-      def
-        ? sessionTarget(
-            def,
-            { repMin: p.repMin, repMax: p.repMax, targetRir: p.targetRir },
-            progressionReference.selected,
-            catalog,
-            stats,
-            bodyweight,
-          )
-        : null,
-    [def, catalog, p.repMin, p.repMax, p.targetRir, progressionReference.selected, stats, bodyweight],
-  );
+  const effectiveTarget = useMemo(() => resolveEffectiveWorkoutTarget({
+    slotId: slot.programSlotId, exerciseId,
+    equipmentInstanceId: exerciseId === slot.targetContext?.exerciseId ? slot.targetContext.equipmentInstanceId : null,
+    prescription: p,
+    context: slot.targetContext ? { ...slot.targetContext, exerciseId,
+      equipmentInstanceId: exerciseId === slot.targetContext.exerciseId ? slot.targetContext.equipmentInstanceId : null, repMin: p.repMin, repMax: p.repMax,
+      targetRirMin: p.targetRirMin, targetRirMax: p.targetRirMax, targetSets: p.targetSets } : null,
+    isDeload, history: targetHistory, catalog, stats, bodyweight,
+  }), [slot.programSlotId, slot.targetContext, exerciseId, p, isDeload, targetHistory, catalog, stats, bodyweight]);
+  const target = effectiveTarget.target;
+  const progressionReference = effectiveTarget.reference;
 
   // Before any history exists, the suggested weight follows reps/RIR edits live.
   const liveWeight =
@@ -406,8 +397,9 @@ function SlotCard({
           startingWeight(def, reps, rir, catalog, stats, bodyweight)?.weight ?? null
       : undefined;
 
-  const initialWeight = target?.weight ?? (isMachine ? 0 : isBodyweight ? 0 : 45);
-  const initialReps = target?.targetReps ?? p.repMin;
+  const lastLogged = optimisticSets.filter(set => set.exerciseId === exerciseId).at(-1);
+  const initialWeight = lastLogged?.weight ?? target?.weight ?? (isMachine ? 0 : isBodyweight ? 0 : 45);
+  const initialReps = lastLogged?.reps ?? target?.targetReps ?? p.repMin;
 
   const done = optimisticSets.length;
   const complete = done >= p.targetSets;
@@ -595,6 +587,7 @@ function SlotCard({
       <TargetLine
         target={target}
         reference={progressionReference}
+        effectiveTarget={effectiveTarget}
         isBodyweight={isBodyweight}
         done={done}
       />
@@ -886,11 +879,13 @@ function ProgressDots({ done, target }: { done: number; target: number }) {
 function TargetLine({
   target,
   reference,
+  effectiveTarget,
   isBodyweight,
   done,
 }: {
   target: SessionTarget | null;
   reference: ProgressionReference;
+  effectiveTarget: EffectiveWorkoutTarget;
   isBodyweight: boolean;
   done: number;
 }) {
@@ -920,6 +915,12 @@ function TargetLine({
         </span>
         {value}
       </div>
+      {effectiveTarget.reason === "repeated_effort_miss" && (
+        <p className="mt-1 flex items-center gap-1 text-caption text-muted">
+          Effort adjustment
+          <InfoButton title="Why this target">{effectiveTargetExplanation(effectiveTarget)}</InfoButton>
+        </p>
+      )}
       {target.source === "progression" && (
         <ProgressionContext reference={reference} isBodyweight={isBodyweight} />
       )}

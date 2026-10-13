@@ -241,9 +241,10 @@ export const nextWorkoutFixture = {
       catalog,
       stats: [],
       bodyweight: 142,
-      progressionByExercise: {
+      targetHistory: { effortBySlot: {}, progressionByExercise: {
         "bb-back-squat": [
           {
+            exerciseId: "bb-back-squat", equipmentInstanceId: null, sessionId: "prior", setId: "prior-first",
             programSlotId: "slot-squat",
             performedAt: "2026-09-18T12:00:00.000Z",
             weight: 225,
@@ -252,7 +253,7 @@ export const nextWorkoutFixture = {
             e1rm: 292.5,
           },
         ],
-      },
+      } },
     }),
   },
 };

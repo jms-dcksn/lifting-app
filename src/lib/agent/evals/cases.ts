@@ -79,9 +79,9 @@ export const EVAL_CASES: EvalCase[] = [
     expectedTools: ["nextWorkout"],
     expectedCitations: [
       { value: squatTarget?.weight ?? 230, source: "nextWorkout" },
-      { value: "sessionTarget", source: "nextWorkout" },
+      { value: "resolveEffectiveWorkoutTarget", source: "nextWorkout" },
     ],
-    goldAnswer: `nextWorkout / sessionTarget() sets Barbell Back Squat to ${squatTarget?.weight} lb × ${squatTarget?.targetReps}.`,
+    goldAnswer: `nextWorkout / resolveEffectiveWorkoutTarget() sets Barbell Back Squat to ${squatTarget?.weight} lb × ${squatTarget?.targetReps}.`,
   },
   {
     id: "next-day",

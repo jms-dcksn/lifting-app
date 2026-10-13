@@ -45,6 +45,7 @@ describe("shared stall data boundary", () => {
       expect(calls.filter(c => c.table === table && c.op === "eq" && c.args[0] === "user_id")).toHaveLength(pages);
     }
     expect(calls).toContainEqual({ table: "movement_adaptation", op: "gt", args: ["id", "b"] });
+    expect(calls.filter(c => c.table === "set_log" && c.op === "select")[0].args[0]).toContain("set_index");
   });
   it("historical months ignore later adaptations and match shared assessments", async () => {
     const { db } = client(tables());

@@ -11,9 +11,10 @@ not recommend programming changes or mutate training data.
 ## Time windows
 
 - The default reporting timezone is `America/Chicago`.
-- The current window is seven calendar dates ending on `generatedAt` (inclusive).
-- The prior comparison window is the immediately preceding seven calendar dates. The windows
-  never overlap.
+- The current window is the Monday–Sunday calendar week containing `generatedAt`; only
+  observations available by generation time contribute.
+- The prior comparison window is the preceding Monday–Sunday week. The windows never overlap.
+- These calendar reporting windows are distinct from session-count-based program weeks.
 - A session belongs to a window by `performed_at`. Future sessions are excluded.
 - Only sessions with `finished_at` contribute to execution metrics. Open sessions are excluded
   and counted as data-quality warnings.
@@ -74,6 +75,11 @@ edited after training, the old session's displayed prescription can reflect that
 or deleted slots are surfaced as data-quality warnings rather than guessed.
 
 ## Reviewable recommendations
+
+**Planned change, not shipped:** [the exception-only Coach plan](AI-COACH-EXCEPTIONS-PLAN.md)
+preserves this engine/report and replaces routine acceptance with AI Coach as the entry
+point. Only meaningful exceptions generate notifications. Current acceptance behavior below
+remains the source description until the implementation lands.
 
 `src/lib/coach-recommendations.ts` is a separate deterministic proposal layer over this factual
 report and its source rows. Keeping it separate preserves the v1 report contract while allowing

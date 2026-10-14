@@ -22,6 +22,7 @@ export interface RecordSet {
   is_warmup: boolean;
   is_deload?: boolean;
   created_at: string;
+  set_index?: number;
   workout_session: { performed_at: string; finished_at: string | null };
 }
 

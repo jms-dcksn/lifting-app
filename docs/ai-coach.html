@@ -110,9 +110,59 @@ flowchart TD
           An empty result never resolves a persisted pain episode. Historical bodyweight and
           negative assistance loads retain their existing conventions. Fluid retains its
           rep-change/swap ladder and two-exposure plateau snooze.</p>
-        <p class="text-slate-700">Current workout targets are a separate #211 integration. Persistence,
+        <p class="text-slate-700">Current workout targets now share the #211 composition below. Persistence,
           episode deduplication across refreshes and delivery are #212/#195. This classifier
           excludes legacy accepted review decisions and returns recommended status only.</p>
+      </section>
+
+      <section id="effective-targets" class="space-y-4">
+        <h2 class="font-serif text-2xl">Effective workout targets — shared across screens (#211)</h2>
+        <p class="text-slate-700">Two comparable first working sets can be harder than the prescribed
+          effort even while ordinary double progression suggests another rep. The shared resolver
+          now includes the existing one-increment effort reduction in the upcoming target.
+          You do not need to accept a proposal or visit chat to get that suggestion.</p>
+        <div class="grid gap-3 sm:grid-cols-3">
+          <div class="rounded-lg border border-slate-300 bg-white p-4"><h3 class="font-semibold">Recorded evidence</h3><p class="mt-2 text-sm">Two exact-slot first sets: 100 lb × 8 at 0 RIR, against a 2 RIR prescription.</p></div>
+          <div class="rounded-lg border border-slate-300 bg-white p-4"><h3 class="font-semibold">Shared suggestion</h3><p class="mt-2 text-sm">At a 5 lb increment, suggest 95 lb × 8 at 2 RIR. Repeated reads stay at 95; they do not subtract another increment.</p></div>
+          <div class="rounded-lg border border-slate-300 bg-white p-4"><h3 class="font-semibold">Open workout</h3><p class="mt-2 text-sm">Use pre-start history and stored week/choices. Typed values and saved sets remain yours; saved weight/reps carry forward.</p></div>
+        </div>
+        <pre class="mermaid">
+flowchart TD
+  History[Complete owner-scoped history] --> Projection[Exact first sets: slot anchors, best recent and effort pair]
+  Context[Current prescription, choice and adaptation] --> Base[sessionTarget]
+  Projection --> Base
+  Base --> Recovery{Recovery or deload?}
+  Recovery -->|Yes| Result[Current calculated target or unavailable]
+  Recovery -->|No| Effort{Two effort misses in matching current context?}
+  Effort -->|Yes| Reduce[Existing one-increment reduction]
+  Effort -->|No| Result
+  Reduce --> Result
+  Result --> Planner[Home and planner]
+  Result --> Active[Initial active-session suggestion]
+  Result --> Coach[nextWorkout and weeklyCoach.currentWorkout]
+        </pre>
+        <p class="text-slate-700">The same canonical calculation supplies every consumer. Recovery takes
+          precedence. Effort evidence must match exact exercise/equipment, slot, phase, adaptation,
+          reps, RIR and sets. An old weekly proposal cannot override a new prescription or a chosen
+          exercise. Current-target status describes a suggestion, not a persisted intervention.</p>
+        <h3 class="font-mono text-sm">src/lib/effective-workout-target.ts — current target composition</h3>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>  if (!target || !def) return result(null, &quot;unavailable&quot;, evidence);
+  if (input.isDeload || prescription.targetRir &gt;= 4) return result(target, &quot;recovery&quot;, evidence);
+  const effort = input.history.effortBySlot[input.slotId];
+  if (context &amp;&amp; context.exerciseId === input.exerciseId &amp;&amp; context.equipmentInstanceId === (input.equipmentInstanceId ?? null)
+    &amp;&amp; context.repMin === prescription.repMin &amp;&amp; context.repMax === prescription.repMax &amp;&amp; context.targetRirMax === prescription.targetRir
+    &amp;&amp; effort &amp;&amp; JSON.stringify(effort.context) === JSON.stringify(context)) {
+    const reduction = repeatedEffortReduction(def, prescription,
+      effort.exposures.map(exposure =&gt; ({ ...exposure, targetRirMin: context.targetRirMin })));
+    if (reduction) return result({ ...reduction, targetRir: prescription.targetRir, source: &quot;progression&quot;, last: effort.exposures.at(-1)! },
+      &quot;repeated_effort_miss&quot;, effort.exposures);
+  }</code></pre>
+        <p class="text-slate-700">The builder reads complete history but sends only the references
+          needed to preserve best-recent progression and exact effort evidence. Missing targets stay
+          explicit. Current bodyweight and negative assistance retain their existing conventions.
+          Significant pain remains a session-level review; it never produces a new numeric formula.</p>
+        <p><a class="underline" href="AI-COACH.md#effective-workout-targets-211">Implemented target contract</a>.
+          Inbox, episode replay and confirmed structural choices remain separate work.</p>
       </section>
 
       <section class="space-y-4">

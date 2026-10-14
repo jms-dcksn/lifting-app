@@ -1,7 +1,7 @@
 # AI Coach: exception-only coaching implementation plan
 
-Status: product direction approved 2026-10-13. Slice A's pure classifier is implemented;
-target consistency, persistence, conversations and the entry-point switch remain planned.
+Status: product direction approved 2026-10-13. Slice A's pure classifier and Slice B's shared
+effective targets are implemented; persistence, conversations and the entry switch remain planned.
 Delivery owner: [#206](https://github.com/jms-dcksn/lifting-app/issues/206), under [#136](https://github.com/jms-dcksn/lifting-app/issues/136).
 
 ## Outcome
@@ -53,8 +53,8 @@ Original implementation baseline checked against main `2b919d7fca044b220a48fc835
   record review state; they do not apply training changes.
 - `src/lib/stall-report.ts` and `src/lib/fluid.ts`: shared stall evidence and Fluid intervention
   ladder. The Fluid UI currently asks for acceptance before writing an adaptation.
-- `src/lib/agent/tools/next-workout.ts` and active-session UI: call the target engine, but
-  the Coach-specific repeated-effort reduction is not a shared effective-target result.
+- `src/lib/effective-workout-target.ts` now composes canonical targets and repeated-effort
+  reductions for Home/planner, active-session initial suggestions and next/weekly Coach tools.
 - Significant pain in finished sessions in the report window produces a session-level
   `pain_review` and suppresses other Coach proposals. It does not calculate reduced loads
   or automatically suppress the separate session target engine.
@@ -197,12 +197,17 @@ and lifecycle choices still belong to C/D; B supplies the effective workout targ
 ### Slice B — Effective target consistency
 
 Issue: [#211](https://github.com/jms-dcksn/lifting-app/issues/211).
-Coordinate reason types with A; no inbox dependency.
+Implemented, coordinated with A's effort reason; no inbox dependency.
 
 Compose the existing effort-reduction rule with canonical targets once. Home/planner,
 active-session initial targets, agent nextWorkout and Coach explanations consume the same
 effective result. Validate upcoming phase/context rather than directly applying a proposal
 derived from the last session's phase. Preserve the existing unknown-target state.
+
+Contract: [effective targets](AI-COACH.md#effective-workout-targets-211). The result distinguishes
+current calculated suggestions from recommended structural interventions. Complete owner
+history is projected to exact first-set references; open sessions preserve entered/saved
+values and use stored context with pre-start history. Reads never compound reductions.
 
 ### Slice C — Persistence and action design
 
@@ -295,5 +300,5 @@ notes rather than deleting evidence of earlier decisions.
   review entry before the replacement works. Record observed delivery counts and suppression
   reasons without adding raw pain notes to notification payloads/logs.
 
-The original planning change introduced no application behavior. Slice A adds a pure,
-tested policy without migrations, training-data writes, scheduled jobs or delivery changes.
+The original planning change introduced no application behavior. Slices A/B add pure policy
+and shared target suggestions without migrations, training writes, scheduled jobs or delivery changes.

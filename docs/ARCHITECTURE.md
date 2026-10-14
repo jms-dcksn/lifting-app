@@ -73,6 +73,19 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
 4. The bump test is reps-only. Coach effort reductions use first-set RIR; hard back-off
    sets must not lower an accurately loaded top set.
 
+`effective-workout-target.ts` composes `sessionTarget()` with the existing
+`strength/effort.ts` reduction for two consecutive comparable first-set misses. Recovery/deload
+wins; effort evidence must match current exact stall context, including phase/adaptation and
+equipment instance. It returns nullable target, reason, reference/source evidence and
+`current_target` suggestion status. Home/planner, active-session initial entry and next/weekly
+Coach share it. See [effective targets](AI-COACH.md#effective-workout-targets-211).
+
+`workout-target-data.ts` reuses complete owner-scoped stall history with first-set indexes.
+Its projection retains the four-exposure fallback and each rendered slot's anchor/best per
+exact identity plus the current effort pair, keeping the browser payload bounded. Open
+sessions use pre-start history and preserve entered/logged values. Planner/agent resolve
+stored open-session context instead of the completed-count phase; missing choices stay explicit.
+
 Grouping by exact exercise stays. Card 3 of the
 [2026-09-29 rollup spec](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
 would widen ordinary-pound families only on the word `family`. That card is not approved.
@@ -136,7 +149,7 @@ user’s client and owner-scoped RLS. There is no elevated application read path
 
 The in-app agent is a separate cookie-auth path: `POST /api/agent/chat` → LangChain loop →
 read tools wrapping `loadCoachUi`, `getActiveProgram`, Exercise review grouping, and
-`loadNextWorkout` + `sessionTarget()`. Tools use the user-scoped client only. Conversation
+`loadNextWorkout` + `resolveEffectiveWorkoutTarget()`. Tools use the user-scoped client only. Conversation
 rows live in `agent_thread` / `agent_message`, many threads per user. See
 [AI Coach](AI-COACH.md#threads) and [ai-coach.html](ai-coach.html).
 

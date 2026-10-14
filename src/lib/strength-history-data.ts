@@ -26,7 +26,7 @@ export async function loadMonthlyHistory(db: Client, userId: string, month: stri
   after = null;
   while (sessions.length) {
     let q = db.from("set_log")
-      .select("id, user_id, session_id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, e1rm, is_warmup, is_deload, created_at, workout_session!inner(performed_at, finished_at)")
+      .select("id, user_id, session_id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, e1rm, set_index, is_warmup, is_deload, created_at, workout_session!inner(performed_at, finished_at)")
       .eq("user_id", userId).eq("is_warmup", false)
       .not("workout_session.finished_at", "is", null).lte("workout_session.finished_at", now.toISOString())
       .lt("workout_session.performed_at", before).order("id").limit(500);

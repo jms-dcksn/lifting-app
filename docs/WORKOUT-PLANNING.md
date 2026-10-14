@@ -1,5 +1,17 @@
 # Plan the next workout
 
+## Effective target suggestions
+
+`loadNextWorkout()` attaches shared effective targets for Home/planner and Coach. Planner
+displays the nullable load/rep target and a **Why this target** InfoButton. Supported repeated
+effort reductions are included without Accept or a chat visit. See
+[the target contract](AI-COACH.md#effective-workout-targets-211). Calculation never writes
+choices, sessions, adaptations, slots or sets.
+
+Open-workout target reads preserve stored day/week/choices and use pre-start history. Active
+entry carries forward saved same-exercise weight/reps; refresh does not replace typed values.
+Missing stored exercise identity stays explicit rather than silently choosing a default.
+
 Home's Upcoming workout card links to `/workout/next`. The full-page planner shows every
 exercise with the effective week-specific sets, reps, RIR, rest, and phase description.
 It shares the station-resolving ExercisePicker (`resolveStations`) with the active workout. Reset removes

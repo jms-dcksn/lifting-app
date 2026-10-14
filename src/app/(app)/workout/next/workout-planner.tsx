@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ExerciseCardLabel, exerciseCardAriaLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card, CardLabel } from "@/components/ui/card";
+import { InfoButton } from "@/components/ui/info-button";
+import { effectiveTargetExplanation, type EffectiveWorkoutTarget } from "@/lib/effective-workout-target";
 import { Sheet } from "@/components/ui/sheet";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
 import { canSwapStation } from "@/lib/station";
@@ -16,7 +18,7 @@ import { startPlannedSession } from "../../session/actions";
 import { saveWorkoutChoice } from "./actions";
 
 type Slot = { id: string; exerciseId: string; baseExerciseId: string; pattern: Pattern;
-  prescription: EffectivePrescription; restSeconds: number };
+  prescription: EffectivePrescription; restSeconds: number; effectiveTarget: EffectiveWorkoutTarget };
 
 export function WorkoutPlanner({ planKey, programName, dayName, week, slots, catalog: initialCatalog }: {
   planKey: string; programName: string; dayName: string; week: number; slots: Slot[]; catalog: ExerciseDef[];
@@ -86,6 +88,13 @@ export function WorkoutPlanner({ planKey, programName, dayName, week, slots, cat
             )}
           </div>
           <p className="mt-2 text-body tabular-nums">{p.targetSets} sets × {p.repMin}{p.repMin !== p.repMax ? `–${p.repMax}` : ""} reps · {rirLabel(p)} RIR</p>
+          <div className="mt-2 flex items-center gap-1 text-body tabular-nums">
+            {slot.effectiveTarget.target ? (
+              <span>Target {slot.effectiveTarget.target.weight} {def?.equipment === "bodyweight" ? "added" : "lb"} × {slot.effectiveTarget.target.targetReps}</span>
+            ) : <span className="text-muted">Target not set</span>}
+            <InfoButton title="Why this target">{effectiveTargetExplanation(slot.effectiveTarget)}</InfoButton>
+          </div>
+          {slot.effectiveTarget.reason === "repeated_effort_miss" && <p className="text-caption text-muted">Effort adjustment</p>}
           <p className="mt-1 text-caption text-muted">Rest {slot.restSeconds} seconds between sets</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {showStationSwap && (

@@ -1,7 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Pattern } from "@/lib/strength/coefficients";
-import type { ProgressionPerformance } from "@/lib/strength/progression";
+import { loadWorkoutTargetHistory } from "@/lib/workout-target-data";
+import { stallContext } from "@/lib/stall-report";
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { recentExerciseIds } from "@/lib/program";
 import { getCatalogMap } from "@/lib/catalog";
@@ -15,22 +16,6 @@ import { defaultCompoundIds, pinnedExerciseIds } from "@/lib/board";
 import { isLoggableExercise } from "@/lib/station";
 import { loadUserPinRows } from "@/lib/pins-data";
 import { ActiveSession, type SlotView, type LoggedSet } from "./active-session";
-
-type PriorSetRow = {
-  session_id: string;
-  program_slot_id: string | null;
-  exercise_id: string;
-  weight: number;
-  reps: number;
-  rir: number | null;
-  e1rm: number | null;
-  set_index: number;
-  created_at: string;
-  workout_session:
-    | { performed_at: string; finished_at: string | null }
-    | { performed_at: string; finished_at: string | null }[]
-    | null;
-};
 
 export default async function SessionPage({
   params,
@@ -114,65 +99,7 @@ export default async function SessionPage({
   const slotIds = (daySlots ?? []).map((s) => s.id);
   const swaps = session.exercise_swaps;
   const sessionSwaps = swaps && typeof swaps === "object" && !Array.isArray(swaps) ? swaps : {};
-  const historyExerciseIds = [...new Set([
-    ...recentIds,
-    ...(daySlots ?? []).map((slot) => slot.exercise_id),
-    ...(thisSessionSets ?? []).map((set) => set.exercise_id),
-    ...Object.values(sessionSwaps).filter((value): value is string => typeof value === "string"),
-  ])];
-
-  // Recent first working sets for each exact exercise across every program slot. The active
-  // client selects a best-recent reference within the current slot cycle, allowing Lower A to
-  // benefit from a newer Lower B exposure without letting an old all-time PR dictate the target.
-  // Fetch all working sets because an exercise introduced by a mid-session swap may start at a
-  // set index above zero; grouping below finds its first set within that exposure.
-  const { data: priorSets, error: priorSetsError } = historyExerciseIds.length
-    ? await supabase
-        .from("set_log")
-        .select("session_id, program_slot_id, exercise_id, weight, reps, rir, e1rm, set_index, created_at, workout_session!inner(performed_at, finished_at)")
-        .eq("user_id", userId)
-        .eq("is_warmup", false)
-        .eq("is_deload", false)
-        .neq("session_id", id)
-        .in("exercise_id", historyExerciseIds)
-        .lt("workout_session.performed_at", session.performed_at)
-        .lte("workout_session.finished_at", session.performed_at)
-        .lt("created_at", session.performed_at)
-        .order("created_at", { ascending: false })
-        .limit(500)
-    : { data: [], error: null };
-  if (priorSetsError) throw new Error("Unable to load progression history. Please try again.");
-
-  const firstByExposure = new Map<string, PriorSetRow>();
-  for (const row of (priorSets ?? []) as PriorSetRow[]) {
-    const key = `${row.session_id}:${row.program_slot_id ?? "adhoc"}:${row.exercise_id}`;
-    const current = firstByExposure.get(key);
-    if (!current || row.set_index < current.set_index || (
-      row.set_index === current.set_index && row.created_at < current.created_at
-    )) {
-      firstByExposure.set(key, row);
-    }
-  }
-  const progressionByExercise: Record<string, ProgressionPerformance[]> = {};
-  for (const row of firstByExposure.values()) {
-    const joined = Array.isArray(row.workout_session)
-      ? row.workout_session[0]
-      : row.workout_session;
-    if (!joined?.finished_at) continue;
-    const list = progressionByExercise[row.exercise_id] ?? [];
-    list.push({
-      programSlotId: row.program_slot_id,
-      performedAt: joined.performed_at,
-      weight: row.weight,
-      reps: row.reps,
-      rir: row.rir,
-      e1rm: row.e1rm,
-    });
-    progressionByExercise[row.exercise_id] = list;
-  }
-  for (const list of Object.values(progressionByExercise)) {
-    list.sort((a, b) => b.performedAt.localeCompare(a.performedAt));
-  }
+  const targetHistory = await loadWorkoutTargetHistory(supabase, userId, catalog, new Date(session.performed_at), slotIds);
 
   // Group by slot, not exercise, so a duplicated exercise across two slots renders
   // its own sets on each card (matching the slot-keyed progression above). The last
@@ -279,12 +206,18 @@ export default async function SessionPage({
       sessionWeek,
       phases,
     );
+    const exerciseId = typeof sessionSwaps[slot.id] === "string"
+      ? sessionSwaps[slot.id] as string
+      : sessionExercise.get(slot.id) ?? folded?.exerciseId ?? slot.exercise_id;
+    const last = (setsBySlot.get(slot.id) ?? []).at(-1);
+    const equipmentInstanceId = last?.exerciseId === exerciseId ? last.equipmentInstanceId : null;
     return {
       programSlotId: slot.id,
-      // Explicit choice wins even before logging; legacy sessions fall back to their sets.
-      exerciseId: typeof sessionSwaps[slot.id] === "string"
-        ? sessionSwaps[slot.id] as string
-        : sessionExercise.get(slot.id) ?? folded?.exerciseId ?? slot.exercise_id,
+      exerciseId,
+      targetContext: session.program_id ? stallContext({ id: slot.id, programId: session.program_id,
+        programDayId: session.program_day_id!, exerciseId, targetSets: slot.target_sets,
+        repMin: slot.rep_min, repMax: slot.rep_max, targetRir: slot.target_rir },
+        exerciseId, equipmentInstanceId, effective, folded?.phaseStartAt ?? null) : null,
       pattern: slot.pattern as Pattern,
       prescription: {
         targetSets: effective.targetSets,
@@ -341,7 +274,7 @@ export default async function SessionPage({
       stats={stats}
       recentIds={recentIds}
       slots={slots}
-      progressionByExercise={progressionByExercise}
+      targetHistory={targetHistory}
       catalog={catalog}
       recordsPromise={recordsPromise}
       pinnedIds={pinnedIds}

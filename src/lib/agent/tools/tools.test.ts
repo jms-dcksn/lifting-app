@@ -46,6 +46,12 @@ vi.mock("@/lib/program", () => ({
   })),
 }));
 
+vi.mock("@/lib/next-workout", () => ({
+  loadNextWorkout: vi.fn(async () => ({ key: "plan", choices: {}, completed: 8, week: 3,
+    day: { name: "Lower A" }, slots: [], catalog: {}, stats: [], bodyweight: 142,
+    targetHistory: { progressionByExercise: {}, effortBySlot: {} }, open: null })),
+}));
+
 describe("agent read tools", () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -56,6 +62,7 @@ describe("agent read tools", () => {
     expect(result.source).toBe("weeklyCoach");
     expect(result.checkInText).toContain("3/4");
     expect(result).not.toHaveProperty("catalog");
+    expect(result.currentWorkout?.dayName).toBe("Lower A");
   });
 
   it("activeProgram wraps getActiveProgram", async () => {
@@ -163,8 +170,9 @@ describe("agent read tools", () => {
       catalog,
       stats: [],
       bodyweight: 142,
-      progressionByExercise: {
+      targetHistory: { effortBySlot: {}, progressionByExercise: {
         "bb-back-squat": [{
+          exerciseId: "bb-back-squat", equipmentInstanceId: null, sessionId: "prior", setId: "prior-first",
           programSlotId: "slot-squat",
           performedAt: "2026-09-18T12:00:00.000Z",
           weight: 225,
@@ -172,10 +180,10 @@ describe("agent read tools", () => {
           rir: 1,
           e1rm: 292.5,
         }],
-      },
+      } },
     });
     expect(slots[0]?.target?.weight).toBe(expected?.weight);
     expect(slots[0]?.target?.targetReps).toBe(expected?.targetReps);
-    expect(slots[0]?.targetEngine).toBe("sessionTarget");
+    expect(slots[0]?.targetEngine).toBe("resolveEffectiveWorkoutTarget");
   });
 });

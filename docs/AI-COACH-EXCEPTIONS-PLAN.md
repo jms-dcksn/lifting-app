@@ -212,13 +212,20 @@ values and use stored context with pre-start history. Reads never compound reduc
 ### Slice C — Persistence and action design
 
 Issue: [#212](https://github.com/jms-dcksn/lifting-app/issues/212).
-Can proceed alongside A/B. Blocks the migrations in D and new adaptation actions in E.
+Design delivered in [episode storage/replay/action proposal](AI-COACH-EPISODES-DESIGN.md).
+Its Decision Card remains pending owner approval. Blocks the migrations in D and new
+adaptation actions in E; a design PR merge does not authorize schema application.
 
 Prepare a concrete Decision Card for schema, retention, constraints, replay semantics,
 episode/thread ownership, bootstrap, preferences and pre-workout action authorization.
 Prefer the smallest extension to existing Supabase/thread infrastructure; do not select a
 new service. Include grants, RLS, transactions, indexes, compatibility and rollback.
 This plan approves the product direction, not an unreviewed schema or privileged worker.
+
+The proposal separates stable episodes, evidence revisions and notice delivery; defines
+90-day supporting/21-day freshness defaults, persistent pain review and two-exposure snooze;
+and specifies owner-scoped signed commands, source guards and atomic Fluid receipts.
+Those defaults and storage choices are proposed, not approved or shipped behavior.
 
 ### Slice D — Persistent exception inbox and refresh
 

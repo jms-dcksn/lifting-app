@@ -15,6 +15,10 @@ and dependencies: [exception-only implementation plan](AI-COACH-EXCEPTIONS-PLAN.
 **Foundations (#210/#211):** pure exception classification and shared effective workout
 targets are implemented. Inbox delivery and the coaching entry-point switch remain planned.
 
+**Storage/action design (#212):** [episode design and Decision Card](AI-COACH-EPISODES-DESIGN.md)
+specify replay, owner isolation, preferences and confirmed Fluid actions. This is a proposed
+contract awaiting owner approval; no schema, delivery or action implementation ships with it.
+
 **Status:** Slice 0 shipped 2026-09-20. Chat became multi-thread on 2026-09-27
 ([Threads](#threads)). Slice 1 (screen context and navigation) shipped 2026-09-29.
 Slice 2 (gallery intake to inactive draft) shipped; later slices remain planned. Rationale lives in

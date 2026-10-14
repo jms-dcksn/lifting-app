@@ -74,6 +74,20 @@ export function IconHistory({ size }: IconProps) {
   );
 }
 
+export function IconPastSets({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path
+        d="M9 5h12M13 12h8M13 19h8M5 9l-3 3 3 3M2 12h4a3.5 3.5 0 0 1 0 7H4"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 export function IconLastUsed({ size }: IconProps) {
   return (
     <Svg size={size}>

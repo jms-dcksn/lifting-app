@@ -3,7 +3,7 @@ import { ExerciseCardLabel, exerciseCardAriaLabel } from "@/components/ui/exerci
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { iconButtonClasses } from "@/components/ui/icon-button-styles";
-import { IconHistory } from "@/components/ui/icons";
+import { IconPastSets } from "@/components/ui/icons";
 import {
   recapHeadline,
   recapLines,
@@ -140,7 +140,7 @@ export function AchievementRecap({
                   aria-label={`View history for ${catalog?.[group.exerciseId] ? exerciseCardAriaLabel(catalog[group.exerciseId], catalog) : group.name}`}
                   className={iconButtonClasses("ghost")}
                 >
-                  <IconHistory />
+                  <IconPastSets />
                 </Link>
               </div>
             </li>

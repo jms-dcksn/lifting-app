@@ -63,7 +63,63 @@ case "add_load":
           pain-specific load. A rep-range change or swap offers a meaningful choice instead of
           generic Accept. Reading a notification never applies a training change.</p>
         <p><a class="underline" href="AI-COACH-EXCEPTIONS-PLAN.md">Implementation plan and issue dependencies</a>.
-          Storage and action authorization are designed before their migrations are approved.</p>
+          The <a class="underline" href="#episode-design">storage/action proposal below</a> awaits owner approval.</p>
+      </section>
+
+      <section id="episode-design" class="space-y-4 rounded-lg border border-slate-300 p-5">
+        <h2 class="font-serif text-2xl">One situation survives reload — proposed design (#212)</h2>
+        <p class="text-slate-700"><strong>Design only; approval pending.</strong> No episode tables,
+          inbox or new confirmation actions are implemented by this proposal. The next implementation
+          slices are #195 and #141. The full
+          <a class="underline" href="AI-COACH-EPISODES-DESIGN.md#decision-card">Decision Card</a>
+          covers six owner-scoped tables, signed server commands, source revision guards and defaults.</p>
+        <figure class="space-y-3" aria-label="Proposed episode identity, evidence and notification separation">
+          <div class="grid gap-3 sm:grid-cols-3">
+            <div class="rounded-lg border border-slate-300 bg-white p-4">
+              <h3 class="font-semibold">1. Stable episode</h3>
+              <p class="mt-2 text-sm">Same owner + slot + exact context keeps one situation. Pain stays a session-level review with no guessed affected lift.</p>
+            </div>
+            <div class="rounded-lg border border-slate-300 bg-white p-4">
+              <h3 class="font-semibold">2. Changing evidence</h3>
+              <p class="mt-2 text-sm">New sets or corrections revise evidence. Old evidence cannot overwrite a newer source revision; missing data is not recovery.</p>
+            </div>
+            <div class="rounded-lg border border-slate-300 bg-white p-4">
+              <h3 class="font-semibold">3. Separate notice</h3>
+              <p class="mt-2 text-sm">One notice per attention event preserves its original evidence. Reading or acknowledging it does not resolve pain or apply a change.</p>
+            </div>
+          </div>
+          <figcaption class="text-sm text-slate-600">Example: two effort misses open one episode.
+            Reload shows the same item. A third comparable miss revises evidence without another alert.
+            A supported new intervention can create one new attention event.</figcaption>
+        </figure>
+        <figure class="space-y-3" aria-label="Proposed confirmed action transaction">
+          <div class="grid gap-3 sm:grid-cols-4">
+            <div class="rounded-lg border border-slate-300 p-3"><h3 class="font-semibold">User confirms</h3><p class="mt-2 text-sm">Choose the current rep-range change or replacement and see its actual scope.</p></div>
+            <div class="rounded-lg border border-slate-300 p-3"><h3 class="font-semibold">Server checks</h3><p class="mt-2 text-sm">Reload owned evidence; run the canonical engine; sign the exact prepared command.</p></div>
+            <div class="rounded-lg border border-slate-300 p-3"><h3 class="font-semibold">Database commits</h3><p class="mt-2 text-sm">Check identity and revision; save adaptation, session choice and receipt together.</p></div>
+            <div class="rounded-lg border border-slate-300 p-3"><h3 class="font-semibold">Retry reuses receipt</h3><p class="mt-2 text-sm">A lost response returns the committed result. A stale new confirmation makes no change.</p></div>
+          </div>
+          <figcaption class="text-sm text-slate-600">This is a proposed transaction boundary.
+            A signing key adds operational work; RLS and explicit live ownership checks remain necessary.</figcaption>
+        </figure>
+        <p class="text-slate-700">The current acceptance action makes two separate writes. These are
+          exact source lines from its swap branch; the omitted earlier lines insert the adaptation.
+          Calling this action from chat would not make both writes atomic:</p>
+        <h3 class="font-mono text-sm">src/app/(app)/session/actions.ts — current swap after adaptation insert</h3>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>  if (input.action === &quot;swap&quot; &amp;&amp; input.newExerciseId) {
+    await swapSessionExercise({ sessionId: input.sessionId, programSlotId: input.programSlotId,
+      exerciseId: input.newExerciseId, scope: &quot;workout&quot; });
+  }
+  revalidateSession(input.sessionId);</code></pre>
+        <p class="text-slate-700">Proposed defaults: 90 days of supporting evidence, a latest performance
+          exposure within 21 days, and a quiet initial inbox bootstrap. Persisted pain review survives
+          calendar rollover. Quiet hours defer arrival prompts; the inbox stays accessible. Keep going
+          retains Fluid's two-exposure snooze. Workout targets continue calculating normally.</p>
+        <p class="text-slate-700">Opening an episode would create or reuse one owned conversation with
+          deterministic evidence. An explicit Discuss with Coach interaction starts normal chat generation.
+          Refresh and set logging invoke no model. Closed-app delivery and scheduled generation remain future work.</p>
+        <p><a class="underline" href="AI-COACH-EPISODES-DESIGN.md">Full proposal, lifecycle tables, security boundary and verification gates</a>.
+          A design PR merge does not approve migrations or provision its signing key.</p>
       </section>
 
       <section id="exception-policy" class="space-y-4">

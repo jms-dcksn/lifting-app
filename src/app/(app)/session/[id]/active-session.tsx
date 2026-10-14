@@ -18,7 +18,7 @@ import { rirLabel, type EffectivePrescription, type ProgramPhase } from "@/lib/p
 import type { SessionFeedback } from "@/lib/session-feedback";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
-import { IconHistory, IconLastUsed, IconSwap } from "@/components/ui/icons";
+import { IconPastSets, IconLastUsed, IconSwap } from "@/components/ui/icons";
 import { Sheet } from "@/components/ui/sheet";
 import { ExerciseCardLabel, exerciseCardAriaLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
@@ -551,7 +551,7 @@ function SlotCard({
             onClick={() => setShowHistory(true)}
             aria-label={`View history for ${name}`}
           >
-            <IconHistory />
+            <IconPastSets />
           </IconButton>
           {!isTemplate && (
             <PinButton

@@ -19,6 +19,8 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   language) with `iconButtonClasses` for links. Calling helpers exported by a `"use client"`
   module from a Server Component can fail at runtime; a passing build alone does not prove
   the route works.
+- Lift history buttons in the active workout and finish recap use `IconPastSets`: a set
+  list with a backward arrow. Keep the exercise-specific `View history for …` accessible label.
 - `Stepper` provides large touch targets, press-and-hold repeat, and keyboard activation.
   Keep ref access in events/effects rather than render. `Input` resets native date appearance
   and constrains sizing for narrow Safari layouts.

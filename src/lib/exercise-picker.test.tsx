@@ -101,6 +101,21 @@ describe("StationPicker", () => {
 });
 
 describe("ExercisePicker station forms", () => {
+  it("resolves a specific manufacturer model and clears it when the brand changes", async () => {
+    mocks.resolve.mockResolvedValue({ id: "model-press" });
+    render();
+    act(() => row("Machine Chest Press").click());
+    const brand = [...host.querySelectorAll("select")].find(select => [...select.options].some(option => option.value === "Life Fitness"))!;
+    act(() => { brand.value = "Life Fitness"; brand.dispatchEvent(new Event("change", { bubbles: true })); });
+    const model = [...host.querySelectorAll("select")].find(select => [...select.options].some(option => option.value === "lf-insignia-dual-chest"))!;
+    expect(model).toBeDefined();
+    act(() => { model.value = "lf-insignia-dual-chest"; model.dispatchEvent(new Event("change", { bubbles: true })); });
+    await act(async () => row("Use this machine").click());
+    expect(mocks.resolve).toHaveBeenCalledWith({ baseExerciseId: "machine-chest-press", brand: "Life Fitness", machineType: "selectorized", stationModel: "lf-insignia-dual-chest" });
+    act(() => { brand.value = "Hoist"; brand.dispatchEvent(new Event("change", { bubbles: true })); });
+    expect([...host.querySelectorAll("select")].some(select => select.value === "lf-insignia-dual-chest")).toBe(false);
+  });
+
   it("opens brand + type for machines and keeps the plate/stack control", () => {
     render();
     act(() => row("Machine Chest Press").click());

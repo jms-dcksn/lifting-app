@@ -1,5 +1,7 @@
 "use client";
 
+import { matchesExercise } from "@/lib/exercise-search";
+import { modelsForExercise } from "@/lib/machine-models";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   KNOWN_BRANDS,
@@ -189,7 +191,7 @@ function ListView({
       .filter((e) => {
         if (activeFilter && e.pattern !== activeFilter) return false;
         if (!q) return true;
-        return e.name.toLowerCase().includes(q) || e.pattern.includes(q);
+        return matchesExercise(e, q);
       })
       .sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
   }, [catalog, query, recentIds, activeFilter]);
@@ -260,10 +262,12 @@ function StationForm({
   const form = stationPickerForm(template);
   const [brand, setBrand] = useState("");
   const [machineType, setMachineType] = useState<MachineType>("selectorized");
+  const [stationModel, setStationModel] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const brandRequired = form.kind === "brand-only";
+  const brandRequired = template.stationProfile !== "machine";
   const showType = form.kind === "brand-and-type";
+  const modelType = template.allowedMachineTypes?.[0] ?? machineType;
 
   const confirm = async () => {
     setPending(true);
@@ -272,6 +276,7 @@ function StationForm({
       const def = await resolveVariant(stationResolveInput(template, {
         brand: brand.trim() || null,
         machineType,
+        stationModel,
       }));
       onResolved(def);
     } catch (e) {
@@ -289,12 +294,16 @@ function StationForm({
     >
       <StationFields
         brand={brand}
-        setBrand={setBrand}
+        setBrand={(value) => { setBrand(value); setStationModel(""); }}
         machineType={machineType}
-        setMachineType={setMachineType}
+        setMachineType={(value) => { setMachineType(value); setStationModel(""); }}
         brandRequired={brandRequired}
         showType={showType}
       />
+      {(template.stationProfile === "machine" || template.stationProfile === "cable") && (
+        <StationModelField key={`${brand}-${machineType}`} exerciseId={template.id} brand={brand}
+          machineType={modelType} value={stationModel} onChange={setStationModel} />
+      )}
       {error && <p className="text-caption text-danger">{error}</p>}
       <Button type="button" className="w-full" pending={pending} onClick={confirm}>
         Use this {template.stationProfile === "machine" || !template.stationProfile ? "machine" : template.stationProfile}
@@ -315,6 +324,7 @@ function CustomForm({
   const [pattern, setPattern] = useState<Pattern>("horizontal_press");
   const [brand, setBrand] = useState("");
   const [machineType, setMachineType] = useState<MachineType>("selectorized");
+  const [stationModel, setStationModel] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const stationRef = useRef<HTMLDivElement>(null);
@@ -347,6 +357,7 @@ function CustomForm({
         equipment,
         brand: showStation ? brand.trim() || null : null,
         machineType: isMachine ? machineType : isCable ? "selectorized" : null,
+        stationModel: showStation ? stationModel : null,
       });
       onCreated(def);
     } catch (e) {
@@ -378,7 +389,7 @@ function CustomForm({
         />
       </Field>
       <Field label="Equipment">
-        <Select value={equipment} onChange={(v) => setEquipment(v as Equipment | "")}>
+        <Select ariaLabel="Equipment" value={equipment} onChange={(v) => setEquipment(v as Equipment | "")}>
           <option value="" disabled>Select equipment…</option>
           {EQUIPMENTS.map((value) => (
             <option key={value} value={value}>
@@ -396,16 +407,19 @@ function CustomForm({
           </p>
           <StationFields
             brand={brand}
-            setBrand={setBrand}
+            setBrand={(value) => { setBrand(value); setStationModel(""); }}
             machineType={machineType}
-            setMachineType={setMachineType}
+            setMachineType={(value) => { setMachineType(value); setStationModel(""); }}
             brandRequired={isCable}
             showType={isMachine}
           />
+          <Field label="Model (optional)">
+            <Input value={stationModel} onChange={(event) => setStationModel(event.target.value)} maxLength={100} placeholder="Model name or number" />
+          </Field>
         </div>
       )}
       <Field label="Pattern">
-        <Select value={pattern} onChange={(v) => setPattern(v as Pattern)}>
+        <Select ariaLabel="Pattern" value={pattern} onChange={(v) => setPattern(v as Pattern)}>
           {Object.entries(PATTERN_LABEL).map(([value, label]) => (
             <option key={value} value={value}>
               {label}
@@ -414,6 +428,27 @@ function CustomForm({
         </Select>
       </Field>
     </FormShell>
+  );
+}
+
+function StationModelField({ exerciseId, brand, machineType, value, onChange }: {
+  exerciseId: string; brand: string; machineType: MachineType; value: string; onChange: (value: string) => void;
+}) {
+  const models = brand ? modelsForExercise(exerciseId, brand, machineType) : [];
+  const [other, setOther] = useState(false);
+  return (
+    <Field label="Model (optional)">
+      <Select ariaLabel="Model (optional)" value={other ? "__other" : value} onChange={(next) => {
+        setOther(next === "__other");
+        onChange(next === "__other" ? "" : next);
+      }}>
+        <option value="">Unspecified model</option>
+        {models.map(model => <option key={model.id} value={model.id}>{model.name}</option>)}
+        <option value="__other">Other model…</option>
+      </Select>
+      {other && <Input aria-label="Model name or number" value={value} maxLength={100}
+        placeholder="Model name or number" onChange={(event) => onChange(event.target.value)} />}
+    </Field>
   );
 }
 
@@ -439,6 +474,7 @@ function StationFields({
     <>
       <Field label="Brand">
         <Select
+          ariaLabel="Brand"
           value={other ? "__other" : brand}
           onChange={(v) => {
             if (v === "__other") {
@@ -530,16 +566,19 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function Select({
+  ariaLabel,
   value,
   onChange,
   children,
 }: {
+  ariaLabel?: string;
   value: string;
   onChange: (value: string) => void;
   children: React.ReactNode;
 }) {
   return (
     <select
+      aria-label={ariaLabel}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="h-11 w-full rounded-control border border-border-strong bg-background px-3 text-body capitalize"

@@ -1,5 +1,6 @@
 "use client";
 
+import { matchesExercise } from "@/lib/exercise-search";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
@@ -34,11 +35,12 @@ export function ExerciseList({
     if (!q) return items;
     return items.filter(
       (item) =>
+        (catalog?.[item.exerciseId] && matchesExercise(catalog[item.exerciseId], q)) ||
         item.name.toLowerCase().includes(q) ||
         item.pattern.toLowerCase().includes(q) ||
         item.exerciseId.toLowerCase().includes(q),
     );
-  }, [items, query]);
+  }, [items, query, catalog]);
 
   return (
     <div className="flex flex-col gap-3">

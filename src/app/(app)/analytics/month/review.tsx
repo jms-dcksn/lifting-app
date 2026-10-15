@@ -112,7 +112,7 @@ export function MonthlyReview({
       </li>)}</ul>}
       {repOnly.length > 0 && <details><summary className="min-h-11 cursor-pointer py-2 text-body">Rep gains without a higher monthly best ({repOnly.length})</summary><ul className="divide-y divide-border">{repOnly.map(lift => <li key={lift.key} className="py-3">
         <Link href={liftHref(lift, report.month)} className="flex min-h-11 items-center gap-3 py-2 font-medium underline"><ExerciseVisual exerciseId={lift.exerciseId} />{lift.name}</Link>
-        {lift.repGains.map(gain => <p key={gain.load} className="mt-1 text-caption text-overload-up">{gain.priorReps} → {gain.currentReps} reps at {gain.load} lb effective load</p>)}
+        {lift.repGains.map(gain => <p key={gain.load} className="mt-1 text-caption text-overload-up">{gain.priorReps} → {gain.currentReps} reps{gain.load > 0 ? ` at ${gain.load} lb effective load` : ""}</p>)}
       </li>)}</ul></details>}
     </Card>}
     {stalls.length > 0 && <Card>
@@ -147,7 +147,7 @@ export function MonthlyReview({
         <summary className="flex min-h-11 cursor-pointer items-center gap-3 break-words py-3 text-body"><ExerciseVisual exerciseId={group.exerciseId} /><span>{group.name} · {group.records.length} record workouts{group.equipment ? ` · Equipment ${group.equipment}` : ""}</span></summary>
         <ul className="space-y-3 pb-3">{group.records.map(({ sessionId, date, record: r }) => <li key={sessionId} className="text-caption">
           <Link href={sessionRecapPath(sessionId)} className="inline-block min-h-11 py-2 underline">{date} · Workout recap</Link>
-          {r.repRecords.map(rep => <p key={rep.load}>{rep.weight} lb {r.isBodyweight ? "added/assist" : ""} × {rep.reps} reps{rep.improvement != null ? ` · +${rep.improvement} reps` : " · improved within workout"}</p>)}
+          {r.repRecords.map(rep => <p key={rep.load}>{!r.isRepsOnly && <>{rep.weight} lb {r.isBodyweight ? "added/assist" : ""} × </>}{rep.reps} reps{rep.improvement != null ? ` · +${rep.improvement} reps` : " · improved within workout"}</p>)}
           {r.topWeightRecord && <p>{r.topWeightRecord.load} lb top{r.topWeightRecord.improvement != null ? ` · +${r.topWeightRecord.improvement} lb` : " · improved within workout"}</p>}
           {r.e1rmRecord && <p>{amount(r.e1rmRecord.value)} e1RM{r.e1rmRecord.improvement != null ? ` · +${r.e1rmRecord.improvement.toFixed(1)} lb` : " · improved within workout"}</p>}
         </li>)}</ul>

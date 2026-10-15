@@ -13,6 +13,7 @@
 // on another day after that point. This lets repeated weekly exercises share useful progress
 // without letting an old all-time PR permanently dictate the target. Pure.
 
+import { boundedLoggedWeight } from "./load-mode";
 import { recommend, type ExerciseStat, type Confidence } from "./recommend";
 import { computeE1rm, roundToIncrement, weightForTarget } from "./e1rm";
 import type { ExerciseDef } from "./coefficients";
@@ -105,7 +106,7 @@ export function startingWeight(
     if (bodyweight == null) return null;
     weight = roundToIncrement(rec.suggestedWeight - bodyweight, def.increment);
   }
-  return { weight, confidence: rec.confidence };
+  return { weight: boundedLoggedWeight(def, weight), confidence: rec.confidence };
 }
 
 export function sessionTarget(
@@ -116,6 +117,12 @@ export function sessionTarget(
   stats: ExerciseStat[],
   bodyweight: number | null,
 ): SessionTarget | null {
+  if (def.loadMode === "reps_only") {
+    const targetReps = !last || slot.targetRir >= 4 ? slot.repMin
+      : Math.max(slot.repMin, Math.min(slot.repMax, last.reps + 1));
+    return { weight: 0, targetReps, targetRir: slot.targetRir,
+      source: last ? "progression" : "recommendation", ...(last ? { last } : {}) };
+  }
   // No prior performance — the e1RM recommender provides the starting weight at rep_min.
   if (!last) {
     const start = startingWeight(def, slot.repMin, slot.targetRir, defs, stats, bodyweight);
@@ -170,7 +177,7 @@ export function sessionTarget(
 
   if (last.reps >= slot.repMax) {
     return {
-      weight: last.weight + def.increment,
+      weight: boundedLoggedWeight(def, last.weight + def.increment),
       targetReps: slot.repMin,
       targetRir: slot.targetRir,
       source: "progression",

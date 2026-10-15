@@ -1,5 +1,6 @@
 "use client";
 
+import { matchesExercise } from "@/lib/exercise-search";
 import { useMemo, useState, useTransition } from "react";
 import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
@@ -57,8 +58,8 @@ function PinEditorBody({
   const [pending, start] = useTransition();
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return items.filter((item) => !q || item.name.toLowerCase().includes(q) || item.exerciseId.includes(q));
-  }, [items, query]);
+    return items.filter((item) => !q || (catalog?.[item.exerciseId] && matchesExercise(catalog[item.exerciseId], q)) || item.name.toLowerCase().includes(q) || item.exerciseId.includes(q));
+  }, [items, query, catalog]);
   const compounds = filtered.filter((item) => item.group === "compound");
   const extras = filtered.filter((item) => item.group === "extra");
 

@@ -19,6 +19,8 @@
 // `resolveVariant` accepts every `needsStation` profile and inherits equipment +
 // needs_calibration from the template.
 
+import { EXERCISE_VARIATIONS } from "./exercise-variations";
+
 export type Pattern =
   | "horizontal_press"
   | "vertical_press"
@@ -36,7 +38,12 @@ export type Pattern =
   | "elbow_extension"
   | "lateral_raise"
   | "rear_delt"
-  | "core";
+  | "core"
+  | "chest_fly"
+  | "hip_adduction"
+  | "hip_extension"
+  | "ankle_dorsiflexion"
+  | "core_rotation";
 
 export type Equipment =
   | "barbell"
@@ -76,6 +83,10 @@ export interface ExerciseDef {
   pattern: Pattern;
   equipment: Equipment;
   brand?: Brand;
+  stationModel?: string;
+  aliases?: readonly string[];
+  loadMode?: "reps_only" | "assisted";
+  allowedMachineTypes?: readonly MachineType[];
   machineType?: StationTag;
   baseExerciseId?: string; // seeded template a DB variant derives from
   stationProfile?: StationProfile; // seeded templates only; variants inherit via baseExerciseId
@@ -111,7 +122,7 @@ function stationBrandRequired(profile: StationProfile): boolean {
 // barbell stations store the profile as the machine_type sentinel. Brand stays optional
 // only for machines (the existing no-brand path).
 export function resolveStationFields(
-  base: Pick<ExerciseDef, "stationProfile">,
+  base: Pick<ExerciseDef, "stationProfile" | "allowedMachineTypes">,
   input: { brand?: string | null; machineType: StationTag },
 ): { brand: string | null; machineType: StationTag } {
   const profile = base.stationProfile ?? "none";
@@ -121,6 +132,9 @@ export function resolveStationFields(
   }
   if (!allowed.includes(input.machineType)) {
     throw new Error("Station tag does not match template profile");
+  }
+  if (base.allowedMachineTypes && !base.allowedMachineTypes.includes(input.machineType as MachineType)) {
+    throw new Error("Loading type is not supported by this exercise");
   }
   const brand = input.brand?.trim() || null;
   if (!brand && stationBrandRequired(profile)) {
@@ -218,6 +232,7 @@ const SEEDS: ExerciseDef[] = [
   { id: "cable-crunch", name: "Cable Crunch", pattern: "core", equipment: "cable", coefficient: 1.0, isReference: true, needsCalibration: true, increment: 10, stationProfile: "cable" },
   { id: "machine-ab-crunch", name: "Machine Ab Crunch", pattern: "core", equipment: "machine", coefficient: 1.0, needsCalibration: true, increment: 10, stationProfile: "machine" },
   { id: "hanging-knee-raise", name: "Hanging Knee Raises", pattern: "core", equipment: "bodyweight", coefficient: 1.0, increment: 10, stationProfile: "none" },
+  ...EXERCISE_VARIATIONS,
 ];
 
 export const EXERCISES: ExerciseDef[] = SEEDS.map((e) =>
@@ -247,4 +262,9 @@ export const PATTERN_LABEL: Record<Pattern, string> = {
   lateral_raise: "Lateral Raise",
   rear_delt: "Rear Delt",
   core: "Core",
+  chest_fly: "Chest Fly",
+  hip_adduction: "Hip Adduction",
+  hip_extension: "Hip Extension",
+  ankle_dorsiflexion: "Ankle Dorsiflexion / Tibialis",
+  core_rotation: "Core Rotation",
 };

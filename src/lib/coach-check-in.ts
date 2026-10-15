@@ -41,7 +41,7 @@ export const SPECIALIZATION_GROUPS: Record<
   hamstrings: { label: "Hamstrings", patterns: ["hinge", "knee_flexion"] },
   glutes: {
     label: "Glutes",
-    patterns: ["squat", "hinge", "lunge", "hip_thrust"],
+    patterns: ["squat", "hinge", "lunge", "hip_thrust", "hip_extension"],
   },
   calves: { label: "Calves", patterns: ["calf"] },
 };

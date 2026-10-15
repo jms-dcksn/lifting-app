@@ -17,6 +17,19 @@ function set(s: MonthlySession, reps = 8, extra: Partial<RecordSet> = {}): Recor
 function report(sessions: MonthlySession[], sets: RecordSet[]) {
   return buildMonthlyReport({ userId: "u", month: "2026-09", sessions, sets, catalog, now });
 }
+describe("rep-only monthly reporting", () => {
+  it("counts rep gains without missing-estimate errors or invented strength", () => {
+    const sessions = [session("prior", "2026-08-02"), session("current", "2026-09-02")];
+    const rows = sessions.map((s, i) => set(s, 8 + i * 2, { exercise_id: "ab-wheel-rollout", weight: 0, e1rm: null }));
+    const r = report(sessions, rows);
+    expect(r.current.repPrs).toBe(1);
+    expect(r.current.e1rmPrs).toBe(0);
+    expect(r.current.topWeightPrs).toBe(0);
+    expect(r.quality.missingStoredEstimates).toBe(0);
+    expect(r.lifts[0]).toMatchObject({ currentBest: null, priorBest: null, repGains: [{ load: 0, priorReps: 8, currentReps: 10 }] });
+  });
+});
+
 describe("monthly windows", () => {
   it("compares elapsed calendar days, with shorter prior months capped", () => {
     expect(monthlyWindows("2026-09", now)).toEqual({ current: { start: "2026-09-01", end: "2026-09-13" }, prior: { start: "2026-08-01", end: "2026-08-13" }, inProgress: true });

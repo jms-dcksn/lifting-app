@@ -13,19 +13,20 @@ afterEach(() => vi.useRealTimers());
 
 describe("relevant identities", () => {
   it("keeps equipment alternatives, aliases, typos, compounds and plurals", () => {
-    expect(matches("incline bench press").sort()).toEqual(["bb-incline-bench", "db-incline-bench"]);
-    expect(matches("incline benc").sort()).toEqual(["bb-incline-bench", "db-incline-bench"]);
-    expect(matches("rdl")).toEqual(["bb-rdl"]);
-    expect(matches("romanian deadlfit")).toEqual(["bb-rdl"]);
+    expect(matches("incline bench press").sort()).toEqual(["bb-incline-bench", "db-incline-bench", "smith-incline-bench"]);
+    expect(matches("incline benc").sort()).toEqual(["bb-incline-bench", "db-incline-bench", "smith-incline-bench"]);
+    expect(matches("rdl").sort()).toEqual(["bb-rdl", "db-rdl", "smith-rdl"]);
+    expect(matches("romanian deadlfit").sort()).toEqual(["bb-rdl", "db-rdl", "smith-rdl"]);
     expect(matches("cable lat pull down")).toEqual(["lat-pulldown"]);
     expect(matches("machine lat pull down")).toEqual(["machine-lat-pulldown"]);
-    expect(matches("pull ups")).toEqual(["weighted-pullup"]);
+    expect(matches("pull ups").sort()).toEqual(["assisted-pullup", "weighted-pullup"]);
     expect(matches("leg extensions")).toEqual(["leg-extension"]);
     expect(matches("barbell squat").sort()).toEqual(["bb-back-squat", "bb-front-squat"]);
     expect(matches("squat")).toEqual(expect.arrayContaining(["bb-back-squat", "bb-front-squat", "hack-squat", "db-split-squat"]));
-    expect(matches("flat barbell bench")).toEqual(["bb-bench"]);
+    expect(matches("flat barbell bench").sort()).toEqual(["bb-bench", "bb-close-grip-bench"]);
     expect(matches("front squat")).toEqual(["bb-front-squat"]);
-    expect(matches("face pulls")).toEqual([]);
+    expect(matches("face pulls")).toEqual(["cable-face-pull"]);
+    expect(matches("incline bench press")).not.toContain("cable-incline-bench-fly");
   });
   it("never uses a stats hint to remove candidates", () => {
     expect(resolveExerciseIdentity(catalog, { name: "barbell squat", loggedExerciseIds: ["bb-back-squat"] }))
@@ -60,7 +61,7 @@ describe("exerciseReview public contract", () => {
     const { client } = reviewTestDb({ exercise: [dbExercise(station, "Barbell Incline Bench — Hoist", "bb-incline-bench", "barbell", "horizontal_press")],
       set_log: [ledgerSet({ exercise_id: station })] });
     const result = await exerciseReview(client, REVIEW_USER, { name: "incline bench press" });
-    expect(result.matches.map((match) => match.id)).toEqual(["bb-incline-bench", "db-incline-bench"]);
+    expect(result.matches.map((match) => match.id).sort()).toEqual(["bb-incline-bench", "db-incline-bench", "smith-incline-bench"]);
     expect(result).toMatchObject({ exerciseId: "bb-incline-bench", availability: { loggedSetCount: 1 } });
   });
   it("keeps machine brands/types/instances separate and excludes calf apparatus hits", async () => {

@@ -15,7 +15,7 @@ insert into private.coach_command_key(key_id,key,valid_from,valid_until)
 create function pg_temp.coach_payload(p_owner uuid,p_extra jsonb default '{}'::jsonb) returns text
 language sql security definer as $$
  select (jsonb_build_object('owner',p_owner,'operation','refresh','version','episodes-v1','policyVersion','1.0','keyId','pgtap-only',
-  'issuedAt',clock_timestamp(),'expiresAt',clock_timestamp()+interval '60 seconds','allowArrival',true,
+  'issuedAt',statement_timestamp(),'expiresAt',statement_timestamp()+interval '60 seconds','allowArrival',true,
   'sourceRevision',coalesce(s.source_revision,0),'stateVersion',coalesce(s.state_version,0),'preferencesVersion',coalesce(p.version,0),
   'episodes',jsonb_build_array(jsonb_build_object('contextKey','session_pain:v1','family','session_pain','occurrence',1,'revision',1,'state','open','validity','current',
    'evidence',null,'fingerprint','fixture','attentionHistory',jsonb_build_array('pain:session'),'frontier',jsonb_build_array('session'),'terminalReason',null,'snoozeSourceIds',null)),
@@ -72,6 +72,7 @@ select throws_ok($$select public.reconcile_coach_episodes(pg_temp.coach_payload(
 select throws_ok($$select pg_temp.refresh_coach(auth.uid(),'{"issuedAt":null}')$$,'42501',null,'missing command timestamp rejected');
 select throws_ok($$select pg_temp.refresh_coach(auth.uid(),'{"policyVersion":"future"}')$$,'42501',null,'unknown policy rejected');
 select throws_ok($$select pg_temp.refresh_coach(auth.uid(),jsonb_build_object('issuedAt',now()+interval '10 seconds','expiresAt',now()+interval '60 seconds'))$$,'42501',null,'future issued timestamp rejected');
+select throws_ok($$select pg_temp.refresh_coach(auth.uid(),jsonb_build_object('issuedAt',statement_timestamp(),'expiresAt',statement_timestamp()+interval '61 seconds'))$$,'42501',null,'signed commands still cannot exceed the 60-second lifetime');
 select throws_ok($$select public.mark_coach_notice('92000000-0000-0000-0000-000000000099',true)$$,'P0002',null,'foreign and missing notice have same unavailable response');
 select throws_ok($$update public.coach_preferences set user_id='92000000-0000-0000-0000-000000000002'$$,'42501',null,'preference owner cannot be reassigned');
 select throws_ok($$delete from public.coach_notice$$,'42501',null,'derived notices cannot be deleted directly');

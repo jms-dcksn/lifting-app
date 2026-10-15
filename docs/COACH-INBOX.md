@@ -145,3 +145,8 @@ All migrations installed under a non-superuser database owner with no grant opti
 either schema. All 12 pgTAP suites passed (136 assertions), as did competing transactions,
 with the executor lacking both schema privileges. This corrects the local permission
 fixture; the PR's Supabase CI run remains the check against the complete stack.
+
+The next Supabase run passed the permission boundary and exposed a timing error in the
+SQL signing fixture: two `clock_timestamp()` calls could exceed the strict 60-second
+lifetime by microseconds. The fixture now uses one statement timestamp for both fields,
+matching the application's single captured instant. Production expiry validation is unchanged.

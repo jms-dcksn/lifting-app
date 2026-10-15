@@ -79,7 +79,11 @@ using this app version, including Preview. It adds nullable `exercise.station_mo
 normalization validation and model-aware owner-local uniqueness. Existing rows, IDs,
 RLS and saved sets remain intact. New app queries require the column; the old app remains
 compatible with the additive schema. The production migration gate still applies.
-This work does not apply the migration to hosted development or production.
+Applied and verified on 2026-10-15, after explicit approval, on both `lifting-app-dev`
+(`uggyizzzczwwxkgnwuse`) and `lifting-app` (`jtcppebmosaffaajtgow`). Both hosted ledgers
+record repository version `20261015122122`, and the deployment-check RPC recognizes it.
+Existing exercise data and saved-set counts were unchanged; RLS remains enabled.
+The application still ships separately through the normal PR/release flow.
 See [catalog contract](docs/EXERCISE-CATALOG.md) and `exercise_station_models_rls.sql`.
 
 ## Verify and release

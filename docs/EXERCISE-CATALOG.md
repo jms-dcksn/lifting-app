@@ -73,9 +73,11 @@ changing rows, RLS, grants or historical sets. The production migration gate enf
 application order. The old application remains compatible with the additive schema,
 but the new application requires it. Preview environments also need this migration.
 
-No hosted migration was applied during this work. Automatic approval review rejected
-applying the migration to the shared development database. Release remains a separate
-operation; this PR contains the exact migration for review.
+After explicit approval on 2026-10-15, the exact migration was applied through Supabase
+MCP to `lifting-app-dev` (`uggyizzzczwwxkgnwuse`), verified, then applied and verified on
+`lifting-app` (`jtcppebmosaffaajtgow`). MCP-generated ledger timestamps were reconciled
+to repository version `20261015122122` without replaying SQL. Both deployment-check
+RPCs recognize that version. Application release remains a separate operation.
 
 The new `exercise_station_models_rls.sql` pgTAP script is included in the existing CI
 ownership suite. It covers legacy/null-model uniqueness, distinct same-brand models,
@@ -292,5 +294,8 @@ all authors. Product catalogs also do not establish availability at a particular
   covering unchanged legacy rows, uniqueness/normalization and owner isolation/rollback.
   This is additional SQL validation; it does not replace the Supabase/Postgres 17 pgTAP
   suite in CI. Local Supabase startup failed while unpacking its large Postgres image.
-- No hosted schema or exercise rows changed. Applying the migration remains a release
-  prerequisite and requires authorization for the target shared environment.
+- Hosted verification on both development and production: nullable model column,
+  validated normalization constraint, valid unique model index, unchanged exercise
+  fingerprints and saved-set counts, unchanged owner policy with RLS enabled, one
+  migration ledger entry at the repository version, and successful migration-check RPC
+  under the `anon` role. Existing rows retain null models; no bulk exercises were inserted.

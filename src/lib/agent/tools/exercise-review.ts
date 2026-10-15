@@ -387,6 +387,10 @@ export function resolveExerciseIdentity(
   const ranked = scoreNames(docs, content, rejected).filter((row) => {
     const def = catalog[row.id]!;
     const template = def.baseExerciseId ? catalog[def.baseExerciseId] ?? def : def;
+    // Bench without an explicit fly qualifier means a press, including typo matches.
+    if (template.pattern === "chest_fly" && queryTokens.some(token => tokenMatches(token, "bench") || token === "press")
+      && !queryTokens.some(token => tokenMatches(token, "fly") || tokenMatches(token, "flye") || token === "crossover")) return false;
+    if (queryTokens.includes("flat") && row.nameTokens.includes("decline")) return false;
     // Equipment can be metadata even when it is absent from the display name.
     if (queryTokens.some((token) => EQUIPMENT_TOKENS.has(token) && token !== "weighted"
       && template.equipment && template.equipment !== token)) return false;

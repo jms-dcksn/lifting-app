@@ -72,6 +72,16 @@ and intended preview origins. The app exchanges the callback code at `/auth/call
 `src/proxy.ts` refreshes cookies, while the app layout and actions authenticate with `getClaims()`.
 Verify dashboard/email settings in the actual environment instead of relying on old checkboxes.
 
+### Exercise model migration
+
+Apply `20261015122122_exercise_station_models.sql` to the intended environment before
+using this app version, including Preview. It adds nullable `exercise.station_model`,
+normalization validation and model-aware owner-local uniqueness. Existing rows, IDs,
+RLS and saved sets remain intact. New app queries require the column; the old app remains
+compatible with the additive schema. The production migration gate still applies.
+This work does not apply the migration to hosted development or production.
+See [catalog contract](docs/EXERCISE-CATALOG.md) and `exercise_station_models_rls.sql`.
+
 ## Verify and release
 
 ```bash

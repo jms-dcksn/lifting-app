@@ -274,7 +274,7 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
   which inherits `equipment` and `needs_calibration` (cables yes; barbell
   stations no) and rejects tag/profile mismatches. Deduped by
   `exercise_variant_unique` on
-  `(user_id, base_exercise_id, coalesce(brand,''), coalesce(machine_type,''))`.
+  `(user_id, base_exercise_id, coalesce(brand,''), coalesce(machine_type,''), coalesce(station_model,''))`.
 - **In-session instantiation** — session and planner pickers pass
   `resolveStations`. A slot still on a template hides set-entry and shows
   profile-specific copy (**Choose machine** / **Choose cable** / **Choose bench** /
@@ -296,6 +296,13 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 - **Merged catalog** — `catalog.ts` merges seeded templates with the user's
   `exercise` rows (seeded ids win collisions); threaded through every screen via
   `getCatalogMap`, including the calibration-critical session actions.
+- **Comprehensive variations and model identity** — 150 shared templates (90 added on
+  2026-10-15) and 67 manufacturer model choices. Optional models preserve separate machine
+  histories; null preserves legacy stations. Search accepts DB/BB, fly spellings, common
+  aliases and model names. New fly/adduction/hip-extension/dorsiflexion/rotation patterns
+  keep unrelated strength predictions separate. Assisted station controls store negative
+  added load; rep-only rollouts/leg raises/glute-ham raises omit weight/e1RM and retain rep
+  PRs and set counts. [Catalog contract and complete inventory](EXERCISE-CATALOG.md).
 - **Known brands & type labels** — `KNOWN_BRANDS`, `MACHINE_TYPE_LABEL`, and
   `STATION_TAGS_BY_PROFILE` exported for the UI.
 

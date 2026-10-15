@@ -1101,6 +1101,34 @@ sets: last.sets,
 const eligible = sessions.filter((session) =&gt; session.bestE1rm != null);
 const window = range === "last8" ? eligible.slice(-REVIEW_CHART_SESSIONS) : eligible;</code></pre>
       </section>
+      <section class="mt-10 border-t border-stone-200 pt-6" id="comprehensive-exercise-catalog">
+        <h2 class="text-2xl font-semibold">Comprehensive catalog and exact machine models</h2>
+        <p class="mt-3">The shared catalog now has 150 movements and 67 manufacturer model
+        choices. Coach can expose Smith and dumbbell RDL alternatives without merging their
+        records. A bench-press query excludes flys unless the lifter explicitly asks for a fly.
+        Hip-extension hard sets count toward glute specialization.</p>
+        <div class="mt-4 flex flex-wrap items-center gap-3" aria-label="Exercise identity and load flow">
+          <div class="rounded border p-3">Movement template</div><span aria-hidden="true">→</span>
+          <div class="rounded border p-3">Owner + brand + type + optional model</div><span aria-hidden="true">→</span>
+          <div class="rounded border p-3">Exact history, calibration and records</div>
+        </div>
+        <p class="mt-3">Unknown-model stations keep their existing IDs and history. Selecting
+        a model creates a separate station. Rep-only exercises retain rep progression and PRs,
+        without fabricated e1RM or tonnage; assistance is entered positively and stored as
+        negative added load. Existing movement-family and historical preference rules stay.</p>
+        <pre class="code-rail mt-3 overflow-auto bg-stone-100 p-4"><code>// src/lib/strength/recompute.ts
+if (def.loadMode === "reps_only") return null;
+if (def.equipment === "bodyweight") {
+  return bodyweight == null ? null : bodyweight + weight;
+}
+
+// src/lib/strength/load-mode.ts
+export function boundedLoggedWeight(def: ExerciseDef, weight: number): number {
+  return def.loadMode === "assisted" ? Math.min(0, weight) : weight;
+}</code></pre>
+        <p class="mt-3"><a href="EXERCISE-CATALOG.md">Complete exercise/model inventory,
+        sources, tracking rules and migration order</a>.</p>
+      </section>
     </main>
   </body>
 </html>

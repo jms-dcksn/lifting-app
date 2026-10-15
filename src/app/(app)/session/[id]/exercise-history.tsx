@@ -102,7 +102,7 @@ function HistoryContent({
                   {row.is_deload && " · Deload"}
                 </p>
                 <dl className="mt-3 grid grid-cols-3 gap-2 text-body tabular-nums">
-                  <div><dt className="text-caption text-muted">{isBodyweight ? "Added lb" : "Weight (lb)"}</dt><dd>{row.weight}</dd></div>
+                  {def?.loadMode !== "reps_only" && <div><dt className="text-caption text-muted">{def?.loadMode === "assisted" ? "Assistance (lb)" : isBodyweight ? "Added lb" : "Weight (lb)"}</dt><dd>{def?.loadMode === "assisted" ? Math.abs(row.weight) : row.weight}</dd></div>}
                   <div><dt className="text-caption text-muted">Reps</dt><dd>{row.reps}</dd></div>
                   <div><dt className="text-caption text-muted">RIR</dt><dd>{row.rir ?? "—"}</dd></div>
                 </dl>

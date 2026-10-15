@@ -24,6 +24,7 @@ export function effectiveLoad(
   weight: number,
   bodyweight: number | null,
 ): number | null {
+  if (def.loadMode === "reps_only") return null;
   if (def.equipment === "bodyweight") {
     return bodyweight == null ? null : bodyweight + weight;
   }

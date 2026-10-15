@@ -1,5 +1,6 @@
 "use server";
 
+import { MACHINE_MODELS, normalizeStationModel } from "@/lib/machine-models";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -20,7 +21,7 @@ type Client = Awaited<ReturnType<typeof createClient>>;
 type VariantInsert = Database["public"]["Tables"]["exercise"]["Insert"];
 
 const SELECT =
-  "id, name, pattern, equipment, brand, machine_type, base_exercise_id, coefficient, is_reference, needs_calibration, increment";
+  "id, name, pattern, equipment, brand, machine_type, station_model, base_exercise_id, coefficient, is_reference, needs_calibration, increment";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -34,6 +35,7 @@ export interface ResolveVariantInput {
   baseExerciseId: string;
   brand: string | null;
   machineType: StationTag;
+  stationModel?: string | null;
 }
 
 async function findOwnVariant(
@@ -42,6 +44,7 @@ async function findOwnVariant(
   baseExerciseId: string,
   brand: string | null,
   machineType: StationTag,
+  stationModel: string | null,
 ): Promise<DbExerciseRow | null> {
   const query = supabase
     .from("exercise")
@@ -49,7 +52,9 @@ async function findOwnVariant(
     .eq("user_id", userId)
     .eq("base_exercise_id", baseExerciseId)
     .eq("machine_type", machineType);
-  const { data } = await (brand === null ? query.is("brand", null) : query.eq("brand", brand)).maybeSingle();
+  const branded = brand === null ? query.is("brand", null) : query.eq("brand", brand);
+  const { data, error } = await (stationModel === null ? branded.is("station_model", null) : branded.eq("station_model", stationModel)).maybeSingle();
+  if (error) throw new Error(error.message);
   return (data as DbExerciseRow | null) ?? null;
 }
 
@@ -71,18 +76,27 @@ export async function resolveVariant(input: ResolveVariantInput): Promise<Exerci
   const base = EXERCISE_BY_ID[input.baseExerciseId];
   if (!base) throw new Error(`Unknown template: ${input.baseExerciseId}`);
   const { brand, machineType } = resolveStationFields(base, input);
+  const stationModel = normalizeStationModel(input.stationModel);
+  if (stationModel && base.stationProfile !== "machine" && base.stationProfile !== "cable") {
+    throw new Error("Models apply to machines and cables only");
+  }
+  const knownModel = MACHINE_MODELS.find(model => model.id === stationModel);
+  if (knownModel && (knownModel.brand !== brand || knownModel.machineType !== machineType || !knownModel.exercises.includes(base.id))) {
+    throw new Error("Model does not match this exercise, brand, or loading type");
+  }
 
-  const existing = await findOwnVariant(supabase, userId, base.id, brand, machineType);
+  const existing = await findOwnVariant(supabase, userId, base.id, brand, machineType, stationModel);
   if (existing) return dbExerciseToDef(existing);
 
   const row = {
-    id: variantId(base.id, brand, machineType),
+    id: variantId(base.id, brand, machineType, stationModel),
     user_id: userId,
-    name: variantName(base.name, brand, machineType),
+    name: variantName(base.name, brand, machineType, stationModel),
     pattern: base.pattern,
     equipment: base.equipment,
     brand,
     machine_type: machineType,
+    station_model: stationModel,
     base_exercise_id: base.id,
     coefficient: base.coefficient,
     is_reference: false,
@@ -93,14 +107,14 @@ export async function resolveVariant(input: ResolveVariantInput): Promise<Exerci
   const inserted = await insertVariant(supabase, row);
   if (inserted) return dbExerciseToDef(inserted);
 
-  const raced = await findOwnVariant(supabase, userId, base.id, brand, machineType);
+  const raced = await findOwnVariant(supabase, userId, base.id, brand, machineType, stationModel);
   if (raced) return dbExerciseToDef(raced);
 
-  row.id = ownedVariantId(base.id, brand, machineType, userId);
+  row.id = ownedVariantId(base.id, brand, machineType, userId, stationModel);
   const scoped = await insertVariant(supabase, row);
   if (scoped) return dbExerciseToDef(scoped);
 
-  const after = await findOwnVariant(supabase, userId, base.id, brand, machineType);
+  const after = await findOwnVariant(supabase, userId, base.id, brand, machineType, stationModel);
   if (after) return dbExerciseToDef(after);
 
   throw new Error("Could not select station");
@@ -112,6 +126,7 @@ export interface CreateCustomInput {
   equipment: Equipment;
   brand?: string | null;
   machineType?: MachineType | null;
+  stationModel?: string | null;
 }
 
 function customStationProfile(equipment: Equipment): StationProfile {
@@ -142,6 +157,7 @@ export async function createCustomExercise(input: CreateCustomInput): Promise<Ex
       equipment: input.equipment,
       brand: station.brand,
       machine_type: station.machineType,
+      station_model: profile === "none" ? null : normalizeStationModel(input.stationModel),
       base_exercise_id: null,
       coefficient: 1.0,
       is_reference: false,

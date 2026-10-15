@@ -13,7 +13,8 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
 
 - `e1rm.ts` converts weight/reps/RIR through the RPE/RIR load model and inverts it for target
   loads. Preserve this model rather than replacing it with a bare Epley/Brzycki formula.
-- `coefficients.ts` owns seeded exercises and population coefficients. `recommend.ts` pools
+- `coefficients.ts` and `exercise-variations.ts` own the 150 shared templates and population
+  coefficients. See [catalog inventory and model rules](EXERCISE-CATALOG.md). `recommend.ts` pools
   reference-lift strength by movement pattern and uses Bayesian shrinkage (`PRIOR_WEIGHT`).
   The expanded machine catalog includes supported-arm curls/extensions, lever pulldown,
   pullover, incline/decline press, seated dip, low row, lying/kneeling leg curls and separate
@@ -28,10 +29,13 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
   bodyweight. Live loads use `getCurrentBodyweight()` (newest observation, then profile
   baseline); historical edits and records recover bodyweight from the saved set's e1RM.
 - A generic station template has no absolute load identity. `resolveVariant` in
-  `src/app/(app)/exercise/actions.ts` find-or-creates a brand × station-tag variant under the
-  per-user unique index; `createCustomExercise` creates custom definitions. Canonical variant
-  ids are `base__brand__tag`, but `exercise.id` is a global primary key, so a second owner of
-  the same brand/tag gets an owned id rather than crashing the picker. Session/planner pickers
+  `src/app/(app)/exercise/actions.ts` find-or-creates a brand × station-tag × optional-model
+  variant under the per-user unique index; `createCustomExercise` creates custom definitions. Canonical variant
+  ids remain `base__brand__tag` when model is unknown; models append a lossless
+  `__model-<UTF-8 hex>` suffix. Known model names normalize to registry keys; custom models
+  normalize whitespace/case. `station_model` participates in owner-local uniqueness.
+  `exercise.id` is a global primary key, so a second owner of the same station gets an
+  owned ID rather than crashing the picker. Session/planner pickers
   pass `resolveStations` so every `needsStation` template opens a station form before
   logging; the program builder can store generic templates. Seeded rows carry
   `stationProfile` (`machine | cable | bench | rack | platform | none`);
@@ -52,6 +56,13 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
   working-set sessions supply `coeff_confidence_n`. Later progress moves pattern
   strength rather than continuously re-calibrating the coefficient. Leftover flat
   template `set_log` rows are not rewritten; a new cable variant still calibrates.
+- New flys, hip adduction, hip extension, ankle dorsiflexion and torso rotation use separate
+  patterns; existing seed patterns stay unchanged. Rep-only ab-wheel/leg-raise/glute-ham
+  work logs zero load and null e1RM, progresses reps, and earns rep PRs only. It contributes
+  sets/hard sets but no tonnage or pooled strength. Assisted machine movements use bodyweight
+  equipment plus a machine station; positive assistance in the UI stores negative added
+  load. Progression reduces assistance to zero. `load-mode.ts` owns shared validation and
+  formatting; `catalog.ts` restores template load modes on DB variants.
 - `recompute.ts` rebuilds demonstrated strength from working sets; `user_exercise_stat`
   remains a derived cache. Record baselines use saved sets, not this mutable cache.
 

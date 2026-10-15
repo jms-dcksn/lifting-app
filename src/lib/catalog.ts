@@ -6,6 +6,7 @@ import { cache } from "react";
 import type { createClient } from "@/lib/supabase/server";
 import {
   EXERCISES,
+  EXERCISE_BY_ID,
   type Equipment,
   type ExerciseDef,
   type StationTag,
@@ -19,6 +20,7 @@ export interface DbExerciseRow {
   equipment: string;
   brand: string | null;
   machine_type: string | null;
+  station_model?: string | null;
   base_exercise_id: string | null;
   coefficient: number;
   is_reference: boolean;
@@ -27,15 +29,18 @@ export interface DbExerciseRow {
 }
 
 const SELECT =
-  "id, name, pattern, equipment, brand, machine_type, base_exercise_id, coefficient, is_reference, needs_calibration, increment";
+  "id, name, pattern, equipment, brand, machine_type, station_model, base_exercise_id, coefficient, is_reference, needs_calibration, increment";
 
 export function dbExerciseToDef(row: DbExerciseRow): ExerciseDef {
+  const base = row.base_exercise_id ? EXERCISE_BY_ID[row.base_exercise_id] : undefined;
   return {
+    ...(base?.loadMode ? { loadMode: base.loadMode } : {}),
     id: row.id,
     name: row.name,
     pattern: row.pattern as Pattern,
     equipment: row.equipment as Equipment,
     brand: row.brand ?? undefined,
+    stationModel: row.station_model ?? undefined,
     machineType: (row.machine_type as StationTag | null) ?? undefined,
     baseExerciseId: row.base_exercise_id ?? undefined,
     coefficient: Number(row.coefficient),

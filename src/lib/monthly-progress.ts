@@ -134,7 +134,7 @@ export function buildMonthlyReport(input: {
       if (value > 0 && value > (group[period].get(set.session_id)?.e1rm ?? 0)) {
         group[period].set(set.session_id, { sessionId: set.session_id, date: day, e1rm: value });
       }
-    } else quality.missingStoredEstimates++;
+    } else if (input.catalog[set.exercise_id]?.loadMode !== "reps_only") quality.missingStoredEstimates++;
     groups.set(key, group);
   }
   const lifts: MonthlyLift[] = [...groups].map(([key, g]) => {

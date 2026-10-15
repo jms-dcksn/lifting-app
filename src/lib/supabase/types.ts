@@ -191,6 +191,7 @@ export type Database = {
           id: string
           increment: number
           is_reference: boolean
+          station_model: string | null
           machine_type: string | null
           name: string
           needs_calibration: boolean
@@ -206,6 +207,7 @@ export type Database = {
           id: string
           increment?: number
           is_reference?: boolean
+          station_model?: string | null
           machine_type?: string | null
           name: string
           needs_calibration?: boolean
@@ -221,6 +223,7 @@ export type Database = {
           id?: string
           increment?: number
           is_reference?: boolean
+          station_model?: string | null
           machine_type?: string | null
           name?: string
           needs_calibration?: boolean

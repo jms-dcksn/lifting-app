@@ -1,3 +1,4 @@
+import { stationModelLabel } from "./machine-models";
 import {
   EXERCISE_BY_ID,
   MACHINE_TYPE_LABEL,
@@ -54,10 +55,10 @@ export function exerciseCardLabel(
 ): ExerciseCardLabelLines {
   const base = baseExercise(def, catalog);
   const stripped = stripEquipmentPrefix(base.name);
-  const brand = def.brand?.trim() || null;
+  const brand = [def.brand?.trim(), stationModelLabel(def.stationModel)].filter(Boolean).join(" · ") || null;
   const machineType = def.machineType;
 
-  if (base.equipment === "machine" && isMachineType(machineType)) {
+  if ((base.equipment === "machine" || base.stationProfile === "machine") && isMachineType(machineType)) {
     const lines: ExerciseCardLabelLines = { name: stripped };
     if (brand) lines.secondary = brand;
     lines.tertiary = MACHINE_TYPE_LABEL[machineType];

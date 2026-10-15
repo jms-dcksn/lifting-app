@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { cx } from "@/components/ui/cx";
 import { IconGrid, IconPlay, IconProgram, IconUser } from "@/components/ui/icons";
+import { CoachInboxEntry } from "@/components/coach/coach-inbox-entry";
 import { AgentEntry } from "@/components/agent/agent-entry";
 import { hideAppChrome, isTrackPath } from "@/lib/app-chrome";
 
@@ -40,8 +41,9 @@ function ShellFrame({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cx("flex min-h-full flex-col", !hide && "pb-[calc(4.25rem+env(safe-area-inset-bottom))]")}>
+    <div className={cx("flex min-h-full flex-col", !hide && "pb-[calc(7.75rem+env(safe-area-inset-bottom))]")}>
       <main className="flex flex-1 flex-col">{children}</main>
+      {pathname ? <CoachInboxEntry pathname={pathname} hide={hide} /> : null}
       {!hide && (
         <>
           {pathname && pathname !== "/coach" && !pathname.startsWith("/coach/") ? <AgentEntry /> : null}

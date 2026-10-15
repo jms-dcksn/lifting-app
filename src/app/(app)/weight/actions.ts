@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshCoachInbox } from "@/lib/coach-inbox-data";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { dateKey } from "@/lib/bodyweight";
@@ -58,6 +59,7 @@ export async function writeWeightEntry(input: WeightWrite): Promise<WeightWriteR
   if (error || !data) return { ok: false, error: error?.code === "P0002"
     ? "This reading was removed. Reload the calendar before trying again."
     : "Unable to save your reading. Your changes have not been applied. Please try again." };
+  await refreshCoachInbox(supabase, userId);
   refreshWeightViews();
   return { ok: true, id: data };
 }
@@ -68,6 +70,7 @@ export async function removeWeightEntry(id: string) {
   const { error } = await supabase.from("bodyweight_log").delete()
     .eq("id", id).eq("user_id", userId).select("id").single();
   if (error) return { ok: false, error: "Unable to remove this reading. Reload the calendar and try again." };
+  await refreshCoachInbox(supabase, userId);
   refreshWeightViews();
   return { ok: true };
 }

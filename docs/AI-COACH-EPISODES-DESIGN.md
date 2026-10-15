@@ -1,6 +1,8 @@
 # Coach episodes: storage, replay and confirmed actions
 
-Status: proposed, pending owner approval. Design version `episodes-v1`, 2026-10-13.
+Status: approved for #195 implementation by the owner on 2026-10-14. Design version `episodes-v1`, 2026-10-13.
+Implemented inbox contract: [COACH-INBOX.md](COACH-INBOX.md). Four tables and reconciliation
+ship in #195; conversation links and confirmed training actions remain #141.
 Delivers [#212](https://github.com/jms-dcksn/lifting-app/issues/212); implementation belongs
 to #195 and #141. This document adds no runtime behavior, tables or migrations.
 Direction: [exception plan](AI-COACH-EXCEPTIONS-PLAN.md). Current behavior: [AI Coach](AI-COACH.md).
@@ -22,7 +24,8 @@ server command boundary adds one per-environment HMAC key and restricted databas
 Those functions need explicit owner checks even with RLS. Missing invalidation coverage could
 permit stale confirmation. These are implementation gates, not claims of verified safety.
 
-**Decision needed:** approve this storage/RPC boundary and the defaults below before #195
+**Decision record:** the owner approved proceeding with #195 on 2026-10-14. The original
+review requested approval of this storage/RPC boundary and the defaults below before #195
 migrations or #141 action implementation. Approval includes the signing-key provisioning and
 rotation contract, 90-day bootstrap evidence window, 21-day latest-performance freshness,
 pain lifecycle, foreground-only delivery, and retention rules. Merging this design PR alone
@@ -382,7 +385,7 @@ cannot bypass the new contract. Retain ordinary manual swap behavior and existin
 
 ## Migration, compatibility and rollback
 
-After approval, #195 adds tables/RLS/constraints, source guards and restricted RPC boundary
+Following owner approval, #195 adds four inbox tables/RLS/constraints, source guards and restricted RPC boundary
 in an additive migration. #141 adds conversation seed/link and action RPC implementation when
 its UI is ready; the above schema map is the shared contract, not a mandate to ship unused APIs.
 Use the Supabase CLI to create migration files. Deploy with delivery disabled until local
@@ -438,7 +441,8 @@ confirmed choices across reload/two tabs. Record local vs hosted checks separate
 
 This design was checked against the source paths above and #212's acceptance criteria;
 it has not been executed as SQL, tested against a database, provisioned or deployed.
-Implementation remains blocked on owner approval and the verification gates above.
+The owner authorized #195 implementation on 2026-10-14. See [COACH-INBOX.md](COACH-INBOX.md)
+for the implemented subset and verification; #141 action/conversation requirements remain future work.
 
 Current primary guidance consulted: [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [function security and grants](https://supabase.com/docs/guides/database/functions),

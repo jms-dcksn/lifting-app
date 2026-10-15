@@ -177,3 +177,33 @@ DB/user, as-of and hashed data summaries, including a before/after drift check.
 `JEV_MODEL` may choose a supported fixed model; default `jev-latest` is marked floating.
 See [AI Coach evals](docs/AI-COACH.md#evals) for ownership, per-turn budgets and archived-output
 regrading. No eval command is part of deployment or ordinary `npm test`.
+
+## Coach inbox rollout (#195)
+
+Keep `COACH_INBOX_ENABLED=false` until the target is ready. Apply
+`20261015012412_coach_exception_inbox.sql` through the normal reviewed migration release.
+This creates four inbox tables, source revision guards and restricted RPCs; it creates no key.
+Check the hosted schema/function grants, extension version and private-schema exposure.
+
+Provision a separate random 32-byte key per Local/Preview/Production environment using the
+secret manager. Store its 64 hexadecimal characters in server-only
+`COACH_COMMAND_SIGNING_KEY`, its identifier in `COACH_COMMAND_SIGNING_KEY_ID`, and the same
+bytes/identifier in `private.coach_command_key` using restricted administrator access. The
+table requires `valid_from` and `valid_until`; choose an explicit operational expiry. Do not
+put keys in migrations, seed files, browser variables, logs, traces, PRs or URLs. The signing
+key cannot access Supabase data; no service-role key is added to the application.
+
+Verify exact UTF-8 Node/pgcrypto HMAC parity and a signed owner-scoped refresh in that
+environment before enabling `COACH_INBOX_ENABLED=true`. Rotation installs the new DB key
+first, deploys the matching server key ID/key, then expires/revokes the prior key within
+65 seconds of cutover. Keep the private schema out of PostgREST exposed schemas.
+
+Run application checks, all ownership tests and `npm run test:db:concurrency` against a
+disposable local database first; the last script requires `COACH_TEST_DATABASE_URL` and
+rejects non-loopback hosts. Verify source guards and lock ordering in the hosted rollout.
+An absent/mismatched key fails closed with retryable inbox refresh; saved training remains.
+
+Rollback disables the flag/arrival entry first and deploys compatible UI, retaining additive
+state and its protections. If a source-trigger defect blocks training, disable Coach commits
+and ship a reviewed forward repair; invalidate/rebootstrap before re-enabling. Do not drop
+training records or future applied-action receipts to roll back inbox delivery.

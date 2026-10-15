@@ -1119,6 +1119,29 @@ const window = range === "last8" ? eligible.slice(-REVIEW_CHART_SESSIONS) : elig
         bypass verifies the HMAC, signed-in owner, versions and expiry, then compares source,
         episode-state and preference revisions under the owner lock. A racing edit rejects the
         old command. The server reloads once; later contention returns a visible retry status.</p>
+        <p>The signing key is a new secret shared by the application server and database.
+        It lets the database check that a calculated update came from the server. RLS separately
+        checks whose rows may change. It is separate from Supabase and AI provider keys;
+        CI uses a synthetic key and needs no deployment secret.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:system-ui" aria-label="Database permission boundary">
+          <div style="border:1px solid;padding:12px">Executor: owner RLS enforced</div><span>→</span>
+          <div style="border:1px solid;padding:12px">Private read-only adapters: JWT owner / user IDs / HMAC</div><span>→</span>
+          <div style="border:1px solid;padding:12px">Installer's existing Auth / extension access</div>
+        </div>
+        <p>Supabase's installer cannot delegate access to the Auth and extension schemas.
+        The adapters use its existing permissions for fixed reads and calculations. Only the
+        executor may call them; they cannot modify training or derived state.</p>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>-- supabase/migrations/20261015012412_coach_exception_inbox.sql
+create function private.coach_auth_uid() returns uuid
+language sql stable security definer set search_path = '' as $$ select auth.uid() $$;
+create function private.coach_auth_user_ids(p_id uuid) returns setof uuid
+language sql stable security definer set search_path = '' as $$
+  select id from auth.users where p_id is null or id=p_id
+$$;
+create function private.coach_hmac(p_payload text,p_key bytea) returns bytea
+language sql immutable security definer set search_path = '' as $$
+  select extensions.hmac(convert_to(p_payload,'UTF8'),p_key,'sha256')
+$$;</code></pre>
         <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>// src/lib/coach-episode-command.ts — exact current source
   const payload = JSON.stringify({
     ...command,

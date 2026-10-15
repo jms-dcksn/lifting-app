@@ -57,6 +57,13 @@ policies. Schema CREATE is granted only during function ownership transfer, then
 the installing database administrator receives role membership with inheritance disabled.
 The private schema must remain outside PostgREST's exposed schemas.
 
+Supabase's migration administrator can use `auth` and `extensions`, but cannot grant
+their schema access to a custom role. Three private, read-only adapters remain owned by
+the installer: JWT owner lookup, Auth user IDs (optionally filtered), and SHA-256 HMAC.
+Only `coach_executor` may call them; each fixes an empty search path. They expose no
+credentials or training writes. The executor itself needs neither schema access nor
+direct Auth-table grants, and all derived writes still enforce its owner RLS policies.
+
 The server HMAC-signs the exact UTF-8 payload with owner, operation, policy/default versions,
 source/state/preferences revisions, key ID and 60-second lifetime. The restricted DB key table
 is not client-readable. Executors verify MAC (including null rejection), owner, operation,
@@ -124,3 +131,17 @@ The HTML teaching section and its inline diagrams rendered; the new snippet matc
 
 No hosted migration, key provisioning, production Auth/email flow, live model or deployment
 was performed. Keep the flag disabled until the target rollout checks above pass.
+
+### CI permissions correction — 2026-10-15
+
+The first PR CI run failed during Auth fixture creation: source guards ran as
+`coach_executor`, which had not actually received `auth` schema access. The original local
+installer fixture incorrectly included grant authority. The migration now uses the narrow
+adapters above. Regression tests remove executor access to `auth`, `extensions` and
+`auth.users` before signup, training, signed-refresh and owner-isolation assertions, and
+check that browser roles cannot invoke the adapters.
+
+All migrations installed under a non-superuser database owner with no grant option on
+either schema. All 12 pgTAP suites passed (136 assertions), as did competing transactions,
+with the executor lacking both schema privileges. This corrects the local permission
+fixture; the PR's Supabase CI run remains the check against the complete stack.

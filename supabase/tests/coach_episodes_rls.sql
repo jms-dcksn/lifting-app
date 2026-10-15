@@ -1,5 +1,11 @@
 begin;
 select no_plan();
+-- Supabase's installer cannot delegate auth/extensions schema access. Exercise
+-- the runtime boundary even on a superuser-owned local PostgreSQL fixture.
+revoke all on schema auth, extensions from coach_executor;
+revoke all on auth.users from coach_executor;
+select ok(not has_schema_privilege('coach_executor','auth','USAGE'), 'executor needs no auth schema access');
+select ok(not has_schema_privilege('coach_executor','extensions','USAGE'), 'executor needs no extensions schema access');
 insert into auth.users(id,email) values
  ('91000000-0000-0000-0000-000000000001','coach-owner@example.test'),
  ('92000000-0000-0000-0000-000000000002','coach-other@example.test');
@@ -21,6 +27,9 @@ create function pg_temp.refresh_coach(p_owner uuid,p_extra jsonb default '{}'::j
  p:=pg_temp.coach_payload(p_owner,p_extra); return public.reconcile_coach_episodes(p,pg_temp.coach_mac(p)); end $$;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','91000000-0000-0000-0000-000000000001',true);
+select throws_ok($$select private.coach_auth_uid()$$,'42501',null,'client cannot call the Auth identity adapter');
+select throws_ok($$select private.coach_auth_user_ids(null)$$,'42501',null,'client cannot enumerate Auth owners');
+select throws_ok($$select private.coach_hmac('forged',decode(repeat('11',32),'hex'))$$,'42501',null,'client cannot call the HMAC adapter');
 select is(pg_temp.refresh_coach(auth.uid())->>'status','ready','owner can reconcile a signed current evaluation');
 select is((select count(*)::int from public.coach_episode),1,'one owned episode');
 select is((select count(*)::int from public.coach_notice),1,'one bootstrap notice');

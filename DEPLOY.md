@@ -185,6 +185,13 @@ Keep `COACH_INBOX_ENABLED=false` until the target is ready. Apply
 This creates four inbox tables, source revision guards and restricted RPCs; it creates no key.
 Check the hosted schema/function grants, extension version and private-schema exposure.
 
+The signing key is a new shared secret for this feature. The app attaches an HMAC
+(a tamper-detection signature) to each calculated inbox update; the database checks it
+before accepting that update. RLS still checks which user's rows may change. This prevents
+a signed-in browser from inventing its own Coach conclusions through the public RPC.
+It is separate from Supabase API/JWT keys and AI provider keys, and is not needed for CI:
+the database tests use a synthetic, transaction-scoped key.
+
 Provision a separate random 32-byte key per Local/Preview/Production environment using the
 secret manager. Store its 64 hexadecimal characters in server-only
 `COACH_COMMAND_SIGNING_KEY`, its identifier in `COACH_COMMAND_SIGNING_KEY_ID`, and the same

@@ -16,7 +16,7 @@ import type { StallContext } from "@/lib/stall-report";
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { rirLabel, type EffectivePrescription, type ProgramPhase } from "@/lib/periodization";
 import type { SessionFeedback } from "@/lib/session-feedback";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonVariant } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { IconPastSets, IconLastUsed, IconSwap } from "@/components/ui/icons";
 import { Sheet } from "@/components/ui/sheet";
@@ -403,7 +403,7 @@ function SlotCard({
 
   const done = optimisticSets.length;
   const complete = done >= p.targetSets;
-  const tone = complete && achievements.length === 0 ? "done" : isCurrent ? "active" : "default";
+  const tone = !complete && isCurrent ? "active" : "default";
 
   function handleLog(weight: number, reps: number, rir: number) {
     if (isPending) return;
@@ -503,7 +503,7 @@ function SlotCard({
   }
 
   return (
-    <Card tone={tone}>
+    <Card tone={tone} className={complete ? "bg-surface/60" : undefined}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} size="lg" />
@@ -575,7 +575,7 @@ function SlotCard({
         />
       )}
 
-      <div className="mt-1 flex items-center justify-between gap-3">
+      <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <span className="text-caption text-muted">
           {p.targetSets} × {p.repMin}–{p.repMax} @ {rirLabel(p)} RIR
         </span>
@@ -845,7 +845,8 @@ function SlotCard({
             increment={increment}
             defaultRir={p.targetRir}
             initial={{ weight: initialWeight, reps: initialReps, rir: p.targetRir }}
-            label="Log set"
+            label={complete ? "Add set" : "Log set"}
+            variant={complete ? "secondary" : "primary"}
             disabled={isPending}
             liveWeight={liveWeight}
             onSubmit={handleLog}
@@ -856,22 +857,39 @@ function SlotCard({
   );
 }
 
-// Sets-done vs target at a glance — filled dots, hierarchy not color.
+// Keep the count and visual states on the prescription row whenever space permits.
 function ProgressDots({ done, target }: { done: number; target: number }) {
+  const complete = done >= target;
   return (
     <span
-      className="flex items-center gap-1"
-      aria-label={`${done} of ${target} sets logged`}
+      className="ml-auto flex max-w-full shrink-0 items-center gap-2"
+      role="status"
+      aria-label={`${done} of ${target} sets logged${complete ? ", complete" : ""}`}
     >
-      {Array.from({ length: target }).map((_, i) => (
-        <span
-          key={i}
-          className={`h-1.5 w-1.5 rounded-full ${i < done ? "bg-foreground" : "bg-border-strong"}`}
-        />
-      ))}
-      {done > target && (
-        <span className="ml-0.5 text-caption tabular-nums text-muted">+{done - target}</span>
-      )}
+      <span aria-hidden="true" className="text-caption tabular-nums text-muted">
+        {complete ? "Done" : "Sets"}{" "}
+        <span className="font-medium text-foreground">{done}/{target}</span>
+      </span>
+      <span aria-hidden="true" className="flex flex-wrap justify-end gap-1">
+        {Array.from({ length: target }).map((_, i) => (
+          <span
+            key={i}
+            className={`flex size-3 shrink-0 items-center justify-center rounded-full border ${
+              i < done
+                ? "border-foreground bg-foreground text-background"
+                : i === done
+                  ? "border-foreground ring-2 ring-foreground/15"
+                  : "border-border-strong"
+            }`}
+          >
+            {i < done && (
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                <path d="m3 6 2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </span>
+        ))}
+      </span>
     </span>
   );
 }
@@ -972,6 +990,7 @@ function SetEntry({
   defaultRir,
   initial,
   label,
+  variant = "primary",
   disabled,
   liveWeight,
   onSubmit,
@@ -981,6 +1000,7 @@ function SetEntry({
   defaultRir: number;
   initial: { weight: number; reps: number; rir: number };
   label: string;
+  variant?: ButtonVariant;
   disabled?: boolean;
   // Recommender-derived weight for given reps/RIR; the weight field follows it live
   // until the user touches weight manually.
@@ -1039,6 +1059,7 @@ function SetEntry({
       <div className="flex gap-2">
         <Button
           type="button"
+          variant={variant}
           size="md"
           className="flex-1"
           onClick={() => onSubmit(weight, reps, rir)}

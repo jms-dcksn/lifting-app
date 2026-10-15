@@ -116,9 +116,13 @@ Adaptive plateau engine under §5.
   control until resolved (see §6).
 - **Edit / delete sets** — inline; deletes play an exit animation before the optimistic
   removal commits. Failed writes surface a per-card error instead of silently reverting.
-- **Progress dots** — filled-vs-target set count next to the prescription.
-- **Slot hierarchy without color** — a completed slot recedes (`tone="done"`, dimmed); the
-  current slot reads as current (`tone="active"`, stronger border); others are default.
+- **Set progress** — compact `Sets 2/3` count next to the prescription, with 12px checked
+  dots for logged sets, an outlined next set, and neutral remaining dots. At the target,
+  the label becomes `Done 3/3`; extra sets remain visible in the count (for example, `Done 4/3`).
+- **Slot hierarchy without color** — completed slots use a soft surface background and
+  secondary `Add set` action, keeping saved results and record pills fully readable.
+  The current incomplete slot uses a stronger border; others are default. Logging, editing,
+  and deleting stay available without locking, confirmation, or automatic scrolling.
 - **Target line** — weight × reps with a "Start"/"Target" caption plus a compact Last line
   (`Last 225 × 8`). Best-recent stays behind ⓘ when it differs. The recommendation remains
   an editable default.

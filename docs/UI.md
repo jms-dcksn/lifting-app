@@ -24,8 +24,12 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
 - `Stepper` provides large touch targets, press-and-hold repeat, and keyboard activation.
   Keep ref access in events/effects rather than render. `Input` resets native date appearance
   and constrains sizing for narrow Safari layouts.
-- `Card` tones distinguish current/completed work through border/opacity. Slot completion
-  follows saved set counts and effective phase prescriptions.
+- `Card` tones distinguish current/completed work through border/opacity. Active workout
+  slots instead use a soft surface background for completion so results and record pills
+  retain contrast, plus a secondary `Add set` action. Their compact count and 12px checked
+  dots share the prescription row (wrapping when needed); the next dot has a strong outline.
+  Slot completion follows saved set counts and effective phase prescriptions; the count
+  updates optimistically and reverts on failed writes.
 - `ExerciseVisual` is the only exercise illustration. 16:9 `rounded-control` frame,
   `object-cover` (never square + contain). `sm` is 36×64 on rows/tiles; `lg` is 64×114
   on session, planner, review, and in-session history. Mapped catalog ids show art

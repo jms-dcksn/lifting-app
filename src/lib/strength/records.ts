@@ -56,6 +56,7 @@ export interface ExerciseRecords {
   equipmentInstanceId: string | null;
   name: string;
   isBodyweight: boolean;
+  isRepsOnly?: boolean;
   repRecords: RepRecord[];
   e1rmRecord: E1rmRecord | null;
   topWeightRecord: TopWeightRecord | null;
@@ -86,6 +87,7 @@ export function eligibleRecordSet(set: RecordSet, def: ExerciseDef | undefined) 
   if (!def || def.stationProfile === "machine" || !isProgressionSet({ isWarmup: set.is_warmup, isDeload: set.is_deload }) || !validSetNumbers(set)) return null;
   const weight = set.weight!;
   const reps = set.reps!;
+  if (def.loadMode === "reps_only") return weight === 0 ? { load: 0, estimate: 0, reps, weight: 0 } : null;
   const bodyweight = def.equipment === "bodyweight" ? historicalBodyweight(set) : null;
   if (def.equipment === "bodyweight" && bodyweight == null) return null;
   const effective = def.equipment === "bodyweight" ? bodyweight! + weight : weight;
@@ -187,6 +189,7 @@ export function workoutRecords(
         equipmentInstanceId: display.equipmentInstanceId,
         name: display.name,
         isBodyweight: def.equipment === "bodyweight",
+        ...(def.loadMode === "reps_only" ? { isRepsOnly: true } : {}),
         repRecords: [], e1rmRecord: null, topWeightRecord: null,
       };
       const source = { setId: set.id, slotId: set.program_slot_id };
@@ -252,7 +255,7 @@ function compactDelta(improvement: number | null) {
 /** Compact recap lines for one exercise/equipment scope. No fabricated deltas. */
 export function recapLines(group: ExerciseRecords) {
   const lines = group.repRecords.map((record) =>
-    `${record.load} × ${record.reps}${compactDelta(record.improvement)}`,
+    group.isRepsOnly ? `${record.reps} reps${compactDelta(record.improvement)}` : `${record.load} × ${record.reps}${compactDelta(record.improvement)}`,
   );
   if (group.topWeightRecord) {
     lines.push(`${group.topWeightRecord.load} top${compactDelta(group.topWeightRecord.improvement)}`);

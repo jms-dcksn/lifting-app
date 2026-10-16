@@ -83,13 +83,14 @@ describe("catalog templates", () => {
     expect([...equipments]).not.toContain("machine_pin");
   });
 
-  it("maps every seed to the locked station profile", () => {
-    expect(EXERCISES).toHaveLength(60);
+  it("preserves all 60 original station profiles", () => {
+    const original = EXERCISES.filter(e => e.id in STATION_PROFILE_BY_ID);
+    expect(original).toHaveLength(60);
     expect(Object.keys(STATION_PROFILE_BY_ID)).toHaveLength(60);
-    expect(EXERCISES.map((e) => e.id).sort()).toEqual(Object.keys(STATION_PROFILE_BY_ID).sort());
+    expect(original.map((e) => e.id).sort()).toEqual(Object.keys(STATION_PROFILE_BY_ID).sort());
 
     const counts = { machine: 0, cable: 0, bench: 0, rack: 0, platform: 0, none: 0 };
-    for (const e of EXERCISES) {
+    for (const e of original) {
       expect(e.stationProfile, e.id).toBe(STATION_PROFILE_BY_ID[e.id]);
       expect(needsStation(e), e.id).toBe(e.stationProfile !== "none");
       expect(e.machineTemplate, e.id).toBe(e.stationProfile === "machine" || undefined);

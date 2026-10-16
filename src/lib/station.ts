@@ -29,10 +29,13 @@ export type StationPickerForm =
   | { kind: "brand-and-type"; copy: typeof CHOOSE_STATION_COPY.machine }
   | { kind: "brand-only"; copy: string; machineType: StationTag };
 
-export function stationPickerForm(def: Pick<ExerciseDef, "stationProfile">): StationPickerForm {
+export function stationPickerForm(def: Pick<ExerciseDef, "stationProfile" | "allowedMachineTypes">): StationPickerForm {
   const profile = def.stationProfile ?? "none";
   if (profile === "none") return { kind: "none" };
   if (profile === "machine") {
+    if (def.allowedMachineTypes?.length === 1) {
+      return { kind: "brand-only", copy: CHOOSE_STATION_COPY.machine, machineType: def.allowedMachineTypes[0] };
+    }
     return { kind: "brand-and-type", copy: CHOOSE_STATION_COPY.machine };
   }
   return {
@@ -85,15 +88,16 @@ export function swapStationLabel(
 // Smallest useful resolve helper: session/planner forms lock cable to selectorized
 // and barbell stations to their profile tag. Machines keep the plate/stack choice.
 export function stationResolveInput(
-  template: Pick<ExerciseDef, "id" | "stationProfile">,
-  input: { brand: string | null; machineType?: MachineType },
-): { baseExerciseId: string; brand: string | null; machineType: StationTag } {
+  template: Pick<ExerciseDef, "id" | "stationProfile" | "allowedMachineTypes">,
+  input: { brand: string | null; machineType?: MachineType; stationModel?: string | null },
+): { baseExerciseId: string; brand: string | null; machineType: StationTag; stationModel?: string | null } {
   const form = stationPickerForm(template);
   if (form.kind === "none") {
     throw new Error("Template does not require a station");
   }
   return {
     baseExerciseId: template.id,
+    ...(input.stationModel ? { stationModel: input.stationModel } : {}),
     brand: input.brand,
     machineType: form.kind === "brand-only" ? form.machineType : (input.machineType ?? "selectorized"),
   };

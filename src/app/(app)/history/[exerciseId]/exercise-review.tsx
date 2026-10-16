@@ -1,3 +1,4 @@
+import { formatExerciseSet } from "@/lib/strength/load-mode";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Card, CardLabel } from "@/components/ui/card";
@@ -44,6 +45,7 @@ export type ExerciseReviewProps = {
       exerciseId?: string;
       baseExerciseId?: string | null;
       isBodyweight: boolean;
+  loadMode?: ExerciseDef["loadMode"];
       sessions: ReviewSession[];
       pin?: PinProps;
       rolling?: boolean;
@@ -106,6 +108,7 @@ export function ExerciseReview(props: ExerciseReviewProps) {
         <ReadyBody
           sessions={props.sessions}
           isBodyweight={props.isBodyweight}
+          loadMode={props.def?.loadMode}
           now={props.now}
           periodEligible={props.periodEligible}
           periodDates={props.periodDates}
@@ -140,6 +143,7 @@ function ReviewShell({
 function ReadyBody({
   sessions,
   isBodyweight,
+  loadMode,
   now,
   periodEligible,
   periodDates,
@@ -149,6 +153,7 @@ function ReadyBody({
 }: {
   sessions: ReviewSession[];
   isBodyweight: boolean;
+  loadMode?: ExerciseDef["loadMode"];
   now?: Date;
   periodEligible?: boolean;
   periodDates?: string[];
@@ -175,6 +180,7 @@ function ReadyBody({
           session={today}
           previous={previous}
           isBodyweight={isBodyweight}
+          loadMode={loadMode}
           rolling={rolling}
         />
       )}
@@ -209,7 +215,7 @@ function ReadyBody({
               )}
             </div>
             {session.isDeload && <p className="text-caption text-muted">Deload</p>}
-            <SetList sets={session.sets} isBodyweight={isBodyweight} rolling={rolling} />
+            <SetList sets={session.sets} isBodyweight={isBodyweight} loadMode={loadMode} rolling={rolling} />
           </Card>
         ))}
       </section>
@@ -221,11 +227,13 @@ function LastCard({
   session,
   previous,
   isBodyweight,
+  loadMode,
   rolling = false,
 }: {
   session: ReviewSession;
   previous: ReviewSession | null | undefined;
   isBodyweight: boolean;
+  loadMode?: ExerciseDef["loadMode"];
   rolling?: boolean;
 }) {
   const delta =
@@ -251,7 +259,7 @@ function LastCard({
           {delta != null && <DeltaText delta={delta} />}
         </p>
       )}
-      <SetList sets={session.sets} isBodyweight={isBodyweight} rolling={rolling} />
+      <SetList sets={session.sets} isBodyweight={isBodyweight} loadMode={loadMode} rolling={rolling} />
     </Card>
   );
 }
@@ -304,10 +312,12 @@ function RecentCard({ recent }: { recent: NonNullable<ReturnType<typeof reviewRe
 function SetList({
   sets,
   isBodyweight,
+  loadMode,
   rolling = false,
 }: {
   sets: ReviewSession["sets"];
   isBodyweight: boolean;
+  loadMode?: ExerciseDef["loadMode"];
   rolling?: boolean;
 }) {
   return (
@@ -320,8 +330,7 @@ function SetList({
               {set.brand}
             </span>
           ) : null}
-          {set.weight} lb
-          {isBodyweight ? " added" : ""} × {set.reps}
+          {formatExerciseSet({ equipment: isBodyweight ? "bodyweight" : "machine", loadMode }, set.weight, set.reps)}
           {set.rir != null ? ` @ ${set.rir} RIR` : ""}
         </li>
       ))}

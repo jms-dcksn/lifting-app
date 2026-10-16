@@ -9,6 +9,7 @@ export function repeatedEffortReduction(
   prescription: SlotPrescription,
   exposures: Array<LastPerformance & { targetRirMin: number }>,
 ) {
+  if (def.loadMode === "reps_only") return null;
   const recent = exposures.slice(-2);
   if (recent.length !== 2 || !recent.every(set => set.rir != null && set.rir < set.targetRirMin)) {
     return null;

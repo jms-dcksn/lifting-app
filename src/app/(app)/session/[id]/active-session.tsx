@@ -24,6 +24,7 @@ import { ExerciseCardLabel, exerciseCardAriaLabel } from "@/components/ui/exerci
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card, CardLabel } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
+import { formatExerciseSet } from "@/lib/strength/load-mode";
 import { Stepper } from "@/components/ui/stepper";
 import { PinButton } from "../../pins/pin-button";
 import { ExercisePicker } from "../../program/exercise-picker";
@@ -371,7 +372,7 @@ function SlotCard({
   // scope sheet then shows the full name before anything saves.
   const lastUsedDef = slot.lastUsedAlternate ? catalog[slot.lastUsedAlternate] : null;
   const lastUsedLabel = lastUsedDef
-    ? variantShortLabel(lastUsedDef.brand, lastUsedDef.machineType) ?? lastUsedDef.name
+    ? variantShortLabel(lastUsedDef.brand, lastUsedDef.machineType, lastUsedDef.stationModel) ?? lastUsedDef.name
     : null;
 
   const p = slot.prescription;
@@ -589,6 +590,7 @@ function SlotCard({
         reference={progressionReference}
         effectiveTarget={effectiveTarget}
         isBodyweight={isBodyweight}
+        loadMode={def?.loadMode}
         done={done}
       />
 
@@ -748,7 +750,8 @@ function SlotCard({
             editingId === s.id ? (
               <li key={s.id}>
                 <SetEntry
-                  increment={increment}
+                  loadMode={catalog[s.exerciseId]?.loadMode}
+                  increment={catalog[s.exerciseId]?.increment ?? increment}
                   defaultRir={p.targetRir}
                   initial={{ weight: s.weight, reps: s.reps, rir: s.rir ?? p.targetRir }}
                   label="Save"
@@ -765,7 +768,7 @@ function SlotCard({
               >
                 <span className="tabular-nums">
                   <span className="text-faint">{i + 1}.</span>{" "}
-                  {s.weight} lb × {s.reps}
+                  {formatExerciseSet(catalog[s.exerciseId], s.weight, s.reps)}
                   {s.rir != null ? ` @ ${s.rir}` : ""}
                   {s.exerciseId !== exerciseId && <span className="block text-caption text-muted">{catalog[s.exerciseId]?.name ?? s.exerciseId}</span>}
                 </span>
@@ -842,6 +845,7 @@ function SlotCard({
         <div className="mt-3">
           <SetEntry
             key={`${exerciseId}-${p.repMin}-${p.repMax}`}
+            loadMode={def?.loadMode}
             increment={increment}
             defaultRir={p.targetRir}
             initial={{ weight: initialWeight, reps: initialReps, rir: p.targetRir }}
@@ -899,12 +903,14 @@ function TargetLine({
   reference,
   effectiveTarget,
   isBodyweight,
+  loadMode,
   done,
 }: {
   target: SessionTarget | null;
   reference: ProgressionReference;
   effectiveTarget: EffectiveWorkoutTarget;
   isBodyweight: boolean;
+  loadMode?: ExerciseDef["loadMode"];
   done: number;
 }) {
   if (!target) {
@@ -921,7 +927,8 @@ function TargetLine({
 
   const value = (
     <span className="text-heading tabular-nums">
-      {target.weight} {unit} <span className="font-normal text-muted">× {target.targetReps}</span>
+      {loadMode ? formatExerciseSet({ loadMode }, target.weight, target.targetReps)
+        : <>{target.weight} {unit} <span className="font-normal text-muted">× {target.targetReps}</span></>}
     </span>
   );
 
@@ -940,7 +947,7 @@ function TargetLine({
         </p>
       )}
       {target.source === "progression" && (
-        <ProgressionContext reference={reference} isBodyweight={isBodyweight} />
+        <ProgressionContext reference={reference} isBodyweight={isBodyweight} loadMode={loadMode} />
       )}
       {isRecommendation && target.confidence === "calibrate" && (
         <p className="mt-1 flex items-center gap-1 text-caption text-calibrate">
@@ -957,9 +964,11 @@ function TargetLine({
 function ProgressionContext({
   reference,
   isBodyweight,
+  loadMode,
 }: {
   reference: ProgressionReference;
   isBodyweight: boolean;
+  loadMode?: ExerciseDef["loadMode"];
 }) {
   const last = reference.lastSameSlot;
   const best = reference.bestRecent;
@@ -969,7 +978,8 @@ function ProgressionContext({
     || best.performedAt !== last.performedAt
     || best.programSlotId !== last.programSlotId
   );
-  const compact = (item: ProgressionPerformance) => `${item.weight} × ${item.reps}`;
+  const compact = (item: ProgressionPerformance) => loadMode
+    ? formatExerciseSet({ loadMode }, item.weight, item.reps) : `${item.weight} × ${item.reps}`;
   const caption = last ? `Last ${compact(last)}` : best ? `Best ${compact(best)}` : null;
 
   return (
@@ -979,13 +989,14 @@ function ProgressionContext({
         Last is this slot&apos;s previous first set{last ? ` (${compact(last)})` : ""}.
         Best is the strongest first set of this exercise since then
         {best && bestDiffers ? ` (${compact(best)})` : ""}.
-        {isBodyweight ? " Numbers are added load." : ""}
+        {isBodyweight && !loadMode ? " Numbers are added load." : ""}
       </InfoButton>
     </p>
   );
 }
 
 function SetEntry({
+  loadMode,
   increment,
   defaultRir,
   initial,
@@ -996,6 +1007,7 @@ function SetEntry({
   onSubmit,
   onCancel,
 }: {
+  loadMode?: ExerciseDef["loadMode"];
   increment: number;
   defaultRir: number;
   initial: { weight: number; reps: number; rir: number };
@@ -1021,17 +1033,17 @@ function SetEntry({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-3 gap-2">
-        <Stepper
-          label="Weight"
-          value={weight}
+      <div className={`grid ${loadMode === "reps_only" ? "grid-cols-2" : "grid-cols-3"} gap-2`}>
+        {loadMode !== "reps_only" && <Stepper
+          label={loadMode === "assisted" ? "Assistance (lb)" : "Weight"}
+          value={loadMode === "assisted" ? Math.abs(weight) : weight}
           step={increment}
-          min={-200}
+          min={loadMode === "assisted" ? 0 : -200}
           onChange={(v) => {
             setWeightTouched(true);
-            setWeight(v);
+            setWeight(loadMode === "assisted" ? -v : v);
           }}
-        />
+        />}
         <Stepper
           label="Reps"
           value={reps}
@@ -1062,7 +1074,7 @@ function SetEntry({
           variant={variant}
           size="md"
           className="flex-1"
-          onClick={() => onSubmit(weight, reps, rir)}
+          onClick={() => onSubmit(loadMode === "reps_only" ? 0 : weight, reps, rir)}
           disabled={disabled}
         >
           {label}

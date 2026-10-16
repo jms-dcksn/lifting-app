@@ -41,7 +41,7 @@ export function estimatePatternStrength(
   let weightTotal = 0;
   for (const stat of stats) {
     const def = defs[stat.exerciseId];
-    if (!def || def.pattern !== pattern || !stat.currentE1rm) continue;
+    if (!def || def.loadMode === "reps_only" || def.pattern !== pattern || !stat.currentE1rm) continue;
     const coeff = effectiveCoefficient(def, stat);
     if (coeff <= 0) continue;
     const referenceE1rm = stat.currentE1rm / coeff;
@@ -70,6 +70,7 @@ export function recommend(
   defs: Record<string, ExerciseDef>,
   stats: ExerciseStat[],
 ): Recommendation | null {
+  if (target.loadMode === "reps_only") return null;
   const own = stats.find((s) => s.exerciseId === target.id);
 
   // Direct history on this exact exercise is the most reliable signal.

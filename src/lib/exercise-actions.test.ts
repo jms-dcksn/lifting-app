@@ -30,8 +30,8 @@ type Row = DbExerciseRow & { user_id: string };
 let currentUser: string;
 let rows: Row[];
 
-function variantKey(row: Pick<Row, "user_id" | "base_exercise_id" | "brand" | "machine_type">) {
-  return `${row.user_id}|${row.base_exercise_id}|${row.brand ?? ""}|${row.machine_type ?? ""}`;
+function variantKey(row: Pick<Row, "user_id" | "base_exercise_id" | "brand" | "machine_type" | "station_model">) {
+  return `${row.user_id}|${row.base_exercise_id}|${row.brand ?? ""}|${row.machine_type ?? ""}|${row.station_model ?? ""}`;
 }
 
 function from() {
@@ -88,6 +88,43 @@ beforeEach(() => {
 });
 
 describe("resolveVariant", () => {
+  it("keeps legacy and two same-brand models distinct and reuses normalized choices", async () => {
+    const input = { baseExerciseId: "machine-chest-press", brand: "Life Fitness", machineType: "selectorized" as const };
+    const legacy = await resolveVariant(input);
+    const first = await resolveVariant({ ...input, stationModel: "lf-insignia-chest" });
+    const second = await resolveVariant({ ...input, stationModel: "lf-insignia-dual-chest" });
+    expect(new Set([legacy.id, first.id, second.id]).size).toBe(3);
+    expect(first.stationModel).toBe("lf-insignia-chest");
+    expect(first.name).toContain("Insignia Chest Press");
+    expect((await resolveVariant({ ...input, stationModel: "  INSIGNIA CHEST PRESS " })).id).toBe(first.id);
+    expect(rows.filter(row => row.user_id === USER_B)).toHaveLength(3);
+  });
+
+  it("scopes model identities to owners when the canonical model ID is taken", async () => {
+    const input = { baseExerciseId: "machine-row", brand: "Hammer Strength", machineType: "plate_loaded" as const, stationModel: "hs-dy-row" };
+    currentUser = USER_A;
+    const first = await resolveVariant(input);
+    currentUser = USER_B;
+    const second = await resolveVariant(input);
+    expect(second.id).toBe(`${first.id}__${USER_B}`);
+    expect(second.stationModel).toBe(first.stationModel);
+    expect((await resolveVariant(input)).id).toBe(second.id);
+  });
+
+  it("rejects incompatible manufacturer models before inserting", async () => {
+    await expect(resolveVariant({ baseExerciseId: "machine-row", brand: "Cybex", machineType: "plate_loaded", stationModel: "hs-dy-row" })).rejects.toThrow("Model does not match");
+    await expect(resolveVariant({ baseExerciseId: "bb-bench", brand: "Cybex", machineType: "bench", stationModel: "custom" })).rejects.toThrow("Models apply");
+    expect(rows).toHaveLength(1);
+  });
+
+  it("persists an assisted station and restores its canonical load behavior", async () => {
+    const def = await resolveVariant({ baseExerciseId: "assisted-dip", brand: "Life Fitness", machineType: "selectorized", stationModel: "lf-insignia-assist" });
+    expect(def.equipment).toBe("bodyweight");
+    expect(def.loadMode).toBe("assisted");
+    expect(def.needsCalibration).toBe(true);
+    expect(rows.find(row => row.id === def.id)?.base_exercise_id).toBe("assisted-dip");
+  });
+
   const hoistLeg = {
     baseExerciseId: "leg-extension",
     brand: "Hoist",

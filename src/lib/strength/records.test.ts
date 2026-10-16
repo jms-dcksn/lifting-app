@@ -21,6 +21,14 @@ function current(overrides: Partial<RecordSet> = {}) {
 const detect = (sets: RecordSet[]) => workoutRecords(sets, "user", "active", start, catalog);
 
 describe("workout records", () => {
+  it("awards rep-only records without weight or e1RM records", () => {
+    const groups = detect([set({ exercise_id: "ab-wheel-rollout", weight: 0, e1rm: null }),
+      current({ exercise_id: "ab-wheel-rollout", weight: 0, e1rm: null })]);
+    expect(recordCounts(groups)).toEqual({ reps: 1, e1rm: 0, topWeight: 0, exercises: 1 });
+    expect(groups[0].isRepsOnly).toBe(true);
+    expect(recapLines(groups[0])).toEqual(["10 reps +2"]);
+  });
+
   it("awards 100 × 10 over 100 × 8 and uses the canonical RIR e1RM", () => {
     const groups = detect([set(), current()]);
     expect(groups).toHaveLength(1);

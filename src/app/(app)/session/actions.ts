@@ -14,6 +14,7 @@ import { isLoggableExercise } from "@/lib/station";
 import { loadWorkoutRecords } from "@/lib/workout-records";
 import { historicalBodyweight, validSetNumbers, type ExerciseRecords } from "@/lib/strength/records";
 import { comparisonKey, comparisonScope } from "@/lib/strength/movement";
+import { validExerciseWeight } from "@/lib/strength/load-mode";
 import { computeE1rm } from "@/lib/strength/e1rm";
 import { recomputeStat, effectiveLoad } from "@/lib/strength/recompute";
 import { estimatePatternStrength, type ExerciseStat } from "@/lib/strength/recommend";
@@ -179,7 +180,7 @@ export async function logSet(input: LogSetInput) {
   if (!isLoggableExercise(def)) {
     throw new Error("Choose a specific exercise or machine first.");
   }
-  if (!validSetNumbers(input) || input.rir == null || (def.equipment !== "bodyweight" && input.weight <= 0)) {
+  if (!validSetNumbers(input) || input.rir == null || !validExerciseWeight(def, input.weight)) {
     throw new Error("Enter a valid weight, whole-number reps, and RIR from 0 to 5.");
   }
 
@@ -287,7 +288,7 @@ export async function editSet(input: EditSetInput) {
   const catalog = await getCatalogMap(supabase, userId);
   const def = catalog[existing.exercise_id];
   const bodyweight = await getCurrentBodyweight(supabase, userId);
-  if (!def || (def.equipment !== "bodyweight" && input.weight <= 0)) throw new Error("Invalid exercise or load");
+  if (!def || !validExerciseWeight(def, input.weight)) throw new Error("Invalid exercise or load");
   // Preserve the bodyweight used by the original saved set, including historical edits.
   // If it was unknown then, keep e1RM unknown rather than substituting today's weigh-in.
   const setBodyweight = def.equipment === "bodyweight" ? historicalBodyweight(existing) : bodyweight;

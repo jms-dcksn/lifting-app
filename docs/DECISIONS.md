@@ -479,6 +479,23 @@ cannot guarantee lock-screen delivery. Native push remains out of scope (#43).
 
 ## Phase C decisions (machine brands, types, custom exercises)
 
+**Comprehensive catalog and optional models (2026-10-15, approved).** James approved all
+variations in the audit, including optional curl variations and the manufacturer model
+choices. Add 90 shared templates, keeping all previous IDs and personal exercises. Add
+nullable `exercise.station_model` and include it in owner-local variant uniqueness. Null
+keeps the unknown-model legacy station; explicit models never adopt or merge old history.
+This supersedes the earlier brand/type-only limit. Known model names normalize to stable
+registry keys and custom names remain supported; modeled IDs use a lossless UTF-8 suffix.
+Keep machine and cable model estimates exact to their logged station.
+
+Add separate patterns for new chest flys, adduction, hip extension, dorsiflexion and torso
+rotation. Existing seed patterns are preserved. Assisted station input is positive assistance
+but persistence retains negative added load; reaching zero does not turn it into a weighted
+movement. Rep-only rollouts, straight-leg raises and glute-ham raises have null estimates,
+zero external load, rep progression/PRs and set counts, without fabricated weight or e1RM
+records. See [catalog contract](EXERCISE-CATALOG.md) for the inventory and release dependency.
+
+
 **Machine catalog expansion (2026-10-08).** The 12 additions approved in the
 [catalog research](2026-10-08-machine-exercise-catalog-research.md) are shared code templates;
 owner-specific brand/type rows continue to be created by `resolveVariant`. No bulk inserts

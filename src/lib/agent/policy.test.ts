@@ -31,6 +31,7 @@ describe("agent policy", () => {
       "activeProgram",
       "exerciseReview",
       "nextWorkout",
+      "calculateE1rm",
     ]);
     expect(CLIENT_NAV_TOOL_NAMES).toEqual([
       "openExerciseReview",

@@ -30,6 +30,56 @@
         </p>
       </header>
 
+      <section id="e1rm-calculator" class="space-y-4">
+        <h2 class="font-serif text-2xl">Hypothetical e1RM — the calculator (#205)</h2>
+        <p class="text-slate-700">Ask “If I bench 100 kg total for 5 reps with 2 RIR, what is my
+          estimated max?” Coach calls <code>calculateE1rm</code> and explains the returned estimate:
+          about <strong>123.3 kg total external load</strong>. Any lift can be labeled, even with no
+          program or logged history. The tool uses the existing RPE/RIR model; no model arithmetic,
+          catalog lookup or database access is involved.</p>
+        <pre class="mermaid">
+flowchart TD
+  User[User-supplied hypothetical set] --> Validate{Valid numeric inputs?}
+  Validate -->|No| Invalid[invalid_input: ask for correction]
+  Validate -->|Yes| RepOnly{Rep-only movement?}
+  RepOnly -->|Yes| Unavailable[unavailable: no load-based estimate]
+  RepOnly -->|No| Context{Load, reps, unit and convention complete?}
+  Context -->|No| Ask[needs_input: ask for missing context]
+  Ask --> User
+  Context -->|Yes| Load[Canonical effectiveLoad: bodyweight required where applicable]
+  Load --> Positive{Effective load and result finite and positive?}
+  Positive -->|No| Invalid
+  Positive -->|Yes| Result[estimated: computeE1rm, inputs, unit, basis and assumptions]
+  Result --> Reply[Coach explains hypothetical estimate and RIR default]
+        </pre>
+        <p class="text-slate-700">The sign and context matter. The schema rejects malformed numbers;
+          the domain function asks for missing fields before calculating. These are exact source lines
+          from <code>src/lib/agent/tools/calculate-e1rm.ts</code>:</p>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>  const load = effectiveLoad({ equipment: isBodyweight ? &quot;bodyweight&quot; : &quot;barbell&quot; }, weight, input.bodyweight ?? null);
+  const rir = input.rir ?? 2;
+  const estimate = load == null || load &lt;= 0 ? NaN : computeE1rm(load, reps, rir);</code></pre>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-lg border border-slate-300 p-4"><h3 class="font-semibold">External and dumbbell load</h3>
+            <p class="mt-2 text-sm">Barbell means total load including the bar. Dumbbells use one hand's load
+              and return a per-hand estimate; never double it. Explicit kg/lb pass through without changing app storage.</p></div>
+          <div class="rounded-lg border border-slate-300 p-4"><h3 class="font-semibold">Machines</h3>
+            <p class="mt-2 text-sm">Use this station's logged load. Stack labels and leverage do not make the
+              estimate transferable to another machine or free weights.</p></div>
+          <div class="rounded-lg border border-slate-300 p-4"><h3 class="font-semibold">Bodyweight and assistance</h3>
+            <p class="mt-2 text-sm">Supply bodyweight plus added load (zero if unweighted; negative for assistance)
+              in the same unit. Return total-system-load e1RM, not added weight or assistance. Missing bodyweight asks
+              for clarification; the tool never substitutes current profile weight.</p></div>
+          <div class="rounded-lg border border-slate-300 p-4"><h3 class="font-semibold">Honest limits</h3>
+            <p class="mt-2 text-sm">Omitted RIR defaults to 2 and is disclosed. Above 12 effective reps the existing
+              curve extrapolates, so the answer flags greater uncertainty. Rep-only exercises have no load-based e1RM.
+              A hypothetical estimate is not a measured max, logged set, PR, target change or notification.</p></div>
+        </div>
+        <p class="text-sm text-slate-600">Tests cover canonical numeric parity, units, signed assistance,
+          missing context and invalid inputs, plus real registered-tool calls through a scripted agent turn.
+          Authored eval cases distinguish hypothetical questions from logged-history questions, which still use
+          <code>exerciseReview</code>. Scripts verify orchestration, not live-model compliance; no paid live eval ran.</p>
+      </section>
+
       <section id="exception-plan" class="space-y-4 rounded-lg border border-slate-300 p-5">
         <h2 class="font-serif text-2xl">Approved next direction: quiet progression, useful exceptions</h2>
         <p class="text-slate-700">The classifier, shared targets and persistent foreground inbox (#195) are implemented; keep every existing engine calculation.

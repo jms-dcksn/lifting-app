@@ -13,6 +13,48 @@ const squatTarget = TOOL_FIXTURES.nextWorkout.workout.slots[0]?.target;
 
 export const EVAL_CASES: EvalCase[] = [
   {
+    id: "calculate-e1rm-explicit",
+    question: "What would my bench e1RM be from 100 kg total including bar, 5 reps, 2 RIR?",
+    expectedTools: ["calculateE1rm"],
+    expectedCitations: [{ value: "123.3", source: "calculateE1rm" }, { value: "kg", source: "calculateE1rm" }],
+    goldAnswer: "calculateE1rm estimates 123.3 kg total external load at 2 RIR. This is hypothetical, not a logged result.",
+  },
+  {
+    id: "calculate-e1rm-default-rir",
+    question: "Estimate e1RM for an unlogged custom dumbbell press: 30 kg per hand for 8 reps. It is not in my program.",
+    expectedTools: ["calculateE1rm"],
+    expectedCitations: [{ value: "40.6", source: "calculateE1rm" }, { value: "per hand", source: "calculateE1rm" }, { value: "2 RIR", source: "calculateE1rm" }],
+    goldAnswer: "calculateE1rm estimates 40.6 kg per hand, assuming the default 2 RIR. No program or logged history is needed; this is not demonstrated strength.",
+  },
+  {
+    id: "calculate-e1rm-pound-machine",
+    question: "On this specific machine I use 100 lb total logged load for 5 reps at 2 RIR. Estimate e1RM.",
+    expectedTools: ["calculateE1rm"],
+    expectedCitations: [{ value: "123.3", source: "calculateE1rm" }, { value: "lb", source: "calculateE1rm" }, { value: "machine", source: "calculateE1rm" }],
+    goldAnswer: "calculateE1rm estimates 123.3 lb on this machine at 2 RIR; its stack/leverage does not transfer to another station or free weights.",
+  },
+  {
+    id: "calculate-e1rm-clarify",
+    question: "Dumbbell bench 60 for 8 reps. What's my estimated max?",
+    expectedTools: [],
+    expectedCitations: [],
+    goldAnswer: "Is 60 kg or lb, and is it one dumbbell's load or both combined? I need that context before estimating.",
+  },
+  {
+    id: "calculate-e1rm-bodyweight-context",
+    question: "If I do 8 pull-ups, what is my e1RM?",
+    expectedTools: [],
+    expectedCitations: [],
+    goldAnswer: "What bodyweight and kg/lb unit should this hypothetical use, with how much added weight or assistance? I won't guess from current weight history.",
+  },
+  {
+    id: "calculate-e1rm-invalid",
+    question: "Estimate my bench e1RM from 100 kg total, -5 reps, 2 RIR.",
+    expectedTools: [],
+    expectedCitations: [],
+    goldAnswer: "Reps must be a positive whole number. Please correct that value before I estimate an e1RM.",
+  },
+  {
     id: "week-how",
     question: "How was this week?",
     expectedTools: ["weeklyCoach"],

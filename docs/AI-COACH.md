@@ -59,6 +59,41 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
   stay id-preserving. Slice 2 writes inactive drafts; saving in the builder still activates.
 - New capability = a domain tool (+ eval cases), not a new aggregation forked from Coach.
 
+## Hypothetical e1RM calculator (#205)
+
+`calculateE1rm` is a read-only, ledger-independent tool for user-supplied sets, including
+unlogged lifts outside the active program. `src/lib/agent/tools/calculate-e1rm.ts` validates
+inputs, uses canonical `effectiveLoad()` and `computeE1rm()`, and returns `estimated`,
+`needs_input`, `invalid_input`, or `unavailable`. It performs no database access and never
+creates a record, changes demonstrated strength/targets, or generates a notification.
+Historical e1RM questions still use `exerciseReview` with its existing identity rules.
+
+- Inputs: optional lift label, finite load, positive whole-number reps, optional finite RIR
+  from 0–5, explicit `kg`/`lb`, and an explicit load convention. Omitted RIR defaults to 2;
+  `rirDefaulted` and the returned assumptions disclose that choice. Missing unit/load context
+  asks for clarification; invalid numeric inputs never produce an estimate.
+- `total_external` includes the bar. `per_hand` uses one dumbbell and returns per-hand e1RM;
+  never double the load. `machine` uses that station's logged load, with no transfer to
+  another machine or free weights. No catalog lookup or equipment inference is required.
+- `bodyweight` requires explicit bodyweight and nonnegative added load (zero for unweighted).
+  `assisted_bodyweight` requires explicit bodyweight and negative added load for assistance
+  (zero also allowed). Both use bodyweight plus added load in the same unit, and return a
+  **total-system-load** estimate, not added weight or assistance. Effective load must stay
+  positive and finite. The tool never substitutes current profile/weight history.
+- `reps_only` returns unavailable: the app has no load-based e1RM for those movements.
+  The agent must identify rep-only context rather than manufacture a loaded interpretation.
+- Outputs retain source inputs, unit, formula, effective load, estimate basis, hypothetical
+  status, default-RIR disclosure and assumptions. Units pass through without conversion or
+  changing pound-based app storage. Canonical extrapolation above 12 effective reps is
+  disclosed as less certain. Results are estimates, not measured maxima or guarantees.
+
+Regression coverage includes pure numeric/convention boundaries, real registered-tool
+validation and scripted `runAgentTurn` calls (including clarification then calculation),
+plus authored evaluation cases for routing, units, omitted RIR, invalid inputs and missing
+context. Scripted calls validate orchestration/evidence transport, not live-model compliance.
+No paid/live model evaluation is part of this slice. Teaching walkthrough:
+[calculator flow and source](ai-coach.html#e1rm-calculator).
+
 ## Deterministic exception eligibility (#210)
 
 `src/lib/coach-exceptions.ts` exports `classifyCoachExceptions()`, policy version `1.0`.

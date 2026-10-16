@@ -20,7 +20,7 @@ export interface LoggedSetInput {
 // Returns null when bodyweight is required but unknown — the load is not computable,
 // and treating it as 0 would store garbage e1RMs that poison pattern strength.
 export function effectiveLoad(
-  def: ExerciseDef,
+  def: Pick<ExerciseDef, "equipment" | "loadMode">,
   weight: number,
   bodyweight: number | null,
 ): number | null {

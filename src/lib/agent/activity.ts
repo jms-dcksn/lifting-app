@@ -5,6 +5,7 @@ export type ToolActivity = {
 };
 
 const TOOL_LABELS: Record<string, [string, string, string]> = {
+  calculateE1rm: ["Estimating your one-rep max", "Estimated your one-rep max", "Could not estimate your one-rep max"],
   weeklyCoach: ["Checking your weekly report", "Checked your weekly report", "Could not check your weekly report"],
   activeProgram: ["Checking your program", "Checked your program", "Could not check your program"],
   exerciseReview: ["Reviewing your exercise history", "Reviewed your exercise history", "Could not review your exercise history"],

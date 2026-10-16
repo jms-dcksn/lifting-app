@@ -1,9 +1,11 @@
 "use server";
 import { z } from "zod";
+import { parseCoachEpisode, requireCoachVersion } from "@/lib/coach-storage";
 import { createClient } from "@/lib/supabase/server";
 import {
   coachInboxEnabled,
   coachJson,
+  parseCoachNotice,
   loadCoachInbox,
   refreshCoachInbox,
   reportPainEnded,
@@ -82,13 +84,13 @@ export async function openNotice(id: string) {
   const { client, userId } = await requireUser();
   z.uuid().parse(id);
   const refresh = await refreshCoachInbox(client, userId);
-  const { data: notice, error } = await client
-    .from("coach_notice")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("id", id)
-    .maybeSingle();
-  if (error) throw new Error("Unable to load this notice.");
+  const [noticeResult, stateResult] = await Promise.all([
+    client.from("coach_notice").select("*").eq("user_id", userId).eq("id", id).maybeSingle(),
+    client.from("coach_refresh_state").select("defaults_version").eq("user_id", userId).maybeSingle(),
+  ]);
+  const { data: notice, error } = noticeResult;
+  const { data: state, error: stateError } = stateResult;
+  if (error || stateError) throw new Error("Unable to load this notice.");
   if (!notice) return null;
   const { data: episode, error: episodeError } = await client
     .from("coach_episode")
@@ -97,11 +99,13 @@ export async function openNotice(id: string) {
     .eq("id", notice.episode_id)
     .maybeSingle();
   if (episodeError || !episode) return null;
+  requireCoachVersion(state?.defaults_version);
+  const validatedNotice = parseCoachNotice(notice);
+  const validatedEpisode = parseCoachEpisode(episode.data, state?.defaults_version);
   await markNotice(id);
   return {
-    notice,
-    episode:
-      episode.data as unknown as import("@/lib/coach-episodes").CoachEpisode,
+    notice: validatedNotice,
+    episode: validatedEpisode,
     episodeId: episode.id,
     fresh: refresh.status === "ready",
   };

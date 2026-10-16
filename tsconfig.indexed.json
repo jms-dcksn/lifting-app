@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true,
+    "incremental": false,
+    "plugins": []
+  },
+  "include": [
+    "src/lib/strength/identity.ts",
+    "src/lib/strength/eligibility.ts",
+    "src/lib/strength/e1rm.ts",
+    "src/lib/strength/trend.ts",
+    "src/lib/pagination.ts"
+  ],
+  "exclude": ["node_modules"]
+}

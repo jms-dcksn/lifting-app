@@ -564,3 +564,14 @@ See [COACH-INBOX.md](COACH-INBOX.md) for the implemented lifecycle, signed-comma
 foreground hooks, preferences, explicit pain-end, rollout and verification. The inbox routes
 provide deterministic evidence without a model turn. They preserve the ordinary Coach chat
 and existing Track Coach entry while #141/#206 remain pending.
+
+## Executable hardening boundaries (#222–#228)
+
+Production next-workout and episode evidence adapters use `resolveExactWorkoutTarget()`
+with an explicit exact loading identity, composing the unchanged effective-target engine.
+Stored Coach evidence/preferences/results are validated before use; notice details receive
+parsed values rather than JSON assertions. Architectural lint protects pure strength code,
+canonical target entry points and local-only privileged eval helpers. Generated sequences
+verify lifecycle invariants and repeated target reads. [Verification](VERIFICATION.md)
+owns the reproducible command, CI/browser profiles and staged strict/evidence migrations.
+No model/provider, permissions, comparison policy or skills installation changes.

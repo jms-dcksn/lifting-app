@@ -1,4 +1,5 @@
 "use client";
+import { exactExerciseIdentity } from "@/lib/strength/identity";
 
 import Link from "next/link";
 import { Suspense, use, useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
@@ -11,7 +12,7 @@ import {
   type ProgressionReference,
   type SessionTarget,
 } from "@/lib/strength/progression";
-import { effectiveTargetExplanation, resolveEffectiveWorkoutTarget, type EffectiveWorkoutTarget, type WorkoutTargetHistory } from "@/lib/effective-workout-target";
+import { effectiveTargetExplanation, resolveExactWorkoutTarget, type EffectiveWorkoutTarget, type WorkoutTargetHistory } from "@/lib/effective-workout-target";
 import type { StallContext } from "@/lib/stall-report";
 import type { ExerciseStat } from "@/lib/strength/recommend";
 import { rirLabel, type EffectivePrescription, type ProgramPhase } from "@/lib/periodization";
@@ -379,9 +380,9 @@ function SlotCard({
   const isBodyweight = equipment === "bodyweight";
   const isMachine = equipment.startsWith("machine") || equipment === "cable";
 
-  const effectiveTarget = useMemo(() => resolveEffectiveWorkoutTarget({
-    slotId: slot.programSlotId, exerciseId,
-    equipmentInstanceId: exerciseId === slot.targetContext?.exerciseId ? slot.targetContext.equipmentInstanceId : null,
+  const effectiveTarget = useMemo(() => resolveExactWorkoutTarget({
+    slotId: slot.programSlotId, identity: exactExerciseIdentity(exerciseId,
+      exerciseId === slot.targetContext?.exerciseId ? slot.targetContext.equipmentInstanceId : null),
     prescription: p,
     context: slot.targetContext ? { ...slot.targetContext, exerciseId,
       equipmentInstanceId: exerciseId === slot.targetContext.exerciseId ? slot.targetContext.equipmentInstanceId : null, repMin: p.repMin, repMax: p.repMax,

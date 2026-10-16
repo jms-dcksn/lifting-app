@@ -150,3 +150,14 @@ The next Supabase run passed the permission boundary and exposed a timing error 
 SQL signing fixture: two `clock_timestamp()` calls could exceed the strict 60-second
 lifetime by microseconds. The fixture now uses one statement timestamp for both fields,
 matching the application's single captured instant. Production expiry validation is unchanged.
+
+## Validated reads and generated regression coverage (#224/#226)
+
+Stored preferences, episode/evidence JSON and reconcile results pass runtime schemas at
+read boundaries. Existing unversioned JSON uses the state row's `episodes-v1` format;
+unknown defaults/policy versions and malformed data are explicit unavailable/unsupported
+errors, never fabricated defaults. Original evidence is parsed on the server and remains
+null when redacted. No storage format, signing bytes, RLS or lifecycle policy changes.
+Inbox/stall loaders share advancing-ID pagination mechanics without sharing query policy.
+Generated lifecycle sequences complement existing examples and competing-transaction SQL.
+[Verification](VERIFICATION.md) describes commands, fixtures, browser checks and limits.

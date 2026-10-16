@@ -34,7 +34,9 @@ TypeScript strength engine. Workouts require connectivity; there is no offline s
 ## Verification and continuity
 
 Commands are defined in `package.json`: `npm run dev`, `npm test`, `npm run lint`,
-`npm run build`; typecheck with `npx tsc --noEmit`. Vitest discovers `src/lib/**/*.test.ts`
+`npm run build`; run `npm run verify` for the base checks, or `npm run typecheck`
+for fresh framework types plus TypeScript. Profile selection and prerequisites live in
+[Verification](docs/VERIFICATION.md). Vitest discovers `src/lib/**/*.test.ts`
 in Node, including pure logic and mocked action/data-boundary tests. Co-locate tests there;
 SQL ownership/atomicity checks live in `supabase/tests/` with execution notes in feature docs.
 `npm run test:db` runs the pgTAP ownership suite (`supabase/tests/*_rls.sql`) against a local
@@ -55,6 +57,7 @@ and add a trigger here only when a new task branch appears.
 
 | Area | Reference |
 | --- | --- |
+| Architecture lint, validated evidence/identity/storage boundaries, strict indexed-access slice, or verification/browser smoke checks | [Verification and hardening](docs/VERIFICATION.md) |
 | Visual map of experiences, request path, or why a performance/scale choice exists | [Architecture map](docs/architecture.html) |
 | Strength, calibration, catalog identity, program loading, data ownership, auth | [Architecture](docs/ARCHITECTURE.md) and [decisions](docs/DECISIONS.md) |
 | UI primitives, motion, overlays, server/client boundaries | [UI conventions](docs/UI.md) |

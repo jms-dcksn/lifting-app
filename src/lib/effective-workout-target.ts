@@ -1,3 +1,4 @@
+import { exactExerciseIdentity, type ExactExerciseIdentity } from "./strength/identity";
 import type { EffectivePrescription } from "./periodization";
 import { buildStallAssessments, type StallContext, type StallHistory } from "./stall-report";
 import type { ExerciseDef } from "./strength/coefficients";
@@ -142,4 +143,13 @@ export function effectiveTargetExplanation(result: EffectiveWorkoutTarget): stri
     case "starting_weight": return "This is a starting estimate from the strength engine; no exact-exercise reference was available.";
     case "unavailable": return "There is not enough usable evidence to calculate this target.";
   }
+}
+
+/** Protected entry point for UI/data/tool consumers; legacy pure callers migrate separately. */
+export function resolveExactWorkoutTarget(input: Omit<EffectiveTargetInput, "exerciseId" | "equipmentInstanceId"> & {
+  identity: ExactExerciseIdentity;
+}): EffectiveWorkoutTarget {
+  if (input.identity.kind !== "exact") throw new Error("An exact exercise identity is required.");
+  const identity = exactExerciseIdentity(input.identity.exerciseId, input.identity.equipmentInstanceId);
+  return resolveEffectiveWorkoutTarget({ ...input, ...identity });
 }

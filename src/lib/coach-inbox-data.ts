@@ -1,4 +1,6 @@
 import "server-only";
+import { parseCoachEpisode, parseCoachPreferences, parseRefreshResult, parseEpisodeEvidence, requireCoachVersion } from "./coach-storage";
+import { collectIdPages } from "./pagination";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "./supabase/types";
 import { mergeCatalog } from "./catalog";
@@ -28,8 +30,15 @@ type SourceTable =
   | "set_log"
   | "exercise"
   | "coach_episode";
-export type CoachNoticeRow =
-  Database["public"]["Tables"]["coach_notice"]["Row"];
+type SourceRow<T extends SourceTable> = T extends "workout_session"
+  ? Pick<Database["public"]["Tables"][T]["Row"], "id" | "user_id" | "program_id" | "program_day_id" | "performed_at" | "finished_at" | "week_index" | "is_deload" | "joint_pain" | "exercise_swaps">
+  : Database["public"]["Tables"][T]["Row"];
+export type CoachNoticeRow = Omit<Database["public"]["Tables"]["coach_notice"]["Row"], "generation_evidence"> & {
+  generation_evidence: import("./coach-episodes").EpisodeEvidence | null;
+};
+export function parseCoachNotice(row: Database["public"]["Tables"]["coach_notice"]["Row"]): CoachNoticeRow {
+  return { ...row, generation_evidence: row.redacted || row.generation_evidence === null ? null : parseEpisodeEvidence(row.generation_evidence) };
+}
 export interface InboxPage {
   notices: CoachNoticeRow[];
   nextCursor: string | null;
@@ -52,28 +61,16 @@ async function allRows<T extends SourceTable>(
   userId: string,
   table: T,
 ) {
-  const rows: Database["public"]["Tables"][T]["Row"][] = [];
-  let after: string | null = null;
-  while (true) {
-    const selection =
-      table === "workout_session"
-        ? "id,user_id,program_id,program_day_id,performed_at,finished_at,week_index,is_deload,joint_pain,exercise_swaps"
-        : "*";
-    let query = db
-      .from(table as SourceTable)
-      .select(selection)
-      .eq("user_id", userId)
-      .order("id")
-      .limit(500);
+  return collectIdPages(async after => {
+    // Explicit projection excludes notes and period observations from Coach evidence.
+    const selection = table === "workout_session"
+      ? "id,user_id,program_id,program_day_id,performed_at,finished_at,week_index,is_deload,joint_pain,exercise_swaps" : "*";
+    let query = db.from(table as SourceTable).select(selection).eq("user_id", userId).order("id").limit(500);
     if (after) query = query.gt("id", after);
     const { data, error } = await query;
     if (error) throw new Error("Unable to refresh Coach. Please try again.");
-    if (!data?.length) break;
-    const page = data as unknown as Database["public"]["Tables"][T]["Row"][];
-    rows.push(...page);
-    after = page[page.length - 1].id;
-  }
-  return rows;
+    return (data ?? []) as unknown as SourceRow<T>[];
+  });
 }
 async function stateSnapshot(db: Client, userId: string) {
   const [state, prefs, episodes] = await Promise.all([
@@ -91,15 +88,16 @@ async function stateSnapshot(db: Client, userId: string) {
   ]);
   if (state.error || prefs.error)
     throw new Error("Unable to load Coach. Please try again.");
+  requireCoachVersion(state.data?.defaults_version);
   return {
     sourceRevision: state.data?.source_revision ?? 0,
     stateVersion: state.data?.state_version ?? 0,
     bootstrap: state.data?.bootstrap_at == null,
     preferencesVersion: prefs.data?.version ?? 0,
     preferences: prefs.data
-      ? (prefs.data.settings as unknown as CoachPreferences)
+      ? parseCoachPreferences(prefs.data.settings, state.data?.defaults_version)
       : DEFAULT_COACH_PREFERENCES,
-    previous: episodes.map((e) => e.data as unknown as CoachEpisode),
+    previous: episodes.map((e) => parseCoachEpisode(e.data, state.data?.defaults_version)),
     episodes,
   };
 }
@@ -304,7 +302,7 @@ export async function refreshCoachInbox(
       );
       const { data, error } = await db.rpc("reconcile_coach_episodes", command);
       if (error) return { status: "unavailable" };
-      const result = data as unknown as RefreshResult;
+      const result = parseRefreshResult(data);
       if (result.status !== "refresh_required") return result;
     }
     return { status: "refresh_required" };
@@ -343,7 +341,7 @@ export async function loadCoachInbox(
       .is("read_at", null),
     db
       .from("coach_refresh_state")
-      .select("source_revision,reconciled_revision")
+      .select("source_revision,reconciled_revision,defaults_version")
       .eq("user_id", userId)
       .maybeSingle(),
     db
@@ -354,7 +352,8 @@ export async function loadCoachInbox(
   ]);
   if (page.error || unread.error || state.error || prefs.error)
     throw new Error("Unable to load the inbox. Please retry.");
-  const notices = (page.data ?? []).slice(0, 50);
+  requireCoachVersion(state.data?.defaults_version);
+  const notices = (page.data ?? []).slice(0, 50).map(parseCoachNotice);
   const last = notices.at(-1);
   return {
     notices,
@@ -364,7 +363,7 @@ export async function loadCoachInbox(
         : null,
     unread: unread.count ?? 0,
     preferences: prefs.data
-      ? (prefs.data.settings as unknown as CoachPreferences)
+      ? parseCoachPreferences(prefs.data.settings, state.data?.defaults_version)
       : DEFAULT_COACH_PREFERENCES,
     preferencesVersion: prefs.data?.version ?? 0,
     stale: state.data

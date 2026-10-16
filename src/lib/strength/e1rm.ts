@@ -6,7 +6,7 @@
 // curve (the RPE-10 column of the RTS table) and interpolate.
 
 // %1RM by reps-to-failure.
-const PCT_BY_RTF: Record<number, number> = {
+const PCT_BY_RTF: Readonly<Partial<Record<number, number>>> = {
   1: 1.0, 2: 0.955, 3: 0.922, 4: 0.892, 5: 0.863, 6: 0.837,
   7: 0.811, 8: 0.786, 9: 0.762, 10: 0.739, 11: 0.707, 12: 0.68,
 };
@@ -18,11 +18,15 @@ export function pctOf1RM(repsToFailure: number): number {
   if (n <= 1) return 1;
   // Beyond the table: Epley-shaped decay anchored to the table's last point so the
   // curve stays continuous and monotonic across the boundary.
-  if (n >= MAX_RTF) return (PCT_BY_RTF[MAX_RTF] * (1 + MAX_RTF / 30)) / (1 + n / 30);
+  if (n >= MAX_RTF) return ((PCT_BY_RTF[MAX_RTF] ?? NaN) * (1 + MAX_RTF / 30)) / (1 + n / 30);
   const lo = Math.floor(n);
   const hi = Math.ceil(n);
-  if (lo === hi) return PCT_BY_RTF[lo];
-  return PCT_BY_RTF[lo] + (n - lo) * (PCT_BY_RTF[hi] - PCT_BY_RTF[lo]);
+  const lower = PCT_BY_RTF[lo];
+  const upper = PCT_BY_RTF[hi];
+  // NaN previously yielded NaN through a missing lookup; preserve that behavior.
+  if (lower === undefined || upper === undefined) return NaN;
+  if (lo === hi) return lower;
+  return lower + (n - lo) * (upper - lower);
 }
 
 // Estimated 1RM from a working set. RIR defaults to 2 when not recorded.

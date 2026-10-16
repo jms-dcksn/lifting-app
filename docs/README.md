@@ -6,6 +6,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 
 | Purpose | Owner |
 | --- | --- |
+| Verification commands, enforced boundaries and staged hardening | [Verification](VERIFICATION.md) |
 | Setup and product overview | [README](../README.md) |
 | Pull request security review workflow | [Deployment](../DEPLOY.md#pull-request-security-review) |
 | Environment, migration and deployment operations | [DEPLOY](../DEPLOY.md) |

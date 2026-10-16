@@ -12,7 +12,7 @@ function client(results: Array<{ data: unknown[] | null; error: unknown }>) {
   return { query, db: { from: vi.fn(() => query) } as unknown as Parameters<typeof loadWorkoutRecords>[0] };
 }
 const row = { id: "one", user_id: "u", session_id: "s", exercise_id: "bb-bench", equipment_instance_id: null,
-  program_slot_id: "slot", weight: 100, reps: 10, rir: 1, e1rm: 141.44, is_warmup: false,
+  program_slot_id: "slot", weight: 100, reps: 10, rir: 1, e1rm: 141.44, is_warmup: false, is_deload: false,
   created_at: "2026-09-12T10:01:00Z", workout_session: { performed_at: "2026-09-12T10:00:00Z", finished_at: null } };
 const load = (db: Parameters<typeof loadWorkoutRecords>[0]) => loadWorkoutRecords(db, "u", "s", "2026-09-12T10:00:00Z", EXERCISE_BY_ID);
 

@@ -1,3 +1,4 @@
+import { collectIdPages } from "./pagination";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./supabase/types";
 import { dateKey } from "./bodyweight";
@@ -9,20 +10,14 @@ type Client = SupabaseClient<Database>;
 type Table = "program_slot" | "program_day" | "program_phase" | "movement_adaptation";
 // Metadata is paginated too: a missing adaptation must never join two unrelated phases.
 async function allRows<T extends Table>(db: Client, userId: string, table: T) {
-  const rows: Database["public"]["Tables"][T]["Row"][] = [];
-  let after: string | null = null;
-  while (true) {
+  return collectIdPages(async after => {
     let query = db.from(table as Table).select("*").eq("user_id", userId).order("id").limit(500);
     if (after) query = query.gt("id", after);
     const { data, error } = await query;
     if (error) throw new Error("Unable to load training context. Please try again.");
-    if (!data?.length) break;
-    // Generic table selection loses its row inference in supabase-js.
-    const page = data as unknown as Database["public"]["Tables"][T]["Row"][];
-    rows.push(...page);
-    after = page[page.length - 1].id;
-  }
-  return rows;
+    // Supabase loses generic table inference; the typed table selection stays here.
+    return (data ?? []) as unknown as Database["public"]["Tables"][T]["Row"][];
+  });
 }
 
 export async function loadStallHistory(db: Client, userId: string, now = new Date(),

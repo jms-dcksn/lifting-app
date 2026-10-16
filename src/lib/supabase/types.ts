@@ -1,3 +1,5 @@
+import type { CoachTables, CoachFunctions } from "./coach-types";
+
 export type Json =
   | string
   | number
@@ -13,7 +15,7 @@ export type Database = {
     PostgrestVersion: "14.5"
   }
   public: {
-    Tables: {
+    Tables: CoachTables & {
       agent_message: {
         Row: {
           created_at: string
@@ -722,7 +724,7 @@ export type Database = {
     Views: {
       [_ in never]: never
     }
-    Functions: {
+    Functions: CoachFunctions & {
       save_bodyweight_entry: {
         Args: { p_entry_id: string | null; p_logged_on: string; p_weight: number; p_replace_entry_id?: string | null }
         Returns: string

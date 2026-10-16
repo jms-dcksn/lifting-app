@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "test:db": "supabase test db supabase/tests/*_rls.sql",
     "eval:agent:sync": "tsx scripts/agent-evals.ts sync",
-    "eval:agent:regrade": "tsx scripts/agent-evals.ts regrade"
+    "eval:agent:regrade": "tsx scripts/agent-evals.ts regrade",
+    "test:db:concurrency": "node scripts/test-coach-concurrency.mjs"
   },
   "dependencies": {
     "@langchain/core": "^1.2.12",
@@ -37,6 +38,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "jsdom": "^29.1.1",
+    "pg": "8.16.3",
     "supabase": "^2.116.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",

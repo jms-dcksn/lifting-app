@@ -476,3 +476,12 @@ lists the latest 50 by last activity, New chat opens an unsaved draft, and the f
 saves the thread titled from that message. Model sees the open thread's last N messages
 only. Contract: [AI-COACH.md § Threads](AI-COACH.md#threads). Teaching page:
 [ai-coach.html](ai-coach.html). Track Coach at `/analytics/coach` is unchanged.
+
+## Persistent Coach exception inbox (#195)
+
+A foreground-only owner-scoped inbox persists meaningful exceptions, current/original evidence,
+read/ack state, category preferences and quiet hours. Ordinary progression/PRs remain silent.
+The shell defers arrivals during workouts; refresh failures recover on app entry/foreground.
+Pain acknowledgement is separate from explicit user-reported end. Structural interventions
+and linked conversations remain #141; rollout needs the migration and server/DB signing keys.
+See [inbox contract](COACH-INBOX.md).

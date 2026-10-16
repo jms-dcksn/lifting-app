@@ -213,8 +213,9 @@ values and use stored context with pre-start history. Reads never compound reduc
 
 Issue: [#212](https://github.com/jms-dcksn/lifting-app/issues/212).
 Design delivered in [episode storage/replay/action proposal](AI-COACH-EPISODES-DESIGN.md).
-Its Decision Card remains pending owner approval. Blocks the migrations in D and new
-adaptation actions in E; a design PR merge does not authorize schema application.
+The owner authorized proceeding with #195 on 2026-10-14. The design PR merge alone did
+not authorize it. Inbox implementation is in [COACH-INBOX.md](COACH-INBOX.md); adaptation
+actions and linked conversations in E remain #141.
 
 Prepare a concrete Decision Card for schema, retention, constraints, replay semantics,
 episode/thread ownership, bootstrap, preferences and pre-workout action authorization.
@@ -225,12 +226,14 @@ This plan approves the product direction, not an unreviewed schema or privileged
 The proposal separates stable episodes, evidence revisions and notice delivery; defines
 90-day supporting/21-day freshness defaults, persistent pain review and two-exposure snooze;
 and specifies owner-scoped signed commands, source guards and atomic Fluid receipts.
-Those defaults and storage choices are proposed, not approved or shipped behavior.
+The owner approved these inbox defaults and storage choices for #195 on 2026-10-14.
+Their implementation and rollout are documented in [COACH-INBOX.md](COACH-INBOX.md).
 
 ### Slice D — Persistent exception inbox and refresh
 
 Issue: [#195](https://github.com/jms-dcksn/lifting-app/issues/195).
-Depends on A and approved C; integrates target context from B.
+Implemented in #195; depends on A and approved C and integrates target context from B.
+See [inbox contract](COACH-INBOX.md) for shipped behavior and rollout.
 
 Implement episodes, delivery/preferences and authenticated refresh hooks. Prove atomic
 deduplication under retries/concurrent tabs, stale/corrected evidence handling, episode

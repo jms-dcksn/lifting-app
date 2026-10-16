@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshCoachInbox } from "@/lib/coach-inbox-data";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -66,7 +67,7 @@ export interface SaveProgramInput {
 // uuids for new rows) so set_log.program_slot_id linkage survives edits, and re-derives
 // positions from array order. Saving always makes this the single active program.
 export async function saveProgram(input: SaveProgramInput) {
-  const { supabase } = await requireUser();
+  const { supabase, userId } = await requireUser();
 
   // Input validation remains in Server Action before calling RPC.
   if (input.days.length === 0) throw new Error("A program needs at least one day");
@@ -123,6 +124,7 @@ export async function saveProgram(input: SaveProgramInput) {
   const { error } = await supabase.rpc("save_program", { p_tree: tree });
   if (error) throw new Error(error.message);
 
+  await refreshCoachInbox(supabase, userId);
   revalidatePath("/");
   revalidatePath("/program");
   revalidatePath(programDetailHref(input.id));
@@ -134,7 +136,7 @@ export async function saveProgram(input: SaveProgramInput) {
 export async function createFromTemplate(templateId: string) {
   const template = TEMPLATE_BY_ID[templateId];
   if (!template) throw new Error("Unknown template");
-  const { supabase } = await requireUser();
+  const { supabase, userId } = await requireUser();
 
   const activate = await shouldActivateFirstProgram(supabase);
   const programId = crypto.randomUUID();
@@ -145,18 +147,20 @@ export async function createFromTemplate(templateId: string) {
   });
   await persistProgramTree(supabase, tree);
 
+  await refreshCoachInbox(supabase, userId);
   revalidatePath("/");
   revalidatePath("/program");
   redirect("/program");
 }
 
 export async function setActiveProgram(id: string) {
-  const { supabase } = await requireUser();
+  const { supabase, userId } = await requireUser();
   
   // Atomic activation via RPC.
   const { error } = await supabase.rpc("set_active_program", { p_program_id: id });
   if (error) throw new Error(error.message);
   
+  await refreshCoachInbox(supabase, userId);
   revalidatePath("/");
   revalidatePath("/program");
   revalidatePath(programDetailHref(id));
@@ -245,6 +249,7 @@ export async function cloneProgram(id: string): Promise<string> {
   const { error } = await supabase.rpc("save_program", { p_tree: tree });
   if (error) throw new Error(error.message);
 
+  await refreshCoachInbox(supabase, userId);
   revalidatePath("/program");
   return newProgramId;
 }
@@ -265,6 +270,7 @@ export async function deleteProgram(id: string) {
   if (error) throw new Error("Unable to remove this program.");
   if (!data) throw new Error("Program not found");
 
+  await refreshCoachInbox(supabase, userId);
   revalidatePath("/");
   revalidatePath("/program");
   revalidatePath("/workout/next");

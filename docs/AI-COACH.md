@@ -13,11 +13,13 @@ conversation, optional evidence details and meaningful confirmed choices. Delive
 and dependencies: [exception-only implementation plan](AI-COACH-EXCEPTIONS-PLAN.md).
 
 **Foundations (#210/#211):** pure exception classification and shared effective workout
-targets are implemented. Inbox delivery and the coaching entry-point switch remain planned.
+targets and the persistent foreground inbox (#195) are implemented. The coaching entry-point
+switch and episode-linked conversations/interventions remain planned. See [inbox contract](COACH-INBOX.md).
 
 **Storage/action design (#212):** [episode design and Decision Card](AI-COACH-EPISODES-DESIGN.md)
-specify replay, owner isolation, preferences and confirmed Fluid actions. This is a proposed
-contract awaiting owner approval; no schema, delivery or action implementation ships with it.
+specify replay, owner isolation, preferences and confirmed Fluid actions. The owner approved
+proceeding with #195 on 2026-10-14. Four inbox tables, guarded reconciliation and delivery
+are implemented; conversation links and training-action receipts/RPCs remain #141.
 
 **Status:** Slice 0 shipped 2026-09-20. Chat became multi-thread on 2026-09-27
 ([Threads](#threads)). Slice 1 (screen context and navigation) shipped 2026-09-29.
@@ -555,3 +557,10 @@ new mode-600 file, and retains original feedback separately. It never changes hi
 labels or submits revised feedback to LangSmith. Original silent answers remain negatives;
 new transparent answers are new cases. Regrading, dataset apply and live execution have not
 been run as part of implementing this contract. Traces stay in `lifting-app-agent-evals`.
+
+## Persistent exception inbox (#195)
+
+See [COACH-INBOX.md](COACH-INBOX.md) for the implemented lifecycle, signed-command boundary,
+foreground hooks, preferences, explicit pain-end, rollout and verification. The inbox routes
+provide deterministic evidence without a model turn. They preserve the ordinary Coach chat
+and existing Track Coach entry while #141/#206 remain pending.

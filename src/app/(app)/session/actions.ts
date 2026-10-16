@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshCoachInbox } from "@/lib/coach-inbox-data";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { loadNextWorkout } from "@/lib/next-workout";
@@ -308,6 +309,7 @@ export async function editSet(input: EditSetInput) {
   } catch {
     recomputeWarning = "Set saved, but couldn't update exercise stats. Your progress tracking may be temporarily out of sync.";
   }
+  await refreshCoachInbox(supabase, userId);
   revalidateSession(existing.session_id);
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
@@ -338,6 +340,7 @@ export async function deleteSet(setId: string) {
   } catch {
     recomputeWarning = "Set deleted, but couldn't update exercise stats. Your progress tracking may be temporarily out of sync.";
   }
+  await refreshCoachInbox(supabase, userId);
   revalidateSession(existing.session_id);
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
@@ -423,6 +426,7 @@ export async function updateSessionFeedback(input: {
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Session not found");
 
+  await refreshCoachInbox(supabase, userId);
   revalidateSession(input.sessionId);
   revalidatePath("/analytics");
   return { jointPain, note };
@@ -506,6 +510,7 @@ export async function finishSession(
     }))
     .sort((a, b) => b.e1rm - a.e1rm);
 
+  await refreshCoachInbox(supabase, userId);
   revalidatePath("/");
   revalidatePath("/analytics");
   revalidatePath("/analytics/month");
@@ -559,6 +564,7 @@ export async function acceptAdaptation(input: {
     await swapSessionExercise({ sessionId: input.sessionId, programSlotId: input.programSlotId,
       exerciseId: input.newExerciseId, scope: "workout" });
   }
+  await refreshCoachInbox(supabase, userId);
   revalidateSession(input.sessionId);
 }
 
@@ -576,6 +582,7 @@ export async function dismissAdaptation(input: {
     action: "dismiss",
   });
   if (error) throw new Error(error.message);
+  await refreshCoachInbox(supabase, userId);
 }
 
 // The RPC checks session/slot ownership and saves both scopes in one transaction.
@@ -598,6 +605,7 @@ export async function swapSessionExercise(input: {
     p_scope: input.scope,
   });
   if (error) throw new Error(error.message);
+  await refreshCoachInbox(supabase, userId);
   revalidateSession(input.sessionId);
   if (input.scope === "program") {
     revalidatePath("/");
@@ -621,6 +629,7 @@ export async function swapProgramSlotExercise(input: {
     p_pattern: exercise.pattern,
   });
   if (error) throw new Error(error.message);
+  await refreshCoachInbox(supabase, userId);
   revalidatePath("/");
   revalidatePath("/workout/next");
   revalidatePath("/program", "layout");

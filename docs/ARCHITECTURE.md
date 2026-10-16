@@ -234,3 +234,12 @@ strength caches from saved eligible estimates. It clears affected personal coeff
 for re-anchoring at the next normal stat write. Missing program/week context and ambiguous
 custom phases remain normal pending review; `supabase/tests/deload_legacy_review.sql` lists
 those candidates without inferring recovery from actual load or effort.
+
+## Foreground Coach inbox
+
+The [inbox contract](COACH-INBOX.md) separates canonical eligibility, pure episode transitions,
+signed owner-scoped transactional reconciliation, and deterministic UI. Four derived tables
+store episode, notice, preferences and source/state revision. Before-statement owner locks and
+source revision guards serialize training invalidation with reconciliation; notification
+failures remain outside the saved training transaction. No model, privileged app client,
+background worker or training-action RPC is added by #195.

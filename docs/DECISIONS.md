@@ -930,3 +930,12 @@ Card 1 shipped September 29: `comparisonScope`, `rollsUp` and `movementMemberIds
 ordinary-pound records/review by movement. This update reuses that scope; it does not widen
 session targets, stall/Fluid, or raw machine/cable comparisons. Card 2–4 defaults remain in
 force. See the [current architecture](ARCHITECTURE.md#history-and-reporting).
+
+## Coach inbox persistence approval (2026-10-14)
+
+The owner instructed implementation of #195 after reviewing the #212 storage Decision Card.
+Proceed with its existing Supabase/RLS, dedicated executor, exact-byte HMAC command and
+source-revision boundary, 90/21-day evidence defaults and foreground-only delivery. #195
+implements four inbox tables; defer episode thread links, structural actions and receipts to
+#141. Hosted migration/key provisioning is a release step separate from raising the PR.
+See [inbox contract](COACH-INBOX.md) and [design](AI-COACH-EPISODES-DESIGN.md).

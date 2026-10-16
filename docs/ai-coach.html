@@ -32,7 +32,7 @@
 
       <section id="exception-plan" class="space-y-4 rounded-lg border border-slate-300 p-5">
         <h2 class="font-serif text-2xl">Approved next direction: quiet progression, useful exceptions</h2>
-        <p class="text-slate-700">Delivery remains planned. The pure exception classifier is implemented; keep every existing engine calculation.
+        <p class="text-slate-700">The classifier, shared targets and persistent foreground inbox (#195) are implemented; keep every existing engine calculation.
           AI Coach becomes the coaching entry point. PRs, ordinary target increases and scheduled
           recovery stay quiet. Significant pain, repeated effort mismatch, confirmed plateaus and
           current sustained decline can open one continuing situation for review.</p>
@@ -40,9 +40,9 @@
 flowchart LR
   Engine[Existing deterministic engines] --> Policy[Implemented pure exception policy]
   Policy --> Quiet[Ordinary progression: workout targets only]
-  Policy -. Planned .-> Episode[One continuing exception]
+  Policy --> Episode[One continuing exception]
   Episode --> Inbox[In-app notification]
-  Inbox --> Chat[Coach explanation]
+  Inbox -. Planned in #141 .-> Chat[Coach explanation]
   Chat --> Evidence[See details]
   Chat --> Confirm[Meaningful choice]
   Confirm --> Check[Revalidate and apply]
@@ -63,16 +63,16 @@ case "add_load":
           pain-specific load. A rep-range change or swap offers a meaningful choice instead of
           generic Accept. Reading a notification never applies a training change.</p>
         <p><a class="underline" href="AI-COACH-EXCEPTIONS-PLAN.md">Implementation plan and issue dependencies</a>.
-          The <a class="underline" href="#episode-design">storage/action proposal below</a> awaits owner approval.</p>
+          The <a class="underline" href="#inbox-implementation">inbox implementation below</a> follows the approved storage boundary.</p>
       </section>
 
       <section id="episode-design" class="space-y-4 rounded-lg border border-slate-300 p-5">
-        <h2 class="font-serif text-2xl">One situation survives reload — proposed design (#212)</h2>
-        <p class="text-slate-700"><strong>Design only; approval pending.</strong> No episode tables,
-          inbox or new confirmation actions are implemented by this proposal. The next implementation
-          slices are #195 and #141. The full
+        <h2 class="font-serif text-2xl">One situation survives reload — design (#212)</h2>
+        <p class="text-slate-700"><strong>Approved for #195 implementation.</strong> The inbox now implements four tables,
+          signed reconciliation and foreground delivery. Episode-linked conversations and new
+          training confirmation actions remain #141. The full
           <a class="underline" href="AI-COACH-EPISODES-DESIGN.md#decision-card">Decision Card</a>
-          covers six owner-scoped tables, signed server commands, source revision guards and defaults.</p>
+          covers the inbox plus future thread-link/action-receipt tables, signed server commands, source revision guards and defaults.</p>
         <figure class="space-y-3" aria-label="Proposed episode identity, evidence and notification separation">
           <div class="grid gap-3 sm:grid-cols-3">
             <div class="rounded-lg border border-slate-300 bg-white p-4">
@@ -1101,6 +1101,75 @@ sets: last.sets,
 const eligible = sessions.filter((session) =&gt; session.bestE1rm != null);
 const window = range === "last8" ? eligible.slice(-REVIEW_CHART_SESSIONS) : eligible;</code></pre>
       </section>
+
+      <section id="inbox-implementation" class="space-y-4 rounded-lg border border-slate-300 p-5">
+        <h2 class="font-serif text-2xl">The implemented foreground inbox (#195)</h2>
+        <p>One situation has a stable episode ID. Changing supporting sets updates evidence;
+        reading a notice updates delivery state. Neither action applies a training change.
+        The original notice and current evidence are shown separately. Pain stays a session
+        review, with a distinct confirmed user report when the situation has ended.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:system-ui" aria-label="Inbox data flow">
+          <div style="border:1px solid;padding:12px">Owner-scoped training snapshot</div><span>→</span>
+          <div style="border:1px solid;padding:12px">Canonical classifier + pure lifecycle</div><span>→</span>
+          <div style="border:1px solid;padding:12px">Signed exact-byte command</div><span>→</span>
+          <div style="border:1px solid;padding:12px">DB lock + revision check + unique notice</div><span>→</span>
+          <div style="border:1px solid;padding:12px">Persistent inbox / quiet arrival</div>
+        </div>
+        <p>The database denies direct derived writes. A private executor with no login or RLS
+        bypass verifies the HMAC, signed-in owner, versions and expiry, then compares source,
+        episode-state and preference revisions under the owner lock. A racing edit rejects the
+        old command. The server reloads once; later contention returns a visible retry status.</p>
+        <p>The signing key is a new secret shared by the application server and database.
+        It lets the database check that a calculated update came from the server. RLS separately
+        checks whose rows may change. It is separate from Supabase and AI provider keys;
+        CI uses a synthetic key and needs no deployment secret.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:system-ui" aria-label="Database permission boundary">
+          <div style="border:1px solid;padding:12px">Executor: owner RLS enforced</div><span>→</span>
+          <div style="border:1px solid;padding:12px">Private read-only adapters: JWT owner / user IDs / HMAC</div><span>→</span>
+          <div style="border:1px solid;padding:12px">Installer's existing Auth / extension access</div>
+        </div>
+        <p>Supabase's installer cannot delegate access to the Auth and extension schemas.
+        The adapters use its existing permissions for fixed reads and calculations. Only the
+        executor may call them; they cannot modify training or derived state.</p>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>-- supabase/migrations/20261015012412_coach_exception_inbox.sql
+create function private.coach_auth_uid() returns uuid
+language sql stable security definer set search_path = '' as $$ select auth.uid() $$;
+create function private.coach_auth_user_ids(p_id uuid) returns setof uuid
+language sql stable security definer set search_path = '' as $$
+  select id from auth.users where p_id is null or id=p_id
+$$;
+create function private.coach_hmac(p_payload text,p_key bytea) returns bytea
+language sql immutable security definer set search_path = '' as $$
+  select extensions.hmac(convert_to(p_payload,'UTF8'),p_key,'sha256')
+$$;</code></pre>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>// src/lib/coach-episode-command.ts — exact current source
+  const payload = JSON.stringify({
+    ...command,
+    version: EPISODE_DEFAULTS_VERSION,
+    policyVersion: COACH_EXCEPTION_POLICY_VERSION,
+    keyId,
+    issuedAt: now.toISOString(),
+    expiresAt: new Date(now.getTime() + 60_000).toISOString(),
+  });
+  return {
+    p_payload: payload,
+    p_mac: createHmac(&quot;sha256&quot;, Buffer.from(key, &quot;hex&quot;))
+      .update(payload, &quot;utf8&quot;)
+      .digest(&quot;hex&quot;),
+  };</code></pre>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;font-family:system-ui">
+          <div style="border:1px solid;padding:14px"><strong>Workout succeeds</strong><p>Save training first. A failed notification refresh never compensates or rolls it back.</p></div>
+          <div style="border:1px solid;padding:14px"><strong>Refresh recovers</strong><p>App entry, upcoming-workout review and foreground return revalidate without opening Coach.</p></div>
+          <div style="border:1px solid;padding:14px"><strong>Delivery stays quiet</strong><p>Bootstrap has no toast flood. Quiet hours and active workouts defer arrivals. No model, reminder timer or closed-app delivery.</p></div>
+        </div>
+        <p>The migration implements refresh state, episodes, notices and preferences. Thread
+        links, structural action receipts and episode-linked conversations remain #141; the
+        default Coach entry switch remains #206. The feature flag starts disabled until the
+        migration and environment-specific signing keys are installed.</p>
+        <p><a class="underline" href="COACH-INBOX.md">Implemented contract and verification</a> ·
+        <a class="underline" href="../DEPLOY.md#coach-inbox-rollout-195">Rollout and key rotation</a></p>
+      </section>
+
       <section class="mt-10 border-t border-stone-200 pt-6" id="comprehensive-exercise-catalog">
         <h2 class="text-2xl font-semibold">Comprehensive catalog and exact machine models</h2>
         <p class="mt-3">The shared catalog now has 150 movements and 67 manufacturer model

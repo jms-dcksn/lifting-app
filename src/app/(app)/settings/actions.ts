@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { refreshCoachInbox } from "@/lib/coach-inbox-data";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { parseRestToneEnabled } from "@/lib/rest";
@@ -64,6 +65,7 @@ export async function saveProfile(formData: FormData) {
     throw new Error(`Unable to save profile: ${error.message}`);
   }
 
+  await refreshCoachInbox(supabase, userId);
   revalidatePath("/settings");
   revalidatePath("/");
   revalidatePath("/analytics");

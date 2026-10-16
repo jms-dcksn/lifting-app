@@ -5,7 +5,9 @@ import { createHmac } from "node:crypto";
 import type { createClient } from "./supabase/server";
 type Client = Awaited<ReturnType<typeof createClient>>;
 afterEach(() => vi.unstubAllEnvs());
-function database({ race = false, failure = false } = {}) {
+function database({ race = false, failure = false, preferences, refreshResult }: {
+  race?: boolean; failure?: boolean; preferences?: unknown; refreshResult?: unknown;
+} = {}) {
   let calls = 0;
   const from = vi.fn((table: string) => {
     const result = {
@@ -15,7 +17,7 @@ function database({ race = false, failure = false } = {}) {
           : table === "coach_refresh_state"
             ? { source_revision: 4, state_version: 2 }
             : table === "coach_preferences"
-              ? null
+              ? preferences === undefined ? null : { settings: preferences, version: 0 }
               : [],
       error: null,
       count: 0,
@@ -41,7 +43,7 @@ function database({ race = false, failure = false } = {}) {
   const rpc = vi.fn(async () => {
     calls++;
     return {
-      data: { status: race && calls === 1 ? "refresh_required" : "ready" },
+      data: refreshResult ?? { status: race && calls === 1 ? "refresh_required" : "ready" },
       error: failure ? { message: "key missing" } : null,
     };
   });
@@ -81,6 +83,20 @@ describe("Coach refresh boundary", () => {
     expect((await refreshCoachInbox(db.client, "owner")).status).toBe(
       "unavailable",
     );
+  });
+  it("rejects malformed stored preferences without throwing into saved training", async () => {
+    vi.stubEnv("COACH_INBOX_ENABLED", "true");
+    const db = database({ preferences: { pain: "yes" } });
+    expect(await refreshCoachInbox(db.client, "owner")).toEqual({ status: "unavailable" });
+    expect(db.rpc).not.toHaveBeenCalled();
+    await expect(loadCoachInbox(db.client, "owner")).rejects.toThrow("unavailable");
+  });
+  it("fails closed on malformed reconcile output", async () => {
+    vi.stubEnv("COACH_INBOX_ENABLED", "true");
+    vi.stubEnv("COACH_COMMAND_SIGNING_KEY", "11".repeat(32));
+    vi.stubEnv("COACH_COMMAND_SIGNING_KEY_ID", "test");
+    const db = database({ refreshResult: { status: "applied", arrival: {} } });
+    expect(await refreshCoachInbox(db.client, "owner")).toEqual({ status: "unavailable" });
   });
   it("signs exact unicode/newline JSON bytes with a 60-second lifetime", () => {
     vi.stubEnv("COACH_COMMAND_SIGNING_KEY", "11".repeat(32));

@@ -243,3 +243,15 @@ store episode, notice, preferences and source/state revision. Before-statement o
 source revision guards serialize training invalidation with reconciliation; notification
 failures remain outside the saved training transaction. No model, privileged app client,
 background worker or training-action RPC is added by #195.
+
+## Enforced domain boundaries
+
+[Verification and hardening](VERIFICATION.md) owns the executable checks and migration
+batches. Workout record loading normalizes owner-scoped saved sets through validated
+training evidence before progression/record replay; missing warmup/deload classification
+is invalid rather than silently eligible. Exact target identities protect Home/planner,
+active session and Coach target entry points without widening comparison scopes. Coach
+storage reads validate the existing format/version and pass parsed evidence to details;
+invalid/unsupported data fails closed outside training writes. Shared cursor mechanics
+reject non-advancing IDs while retaining explicit owner-scoped projections in each loader.
+Architectural lint and the indexed-access slice run through the normal CI entry point.

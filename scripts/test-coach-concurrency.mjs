@@ -2,6 +2,7 @@
 import pg from "pg";
 import { createHmac, randomUUID } from "node:crypto";
 import assert from "node:assert/strict";
+import { verifyCoachRuntimeRole } from "./test-fixtures/coach-role.mjs";
 const url = process.env.COACH_TEST_DATABASE_URL;
 if (!url || !["localhost", "127.0.0.1", "::1"].includes(new URL(url).hostname))
   throw Error("Set COACH_TEST_DATABASE_URL to a disposable local database.");
@@ -57,6 +58,7 @@ async function reconcile(c, cmd) {
   ).rows[0].result;
 }
 try {
+  await verifyCoachRuntimeRole(admin);
   await admin.query("insert into auth.users(id,email) values($1,$2)", [
     owner,
     `${owner}@example.test`,

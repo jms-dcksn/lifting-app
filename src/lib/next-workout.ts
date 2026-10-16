@@ -1,3 +1,4 @@
+import { exactExerciseIdentity } from "@/lib/strength/identity";
 import { cookies } from "next/headers";
 import type { createClient } from "./supabase/server";
 import type { Program } from "./program";
@@ -7,7 +8,7 @@ import { foldPrescription, type AdaptationRow } from "./strength/plateau";
 import { readWorkoutPlan, workoutPlanKey, WORKOUT_PLAN_COOKIE } from "./workout-plan";
 import { getCurrentBodyweight } from "./current-bodyweight";
 import { loadWorkoutTargetHistory } from "./workout-target-data";
-import { resolveEffectiveWorkoutTarget } from "./effective-workout-target";
+import { resolveExactWorkoutTarget } from "./effective-workout-target";
 import { isDeload, stallContext } from "./stall-report";
 
 export async function loadNextWorkout(
@@ -71,7 +72,7 @@ export async function loadNextWorkout(
       week, program.style === "classic" ? program.phases : []);
     const context = stallContext({ ...slot, programId: program.id, programDayId: day.id },
       exerciseId, equipmentInstanceId, prescription, folded.phaseStartAt);
-    const effectiveTarget = resolveEffectiveWorkoutTarget({ slotId: slot.id, exerciseId, equipmentInstanceId,
+    const effectiveTarget = resolveExactWorkoutTarget({ slotId: slot.id, identity: exactExerciseIdentity(exerciseId, equipmentInstanceId),
       prescription, context, isDeload: open.data?.is_deload ?? isDeload(prescription.phase),
       history: targetHistory, catalog, stats, bodyweight });
     return { ...slot, baseExerciseId, exerciseId, prescription, targetContext: context, effectiveTarget,

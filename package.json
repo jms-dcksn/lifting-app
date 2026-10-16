@@ -15,7 +15,12 @@
     "test:db": "supabase test db supabase/tests/*_rls.sql",
     "eval:agent:sync": "tsx scripts/agent-evals.ts sync",
     "eval:agent:regrade": "tsx scripts/agent-evals.ts regrade",
-    "test:db:concurrency": "node scripts/test-coach-concurrency.mjs"
+    "test:db:concurrency": "node scripts/test-coach-concurrency.mjs",
+    "typecheck": "node scripts/typecheck.mjs",
+    "typecheck:indexed": "tsc --project tsconfig.indexed.json",
+    "verify": "node scripts/verify.mjs",
+    "test:browser": "playwright test",
+    "test:agent": "vitest run src/lib/agent src/lib/coach-invariants.test.ts"
   },
   "dependencies": {
     "@langchain/core": "^1.2.12",
@@ -31,12 +36,15 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.61.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "8.15.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "fast-check": "4.3.0",
     "jsdom": "^29.1.1",
     "pg": "8.16.3",
     "supabase": "^2.116.0",

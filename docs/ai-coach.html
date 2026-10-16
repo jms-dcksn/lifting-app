@@ -1198,6 +1198,56 @@ export function boundedLoggedWeight(def: ExerciseDef, weight: number): number {
         <p class="mt-3"><a href="EXERCISE-CATALOG.md">Complete exercise/model inventory,
         sources, tracking rules and migration order</a>.</p>
       </section>
+
+      <section id="executable-boundaries" class="space-y-4 rounded-lg border border-slate-300 p-5">
+        <h2 class="font-serif text-2xl">Make the supported path the easy path (#222–#228)</h2>
+        <p>Coach keeps the same training rules. More of the contract now lives at executable
+        boundaries: saved sets must include ownership and recovery classification, targets use
+        an exact loading identity, and stored Coach JSON is checked before it reaches the UI.</p>
+        <div role="img" aria-label="Saved sets pass validation, exact target calculation and Coach storage parsing before rendering. Lint, strict types and invariant tests protect these boundaries."
+          style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-family:system-ui">
+          <div style="border:1px solid;padding:14px">Saved sets<br><small>Explicit warmup + deload flags</small></div>
+          <span aria-hidden="true">→</span>
+          <div style="border:1px solid;padding:14px">Validated training evidence<br><small>Activity stays visible; progression is qualified</small></div>
+          <span aria-hidden="true">→</span>
+          <div style="border:1px solid;padding:14px">Exact workout target<br><small>Existing engine; no movement-scope substitution</small></div>
+          <span aria-hidden="true">→</span>
+          <div style="border:1px solid;padding:14px">Checked Coach storage<br><small>Supported version → current UI<br>Invalid/version mismatch → retryable unavailable</small></div>
+        </div>
+        <p>The initial evidence migration protects workout-record loading and replay. Recovery
+        sets remain activity. Historical bodyweight comes from saved observations rather than
+        today's profile. Existing engine-level compatibility APIs remain while other consumers
+        migrate in bounded batches. Machine/cable and Card 2–4 comparison decisions stay intact.</p>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>// src/lib/training-evidence.ts — landed source
+export function parseTrainingEvidence(input: unknown, ownerId: string): TrainingEvidence {
+  const result = persistedSet.safeParse(input);
+  if (!result.success || result.data.user_id !== ownerId) {
+    throw new Error(&quot;Unable to load training evidence: incomplete or invalid saved set.&quot;);
+  }
+  const set = result.data;
+  return { kind: &quot;training_activity&quot;, set,
+    identity: exactExerciseIdentity(set.exercise_id, set.equipment_instance_id),
+    historicalBodyweight: historicalBodyweight(set) };
+}</code></pre>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>// src/lib/effective-workout-target.ts — landed source
+export function resolveExactWorkoutTarget(input: Omit&lt;EffectiveTargetInput, &quot;exerciseId&quot; | &quot;equipmentInstanceId&quot;&gt; &amp; {
+  identity: ExactExerciseIdentity;
+}): EffectiveWorkoutTarget {
+  if (input.identity.kind !== &quot;exact&quot;) throw new Error(&quot;An exact exercise identity is required.&quot;);
+  const identity = exactExerciseIdentity(input.identity.exerciseId, input.identity.equipmentInstanceId);
+  return resolveEffectiveWorkoutTarget({ ...input, ...identity });
+}</code></pre>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;font-family:system-ui">
+          <div style="border:1px solid;padding:14px"><strong>Lint protects dependencies</strong><p>Pure strength modules cannot import framework/database code. UI and tool adapters use the exact-target boundary. Privileged eval helpers stay local.</p></div>
+          <div style="border:1px solid;padding:14px"><strong>Types and sequences protect assumptions</strong><p>An initial indexed-access slice checks missing values. Seeded generated tests shrink retry/correction/recovery failures to reproducible counterexamples.</p></div>
+          <div style="border:1px solid;padding:14px"><strong>Real journeys protect integration</strong><p>The phone smoke suite signs in through local Auth, saves and reloads sets, checks both swap scopes and acknowledges a real pain notice without resolving it.</p></div>
+        </div>
+        <p><code>npm run verify</code> refreshes stale route validators and runs the base checks.
+        Database, browser and deterministic agent profiles are selected explicitly; live model
+        evals remain opt-in. PASS, FAIL, BLOCKED and SKIP are reported honestly. No hosted
+        migration, provider change, extra training permission or Poteto skill installation is introduced.</p>
+        <p><a class="underline" href="VERIFICATION.md">Commands, prerequisites, review focus and remaining migration batches</a></p>
+      </section>
     </main>
   </body>
 </html>

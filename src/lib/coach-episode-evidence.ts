@@ -1,3 +1,4 @@
+import { exactExerciseIdentity } from "@/lib/strength/identity";
 import {
   classifyCoachExceptions,
   type CoachExceptionInput,
@@ -15,7 +16,7 @@ import {
 import { buildStallAssessments, stallContext } from "./stall-report";
 import {
   buildWorkoutTargetHistory,
-  resolveEffectiveWorkoutTarget,
+  resolveExactWorkoutTarget,
 } from "./effective-workout-target";
 import { foldPrescription, SNOOZE_EXPOSURES } from "./strength/plateau";
 import { resolvePrescription } from "./periodization";
@@ -128,10 +129,9 @@ export function observeCoachEpisodes(
         .sort((a, b) => a.id.localeCompare(b.id)),
       effectiveTarget:
         prescription && scope.kind === "lift"
-          ? resolveEffectiveWorkoutTarget({
+          ? resolveExactWorkoutTarget({
               slotId: scope.slotId,
-              exerciseId: scope.context.exerciseId,
-              equipmentInstanceId: scope.context.equipmentInstanceId,
+              identity: exactExerciseIdentity(scope.context.exerciseId, scope.context.equipmentInstanceId),
               prescription,
               context: scope.context,
               history: targets,

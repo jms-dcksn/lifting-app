@@ -66,3 +66,7 @@ docs/*
 lessons/*
 
 reference/*
+
+# Browser verification artifacts
+/playwright-report/
+/test-results/

@@ -1,7 +1,8 @@
+import { exactExerciseIdentity } from "@/lib/strength/identity";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { loadNextWorkout } from "@/lib/next-workout";
 import { getActiveProgram } from "@/lib/program";
-import { effectiveTargetExplanation, resolveEffectiveWorkoutTarget, type WorkoutTargetHistory } from "@/lib/effective-workout-target";
+import { effectiveTargetExplanation, resolveExactWorkoutTarget, type WorkoutTargetHistory } from "@/lib/effective-workout-target";
 import type { StallContext } from "@/lib/stall-report";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
 import type { ExerciseStat } from "@/lib/strength/recommend";
@@ -39,8 +40,7 @@ export function hydrateSlotTargets(input: {
   targetHistory: WorkoutTargetHistory;
 }) {
   return input.slots.map(slot => {
-    const effectiveTarget = slot.effectiveTarget ?? resolveEffectiveWorkoutTarget({ slotId: slot.id, exerciseId: slot.exerciseId,
-      equipmentInstanceId: slot.targetContext?.equipmentInstanceId ?? null, prescription: slot.prescription,
+    const effectiveTarget = slot.effectiveTarget ?? resolveExactWorkoutTarget({ slotId: slot.id, identity: exactExerciseIdentity(slot.exerciseId, slot.targetContext?.equipmentInstanceId ?? null), prescription: slot.prescription,
       context: slot.targetContext ?? null, history: input.targetHistory, catalog: input.catalog, stats: input.stats, bodyweight: input.bodyweight });
     return {
         slotId: slot.id,

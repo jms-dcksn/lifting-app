@@ -121,9 +121,7 @@ export function CoachNoticeDetail({ noticeId }: { noticeId: string }) {
               <p>Source details were removed after a correction or deletion.</p>
             ) : data.notice.generation_evidence ? (
               <EvidenceDetails
-                evidence={
-                  data.notice.generation_evidence as unknown as EpisodeEvidence
-                }
+                evidence={data.notice.generation_evidence}
               />
             ) : (
               <p>Evidence unavailable.</p>

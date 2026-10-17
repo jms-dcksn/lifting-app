@@ -125,3 +125,24 @@ scripts. Browser verification passed the pre-workout journey and the existing an
 set/reload/swap/pain journey, then the final open-workout draft-preservation journey after
 recording canonical default identities at session creation. Hosted migrations/keys, email
 delivery and live-model language quality remain separate verification.
+
+## Coach entry compatibility (#206)
+
+Pure navigation/data tests verify encoded exercise/equipment/month focus, saved legacy tool
+results, exact-identity matching, multi-slot choice, unavailable refresh and the on-demand
+no-thread fallback. The retained report test asserts facts remain visible with no routine
+review-write buttons. Focused chat/navigation tests retain stream/navigation locking.
+`e2e/coach.spec.ts` extends both before/open-workout journeys with old Coach and settings
+links, conversation reuse, focused URL reload, optional read-only report details and the
+post-intervention ordinary draft. No model call or extra thread is created by these routes.
+
+The final #206 browser run passed all four tests: both full entry/conversation/intervention
+journeys (before and during a workout), anonymous redirect, and the existing real set/reload,
+scoped-swap and pain-acknowledgement flow. Legacy routes render the resolver directly rather
+than issuing a streamed redirect; completing entry performs document navigation. The browser
+suite runs with a fresh dev server and then exits before generated-type/base verification;
+`scripts/typecheck.mjs` must not clean generated validators while a dev server is running.
+
+Final #206 base verification passed fresh framework types, TypeScript, lint (the existing
+`board.ts` unused-variable warning remains), indexed-access checks, 1,193 tests with one gated
+live test skipped, and the production build. No hosted rollout or paid model evaluation ran.

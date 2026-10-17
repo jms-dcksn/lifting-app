@@ -1,11 +1,11 @@
 # AI Coach
 
 A memory-backed agent that lives in the app. It wraps the deterministic Coach; it does not
-replace it. Track Coach (`/analytics/coach`) and `CoachCheckInReport` provide the
+replace it. The optional report details (`/analytics/coach?view=details`) and `CoachCheckInReport` provide the
 factual check-in through `loadCoachUi`. The agent is the
 language, intake, navigation, and draft layer on top of existing loaders and actions.
 
-**Approved next direction (2026-10-13, not shipped):** AI Coach becomes the coaching
+**Exception coaching entry (#206, implemented):** AI Coach becomes the coaching
 entry point. Keep the deterministic engine; notify only significant pain, repeated effort
 mismatch, confirmed plateau interventions and current sustained decline. Normal progression,
 PRs and scheduled recovery stay silent. Replace routine Accept/Accept all with grounded
@@ -14,7 +14,7 @@ and dependencies: [exception-only implementation plan](AI-COACH-EXCEPTIONS-PLAN.
 
 **Foundations (#210/#211):** pure exception classification and shared effective workout
 targets and the persistent foreground inbox (#195) are implemented. The coaching entry-point
-switch remains planned; episode-linked conversations and confirmed interventions (#141) are implemented. See [inbox contract](COACH-INBOX.md).
+switch (#206), episode-linked conversations and confirmed interventions (#141) are implemented. See [inbox contract](COACH-INBOX.md).
 
 **Storage/action design (#212):** [episode design and Decision Card](AI-COACH-EPISODES-DESIGN.md)
 specify replay, owner isolation, preferences and confirmed Fluid actions. The owner approved
@@ -35,7 +35,7 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 
 | Decision | Lock |
 | --- | --- |
-| Job vs Coach | Keep the engine/report. Current Track Coach remains until the planned exception conversation replaces its routine acceptance entry; evidence details stay accessible. |
+| Job vs Coach | Keep the engine/report. AI Coach is the entry point; report details stay accessible as optional read-only evidence. Routine acceptance is retired. |
 | Build order | Shipped Slices 0–2 precede the exception plan A–F. Independent read tools can proceed separately. Sophistication follows dogfood and its own decisions. |
 | Runtime | TypeScript in this Next.js app. No Python service. |
 | Library | LangChain TypeScript for the agent loop and ecosystem. Tools and prompts are plain TS so the loop can change. Deep Agents is out until Slice 5. |
@@ -281,8 +281,7 @@ The client is one reducer (`chatReducer` in `src/lib/agent/chat-state.ts`) over 
 screens: `loading`, `chat` (a conversation plus an optional in-flight turn), and
 `history` (a conversation plus the row being opened). The `thread` event adopts the
 saved id and replaces the optimistic row; `done` merges by message id. `/coach` reads
-`?thread=` (`new`, a thread id, or absent for latest; an unknown or malformed id falls
-back to latest) and mirrors the open conversation into the URL with
+`?thread=` (`new`, a thread id, or absent for latest; an unknown or malformed id shows unavailable) and mirrors the open conversation into the URL with
 `window.history.replaceState`. A draft's first send therefore moves the URL to
 `/coach?thread=<id>` when the `thread` event arrives, without a server round-trip. The
 sheet fetches its snapshot each time it opens.
@@ -597,7 +596,7 @@ been run as part of implementing this contract. Traces stay in `lifting-app-agen
 See [COACH-INBOX.md](COACH-INBOX.md) for the implemented lifecycle, signed-command boundary,
 foreground hooks, preferences, explicit pain-end, rollout and verification. The inbox routes
 provide deterministic evidence without a model turn. They preserve the ordinary Coach chat
-and existing Track Coach entry while #206 remains pending.
+and the optional read-only report evidence view. #206 routes the default entry to relevant conversations.
 
 ## Executable hardening boundaries (#222–#228)
 
@@ -650,3 +649,28 @@ pass. This PR does not apply hosted migrations or enable production delivery.
 Open-workout review uses a Sheet so the set-entry component stays mounted. Prescription and
 identity refreshes update only untouched suggestion fields. New sessions record each loggable
 canonical identity at creation; old sessions with absent choices retain the unavailable state.
+
+## Default entry and report compatibility (#206)
+
+Track Explore, every monthly stall link, legacy `/settings?coachExercise=...`, the old
+`/analytics/coach` entry and `openCoachCheckIn` use `/coach?review=1`. `coach-entry.ts` owns
+query construction and validation. Exercise ID, exact equipment (`none` for no instance)
+and selected historical month survive the resolver, conversation URL, reload and report link.
+The month is navigation context, not permission to relabel current exception evidence or
+weeklyCoach's explicit current/prior calendar windows. Screen enrichment validates requested
+exercise/equipment ownership before providing it to the model.
+
+The authenticated resolver refreshes the same deterministic inbox. One matching open
+situation opens/reuses its owned thread; several matching slots offer a chooser rather than
+silently selecting one. No matching exception opens an on-demand draft without a thread or
+model call. Refresh failure is explicit and retryable, with ordinary chat still available.
+The resolver finishes with a full document transition to avoid nested router transitions
+without a streamed server redirect. Conversation destinations omit `review=1`, preventing
+an entry/chat loop. Source changes and pain still gate actual choices in the #141 path.
+
+The report remains at `/analytics/coach?view=details`, with its tested summary, privacy-safe
+export and collapsible read-only recommendation evidence. It is optional, with no Accept,
+Accept all, Later or Dismiss controls. Their old application server actions were removed;
+existing legacy decision rows and deterministic engines/tool lookups remain intact. Accepted
+legacy reviews never become action receipts or proof that a program changed. No schema,
+provider, scheduler, notification policy or target formula changes are added by #206.

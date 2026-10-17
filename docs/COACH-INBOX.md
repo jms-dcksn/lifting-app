@@ -14,7 +14,8 @@ chrome. Opening a notice marks it read; Acknowledge records review only. A disti
 Pain remains session-scoped and offers no invented pain-specific target. Structural training
 choices and episode-linked conversations use the shared #141 confirmation flow. Open Coach
 creates/reuses the episode thread without a model call; details and choices stay available from chat.
-The default coaching entry-point change and routine acceptance retirement remain #206.
+The default entry uses relevant AI Coach conversations (#206); routine acceptance is retired.
+Report details remain optional and read-only.
 
 Preferences persist pain/reduction/plateau/decline categories and optional timezone-aware quiet
 hours. Quiet hours defer arrivals, not inbox visibility. Disabled categories consume their

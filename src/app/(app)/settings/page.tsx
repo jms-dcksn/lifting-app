@@ -1,3 +1,5 @@
+import { parseCoachFocus } from "@/lib/coach-entry";
+import { CoachEntry } from "@/components/coach/coach-entry";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
@@ -14,12 +16,12 @@ import { signOut } from "../actions";
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ coachExercise?: string | string[] }>;
+  searchParams: Promise<{ coachExercise?: string | string[]; month?: string; equipment?: string }>;
 }) {
   const query = await searchParams;
   const coachExercise = typeof query.coachExercise === "string" ? query.coachExercise : undefined;
   if (coachExercise) {
-    redirect(`/analytics/coach?exercise=${encodeURIComponent(coachExercise)}`);
+    return <CoachEntry focus={parseCoachFocus({ exercise: coachExercise, month: query.month, equipment: query.equipment })} />;
   }
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();

@@ -1,3 +1,4 @@
+import { coachEntryHref, parseCoachFocus, type CoachFocus } from "@/lib/coach-entry";
 import { exerciseReviewHref } from "@/lib/exercise-review-href";
 import { programDetailHref } from "@/lib/program-routes";
 import {
@@ -27,8 +28,8 @@ export type ClientConfirmAction = {
 
 export type ClientAction = ClientNavigateAction | ClientConfirmAction;
 
-export function coachCheckInHref() {
-  return "/analytics/coach";
+export function coachCheckInHref(focus: Partial<CoachFocus> = {}) {
+  return coachEntryHref(focus);
 }
 
 export function openExerciseReviewHref(input: {
@@ -62,6 +63,12 @@ export function parseClientAction(part: AgentPart): ClientAction | null {
     const href = (result as { href?: unknown }).href;
     if (typeof href !== "string" || !href.startsWith("/")) return null;
     if (!isClientNavTool(part.name)) return null;
+    if (part.name === "openCoachCheckIn") {
+      const legacy = new URL(href, "https://app.invalid");
+      if (legacy.pathname === "/analytics/coach" && legacy.searchParams.get("view") !== "details") {
+        return { type: "navigate", href: coachEntryHref(parseCoachFocus({ exercise: legacy.searchParams.get("exercise"), equipment: legacy.searchParams.get("equipment"), month: legacy.searchParams.get("month") })), tool: part.name };
+      }
+    }
     return { type: "navigate", href, tool: part.name as NavigatingToolName };
   }
   if (action === "confirm") {

@@ -25,7 +25,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Weekly facts, proposals, session-scoped consumers | [Coach report](COACH-REPORT.md) |
 | In-app agent, chat overlay, or AI Coach slices | [AI Coach](AI-COACH.md), [explainer](ai-coach.html); [streaming capability review](AI-COACH-STREAMING.md) |
 | Planned exception-only notifications, Coach entry point, or meaningful interventions | [Exception-only implementation plan](AI-COACH-EXCEPTIONS-PLAN.md) |
-| Exception storage, replay, preferences and action authorization | [Episode design and Decision Card](AI-COACH-EPISODES-DESIGN.md) — approved for #195; #141 actions remain planned |
+| Exception storage, replay, preferences and action authorization | [Episode design and Decision Card](AI-COACH-EPISODES-DESIGN.md) — #195 inbox and #141 conversations/confirmed actions implemented |
 | Implemented persistent exception inbox, foreground refresh and rollout | [Inbox contract](COACH-INBOX.md) |
 | Planned exercise-review matching and eval improvements | [Implementation plan](AI-COACH-EVAL-IMPROVEMENTS.md), [annotated review](2026-10-11-ai-coach-annotated-eval-review.md) |
 | Active substitutions / pre-workout choices | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |

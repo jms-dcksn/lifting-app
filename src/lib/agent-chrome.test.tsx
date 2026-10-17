@@ -448,7 +448,7 @@ describe("agent chrome", () => {
         type: "tool-result",
         id: "nav-1",
         name: "openCoachCheckIn",
-        result: { action: "navigate", href: "/analytics/coach" },
+        result: { action: "navigate", href: "/coach?review=1" },
       }],
     };
     const fetchMock = vi.fn<typeof fetch>(async () => sseResponse([
@@ -463,7 +463,7 @@ describe("agent chrome", () => {
     type("Open my coach check-in");
     await submit();
 
-    expect(push).toHaveBeenCalledWith("/analytics/coach");
+    expect(push).toHaveBeenCalledWith("/coach?review=1");
   });
 
   it("renders a Start workout confirm chip for startNextWorkout tool calls", () => {

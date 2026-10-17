@@ -76,3 +76,17 @@ describe("agent screen context", () => {
     expect(text).toContain("activeProgramId: prog-1");
   });
 });
+
+describe("historical Coach focus", () => {
+  it("retains a selected month without relabeling weekly report windows", () => {
+    const context = parseScreenContextInput({ pathname: "/coach", activeProgramId: null, openSessionId: null,
+      focusedExerciseId: "db-bench", focusedEquipmentInstanceId: "11111111-1111-4111-8111-111111111111", reviewMonth: "2026-09" });
+    expect(context?.reviewMonth).toBe("2026-09");
+    expect(context?.focusedEquipmentInstanceId).toBe("11111111-1111-4111-8111-111111111111");
+    expect(formatScreenContextForPrompt(context!)).toContain("weeklyCoach still reports its own calendar windows");
+  });
+  it("drops malformed month/equipment context before prompt enrichment", () => {
+    const context = parseScreenContextInput({ pathname: "/coach", focusedExerciseId: "db-bench", reviewMonth: "2026-99", focusedEquipmentInstanceId: "invalid" });
+    expect(context?.reviewMonth).toBeNull(); expect(context?.focusedEquipmentInstanceId).toBeNull();
+  });
+});

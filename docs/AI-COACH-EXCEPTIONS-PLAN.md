@@ -1,7 +1,7 @@
 # AI Coach: exception-only coaching implementation plan
 
-Status: product direction approved 2026-10-13. Slice A's pure classifier and Slice B's shared
-effective targets are implemented; persistence, conversations and the entry switch remain planned.
+Status: product direction approved 2026-10-13. Slices A–F are implemented through #195,
+#141 and #206. Hosted rollout and user dogfood remain separate from implementation/CI.
 Delivery owner: [#206](https://github.com/jms-dcksn/lifting-app/issues/206), under [#136](https://github.com/jms-dcksn/lifting-app/issues/136).
 
 ## Outcome
@@ -70,7 +70,7 @@ Keep four distinct responsibilities:
 3. **Episode/inbox lifecycle:** persistence, revalidation, suppression and delivery identity.
 4. **AI Coach:** grounded explanation, details navigation and meaningful confirmed actions.
 
-Domain boundaries (only classification is implemented):
+Domain boundaries (the contracts below describe the original composition plan; current owners are AI-COACH.md and COACH-INBOX.md):
 
 ```ts
 classifyCoachExceptions(input: CoachExceptionInput): CoachExceptionCandidate[]
@@ -244,7 +244,7 @@ delivery is included.
 ### Slice E — Conversation, details and confirmed interventions
 
 Issue: [#141](https://github.com/jms-dcksn/lifting-app/issues/141).
-Depends on D, target context from B, and C's action contract.
+Implemented in #141. Depends on D, target context from B, and C's action contract.
 
 Open/reuse an episode-linked conversation. Provide source-grounded explanation, **See details**,
 and valid scoped intervention buttons. Revalidate and atomically apply confirmed changes.
@@ -255,7 +255,7 @@ treat a model-generated action or legacy accepted proposal as a confirmed mutati
 ### Slice F — AI Coach entry point and retire routine acceptance
 
 Issue: [#206](https://github.com/jms-dcksn/lifting-app/issues/206), also tracking A–E.
-Depends on the working exception journey; switch the default entry last.
+Implemented in #206 after the #141 authenticated journey passed. The default entry is AI Coach; the report is optional read-only detail.
 
 Replace Track's standalone acceptance entry with AI Coach. Update monthly stall links,
 legacy `coachExercise` links and `openCoachCheckIn` to preserve relevant context. Retain

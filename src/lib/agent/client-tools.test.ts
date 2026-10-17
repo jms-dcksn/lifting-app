@@ -20,10 +20,10 @@ describe("agent client tools", () => {
       type: "tool-result",
       id: "c1",
       name: "openCoachCheckIn",
-      result: { action: "navigate", href: "/analytics/coach" },
+      result: { action: "navigate", href: "/coach?review=1" },
     })).toEqual({
       type: "navigate",
-      href: "/analytics/coach",
+      href: "/coach?review=1",
       tool: "openCoachCheckIn",
     });
     expect(parseClientAction({

@@ -122,11 +122,11 @@ function bindClientTools() {
           .describe("Equipment instance id, or null for no instance"),
       }),
     }),
-    tool(async () => asJson(openCoachCheckIn()), {
+    tool(async (focus) => asJson(openCoachCheckIn(focus)), {
       name: "openCoachCheckIn",
       description:
-        "Open Track Coach check-in at /analytics/coach. Use when the user asks to open coach check-in, weekly check-in, or proposals screen.",
-      schema: z.object({}),
+        "Open the relevant AI Coach exception conversation or an on-demand chat. Preserve the focused exercise, exact equipment and selected historical month when supplied. This only navigates; it does not generate an answer or confirm a training change.",
+      schema: z.object({ exerciseId: z.string().max(200).optional(), equipmentInstanceId: z.string().uuid().nullable().optional(), month: z.string().regex(/^(?!0000)\d{4}-(0[1-9]|1[0-2])$/).optional() }),
     }),
     tool(async ({ programId }) => asJson(openProgram(programId)), {
       name: "openProgram",

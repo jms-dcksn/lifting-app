@@ -16,6 +16,7 @@ import {
 type Client = SupabaseClient<Database>;
 
 export interface ProgramSlot {
+  supersetGroup?: string | null;
   id: string;
   exerciseId: string;
   pattern: Pattern;
@@ -74,7 +75,7 @@ async function assemble(
   const { data: slots } = dayIds.length
     ? await supabase
         .from("program_slot")
-        .select("id, program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, position")
+        .select("id, program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position")
         .in("program_day_id", dayIds)
         .order("position", { ascending: true })
     : { data: [] };
@@ -91,6 +92,7 @@ async function assemble(
       repMax: s.rep_max,
       targetRir: s.target_rir,
       restSeconds: s.rest_seconds,
+      supersetGroup: s.superset_group,
       plateauPatience: s.plateau_patience,
     });
     slotsByDay.set(s.program_day_id, list);

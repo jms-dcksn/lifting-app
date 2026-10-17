@@ -1,9 +1,17 @@
 # Exercise catalog and machine models
 
-The shared library contains 153 exercise templates: the original 60, 90 additions
-approved on 2026-10-15, and three glute additions on 2026-10-17. The 77 manufacturer
+The shared library contains 162 exercise templates: the original 60, 90 additions
+approved on 2026-10-15, three glute additions and nine Ogus variations on 2026-10-17. The 77 manufacturer
 model choices are station identities beneath those templates. Shared templates live in application code; the database holds each
 owner's resolved stations and custom exercises. No bulk owner-row insert is needed.
+
+The Ogus additions retain separate identities for single-arm machine chest fly, neutral-grip
+pulldown, daisy-chain cable skullcrusher, lean-back dumbbell preacher curl, Boxy Face Pull,
+Ogus 45 Smith back extension, straight-leg machine adductor, Good Boy external rotation,
+and weighted hanging leg raise. The last accepts added load; the existing unweighted
+straight-leg raise remains rep-only. Boxy Face Pull follows the source's side-delt category;
+external rotation uses the existing hip-thrust/abduction category. Machine and cable
+variations resolve and calibrate through the existing station picker.
 
 ## Identity and compatibility
 

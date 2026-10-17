@@ -55,6 +55,9 @@ Adaptive plateau engine under §5.
 ## 3. Programs (`/program`)
 
 ### Program grid and detail
+- **Ogus October 26 template** — six-week Classic Upper/Lower block (two more days pending),
+  two sets per exercise; week 1 at 2 RIR, weeks 2–5 at 1 RIR, week 6 one set at 4 RIR.
+  Lower pairs straight-leg adductor and optional external rotation as superset C1/C2.
 - **Responsive program grid** — header is Programs + primary **New program**; owned tiles
   sit under **My programs** (active first, then newest). Tiles show days, weeks, exercise
   count, style, and primary tag, plus a Remove control that confirms in a Sheet.
@@ -99,6 +102,10 @@ Adaptive plateau engine under §5.
   Low/Normal/High/Very-high stalled-exposure window before the engine intervenes.
 - **Per-slot rest override** — optional "Rest (s)" field; empty = use the profile default
   (stored as `null`).
+- **Superset groups** — assign the same group name (for example C) to consecutive exercises
+  in a day. Saving requires at least two members. Detail, planner and workout show C1/C2;
+  the automatic rest timer runs after the last member. Clear all members' group fields
+  to return to straight sets. Each exercise retains independent sets, loads and progression.
 - **Drag/animated reorder** — day cards and slot rows reorder with view-transition tweening
   (`withViewTransition`, `vt-<id>` names).
 - **Exercise picker** — `Sheet`-based picker filtered to the slot's pattern, with a "show all

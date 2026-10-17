@@ -1,5 +1,6 @@
 "use client";
 import { exactExerciseIdentity } from "@/lib/strength/identity";
+import { supersetLabel, isSupersetEnd } from "@/lib/superset";
 
 import Link from "next/link";
 import { Suspense, use, useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
@@ -81,6 +82,8 @@ export interface LoggedSet {
 }
 
 export interface SlotView {
+  supersetGroup?: string | null;
+  supersetLabel?: string | null;
   programSlotId: string;
   exerciseId: string; // last logged this session, else the program slot's exercise
   pattern: Pattern;
@@ -229,7 +232,7 @@ export function ActiveSession({
         <SlotCard
           key={slot.programSlotId}
           sessionId={sessionId}
-          slot={slot}
+          slot={{ ...slot, supersetLabel: supersetLabel(slots, i) }}
           targetHistory={targetHistory}
           isDeload={isDeload}
           achievements={recordsForSlot(achievements, slot.programSlotId)}
@@ -240,7 +243,7 @@ export function ActiveSession({
           recentIds={recentIds}
           catalog={catalog}
           onResolve={addToCatalog}
-          startRest={() => rest.start(slot.restSeconds ?? defaultRestSeconds)}
+          startRest={() => { if (isSupersetEnd(slots, i)) rest.start(slot.restSeconds ?? defaultRestSeconds); }}
           pinnedIds={pinnedIds}
         />
       ))}
@@ -506,6 +509,7 @@ function SlotCard({
 
   return (
     <Card tone={tone} className={complete ? "bg-surface/60" : undefined}>
+      {slot.supersetLabel && <p className="mb-2 text-caption font-medium">Superset {slot.supersetLabel} · Alternate exercises, then rest after the round</p>}
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} size="lg" />

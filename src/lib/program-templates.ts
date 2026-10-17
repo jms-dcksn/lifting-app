@@ -16,6 +16,7 @@ import type { Pattern } from "@/lib/strength/coefficients";
 import type { ProgramPhase } from "@/lib/periodization";
 
 export interface TemplateSlot {
+  supersetGroup?: string | null;
   exerciseId: string;
   pattern: Pattern;
   targetSets: number;
@@ -51,6 +52,58 @@ const s = (
 ): TemplateSlot => ({ exerciseId, pattern, targetSets, repMin, repMax, targetRir, restSeconds });
 
 export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
+  {
+    id: "ogus-october-26",
+    name: "Ogus October 26",
+    description:
+      "A six-week Classic block transcribed from the October '26 workouts. " +
+      "Currently includes Day 1 Upper and Day 2 Lower; two more days will be added later. " +
+      "Perform two working sets per exercise: week 1 at 2 RIR, weeks 2-5 at 1 RIR, " +
+      "then deload in week 6 with one working set per exercise at 4 RIR and lighter loads as needed. " +
+      "Use your usual rest between sets. Select the matching station before logging machine " +
+      "and cable work; use Hammer Strength for the incline press when available. " +
+      "The source's flat-press heading lists an incline press, so the listed incline exercise is retained. " +
+      "Boxy Face Pull retains the source's side-delt classification. On Lower, Good Boy External " +
+      "Rotation and Seated Calf Raise are optional; skip them when not wanted. Adductor and " +
+      "external rotation form superset C: alternate C1 and C2, then rest after C2. " +
+      "The quad compound defaults to hack squat; pendulum squat or Smith squat are alternatives. " +
+      "The source's MAX entries use the confirmed ranges: chest fly 8-12, hack squat 5-8. " +
+      "For single-arm work, complete both sides and log one paired set using the weaker side's " +
+      "reps/RIR. Log one dumbbell's weight for curls and added weight for weighted hanging leg raises.",
+    tags: ["ogus", "hypertrophy", "upper-lower", "2-day", "deload"],
+    weeks: 6,
+    phases: [
+      { position: 0, name: "Week 1", description: "Two working sets per exercise at two reps in reserve.", weekStart: 1, weekEnd: 1, targetRirMin: 2, targetRirMax: 2, setMultiplier: null, isDeload: false },
+      { position: 1, name: "Build", description: "Two working sets per exercise at one rep in reserve.", weekStart: 2, weekEnd: 5, targetRirMin: 1, targetRirMax: 1, setMultiplier: null, isDeload: false },
+      { position: 2, name: "Deload", description: "One working set per exercise at four reps in reserve. Reduce load as needed.", weekStart: 6, weekEnd: 6, targetRirMin: 4, targetRirMax: 4, setMultiplier: 0.5, isDeload: true },
+    ],
+    days: [
+      {
+        name: "Day 1 · Upper",
+        slots: [
+          s("machine-incline-chest-press", "horizontal_press", 2, 5, 8, 1),
+          s("machine-chest-supported-t-bar-row", "horizontal_pull", 2, 4, 8, 1),
+          s("machine-single-arm-chest-fly", "chest_fly", 2, 8, 12, 1),
+          s("neutral-grip-pulldown", "vertical_pull", 2, 5, 8, 1),
+          s("cable-skullcrusher-daisy-chains", "elbow_extension", 2, 8, 15, 1),
+          s("db-lean-back-preacher-curl", "elbow_flexion", 2, 5, 10, 1),
+          s("cable-boxy-face-pull", "lateral_raise", 2, 8, 20, 1),
+        ],
+      },
+      {
+        name: "Day 2 · Lower",
+        slots: [
+          s("leg-extension", "knee_extension", 2, 6, 12, 1),
+          s("smith-ogus-45-back-extension", "hinge", 2, 5, 8, 1),
+          { ...s("straight-leg-machine-adductor", "hip_adduction", 2, 6, 12, 1), supersetGroup: "C" },
+          { ...s("good-boy-external-rotation", "hip_thrust", 2, 8, 15, 1), supersetGroup: "C" },
+          s("seated-calf-raise", "calf", 2, 4, 6, 1),
+          s("hack-squat", "squat", 2, 5, 8, 1),
+          s("weighted-hanging-leg-raise", "core", 2, 6, 15, 1),
+        ],
+      },
+    ],
+  },
   {
     id: "strong-foundations-women-3x",
     name: "Strong Foundations · Women's Glutes & Legs",

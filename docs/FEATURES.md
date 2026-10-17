@@ -66,6 +66,11 @@ Adaptive plateau engine under §5.
 - **Templates** — compact Add rows stay below a divider (muted heading + "Start from a
   built-in split"). Never mixed into the My programs grid. Empty accounts still use the
   template-forward first-run screen on `page.tsx`.
+- **Glute Focus template** — twelve weeks, three full-body days, cable kickbacks on B
+  and machine kickbacks on C. Glute drive is the only weekly repeat and follows split
+  squat/kickback on C. Each day has twelve working sets, halved in recovery weeks 6/12.
+  Budget 45–60 minutes. Added as a separate shared template; existing copies remain
+  unchanged. [Program and rationale](2026-10-17-glute-focus-program-proposal.md).
 - **Make active** — `setActiveProgram`; a partial unique index enforces at most one active
   program per user.
 - **Clone program** — `cloneProgram` deep-copies a program (days, slots, per-slot rest

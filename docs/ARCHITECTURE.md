@@ -123,7 +123,9 @@ Use its descriptions for transcription approximations (percentage work, reverse 
 rest-pause), and its tests for catalog/pattern and week-range validation. Existing program
 copies are independent of template edits unless an explicit, scoped data migration is
 applied (as for the September 14 Strong Foundations variety revision). [Strong Foundations](STRONG-FOUNDATIONS.md) owns
-that template's time budget and coaching rationale.
+that template's time budget and coaching rationale. [Glute Focus](2026-10-17-glute-focus-program-proposal.md)
+owns the separate 12-week glute-specialization template, including distinct cable/machine
+kickbacks and the approved glute-drive repeat. Neither template updates existing copies.
 
 Classic programs resolve effective sets and RIR through `periodization.ts`; fractional set
 counts round up with a minimum of one. RIR ranges display in full and use the upper bound

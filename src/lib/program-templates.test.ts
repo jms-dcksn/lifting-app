@@ -85,6 +85,45 @@ describe("program templates", () => {
     expect(days.flatMap((day) => day.slots).reduce((sum, slot) => sum + slot.targetSets, 0)).toBe(36);
   });
 
+  it("keeps glute drive as the Glute Focus block's only weekly repeat", () => {
+    const template = TEMPLATE_BY_ID["glute-focus-women-3x"];
+    const ids = template.days.flatMap((day) => day.slots.map((slot) => slot.exerciseId));
+    const counts = ids.reduce<Record<string, number>>((totals, id) => {
+      totals[id] = (totals[id] ?? 0) + 1;
+      return totals;
+    }, {});
+
+    expect(ids).toHaveLength(18);
+    expect(new Set(ids).size).toBe(17);
+    expect(Object.entries(counts).filter(([, count]) => count > 1)).toEqual([["glute-drive", 2]]);
+    expect(template.days[1].slots[3].exerciseId).toBe("cable-glute-kickback");
+    expect(template.days[2].slots.slice(0, 3).map((slot) => slot.exerciseId))
+      .toEqual(["db-split-squat", "machine-glute-kickback", "glute-drive"]);
+    expect(template.tags).not.toContain("under-45-min");
+  });
+
+  it("resolves Glute Focus volume and effort throughout its twelve-week block", () => {
+    const template = TEMPLATE_BY_ID["glute-focus-women-3x"];
+    const phases = template.phases!.map((phase, index) => ({ ...phase, id: `glute-${index}` }));
+    const rirByWeek = [[3, 3], [3, 3], [2, 2], [2, 2], [2, 2], [4, 4],
+      [3, 3], [2, 2], [2, 2], [1, 2], [1, 2], [4, 4]];
+    expect(template.weeks).toBe(12);
+    expect(template.days).toHaveLength(3);
+
+    for (let week = 1; week <= template.weeks; week += 1) {
+      const recovery = week === 6 || week === 12;
+      for (const day of template.days) {
+        expect(day.slots).toHaveLength(6);
+        const prescriptions = day.slots.map((slot) => resolvePrescription(slot, week, phases));
+        expect(prescriptions.reduce((sets, p) => sets + p.targetSets, 0)).toBe(recovery ? 6 : 12);
+        prescriptions.forEach((p) => {
+          expect([p.targetRirMin, p.targetRirMax]).toEqual(rirByWeek[week - 1]);
+          expect(p.phase?.isDeload).toBe(recovery);
+        });
+      }
+    }
+  });
+
   it("keeps the women's three-day block within its time budget in every week", () => {
     const template = TEMPLATE_BY_ID["strong-foundations-women-3x"];
     const phases = template.phases!.map((phase, index) => ({ ...phase, id: `women-${index}` }));

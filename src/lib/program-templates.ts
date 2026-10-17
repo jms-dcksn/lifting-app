@@ -122,6 +122,78 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
     ],
   },
   {
+    id: "glute-focus-women-3x",
+    name: "Glute Focus · Women's Strength & Hypertrophy",
+    description:
+      "A 12-week glute-focused full-body plan with three nonconsecutive training days. " +
+      "Budget 45-60 minutes including 5-8 minutes of warm-up and easy ramp-up sets; " +
+      "days B and C take longer because of single-leg work. Each day has six exercises " +
+      "and 12 working sets. Cable kickbacks are on B and machine kickbacks on C; " +
+      "glute drive is the only exercise repeated during the week. Day C starts with " +
+      "Bulgarian split squat, machine glute kickback, then glute drive. Use less load " +
+      "on the drive if earlier glute work makes the prescribed effort harder to maintain. " +
+      "This plan requires a commercial gym with a cable ankle cuff, dedicated kickback " +
+      "machine and glute drive. Select and calibrate each station before logging; " +
+      "do not transfer stack weights between cable and machine kickbacks. Keep the " +
+      "same variations throughout the block. Complete both legs before resting on " +
+      "lunges, split squats and kickbacks; log one paired set using the weaker leg's " +
+      "reps/RIR. Log one dumbbell's weight or one working stack, without adding sides. " +
+      "Use support for balance and controlled reps without swinging or arching the " +
+      "lower back on kickbacks. Work one station at a time using the listed rest timers. " +
+      "Follow the weekly RIR (reps in reserve) targets. Add reps within the range, then " +
+      "take the app's suggested load increase only when technique and prescribed RIR " +
+      "hold. Weeks 6 and 12 use one working set per exercise at four RIR with lighter " +
+      "loads as needed. Glutes take priority over direct calf and abdominal isolation; " +
+      "do not add extra sets by default. Reduce accessory work or take an easier week " +
+      "if recovery or performance persistently declines.",
+    tags: ["women", "beginner", "intermediate", "strength", "hypertrophy", "3-day", "glutes", "legs", "full-gym", "45-60-min"],
+    weeks: 12,
+    phases: [
+      { position: 0, name: "Learn & calibrate", description: "Leave three clean reps in reserve. Learn each variation and calibrate cable and machine stations independently with easy ramp-up sets.", weekStart: 1, weekEnd: 2, targetRirMin: 3, targetRirMax: 3, setMultiplier: null, isDeload: false },
+      { position: 1, name: "Build consistency", description: "Leave two reps in reserve. Add reps within the range, then load when technique and the target RIR hold.", weekStart: 3, weekEnd: 5, targetRirMin: 2, targetRirMax: 2, setMultiplier: null, isDeload: false },
+      { position: 2, name: "Recovery", description: "One working set per exercise at four RIR. Reduce load as needed and do not chase progression.", weekStart: 6, weekEnd: 6, targetRirMin: 4, targetRirMax: 4, setMultiplier: 0.5, isDeload: true },
+      { position: 3, name: "Rebuild", description: "Return to two working sets at three RIR. Reassess loads after the easier week.", weekStart: 7, weekEnd: 7, targetRirMin: 3, targetRirMax: 3, setMultiplier: null, isDeload: false },
+      { position: 4, name: "Progress", description: "Leave two reps in reserve and build on clean performances without adding sets.", weekStart: 8, weekEnd: 9, targetRirMin: 2, targetRirMax: 2, setMultiplier: null, isDeload: false },
+      { position: 5, name: "Confident strength", description: "Work at one to two RIR; newer lifters stay at two. End sets before technique breaks down, without forced reps or failure testing.", weekStart: 10, weekEnd: 11, targetRirMin: 1, targetRirMax: 2, setMultiplier: null, isDeload: false },
+      { position: 6, name: "Recover & review", description: "One working set per exercise at four RIR with lighter loads as needed. Review performance and recovery before repeating the block.", weekStart: 12, weekEnd: 12, targetRirMin: 4, targetRirMax: 4, setMultiplier: 0.5, isDeload: true },
+    ],
+    days: [
+      {
+        name: "A · Glute Drive & Legs",
+        slots: [
+          s("glute-drive", "hip_thrust", 2, 8, 12, 2, 150),
+          s("leg-press", "squat", 2, 6, 10, 2, 120),
+          s("seated-leg-curl", "knee_flexion", 2, 10, 15, 2, 90),
+          s("seated-hip-abduction", "hip_thrust", 2, 12, 20, 2, 90),
+          s("db-bench", "horizontal_press", 2, 8, 12, 2, 90),
+          s("seated-cable-row", "horizontal_pull", 2, 8, 12, 2, 90),
+        ],
+      },
+      {
+        name: "B · Hinge, Lunge & Cable Kickback",
+        slots: [
+          s("bb-rdl", "hinge", 2, 8, 10, 2, 150),
+          s("hack-squat", "squat", 2, 8, 12, 2, 120),
+          s("db-reverse-lunge", "lunge", 2, 8, 12, 2, 120),
+          s("cable-glute-kickback", "hip_extension", 2, 12, 20, 2, 90),
+          s("lat-pulldown", "vertical_pull", 2, 8, 12, 2, 90),
+          s("db-shoulder-press", "vertical_press", 2, 8, 12, 2, 90),
+        ],
+      },
+      {
+        name: "C · Thrust Strength & Machine Kickback",
+        slots: [
+          s("db-split-squat", "lunge", 2, 8, 10, 2, 150),
+          s("machine-glute-kickback", "hip_extension", 2, 10, 15, 2, 90),
+          s("glute-drive", "hip_thrust", 2, 6, 10, 2, 150),
+          s("lying-leg-curl", "knee_flexion", 2, 10, 15, 2, 90),
+          s("db-incline-bench", "horizontal_press", 2, 8, 12, 2, 90),
+          s("db-chest-supported-row", "horizontal_pull", 2, 8, 12, 2, 90),
+        ],
+      },
+    ],
+  },
+  {
     id: "kino-goddess-phase-1",
     name: "Phase 1 · Kino Goddess",
     description:

@@ -479,6 +479,13 @@ cannot guarantee lock-screen delivery. Native push remains out of scope (#43).
 
 ## Phase C decisions (machine brands, types, custom exercises)
 
+**Glute coverage (2026-10-17).** The requested shared cable glute kickback uses the
+existing `hip_extension` isolation pattern, separate from hip-thrust strength. The
+manufacturer audit also adds Smith hip thrust and machine lunge templates plus ten
+model choices. Dedicated glute bridges use the existing glute-drive template with
+separate model-specific calibration/history. No schema change, bulk owner inserts,
+existing-pattern reassignment or history merge. See the [coverage audit](EXERCISE-CATALOG.md#glute-coverage-audit--2026-10-17).
+
 **Comprehensive catalog and optional models (2026-10-15, approved).** James approved all
 variations in the audit, including optional curl variations and the manufacturer model
 choices. Add 90 shared templates, keeping all previous IDs and personal exercises. Add

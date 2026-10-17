@@ -1,8 +1,8 @@
 # Exercise catalog and machine models
 
-The shared library contains 150 exercise templates: the original 60 plus 90 additions
-approved on 2026-10-15. The 67 manufacturer model choices are station identities beneath
-those templates. Shared templates live in application code; the database holds each
+The shared library contains 153 exercise templates: the original 60, 90 additions
+approved on 2026-10-15, and three glute additions on 2026-10-17. The 77 manufacturer
+model choices are station identities beneath those templates. Shared templates live in application code; the database holds each
 owner's resolved stations and custom exercises. No bulk owner-row insert is needed.
 
 ## Identity and compatibility
@@ -112,6 +112,44 @@ all authors. Product catalogs also do not establish availability at a particular
   [RS-2102 biceps](https://www.hoistfitness.com/pages/rs-2102-biceps-curl),
   [selectorized model index](https://www.hoistfitness.com/pages/roc-it-selectorized-qr-code-content).
 
+## Glute coverage audit — 2026-10-17
+
+Added shared Cable Glute Kickback (`hip_extension`), Smith Machine Hip Thrust
+(`hip_thrust`, plate-loaded only), and Machine Lunge / Split Squat (`lunge`). Cable
+kickbacks use the working stack for one leg; log both sides consistently without
+adding the two legs' loads. All three resolve through existing owner-scoped station
+creation and calibration. No migration or bulk database write is needed. Existing
+IDs, patterns, custom exercises and history remain unchanged.
+
+Dedicated glute drives/bridges reuse `glute-drive`; dedicated kickback/hip-extension
+stations reuse `machine-glute-kickback`. Model-specific stations keep their own
+records and calibration. Added ten model choices across Cybex, Hammer Strength and
+Life Fitness. Search also recognizes hip-thrust machine, glute bridge, hip abductor,
+ankle-strap kickback, and plural kickbacks. These aliases also apply to saved variants.
+
+The audit covers common commercial movement families, not measured sales/popularity
+rankings or a claim to list every model. Already-covered glute work includes leg press,
+hack/belt/pendulum/V/reverse-V/squat press, Smith squats/RDLs/split squats, reverse
+hyperextension, glute-ham raises and seated hip abduction. The Glute Ham / Reverse Hyper
+combo retains its existing loaded reverse-hyper link; rep-only glute-ham raises remain
+a separate exercise. Combo abduction/adduction models map each motion to its own
+existing template. Standing abduction is not mislabeled as a seated exercise.
+
+Sources checked for existence, loading and movement compatibility:
+
+| Equipment / movement | Catalog result | Source |
+| --- | --- | --- |
+| Cable kickback | New cable template; separate from guided machine kickback | [StrengthLog exercise guide](https://www.strengthlog.com/cable-glute-kickback/) |
+| Smith hip thrust | New plate-loaded Smith template; separate from dedicated glute drive | [REP Fitness guide](https://repfitness.com/blogs/guides/smith-machine-hip-thrust) |
+| Hammer Strength Squat Lunge | New machine lunge template and plate-loaded model | [Manufacturer](https://www.lifefitness.com/en-eu/catalog/strength-training/plate-loaded/plate-loaded-squat-lunge) |
+| Hammer Strength Glute Drive | Added model under existing glute drive | [Manufacturer](https://shop.lifefitness.com/products/hammer-strength-plate-loaded-glute-drive) |
+| Hammer Strength Select Hip and Glute | Added selectorized model under existing machine kickback | [Manufacturer](https://shop.lifefitness.com/products/hammer-strength-select-hip-and-glute) |
+| Hammer Strength Select Hip Abduction | Added selectorized model under existing seated abduction | [Manufacturer](https://shop.lifefitness.com/products/hammer-strength-select-hip-abduction) |
+| Life Fitness Insignia Glute / Glute Bridge | Existing Glute kickback model retained; added separate selectorized Bridge model | [Glute](https://www.lifefitness.com/en-us/catalog/strength-training/selectorized/insignia-series-glute), [Bridge](https://shop.lifefitness.com/products/insignia-series-glute-bridge) |
+| Life Fitness Insignia Hip Abduction and combo | Added two selectorized models; standalone model includes older installed equipment | [Abduction](https://www.lifefitness.com/en-gb/catalog/strength-training/selectorized/insignia-series-hip-abduction), [combo](https://www.lifefitness.com/en-us/catalog/strength-training/selectorized/insignia-series-hip-abductor-adductor) |
+| Cybex Eagle NX and Prestige VRS Glute | Added two selectorized kickback models | [Eagle manual](https://kb.cybexintl.com/Owners_Manuals/Strength/20170-999-4.pdf), [Prestige](https://www.lifefitness.com/en-us/catalog/cybex/cybex-products/cybex-prestige-strength-vrs-glute) |
+| Cybex Eagle NX Hip Abduction/Adduction | Added selectorized combo model | [Manufacturer](https://www.lifefitness.com/en-us/catalog/cybex/cybex-products/cybex-eagle-nx-hip-abduction-adduction) |
+
 ## New exercise inventory
 
 | ID | Exercise | Pattern | Station | Tracking |
@@ -187,6 +225,8 @@ all authors. Product catalogs also do not establish availability at a particular
 | `smith-squat` | Smith Machine Squat | `squat` | machine | loaded |
 | `smith-rdl` | Smith Machine Romanian Deadlift | `hinge` | machine | loaded |
 | `smith-split-squat` | Smith Machine Bulgarian Split Squat | `lunge` | machine | loaded |
+| `smith-hip-thrust` | Smith Machine Hip Thrust | `hip_thrust` | machine | loaded |
+| `machine-lunge` | Machine Lunge / Split Squat | `lunge` | machine | loaded |
 | `smith-shoulder-press` | Smith Machine Shoulder Press | `vertical_press` | machine | loaded |
 | `ab-wheel-rollout` | Ab Wheel Rollout | `core` | none | reps_only |
 | `hanging-leg-raise` | Hanging Straight-Leg Raise | `core` | none | reps_only |
@@ -202,6 +242,7 @@ all authors. Product catalogs also do not establish availability at a particular
 | `assisted-dip` | Machine-Assisted Dip | `horizontal_press` | machine | assisted |
 | `hip-adduction` | Machine Hip Adduction | `hip_adduction` | machine | loaded |
 | `machine-glute-kickback` | Machine Glute Kickback / Hip Extension | `hip_extension` | machine | loaded |
+| `cable-glute-kickback` | Cable Glute Kickback | `hip_extension` | cable | loaded |
 | `machine-torso-rotation` | Machine Torso Rotation | `core_rotation` | machine | loaded |
 | `machine-tibialis-raise` | Machine Tibialis Raise / Dorsi-Flexion | `ankle_dorsiflexion` | machine | loaded |
 | `reverse-hyper` | Machine Reverse Hyperextension | `hinge` | machine | loaded |
@@ -236,6 +277,10 @@ all authors. Product catalogs also do not establish availability at a particular
 | Hammer Strength | `hs-mts-shoulder` | MTS Iso-Lateral Shoulder Press | selectorized | `machine-shoulder-press` |
 | Hammer Strength | `hs-t-bar` | Plate-Loaded T-Bar Row (Unsupported) | plate_loaded | `machine-standing-t-bar-row` |
 | Hammer Strength | `hs-belt-squat` | Plate-Loaded Belt Squat | plate_loaded | `belt-squat` |
+| Hammer Strength | `hs-squat-lunge` | Plate-Loaded Squat Lunge | plate_loaded | `machine-lunge` |
+| Hammer Strength | `hs-glute-drive` | Plate-Loaded Glute Drive | plate_loaded | `glute-drive` |
+| Hammer Strength | `hs-select-hip-glute` | Select Hip and Glute | selectorized | `machine-glute-kickback` |
+| Hammer Strength | `hs-select-hip-abduction` | Select Hip Abduction | selectorized | `seated-hip-abduction` |
 | Hammer Strength | `hs-pendulum-x` | Pendulum-X Squat | plate_loaded | `pendulum-squat` |
 | Hammer Strength | `hs-reverse-v` | Reverse V-Squat | plate_loaded | `reverse-v-squat` |
 | Hammer Strength | `hs-super-squat-press` | Super Squat Press | plate_loaded | `squat-press` |
@@ -254,12 +299,18 @@ all authors. Product catalogs also do not establish availability at a particular
 | Life Fitness | `lf-insignia-assist` | Insignia Assist Dip Chin | selectorized | `assisted-pullup`, `assisted-chinup`, `assisted-dip` |
 | Life Fitness | `lf-insignia-adduction` | Insignia Hip Adduction | selectorized | `hip-adduction` |
 | Life Fitness | `lf-insignia-glute` | Insignia Glute | selectorized | `machine-glute-kickback` |
+| Life Fitness | `lf-insignia-glute-bridge` | Insignia Glute Bridge | selectorized | `glute-drive` |
+| Life Fitness | `lf-insignia-hip-abduction` | Insignia Hip Abduction | selectorized | `seated-hip-abduction` |
+| Life Fitness | `lf-insignia-hip-ab-ad` | Insignia Hip Abduction / Adduction | selectorized | `seated-hip-abduction`, `hip-adduction` |
 | Life Fitness | `lf-insignia-rotation` | Insignia Torso Rotation | selectorized | `machine-torso-rotation` |
 | Life Fitness | `lf-signature-cable` | Signature Cable Motion | selectorized | `cable-chest-press`, `seated-cable-row`, `lat-pulldown` |
 | Cybex | `cybex-eagle-chest` | Eagle NX Dual Axis Chest Press | selectorized | `machine-chest-press` |
 | Cybex | `cybex-eagle-pulldown` | Eagle NX Dual Axis Pulldown | selectorized | `machine-lat-pulldown` |
 | Cybex | `cybex-eagle-row` | Eagle NX Row | selectorized | `machine-row` |
 | Cybex | `cybex-squat-press` | Plate-Loaded Squat Press | plate_loaded | `squat-press` |
+| Cybex | `cybex-eagle-glute` | Eagle NX Glute | selectorized | `machine-glute-kickback` |
+| Cybex | `cybex-prestige-glute` | Prestige VRS Glute | selectorized | `machine-glute-kickback` |
+| Cybex | `cybex-eagle-hip-ab-ad` | Eagle NX Hip Abduction / Adduction | selectorized | `seated-hip-abduction`, `hip-adduction` |
 | Cybex | `cybex-eagle-rotation` | Eagle NX Torso Rotation | selectorized | `machine-torso-rotation` |
 | Hoist | `hoist-rpl-5356` | ROC-IT RPL-5356 Hack Squat / Dead Lift / Shrug | plate_loaded | `hack-squat`, `machine-deadlift`, `machine-shrug` |
 | Hoist | `hoist-rpl-5403` | ROC-IT RPL-5403 Dual Action Leg Press | plate_loaded | `leg-press` |
@@ -279,7 +330,18 @@ all authors. Product catalogs also do not establish availability at a particular
 | Hoist | `hoist-rs-1406` | ROC-IT RS-1406 Inner Thigh | selectorized | `hip-adduction` |
 | Hoist | `hoist-rs-1602` | ROC-IT RS-1602 Rotary Torso | selectorized | `machine-torso-rotation` |
 
-## Verification for this expansion
+## Verification for the 2026-10-17 glute update
+
+`npm run verify` passed fresh TypeScript, lint, indexed-access checks, all 1,196 tests
+(one opt-in live test skipped), and the production build. Lint retains the existing
+unused `_catalog` warning in `board.ts`. Regression checks cover shared visibility with
+an empty owner catalog, search aliases/manufacturer discovery, compatible model links,
+and independent station persistence/reuse for two owners. No schema/data migration was
+needed or applied. Authenticated browser checks were not run; action persistence checks
+use the existing mocked Supabase boundary. Hosted rollout is separate from local build
+verification.
+
+## Verification for the 2026-10-15 expansion
 
 - `npm test`: 1,017 passed, one opt-in live test skipped. Focused picker tests were
   rerun after final accessible-label changes.

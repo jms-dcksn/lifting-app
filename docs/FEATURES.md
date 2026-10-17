@@ -296,9 +296,9 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 - **Merged catalog** — `catalog.ts` merges seeded templates with the user's
   `exercise` rows (seeded ids win collisions); threaded through every screen via
   `getCatalogMap`, including the calibration-critical session actions.
-- **Comprehensive variations and model identity** — 150 shared templates (90 added on
-  2026-10-15) and 67 manufacturer model choices. Optional models preserve separate machine
-  histories; null preserves legacy stations. Search accepts DB/BB, fly spellings, common
+- **Comprehensive variations and model identity** — 153 shared templates (90 added on
+  2026-10-15, three glute additions on 2026-10-17) and 77 manufacturer model choices.
+  Optional models preserve separate machine histories; null preserves legacy stations. Search accepts DB/BB, fly spellings, common
   aliases and model names. New fly/adduction/hip-extension/dorsiflexion/rotation patterns
   keep unrelated strength predictions separate. Assisted station controls store negative
   added load; rep-only rollouts/leg raises/glute-ham raises omit weight/e1RM and retain rep

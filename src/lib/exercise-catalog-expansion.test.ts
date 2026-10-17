@@ -12,6 +12,16 @@ import { sessionTarget } from "./strength/progression";
 import { formatExerciseSet, validExerciseWeight } from "./strength/load-mode";
 
 describe("expanded catalog contracts", () => {
+  it("includes glute additions for owners with no saved exercise rows", () => {
+    const catalog = mergeCatalog([]);
+    expect(catalog["cable-glute-kickback"]).toMatchObject({ pattern: "hip_extension", equipment: "cable", stationProfile: "cable", needsCalibration: true });
+    expect(catalog["smith-hip-thrust"]).toMatchObject({ pattern: "hip_thrust", allowedMachineTypes: ["plate_loaded"] });
+    expect(catalog["machine-lunge"]).toMatchObject({ pattern: "lunge", stationProfile: "machine", needsCalibration: true });
+    expect(recommend(catalog["bb-hip-thrust"], 10, 2, catalog, [
+      { exerciseId: "cable-glute-kickback", currentE1rm: 50, confidenceN: 3 },
+    ])).toBeNull();
+  });
+
   it("keeps every exercise unique, classified, and loggable through the right station flow", () => {
     expect(new Set(EXERCISES.map(e => e.id)).size).toBe(EXERCISES.length);
     expect(EXERCISE_VARIATIONS.length).toBeGreaterThanOrEqual(90);
@@ -53,6 +63,13 @@ describe("expanded catalog contracts", () => {
     ["bb-row", "bent-over barbell row"], ["cable-curl", "cable curl with bar"],
     ["cable-mid-fly", "cable crossover"], ["machine-row", "Hammer Strength D.Y. row"],
     ["machine-chest-press", "Cybex Eagle NX"], ["machine-deadlift", "Hoist RPL 5356"],
+    ["cable-glute-kickback", "cable glute kickbacks"], ["cable-glute-kickback", "ankle strap kickback"],
+    ["cable-glute-kickback", "cable hip extension"], ["smith-hip-thrust", "smith hip thrusts"],
+    ["machine-lunge", "Hammer Strength squat lunge"], ["glute-drive", "Life Fitness glute bridge"],
+    ["glute-drive", "Hammer Strength glute drive"], ["glute-drive", "hip thrust machine"],
+    ["machine-glute-kickback", "Cybex Eagle NX glute"], ["machine-glute-kickback", "Cybex Prestige glute"],
+    ["machine-glute-kickback", "Hammer Strength hip and glute"],
+    ["seated-hip-abduction", "Hammer Strength hip abductor"], ["seated-hip-abduction", "Cybex hip abduction"],
   ])("finds %s using %s", (id, query) => expect(matchesExercise(EXERCISE_BY_ID[id], query)).toBe(true));
 
   it("preserves legacy IDs and isolates model records after hydration", () => {

@@ -88,6 +88,24 @@ beforeEach(() => {
 });
 
 describe("resolveVariant", () => {
+  it.each([
+    { baseExerciseId: "cable-glute-kickback", brand: "Life Fitness", machineType: "selectorized" as const },
+    { baseExerciseId: "smith-hip-thrust", brand: "Cybex", machineType: "plate_loaded" as const },
+    { baseExerciseId: "machine-lunge", brand: "Hammer Strength", machineType: "plate_loaded" as const, stationModel: "hs-squat-lunge" },
+    { baseExerciseId: "glute-drive", brand: "Life Fitness", machineType: "selectorized" as const, stationModel: "lf-insignia-glute-bridge" },
+    { baseExerciseId: "machine-glute-kickback", brand: "Cybex", machineType: "selectorized" as const, stationModel: "cybex-eagle-glute" },
+  ])("resolves $baseExerciseId independently for every owner", async input => {
+    currentUser = USER_A;
+    const first = await resolveVariant(input);
+    currentUser = USER_B;
+    const second = await resolveVariant(input);
+    expect(second.id).not.toBe(first.id);
+    expect(second.baseExerciseId).toBe(input.baseExerciseId);
+    expect(second.needsCalibration).toBe(true);
+    expect((await resolveVariant(input)).id).toBe(second.id);
+    expect(rows.filter(row => row.base_exercise_id === input.baseExerciseId)).toHaveLength(2);
+  });
+
   it("keeps legacy and two same-brand models distinct and reuses normalized choices", async () => {
     const input = { baseExerciseId: "machine-chest-press", brand: "Life Fitness", machineType: "selectorized" as const };
     const legacy = await resolveVariant(input);

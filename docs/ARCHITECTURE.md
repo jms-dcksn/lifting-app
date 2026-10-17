@@ -13,7 +13,7 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
 
 - `e1rm.ts` converts weight/reps/RIR through the RPE/RIR load model and inverts it for target
   loads. Preserve this model rather than replacing it with a bare Epley/Brzycki formula.
-- `coefficients.ts` and `exercise-variations.ts` own the 150 shared templates and population
+- `coefficients.ts` and `exercise-variations.ts` own the 153 shared templates and population
   coefficients. See [catalog inventory and model rules](EXERCISE-CATALOG.md). `recommend.ts` pools
   reference-lift strength by movement pattern and uses Bayesian shrinkage (`PRIOR_WEIGHT`).
   The expanded machine catalog includes supported-arm curls/extensions, lever pulldown,

@@ -11,6 +11,12 @@ const ALIASES: Record<string, readonly string[]> = {
   "cable-bayesian-curl": ["behind the back curl", "face away cable curl"],
   "db-chest-supported-row": ["incline dumbbell row", "supported db row"],
   "cable-mid-fly": ["cable crossover", "cable chest fly"],
+  "cable-glute-kickback": ["cable glute kickbacks", "cable hip extension", "ankle strap kickback", "cable donkey kick"],
+  "machine-glute-kickback": ["machine glute kickbacks", "glute extension", "machine donkey kick"],
+  "glute-drive": ["machine hip thrust", "hip thrust machine", "machine glute bridge", "glute bridges", "booty builder"],
+  "smith-hip-thrust": ["smith hip thrusts", "smith glute bridge"],
+  "machine-lunge": ["machine lunges", "squat lunge", "ground base lunge"],
+  "seated-hip-abduction": ["hip abductor", "outer thigh", "seated glute abduction"],
 };
 
 const normalize = (text: string) => text.toLowerCase()

@@ -81,6 +81,10 @@ groups. Existing slots remain ungrouped. Applied and verified on 2026-10-17 in b
 development (`uggyizzzczwwxkgnwuse`) and production (`jtcppebmosaffaajtgow`). Both ledgers
 record repository version `20261017215800`. Production retained all 229 program slots and
 506 saved sets; owner-scoped RLS and security-invoker save behavior remain enabled.
+Also apply `20261017221032_restore_program_save_source_lock.sql`: it preserves the
+existing Coach source-lock call at the beginning of `save_program` after the superset
+extension replaces that function. It is applied to both projects under the same version.
+The concurrency CI audit checks this ordering before app release.
 
 ### Exercise model migration
 

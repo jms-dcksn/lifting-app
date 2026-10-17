@@ -18,6 +18,8 @@ declare
   invalid_tree jsonb;
 begin
   assert not has_function_privilege('anon', 'public.save_program(jsonb)', 'EXECUTE');
+  assert pg_get_functiondef('public.save_program(jsonb)'::regprocedure)
+    ~* E'begin\\s+perform private\\.lock_coach_source\\(\\)';
   tree := jsonb_build_object(
     'id', fixture_program_id, 'name', 'Superset fixture', 'weeks', 6, 'style', 'classic',
     'isActive', false, 'phases', jsonb_build_array(jsonb_build_object(

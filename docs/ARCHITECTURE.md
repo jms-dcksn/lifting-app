@@ -142,7 +142,9 @@ timer. The builder and atomic save RPC reject single-member or separated groups.
 do not merge exercise identity, prescriptions, set logs or progression. Ungrouped slots keep
 their existing timer behavior. Apply `20261017215800_program_supersets.sql` before deploying
 these readers; the additive column retains the existing owner-scoped RLS and the RPC stays
-security invoker.
+security invoker. The follow-up `20261017221032_restore_program_save_source_lock.sql`
+restores the Coach source lock at the start of the replaced function, before any program
+row locks; apply both migrations together. The existing concurrency audit enforces this.
 
 Classic programs resolve effective sets and RIR through `periodization.ts`; fractional set
 counts round up with a minimum of one. RIR ranges display in full and use the upper bound

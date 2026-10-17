@@ -43,7 +43,7 @@ export default async function SessionPage({
       : Promise.resolve({ data: null }),
     supabase
       .from("program_slot")
-      .select("id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, position")
+      .select("id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position")
       .eq("program_day_id", session.program_day_id)
       .order("position", { ascending: true }),
     session.program_id
@@ -228,6 +228,7 @@ export default async function SessionPage({
         targetRirMax: effective.targetRirMax,
       },
       restSeconds: slot.rest_seconds,
+      supersetGroup: slot.superset_group,
       sets: setsBySlot.get(slot.id) ?? [],
       pendingSuggestion: null,
       lastUsedAlternate: lastUsedBySlot.get(slot.id) ?? null,

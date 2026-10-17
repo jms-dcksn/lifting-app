@@ -25,6 +25,17 @@ const machine = (id: string, name: string, pattern: Pattern, coefficient = 1, ex
   });
 
 export const EXERCISE_VARIATIONS: ExerciseDef[] = [
+  // Ogus variations retain distinct loading identities instead of borrowing generic history.
+  machine("machine-single-arm-chest-fly", "Single Arm Machine Chest Fly", "chest_fly", 1),
+  lift("neutral-grip-pulldown", "Neutral Grip Pulldown", "vertical_pull", "cable", 1, "cable"),
+  lift("cable-skullcrusher-daisy-chains", "Cable Skullcrusher (Daisy Chains)", "elbow_extension", "cable", 0.85, "cable"),
+  curl("db-lean-back-preacher-curl", "Lean Back DB Preacher Curls", "dumbbell"),
+  lift("cable-boxy-face-pull", "Boxy Face Pull", "lateral_raise", "cable", 0.9, "cable"),
+  machine("smith-ogus-45-back-extension", "Ogus 45 - Smith Machine 45 Degree Back Extension", "hinge", 0.4),
+  machine("straight-leg-machine-adductor", "Straight Leg Machine Adductor", "hip_adduction", 1),
+  machine("good-boy-external-rotation", "Good Boy External Rotation (on Adductor Machine)", "hip_thrust", 1),
+  lift("weighted-hanging-leg-raise", "Weighted Hanging Leg Raise", "core", "bodyweight", 1),
+
   curl("db-spider-curl", "Dumbbell Spider Curl", "dumbbell"),
   curl("ez-spider-curl", "EZ-Bar Spider Curl", "barbell", 0.8),
   curl("db-incline-curl", "Incline Dumbbell Curl", "dumbbell"),

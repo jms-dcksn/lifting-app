@@ -40,6 +40,17 @@ dropdown seed; any other brand is free-text).
 
 ## Data model
 
+### Superset representation — 2026-10-17
+
+Store a nullable group name on each program slot, scoped to its day. Consecutive members
+derive numbered labels from slot order (C1/C2), and the rest timer starts after the final
+member. Preserve grouping through template creation, editing, cloning and loading; validate
+at least two consecutive members in the builder action and atomic save RPC. Keep each
+exercise's prescriptions, load identity, logged sets and progression independent. This
+supports the Ogus lower-day pair without a new group table or changes to training evidence.
+
+### Authoritative training data
+
 `set_log` is the source of truth; `user_exercise_stat` is a rebuildable cache. Program
 slots reference movement patterns, so "swap exercise" is a first-class operation. Seeded
 exercise *templates* live in `coefficients.ts` (app code); the `exercise` table holds

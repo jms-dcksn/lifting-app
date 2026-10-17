@@ -4,6 +4,30 @@ import { PROGRAM_TEMPLATES, TEMPLATE_BY_ID } from "./program-templates";
 import { resolvePrescription, validateProgramPhases } from "./periodization";
 
 describe("program templates", () => {
+  it("resolves the confirmed Ogus prescriptions across all six weeks", () => {
+    const template = TEMPLATE_BY_ID["ogus-october-26"];
+    const phases = template.phases!.map((phase, index) => ({ ...phase, id: `ogus-${index}` }));
+    expect(template.name).toBe("Ogus October 26");
+    expect(template.weeks).toBe(6);
+    expect(template.days.map((day) => day.slots.map((slot) => [slot.repMin, slot.repMax])))
+      .toEqual([
+        [[5, 8], [4, 8], [8, 12], [5, 8], [8, 15], [5, 10], [8, 20]],
+        [[6, 12], [5, 8], [6, 12], [8, 15], [4, 6], [5, 8], [6, 15]],
+      ]);
+    for (let week = 1; week <= 6; week += 1) {
+      for (const slot of template.days.flatMap((day) => day.slots)) {
+        expect(resolvePrescription(slot, week, phases)).toMatchObject({
+          targetSets: week === 6 ? 1 : 2,
+          targetRirMin: week === 6 ? 4 : week === 1 ? 2 : 1,
+          targetRirMax: week === 6 ? 4 : week === 1 ? 2 : 1,
+          phase: { isDeload: week === 6 },
+        });
+      }
+    }
+    expect(EXERCISE_BY_ID["weighted-hanging-leg-raise"].loadMode).toBeUndefined();
+    expect(EXERCISE_BY_ID["hanging-leg-raise"].loadMode).toBe("reps_only");
+  });
+
   it("have unique ids", () => {
     const ids = PROGRAM_TEMPLATES.map((t) => t.id);
     expect(new Set(ids).size).toBe(ids.length);

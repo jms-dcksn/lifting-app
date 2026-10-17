@@ -219,6 +219,7 @@ export function ProgramBuilder({
               repMax: s.repMax,
               targetRir: s.targetRir,
               restSeconds: s.restSeconds,
+              supersetGroup: s.supersetGroup ?? null,
               plateauPatience: s.plateauPatience,
             })),
           })),
@@ -461,6 +462,17 @@ export function ProgramBuilder({
                     value={slot.restSeconds}
                     onChange={(v) => updateSlot(day.id, slot.id, { restSeconds: v })}
                   />
+                  <label className="mt-2 flex items-center justify-between gap-2 text-caption text-muted">
+                    Superset group
+                    <Input
+                      aria-label={`Superset group for ${exerciseName(byId, slot.exerciseId)}`}
+                      value={slot.supersetGroup ?? ""}
+                      placeholder="None (e.g. C)"
+                      maxLength={16}
+                      className="w-32"
+                      onChange={(e) => updateSlot(day.id, slot.id, { supersetGroup: e.target.value.trim() || null })}
+                    />
+                  </label>
                   {draft.style === "fluid" && (
                     <label className="mt-2 flex items-center justify-between gap-2 text-caption text-muted">
                       <span className="flex items-center gap-1 uppercase tracking-wide">

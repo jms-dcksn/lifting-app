@@ -253,6 +253,6 @@ export const EVAL_CASES: EvalCase[] = [
     question: "Open my coach check-in.",
     expectedTools: ["openCoachCheckIn"],
     expectedCitations: [],
-    goldAnswer: "openCoachCheckIn opens /analytics/coach.",
+    goldAnswer: "openCoachCheckIn opens /coach?review=1.",
   },
 ];

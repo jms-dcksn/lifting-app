@@ -377,12 +377,12 @@ Secondary, not equal cards, behind Explore:
   (observed period days, weekly weight change, and PR counts on one card), compact
   name-plus-percent improvements and rep-gain sentences (no all-lifts dump or SVG trends),
   stalls (name links to Exercise review with `month` and `equipment`; session evidence and
-  in-progress Coach stay), achievements (rep, top-weight, and e1RM lines), and the shared weight card
-- Coach (`/analytics/coach`) — check-in snapshot, ranked next-step proposals (Do first / Also),
-  Accept / Later / Dismiss / Accept all (list updates immediately; failed saves show an error),
+  Coach links with exact exercise/equipment/month focus), achievements (rep, top-weight, and e1RM lines), and the shared weight card
+- Coach (`/coach?review=1`) — relevant exception conversations and on-demand chat;
+  optional read-only weekly report details retain summary, evidence and export,
   collapsed insufficient-data trends, a one-line hard-set shortfall flag, and Copy report
   (clipboard write plus a selectable fallback; shows Copied or Copy failed).
-  Stall links use `?exercise=`. `/settings?coachExercise=` redirects here.
+  Stall links preserve exercise, exact equipment and selected month. `/settings?coachExercise=` redirects here.
 - Body (`/analytics/body`) — weight trend chart and tape measurements (waist, neck, arm, thigh, chest)
 - Volume (`/analytics/volume`) — weekly tonnage for all training or one logged
   exercise (`?exercise=`). Search matches All lifts (one row per exercise). Unknown
@@ -416,7 +416,7 @@ Coach contract.
   bleeding days; they appear as context bands on monthly charts and as the period × performance
   week overlay on month review. Design spec: [PERIOD-TRACKING.md](PERIOD-TRACKING.md).
   Implementation: #33 and #105. Period data stays in-app and is not sent to Coach.
-- **Sign out**. Coach lives on Track Explore (`/analytics/coach`).
+- **Sign out**. Coach lives on Track Explore (`/coach?review=1`).
 
 ## 10. App shell & navigation
 
@@ -475,7 +475,7 @@ numbers. Persistent entry + `Sheet` where the tab bar shows; full screen at
 lists the latest 50 by last activity, New chat opens an unsaved draft, and the first send
 saves the thread titled from that message. Model sees the open thread's last N messages
 only. Contract: [AI-COACH.md § Threads](AI-COACH.md#threads). Teaching page:
-[ai-coach.html](ai-coach.html). Track Coach at `/analytics/coach` is unchanged.
+[ai-coach.html](ai-coach.html). The legacy `/analytics/coach` entry routes to AI Coach; `?view=details` retains the read-only report.
 
 ## Persistent Coach exception inbox (#195)
 

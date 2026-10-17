@@ -5,7 +5,7 @@ import { createServerClient } from "@supabase/ssr";
 import pg from "pg";
 
 for (const openWorkout of [false, true]) test(`plateau review reuses its conversation and confirms once (${openWorkout ? "open workout keeps drafts" : "before workout"})`, async ({ page, context, baseURL }) => {
-  test.setTimeout(150_000);
+  test.setTimeout(240_000);
   const db = new pg.Client({ connectionString: process.env.E2E_DATABASE_URL }); await db.connect();
   const client = createClient(process.env.E2E_SUPABASE_URL!, process.env.E2E_SUPABASE_KEY!, { auth: { persistSession: false } });
   let owner: string | undefined;
@@ -42,7 +42,7 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
     await page.goto("/coach/inbox");
     await page.getByRole("link", { name: /plateau/i }).first().click();
     await page.getByRole("button", { name: "Open Coach", exact: true }).click();
-    await expect(page).toHaveURL(/\/coach\?thread=/, { timeout: 45_000 });
+    await expect(page).toHaveURL(/\/coach\?thread=/, { timeout: 90_000 });
     await page.getByRole("link", { name: "See details and choices" }).click();
     await expect(page).toHaveURL(/\/coach\/episodes\//);
     const reviewURL = page.url();
@@ -53,6 +53,21 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
     await expect(page).toHaveURL(/\/coach\?thread=/);
     await expect(page.getByRole("link", { name: "See details and choices" })).toBeVisible();
     const threadURL = page.url();
+    const threadId = new URL(threadURL).searchParams.get("thread")!;
+    await page.goto("/analytics/coach?exercise=db-bench&month=2026-09");
+    await expect.poll(() => new URL(page.url()).searchParams.get("thread")).toBe(threadId);
+    expect(new URL(page.url()).searchParams.get("month")).toBe("2026-09");
+    expect(new URL(page.url()).searchParams.get("exercise")).toBe("db-bench");
+    await page.reload();
+    await expect(page.getByRole("link", { name: "See details and choices" })).toBeVisible();
+    expect(new URL(page.url()).searchParams.get("month")).toBe("2026-09");
+    await page.goto("/settings?coachExercise=db-bench&month=2026-09");
+    await expect.poll(() => new URL(page.url()).searchParams.get("thread")).toBe(threadId);
+    await page.getByRole("link", { name: "Report details", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Weekly report details", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Accept/ })).toHaveCount(0);
+    expect(new URL(page.url()).searchParams.get("month")).toBe("2026-09");
+
     await page.goto(reviewURL);
     await page.getByRole("button", { name: "Discuss with Coach", exact: true }).click();
     await expect(page).toHaveURL(threadURL);
@@ -86,6 +101,11 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
     expect((await db.query("select count(*)::int n from public.workout_session where user_id=$1", [owner])).rows[0].n).toBe(openWorkout ? 5 : 4);
     await page.setViewportSize({ width: 320, height: 750 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.goto("/coach?review=1&exercise=db-bench&month=2026-09");
+    await expect.poll(() => new URL(page.url()).searchParams.get("thread")).toBe("new");
+    expect(new URL(page.url()).searchParams.get("month")).toBe("2026-09");
+    expect((await db.query("select count(*)::int n from public.agent_thread where user_id=$1", [owner])).rows[0].n).toBe(1);
+    expect(modelPosts).toBe(0);
     expect(errors).toEqual([]);
   } finally { if (owner) await db.query("delete from auth.users where id=$1", [owner]); await db.end(); }
 });

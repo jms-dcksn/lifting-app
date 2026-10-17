@@ -87,7 +87,7 @@ describe("TrackExploreMenu", () => {
 
     const hrefs = [...host.querySelectorAll("a")].map((anchor) => anchor.getAttribute("href"));
     expect(hrefs).toContain("/analytics/month");
-    expect(hrefs).toContain("/analytics/coach");
+    expect(hrefs).toContain("/coach?review=1");
     expect(hrefs).toContain("/analytics/body");
     expect(hrefs).toContain("/analytics/volume");
   });

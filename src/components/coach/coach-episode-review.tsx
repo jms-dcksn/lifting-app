@@ -62,7 +62,7 @@ export function CoachEpisodeReview({ episodeId, embedded = false, onApplied }: {
         <Button variant="secondary" pending={pending} className="mt-3" onClick={() => choose("keep_going")}>Keep going</Button>
       </Card>}
       {review.episode.family === "session_pain" && review.episode.state === "open" && <Button variant="secondary" disabled={!review.fresh} onClick={() => setPainEnd(true)}>This pain situation has ended</Button>}
-      {(receipt ? [receipt] : review.receipts).map(r => <Card key={r.requestId}><p role="status">{r.status === "snoozed" ? "Keep going saved. Snoozed for two comparable exposures; no prescription changed." : r.action === "rep_change" ? `Applied: ${r.repMin}–${r.repMax} reps for the remainder of the program.` : `Applied replacement: ${r.replacementId}. Remainder of program.`}</p></Card>)}
+      {(receipt ? [receipt] : review.receipts).map(r => <Card key={r.requestId}><p role="status">{r.status === "snoozed" ? "Keep going saved. Snoozed for two comparable exposures; no prescription changed." : r.action === "rep_change" ? `Applied: ${r.repMin}–${r.repMax} reps for the remainder of the program.` : "Exercise replacement applied for the remainder of the program."}</p></Card>)}
     </>}
     {intent && <Sheet onClose={() => !pending && setIntent(null)} ariaLabel="Confirm training choice"><div className="space-y-4 px-4 pb-6">
       <h2 className="text-xl font-semibold">Confirm {intent.action === "keep_going" ? "Keep going" : intent.action === "swap" ? "exercise replacement" : "rep-range change"}</h2>

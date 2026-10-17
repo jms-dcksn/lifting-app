@@ -270,6 +270,10 @@ function StationForm({
   const modelType = template.allowedMachineTypes?.[0] ?? machineType;
 
   const confirm = async () => {
+    if (brandRequired && !brand.trim()) {
+      setError("Select a brand for this station");
+      return;
+    }
     setPending(true);
     setError(null);
     try {
@@ -304,7 +308,7 @@ function StationForm({
         <StationModelField key={`${brand}-${machineType}`} exerciseId={template.id} brand={brand}
           machineType={modelType} value={stationModel} onChange={setStationModel} />
       )}
-      {error && <p className="text-caption text-danger">{error}</p>}
+      {error && <p role="alert" className="text-caption text-danger">{error}</p>}
       <Button type="button" className="w-full" pending={pending} onClick={confirm}>
         Use this {template.stationProfile === "machine" || !template.stationProfile ? "machine" : template.stationProfile}
       </Button>
@@ -348,10 +352,14 @@ function CustomForm({
       setError("Select equipment");
       return;
     }
+    if (isCable && !brand.trim()) {
+      setError("Select a brand for this cable station");
+      return;
+    }
     setPending(true);
     setError(null);
     try {
-      const def = await createCustomExercise({
+      const result = await createCustomExercise({
         name,
         pattern,
         equipment,
@@ -359,9 +367,14 @@ function CustomForm({
         machineType: isMachine ? machineType : isCable ? "selectorized" : null,
         stationModel: showStation ? stationModel : null,
       });
-      onCreated(def);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not create exercise");
+      if ("error" in result) {
+        setError(result.error);
+        setPending(false);
+        return;
+      }
+      onCreated(result.exercise);
+    } catch {
+      setError("Could not create exercise. Please try again.");
       setPending(false);
     }
   };
@@ -372,7 +385,7 @@ function CustomForm({
       onBack={onBack}
       footer={
         <>
-          {error && <p className="mb-3 text-caption text-danger">{error}</p>}
+          {error && <p role="alert" className="mb-3 text-caption text-danger">{error}</p>}
           <Button type="button" className="w-full" pending={pending} onClick={confirm}>
             Create exercise
           </Button>

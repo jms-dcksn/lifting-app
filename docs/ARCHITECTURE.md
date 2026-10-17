@@ -48,6 +48,10 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
   writes reject unresolved station templates. Picker copy is profile-specific
   (**Choose bench** / Choose cable / Choose rack / Choose platform / Choose machine).
   See [station composition](superpowers/specs/2026-09-21-station-composition-design.md).
+- Custom exercise creation returns `{ exercise }` or a safe `{ error }` result so expected
+  validation and save failures remain readable in production. The picker validates required
+  cable/station brands before submitting and preserves custom form values on failure for
+  retry. Machines still allow unbranded equipment; cables still require a brand.
 - Machines and cable brand variants require calibration because stack/leverage units do
   not transfer from free weights. `recomputeAndUpsertStat` in
   `src/app/(app)/session/actions.ts` anchors the personal coefficient against other

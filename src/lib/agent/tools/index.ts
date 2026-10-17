@@ -13,6 +13,7 @@ import {
 } from "./navigation";
 import { draftProgramFromIntake } from "./draft-program";
 import { weeklyCoach } from "./weekly-coach";
+import { calculateE1rm, calculateE1rmSchema } from "./calculate-e1rm";
 
 type Client = SupabaseClient<Database>;
 
@@ -31,6 +32,12 @@ export function bindAgentTools(supabase: Client, userId: string) {
 
 export function bindReadTools(supabase: Client, userId: string) {
   return [
+    tool(async (input) => asJson(calculateE1rm(input)), {
+      name: "calculateE1rm",
+      description:
+        "Calculate a hypothetical estimated 1RM from user-supplied load, reps, optional RIR (defaults to 2), explicit kg/lb and load convention, using computeE1rm. Works for any lift without an active program or logged history. Ask for missing/ambiguous units, total vs per-hand load, or bodyweight/assistance; never guess. Machine estimates stay station-specific. Returns inputs, estimate basis and assumptions; never logs a set or creates records/targets. For actual logged e1RM/history use exerciseReview instead.",
+      schema: calculateE1rmSchema,
+    }),
     tool(async () => asJson(await weeklyCoach(supabase, userId)), {
       name: "weeklyCoach",
       description:
@@ -140,6 +147,7 @@ function bindClientTools() {
 
 export {
   activeProgram,
+  calculateE1rm,
   draftProgramFromIntake,
   exerciseReview,
   nextWorkout,

@@ -20,6 +20,7 @@ export const READ_TOOL_NAMES = [
   "activeProgram",
   "exerciseReview",
   "nextWorkout",
+  "calculateE1rm",
 ] as const;
 
 export type ReadToolName = (typeof READ_TOOL_NAMES)[number];

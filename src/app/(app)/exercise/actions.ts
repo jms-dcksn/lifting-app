@@ -135,11 +135,16 @@ function customStationProfile(equipment: Equipment): StationProfile {
   return "none";
 }
 
-export async function createCustomExercise(input: CreateCustomInput): Promise<ExerciseDef> {
+export type CreateCustomResult = { exercise: ExerciseDef } | { error: string };
+
+export async function createCustomExercise(input: CreateCustomInput): Promise<CreateCustomResult> {
   const { supabase, userId } = await requireUser();
   const name = input.name.trim();
-  if (!name) throw new Error("Name required");
+  if (!name) return { error: "Name required" };
   const profile = customStationProfile(input.equipment);
+  if (profile === "cable" && !input.brand?.trim()) {
+    return { error: "Select a brand for this cable station" };
+  }
   const station = profile === "none"
     ? { brand: null, machineType: null as StationTag | null }
     : resolveStationFields({ stationProfile: profile }, {
@@ -167,6 +172,9 @@ export async function createCustomExercise(input: CreateCustomInput): Promise<Ex
     .select(SELECT)
     .single();
 
-  if (error || !data) throw new Error(error?.message ?? "Could not create exercise");
-  return dbExerciseToDef(data as DbExerciseRow);
+  if (error || !data) {
+    console.error("Could not create custom exercise", error);
+    return { error: "Could not create exercise. Please try again." };
+  }
+  return { exercise: dbExerciseToDef(data as DbExerciseRow) };
 }

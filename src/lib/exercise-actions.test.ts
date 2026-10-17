@@ -495,12 +495,14 @@ describe("resolveVariant station profiles", () => {
   });
 
   it("creates a custom cable with brand and locked selectorized type", async () => {
-    const def = await createCustomExercise({
+    const result = await createCustomExercise({
       name: "Bayesian Cable Fly",
       pattern: "horizontal_press",
       equipment: "cable",
       brand: "Nautilus",
     });
+    if (!("exercise" in result)) throw new Error(result.error);
+    const def = result.exercise;
     expect(def.equipment).toBe("cable");
     expect(def.brand).toBe("Nautilus");
     expect(def.machineType).toBe("selectorized");
@@ -508,27 +510,52 @@ describe("resolveVariant station profiles", () => {
     expect(rows.some((row) => row.id === def.id && row.user_id === USER_B)).toBe(true);
   });
 
-  it("requires a brand for a custom cable", async () => {
+  it.each([undefined, "", "   "])("returns validation for a custom cable with brand %s", async (brand) => {
     await expect(createCustomExercise({
+      brand,
       name: "No Brand Cable",
       pattern: "horizontal_press",
       equipment: "cable",
-    })).rejects.toThrow("Brand required");
+    })).resolves.toEqual({ error: "Select a brand for this cable station" });
     expect(rows.filter((row) => row.user_id === USER_B)).toHaveLength(0);
   });
 
   it("keeps custom machines on the brand + type path", async () => {
-    const def = await createCustomExercise({
+    const result = await createCustomExercise({
       name: "Garage Chest Press",
       pattern: "horizontal_press",
       equipment: "machine",
       brand: "Hammer Strength",
       machineType: "plate_loaded",
     });
+    if (!("exercise" in result)) throw new Error(result.error);
+    const def = result.exercise;
     expect(def.equipment).toBe("machine");
     expect(def.brand).toBe("Hammer Strength");
     expect(def.machineType).toBe("plate_loaded");
     expect(def.needsCalibration).toBe(true);
+  });
+
+  it("returns a safe retry message when the custom exercise insert fails", async () => {
+    const error = { code: "42501", message: "private database detail" };
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.client.mockResolvedValueOnce({
+      auth: { getClaims: async () => ({ data: { claims: { sub: USER_B } } }) },
+      from: () => ({ insert: () => ({ select: () => ({ single: async () => ({ data: null, error }) }) }) }),
+    });
+    try {
+      await expect(createCustomExercise({ name: "Garage Press", pattern: "horizontal_press", equipment: "machine" }))
+        .resolves.toEqual({ error: "Could not create exercise. Please try again." });
+      expect(log).toHaveBeenCalledWith("Could not create custom exercise", error);
+    } finally {
+      log.mockRestore();
+    }
+  });
+
+  it("returns missing-name validation without inserting", async () => {
+    await expect(createCustomExercise({ name: "   ", pattern: "horizontal_press", equipment: "dumbbell" }))
+      .resolves.toEqual({ error: "Name required" });
+    expect(rows.filter(row => row.user_id === USER_B)).toHaveLength(0);
   });
 
   it("rejects an unknown template before writing", async () => {

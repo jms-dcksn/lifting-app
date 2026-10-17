@@ -11,8 +11,11 @@ import type { CoachNoticeRow } from "@/lib/coach-inbox-data";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet } from "@/components/ui/sheet";
+import { useRouter } from "next/navigation";
+import { discussEpisode } from "@/app/(app)/coach/episodes/actions";
 
 export function CoachNoticeDetail({ noticeId }: { noticeId: string }) {
+  const router = useRouter();
   const [data, setData] = useState<{
     notice: CoachNoticeRow;
     episode: CoachEpisode;
@@ -45,12 +48,12 @@ export function CoachNoticeDetail({ noticeId }: { noticeId: string }) {
     data.episode.validity === "current"
       ? current?.effectiveTarget
       : null;
-  function run(action: () => Promise<void>) {
+  function run(action: () => Promise<void>, reload = true) {
     start(async () => {
       setError(null);
       try {
         await action();
-        await load();
+        if (reload) await load();
       } catch (e) {
         setError(e instanceof Error ? e.message : "Please retry.");
       }
@@ -140,12 +143,13 @@ export function CoachNoticeDetail({ noticeId }: { noticeId: string }) {
             >
               {data.notice.acknowledged_at ? "Acknowledged" : "Acknowledge"}
             </Button>
-            <Link
-              className="inline-flex min-h-11 items-center underline"
-              href="/coach"
-            >
+            <Button variant="secondary" pending={pending} onClick={() => run(async () => {
+              const thread = await discussEpisode(data.episodeId);
+              if (!thread) throw Error("This review is unavailable.");
+              router.push(`/coach?thread=${thread}`);
+            }, false)}>
               Open Coach
-            </Link>
+            </Button>
           </div>
           {data.episode.family === "session_pain" &&
           data.episode.state === "open" ? (

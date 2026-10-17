@@ -7,6 +7,7 @@ import { loadChat, startTurn } from "./thread";
 import { bindAgentTools } from "./tools";
 import { runAgentTurn } from "./run";
 import { encodeSse, type AgentStreamEvent } from "./stream";
+import { episodeContextForThread } from "@/lib/coach-conversation-data";
 
 type Client = SupabaseClient<Database>;
 
@@ -56,6 +57,7 @@ export function createAgentChatHandlers(deps: {
             persisted: turn.transcript,
             threadId: turn.thread.id,
             screenContext,
+            episodeContext: await episodeContextForThread(supabase, userId, turn.thread.id),
             tools: bindAgentTools(supabase, userId),
             onEvent: send,
           });

@@ -16,6 +16,7 @@ const actions = vi.hoisted(() => ({
   openNotice: vi.fn(),
 }));
 vi.mock("@/app/(app)/coach/inbox/actions", () => actions);
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("next/link", () => ({
   default: ({
     href,

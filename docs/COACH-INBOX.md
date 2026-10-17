@@ -12,7 +12,8 @@ shows unread count and at-most-once compact arrivals outside immersive workout/p
 chrome. Opening a notice marks it read; Acknowledge records review only. A distinct confirmed
 **This pain situation has ended** records `user_reported_ended`, never medical clearance.
 Pain remains session-scoped and offers no invented pain-specific target. Structural training
-choices and episode-linked conversations remain #141. Open Coach is the existing ordinary chat.
+choices and episode-linked conversations use the shared #141 confirmation flow. Open Coach
+creates/reuses the episode thread without a model call; details and choices stay available from chat.
 The default coaching entry-point change and routine acceptance retirement remain #206.
 
 Preferences persist pain/reduction/plateau/decline categories and optional timezone-aware quiet
@@ -49,8 +50,8 @@ and preferences, and reinitializes quietly rather than replaying an arrival floo
 ## Database and authorization
 
 `20261015012412_coach_exception_inbox.sql` adds four owner-scoped, RLS-protected tables:
-`coach_refresh_state`, `coach_episode`, `coach_notice`, `coach_preferences`. Thread links and
-training-action receipts are deferred to #141; no unused structural action RPC is shipped.
+`coach_refresh_state`, `coach_episode`, `coach_notice`, `coach_preferences`. The #141 migration adds owner-scoped `coach_episode_thread` and `coach_action_receipt`,
+with atomic opening and confirmed-action RPCs.
 Clients have owner SELECT only; all writes use named invoker dispatchers/private executors.
 The NOLOGIN `coach_executor` role has no superuser/RLS-bypass privilege and explicit owner
 policies. Schema CREATE is granted only during function ownership transfer, then revoked;
@@ -110,8 +111,7 @@ See [deployment instructions](../DEPLOY.md#coach-inbox-rollout-195).
   significant-pain precedence and explicit pain-end, preference persistence, no active-session
   interruption, stale/deleted evidence, no happy-path alerts and no model requests.
 
-Local SQL/browser verification does not prove hosted migration/key installation. Full thread
-opening/action ownership, structural action atomicity and receipts remain #141 verification.
+Local SQL/browser verification does not prove hosted migration/key installation. Thread/action ownership, structural atomicity and receipts have their own #141 regression checks.
 
 ### Implementation verification — 2026-10-14
 

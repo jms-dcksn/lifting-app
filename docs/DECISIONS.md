@@ -939,3 +939,13 @@ source-revision boundary, 90/21-day evidence defaults and foreground-only delive
 implements four inbox tables; defer episode thread links, structural actions and receipts to
 #141. Hosted migration/key provisioning is a release step separate from raising the PR.
 See [inbox contract](COACH-INBOX.md) and [design](AI-COACH-EPISODES-DESIGN.md).
+
+### Coach action receipts and session context (2026-10-17)
+
+#141 retains the immutable adaptation ID/evidence inside an owner-scoped receipt without a
+restrictive FK to the append-only adaptation table. Program deletion already cascades that
+log; Coach review history must not block it or disappear with it. Clear Coach history deletes
+the derived receipts while leaving training/adaptations and ordinary conversations intact.
+New workout sessions record canonical loggable identities at creation for exact action scope.
+Older sessions lacking a stored choice remain unavailable; no original identity is inferred
+retroactively. Open-workout review stays in a Sheet to preserve typed fields across confirmation.

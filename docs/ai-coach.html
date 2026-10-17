@@ -1298,6 +1298,24 @@ export function resolveExactWorkoutTarget(input: Omit&lt;EffectiveTargetInput, &
         migration, provider change, extra training permission or Poteto skill installation is introduced.</p>
         <p><a class="underline" href="VERIFICATION.md">Commands, prerequisites, review focus and remaining migration batches</a></p>
       </section>
+<section id="episode-conversations" class="section-rail">
+<h2>Exception conversations and confirmed choices (#141)</h2>
+<p>Opening a review creates or reuses one owned thread and one deterministic user seed. It never starts a paid model turn. Current evidence is loaded from the episode on each message, independently of editable chat text.</p>
+<div style="display:flex;flex-wrap:wrap;gap:12px;font-family:system-ui"><div style="border:1px solid;padding:16px">Inbox notice → owned episode thread</div><div style="border:1px solid;padding:16px">Current explanation → See details and choices</div><div style="border:1px solid;padding:16px">Explicit confirmation → fresh canonical evidence</div><div style="border:1px solid;padding:16px">One transaction → adaptation + session choice + receipt</div></div>
+<p>Routine workout numbers remain automatic. Rep-range changes and exercise replacements need confirmation for the remainder of the program. Keep going preserves the prescription and snoozes for two comparable exposures. Pain acknowledgement never means pain ended or that a safe load was calculated.</p>
+<div style="display:flex;flex-wrap:wrap;gap:12px"><div style="border:1px solid;padding:16px">Same request → same receipt, even after a lost response</div><div style="border:1px solid;padding:16px">Changed source, phase, exercise or workout scope → refresh and confirm again</div><div style="border:1px solid;padding:16px">Failure before commit → no partial training change</div></div>
+<pre class="code-rail overflow-auto bg-stone-100 p-4"><code>/** A calculated target and a legacy review never authorize a structural change. */
+export function availableCoachIntervention(episode: CoachEpisode, suggestion: PendingSuggestion | null) {
+  if (episode.family !== &quot;lift_performance&quot; || episode.state !== &quot;open&quot; || episode.validity !== &quot;current&quot;
+    || episode.snoozeSourceIds !== null || !suggestion) return null;
+  const signal = episode.evidence?.candidate.signals.find(s =&gt; s.reason === &quot;confirmed_plateau&quot;);
+  if (!signal || signal.action !== suggestion.action) return null;
+  if (signal.action === &quot;rep_change&quot; &amp;&amp; (signal.repBand.repMin !== suggestion.repBand?.repMin
+    || signal.repBand.repMax !== suggestion.repBand?.repMax)) return null;
+  return suggestion;
+}
+</code></pre><p>The action boundary uses signed-in ownership, server signatures and source revisions. The model cannot supply trusted loads, bands, ladder steps or authorization. Previous sets remain unchanged; a committed receipt is the evidence for “applied.”</p>
+</section>
     </main>
   </body>
 </html>

@@ -228,3 +228,15 @@ Rollback disables the flag/arrival entry first and deploys compatible UI, retain
 state and its protections. If a source-trigger defect blocks training, disable Coach commits
 and ship a reviewed forward repair; invalidate/rebootstrap before re-enabling. Do not drop
 training records or future applied-action receipts to roll back inbox delivery.
+
+### Coach episode conversations and actions (#141)
+
+Apply `20261017152248_coach_episode_conversations_actions.sql` after the #195 inbox migration
+before enabling the updated conversation/action flow. It reuses the same per-environment
+signing key, restricted executor and source guards; no provider or new credential is added.
+Verify both-owner thread/receipt isolation, simultaneous opens, receipt replay, stale/source
+and open-session races, and atomic failure rollback on the target stack. The active-session
+plateau entry now uses the shared Coach flow, so keep rollout coordinated with the inbox flag.
+Disable the entry/flag first for rollback and retain additive storage and immutable receipts;
+rolling back UI never reverses a confirmed adaptation. No hosted migration or flag change is
+performed by a pull request or local verification.

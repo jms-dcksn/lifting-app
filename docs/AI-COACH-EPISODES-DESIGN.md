@@ -2,7 +2,7 @@
 
 Status: approved for #195 implementation by the owner on 2026-10-14. Design version `episodes-v1`, 2026-10-13.
 Implemented inbox contract: [COACH-INBOX.md](COACH-INBOX.md). Four tables and reconciliation
-ship in #195; conversation links and confirmed training actions remain #141.
+ship in #195; #141 implements conversation links and confirmed training actions.
 Delivers [#212](https://github.com/jms-dcksn/lifting-app/issues/212); implementation belongs
 to #195 and #141. This document adds no runtime behavior, tables or migrations.
 Direction: [exception plan](AI-COACH-EXCEPTIONS-PLAN.md). Current behavior: [AI Coach](AI-COACH.md).
@@ -452,3 +452,18 @@ The [Data API grant change](https://supabase.com/changelog/45329-breaking-change
 reinforces explicit grants. The [Postgres minor-upgrade notice](https://supabase.com/changelog/postgres-15-19-17-11-breaking-changes)
 requires checking installed extension compatibility before relying on cryptography; this
 proposal uses HMAC, not legacy-cipher encryption. No hosted version was inspected in this slice.
+
+## #141 implementation notes — 2026-10-17
+
+The signed-command/thread/action contract is implemented in
+`20261017152248_coach_episode_conversations_actions.sql` and `coach-conversation-data.ts`.
+The receipt stores its owned episode FK and immutable adaptation ID in result JSON rather
+than a restrictive FK to `movement_adaptation`: existing program deletion cascades adaptation
+rows and must not be blocked by Coach history. Immutable confirmed evidence and result retain
+the audit record after source deletion. Source correction redaction continues to apply to
+current/notice evidence; normal transcripts remain user-managed. This preserves existing
+program deletion behavior while avoiding an ownership-changing nullable composite FK.
+
+The model receives at most five receipts and a bounded evidence projection on each turn.
+Model text never confirms an action. The existing manual swap RPCs remain separate; the old
+active-session Fluid acceptance actions have been replaced by the shared review path.

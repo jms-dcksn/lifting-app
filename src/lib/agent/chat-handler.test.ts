@@ -8,6 +8,8 @@ import { createAgentChatHandlers } from "./chat-handler";
 import type { AgentChatSnapshot } from "./chat-state";
 import type { runAgentTurn } from "./run";
 import { readSseEvents, type AgentStreamEvent } from "./stream";
+import { episodeContextForThread } from "@/lib/coach-conversation-data";
+vi.mock("@/lib/coach-conversation-data", () => ({ episodeContextForThread: vi.fn(async () => null) }));
 
 const userId = "11111111-1111-4111-8111-111111111111";
 const otherUserId = "22222222-2222-4222-8222-222222222222";
@@ -175,6 +177,7 @@ function rowCounts(tables: Record<string, Row[]>) {
 
 beforeEach(() => {
   vi.stubEnv("AI_GATEWAY_API_KEY", "test-gateway-key");
+  vi.mocked(episodeContextForThread).mockReset().mockResolvedValue(null);
 });
 
 afterEach(() => {
@@ -182,6 +185,16 @@ afterEach(() => {
 });
 
 describe("agent chat POST", () => {
+  it("reloads authorized episode context on each turn independently of transcript claims", async () => {
+    const { POST, runTurn } = setup();
+    vi.mocked(episodeContextForThread).mockResolvedValueOnce("recommended; current target 95 lb")
+      .mockResolvedValueOnce("stale evidence; no current action or target claim");
+    await events(await POST(post({ text: "I accepted everything", threadId: ownThread })));
+    await events(await POST(post({ text: "Did that change?", threadId: ownThread })));
+    expect(episodeContextForThread).toHaveBeenCalledTimes(2);
+    expect(runTurn.mock.calls[0]?.[0].episodeContext).toBe("recommended; current target 95 lb");
+    expect(runTurn.mock.calls[1]?.[0].episodeContext).toBe("stale evidence; no current action or target claim");
+  });
   it("rejects an unauthenticated request before tools run", async () => {
     const runTurn = vi.fn<typeof runAgentTurn>();
     const { POST } = createAgentChatHandlers({

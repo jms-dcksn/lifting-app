@@ -3,6 +3,7 @@ import { AgentChat } from "@/components/agent/agent-chat";
 import { createClient } from "@/lib/supabase/server";
 import { parseChatSelection } from "@/lib/agent/chat-state";
 import { loadChat } from "@/lib/agent/thread";
+import Link from "next/link";
 
 export default async function AgentCoachPage({
   searchParams,
@@ -16,8 +17,8 @@ export default async function AgentCoachPage({
 
   const { thread } = await searchParams;
   const selection = parseChatSelection(typeof thread === "string" ? thread : undefined) ?? { kind: "latest" };
-  const snapshot = (await loadChat(supabase, userId, selection))
-    ?? (await loadChat(supabase, userId, { kind: "latest" }));
+  const snapshot = await loadChat(supabase, userId, selection);
+  if (!snapshot) return <div className="p-6"><p>This conversation is unavailable.</p><Link href="/coach?thread=new">Open Coach</Link></div>;
 
   return (
     <div className="mx-auto flex h-[calc(100dvh-4.25rem-env(safe-area-inset-bottom))] w-full max-w-page min-h-0 flex-col overflow-hidden pt-6">

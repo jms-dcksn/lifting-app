@@ -24,6 +24,7 @@ import type { AgentMessage } from "@/lib/agent/messages";
 import { coachActivityLabel } from "@/lib/agent/activity";
 import { readSseEvents } from "@/lib/agent/stream";
 import { AgentTranscript } from "./agent-transcript";
+import { CoachThreadReview } from "@/components/coach/coach-thread-review";
 
 export function AgentChat({
   initial,
@@ -171,6 +172,7 @@ export function AgentChat({
             onOpen={openThread}
           />
         ) : null}
+        {screen.name === "chat" && screen.conversation.kind === "saved" ? <CoachThreadReview key={screen.conversation.threadId} threadId={screen.conversation.threadId} /> : null}
         {view ? (
           <AgentTranscript
             {...view}

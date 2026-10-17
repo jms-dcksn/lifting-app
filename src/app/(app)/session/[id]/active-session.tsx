@@ -1,4 +1,5 @@
 "use client";
+import { CoachSlotReview } from "@/components/coach/coach-slot-review";
 import { exactExerciseIdentity } from "@/lib/strength/identity";
 
 import Link from "next/link";
@@ -39,8 +40,6 @@ import {
   deleteSet,
   finishSession,
   updateSessionFeedback,
-  acceptAdaptation,
-  dismissAdaptation,
   retryRecomputeStat,
 } from "../actions";
 import { AchievementPills } from "./achievements";
@@ -330,6 +329,11 @@ function SlotCard({
   // Swap (machine taken, etc.): sets log against the swapped exercise_id but keep the
   // original program_slot_id, so each exercise's progression chain stays intact.
   const [exerciseId, setExerciseId] = useState(slot.exerciseId);
+  const [sourceExerciseId, setSourceExerciseId] = useState(slot.exerciseId);
+  if (sourceExerciseId !== slot.exerciseId) {
+    setSourceExerciseId(slot.exerciseId);
+    setExerciseId(slot.exerciseId);
+  }
   const [swapping, setSwapping] = useState(false);
   const [pickedSwap, setPickedSwap] = useState<ExerciseDef | null>(null);
   const [savingSwap, startSwap] = useTransition();
@@ -353,10 +357,8 @@ function SlotCard({
     });
   }
   const [showHistory, setShowHistory] = useState(false);
-  // Fluid plateau suggestion: shown before any set is logged this session; accepting writes a
-  // movement_adaptation row, "Keep going" snoozes it.
+  // All plateau choices use the shared, revalidated Coach confirmation flow.
   const [dismissed, setDismissed] = useState(false);
-  const [applying, startApply] = useTransition();
   const suggestion = slot.pendingSuggestion;
   const showSuggestion = !!suggestion && !dismissed && slot.sets.length === 0;
 
@@ -597,115 +599,11 @@ function SlotCard({
 
       {showSuggestion && suggestion && (
         <div className="mt-3 rounded-card border border-border-strong p-3">
-          <div className="flex items-center gap-1">
-            <p className="text-caption uppercase tracking-wide text-muted">Plateau</p>
-            <InfoButton title="Plateau">
-              {name} had no new e1RM high in {suggestion.stalledExposures} sessions.
-            </InfoButton>
-          </div>
-          {suggestion.action === "rep_change" && suggestion.repBand && (
-            <>
-              <p className="mt-1 text-body">
-                Try{" "}
-                <span className="font-medium text-foreground">
-                  {suggestion.repBand.repMin}–{suggestion.repBand.repMax} reps
-                  {suggestion.weight != null ? ` @ ${suggestion.weight} lb` : ""}
-                </span>
-                .
-              </p>
-              <div className="mt-3 flex gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  pending={applying}
-                  onClick={() =>
-                    startApply(async () => {
-                      await acceptAdaptation({
-                        sessionId,
-                        programSlotId: slot.programSlotId,
-                        exerciseId,
-                        action: "rep_change",
-                        ladderStep: suggestion.ladderStep,
-                        newRepMin: suggestion.repBand!.repMin,
-                        newRepMax: suggestion.repBand!.repMax,
-                      });
-                    })
-                  }
-                >
-                  Accept
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() =>
-                    startApply(async () => {
-                      await dismissAdaptation({ programSlotId: slot.programSlotId, exerciseId });
-                      setDismissed(true);
-                    })
-                  }
-                >
-                  Keep going
-                </Button>
-              </div>
-            </>
-          )}
-          {suggestion.action === "swap" && (
-            <>
-              <ul className="mt-2 flex flex-col gap-1">
-                {suggestion.candidates?.map((c) => (
-                  <li key={c.exerciseId}>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      className="w-full justify-between"
-                      pending={applying}
-                      onClick={() =>
-                        startApply(async () => {
-                          await acceptAdaptation({
-                            sessionId,
-                            programSlotId: slot.programSlotId,
-                            exerciseId,
-                            action: "swap",
-                            ladderStep: suggestion.ladderStep,
-                            newExerciseId: c.exerciseId,
-                          });
-                          setExerciseId(c.exerciseId);
-                        })
-                      }
-                    >
-                      <span className="flex min-w-0 items-center gap-2">
-                        <ExerciseVisual exerciseId={c.exerciseId} />
-                        <span className="truncate">{c.name}</span>
-                      </span>
-                      {c.weight != null && <span className="tabular-nums text-muted">{c.weight} lb</span>}
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-2 flex gap-2">
-                <Button type="button" variant="ghost" size="sm" onClick={() => setSwapping(true)}>
-                  Other options
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() =>
-                    startApply(async () => {
-                      await dismissAdaptation({ programSlotId: slot.programSlotId, exerciseId });
-                      setDismissed(true);
-                    })
-                  }
-                >
-                  Keep going
-                </Button>
-              </div>
-            </>
-          )}
+          <p className="text-caption uppercase tracking-wide text-muted">Plateau</p>
+          <p className="mt-1 text-body">Review the evidence and available choices with Coach.</p>
         </div>
       )}
+      <CoachSlotReview slotId={slot.programSlotId} active={showSuggestion} />
 
       {swapping && (
         <ExercisePicker
@@ -845,7 +743,7 @@ function SlotCard({
       {!isTemplate && editingId === null ? (
         <div className="mt-3">
           <SetEntry
-            key={`${exerciseId}-${p.repMin}-${p.repMax}`}
+            suggestionIdentity={exerciseId}
             loadMode={def?.loadMode}
             increment={increment}
             defaultRir={p.targetRir}
@@ -997,6 +895,7 @@ function ProgressionContext({
 }
 
 function SetEntry({
+  suggestionIdentity = "",
   loadMode,
   increment,
   defaultRir,
@@ -1008,6 +907,7 @@ function SetEntry({
   onSubmit,
   onCancel,
 }: {
+  suggestionIdentity?: string;
   loadMode?: ExerciseDef["loadMode"];
   increment: number;
   defaultRir: number;
@@ -1025,6 +925,16 @@ function SetEntry({
   const [reps, setReps] = useState(initial.reps);
   const [rir, setRir] = useState(initial.rir ?? defaultRir);
   const [weightTouched, setWeightTouched] = useState(false);
+  const [repsTouched, setRepsTouched] = useState(false);
+  const [rirTouched, setRirTouched] = useState(false);
+  const initialKey = `${suggestionIdentity}:${initial.weight}:${initial.reps}:${initial.rir}`;
+  const [sourceKey, setSourceKey] = useState(initialKey);
+  if (sourceKey !== initialKey) {
+    setSourceKey(initialKey);
+    if (!weightTouched) setWeight(initial.weight);
+    if (!repsTouched) setReps(initial.reps);
+    if (!rirTouched) setRir(initial.rir ?? defaultRir);
+  }
 
   function follow(nextReps: number, nextRir: number) {
     if (weightTouched || !liveWeight) return;
@@ -1052,6 +962,7 @@ function SetEntry({
           min={1}
           inputMode="numeric"
           onChange={(v) => {
+            setRepsTouched(true);
             setReps(v);
             follow(v, rir);
           }}
@@ -1064,6 +975,7 @@ function SetEntry({
           max={5}
           inputMode="numeric"
           onChange={(v) => {
+            setRirTouched(true);
             setRir(v);
             follow(reps, v);
           }}

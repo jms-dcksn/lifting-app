@@ -949,3 +949,14 @@ the derived receipts while leaving training/adaptations and ordinary conversatio
 New workout sessions record canonical loggable identities at creation for exact action scope.
 Older sessions lacking a stored choice remain unavailable; no original identity is inferred
 retroactively. Open-workout review stays in a Sheet to preserve typed fields across confirmation.
+
+### Direct inbox choices and explicit discussion (2026-10-18)
+
+Preview testing showed that opening chat before exposing the recommendation required too
+many steps and left a seed without an agent response. The owner requested direct acceptance
+and a discussion action that starts the agent. The notice now displays canonical recommendation
+and program scope beside Accept; that click is the explicit confirmation. It uses the same
+fresh-evidence, owner, pain, session-scope and replay guards as the existing Sheet.
+Discuss explicitly starts the first reply on the existing owned seed. Reloading or reopening
+an answered thread stays passive; failures require a user retry. No new model/provider,
+privileged application client, schema or training policy is introduced.

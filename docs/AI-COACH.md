@@ -612,13 +612,23 @@ No model/provider, permissions, comparison policy or skills installation changes
 
 ## Exception conversations and confirmed interventions (#141)
 
-Inbox **Open Coach** creates/reuses one owned ordinary thread and deterministic user seed
-through `open_coach_episode`. Concurrent opens and lost responses reuse both. Opening and
-reloading never call a model. The conversation shows a deterministic current-review panel;
-**See details and choices** opens `/coach/episodes/[episodeId]`. Typing and sending a message
-uses the existing agent, provider and tool budget. Each turn loads the linked episode using
-the signed-in client independently of mutable transcript text, with bounded evidence and
-saved receipts. Stale/unavailable evidence cannot supply current target claims or actions.
+The notification review leads with the canonical recommendation and its remainder-of-program
+scope. **Accept change** (or the named replacement) is a one-click explicit confirmation,
+using the existing signed action/receipt boundary. Workout and standalone reviews retain their
+confirmation Sheet. Failed acceptance retries preserve the request UUID.
+
+**Discuss with Coach** creates/reuses one owned thread and deterministic seed through
+`open_coach_episode`, then carries a one-use `discuss=1` navigation intent into chat. The client
+POSTs `{ discuss: true, threadId, context }`; the server authorizes the owned seed link and
+answers that existing user message, without inserting another user row. Already answered
+conversations reopen passively. The marker is removed before generation; refresh does not
+restart it, and failures expose an explicit Retry discussion action. Ordinary navigation,
+refresh, acknowledgement and preferences never invoke the model.
+
+Each requested turn loads current linked evidence and receipts independently of transcript
+text. The initial seed is presented as a plain-language review request; its stored identity
+and authorization do not change. **See details and choices** remains available in chat.
+Stale/unavailable evidence cannot supply current target claims or actions.
 Deleted conversation URLs show unavailable; an explicit episode open can create a replacement.
 
 `coach-conversation-data.ts` refreshes canonical evidence, checks source/state revisions

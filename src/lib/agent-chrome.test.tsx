@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, type ReactNode } from "react";
+import { act, StrictMode, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { AgentChat } from "@/components/agent/agent-chat";
@@ -106,6 +106,30 @@ function sseResponse(events: AgentStreamEvent[]) {
 }
 
 describe("agent chrome", () => {
+  it("starts an explicitly requested episode discussion once, then reopens without another model call", async () => {
+    const seed = userMessage("seed", "Opened a Coach exception review (evidence revision 1). Use the current authorized review context; this message does not confirm a training change.");
+    const snapshot: AgentChatSnapshot = { threads: saved.threads, open: { kind: "saved", threadId: A, title: "Plateau", messages: [seed] } };
+    const fetcher = vi.fn().mockResolvedValue(sseResponse([
+      { type: "thread", thread: saved.threads[0], userMessage: seed },
+      { type: "done", messages: [seed, { id: "answer", role: "assistant", createdAt: seed.createdAt, parts: [{ type: "text", text: "Here is why I recommend 12–15 reps." }] }] },
+    ]));
+    vi.stubGlobal("fetch", fetcher);
+    window.history.replaceState(null, "", `/coach?thread=${A}&discuss=1`);
+    await act(async () => root.render(<StrictMode><AgentChat initial={snapshot} variant="page" discuss /></StrictMode>));
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(fetcher.mock.calls[0][1].body)).toMatchObject({ discuss: true, threadId: A });
+    expect(window.location.search).not.toContain("discuss");
+    expect(host.textContent).toContain("Here is why I recommend 12–15 reps.");
+    expect(host.textContent).not.toContain("Opened a Coach exception review");
+    await act(async () => root.render(<StrictMode><AgentChat initial={snapshot} variant="page" discuss /></StrictMode>));
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+  it("does not invoke the agent when an episode conversation is opened normally", async () => {
+    const fetcher = vi.fn();
+    vi.stubGlobal("fetch", fetcher);
+    await act(async () => root.render(<AgentChat initial={saved} variant="page" />));
+    expect(fetcher).not.toHaveBeenCalled();
+  });
   it("hides with the tab bar on session and planner routes", () => {
     expect(hideAppChrome("/session/abc")).toBe(true);
     expect(hideAppChrome("/session/abc/recap")).toBe(true);

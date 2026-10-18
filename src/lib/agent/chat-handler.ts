@@ -87,15 +87,20 @@ export function createAgentChatHandlers(deps: {
 
 function parseTurnRequest(body: unknown): TurnRequest | null {
   if (!body || typeof body !== "object" || !("threadId" in body)) return null;
-  const { text, threadId, context } = body as {
+    const { text, threadId, context, discuss } = body as {
     text?: unknown;
     threadId: unknown;
     context?: unknown;
+    discuss?: unknown;
   };
   const trimmed = typeof text === "string" ? text.trim() : "";
-  if (!trimmed) return null;
   const screenContext = parseScreenContextInput(context);
   if (!screenContext) return null;
+  if (discuss === true) {
+    const id = parseThreadId(threadId);
+    return id && !trimmed ? { kind: "review", threadId: id, context: screenContext } : null;
+  }
+  if (!trimmed) return null;
   if (threadId === null) return { kind: "new", text: trimmed, context: screenContext };
   const id = parseThreadId(threadId);
   return id ? { kind: "continue", threadId: id, text: trimmed, context: screenContext } : null;

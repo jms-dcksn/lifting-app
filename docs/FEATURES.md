@@ -485,3 +485,10 @@ The shell defers arrivals during workouts; refresh failures recover on app entry
 Pain acknowledgement is separate from explicit user-reported end. Structural interventions
 and linked conversations ship in #141; rollout needs the migration and server/DB signing keys.
 See [inbox contract](COACH-INBOX.md).
+
+### Direct exception review actions
+
+Inbox reviews show the recommended rep-range change or named exercise replacement directly,
+with its program scope and one-click Accept. Discuss with Coach starts the contextual first
+reply on the existing episode conversation. Revisiting/reloading is passive; acknowledgement
+continues to record notice review only. No new migration is required.

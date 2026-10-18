@@ -39,14 +39,32 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
       await db.query("insert into public.workout_session(id,user_id,program_id,program_day_id,week_index,performed_at,finished_at) values($1,$2,$3,$4,$5,$6,$6)", [session, owner, program, day, i + 1, performed]);
       await db.query("insert into public.set_log(user_id,session_id,program_slot_id,exercise_id,weight,reps,rir,e1rm,set_index,is_warmup,is_deload,created_at) values($1,$2,$3,'db-bench',40,8,2,54,0,false,false,$4)", [owner, session, slot, performed]);
     }
+    await page.route("**/api/agent/chat", async route => {
+      if (route.request().method() !== "POST") return route.continue();
+      const request = route.request().postDataJSON();
+      expect(request.discuss).toBe(true);
+      const seed = (await db.query("select id,role,parts,created_at from public.agent_message where user_id=$1 and thread_id=$2 order by created_at limit 1", [owner, request.threadId])).rows[0];
+      const message = { id: seed.id, role: seed.role, parts: seed.parts, createdAt: seed.created_at.toISOString() };
+      const answerId = randomUUID(), answer = "These comparable workouts support a plateau. Review the proposed 12–15 rep range.";
+      await db.query("insert into public.agent_message(id,user_id,thread_id,role,parts) values($1,$2,$3,'assistant',$4)", [answerId, owner, request.threadId, JSON.stringify([{ type: "text", text: answer }])]);
+      const reply = { id: answerId, role: "assistant", parts: [{ type: "text", text: answer }], createdAt: new Date().toISOString() };
+      await route.fulfill({ contentType: "text/event-stream", body: [
+        { type: "thread", thread: { id: request.threadId, title: "Coach review", updatedAt: message.createdAt }, userMessage: message },
+        { type: "done", messages: [message, reply] },
+      ].map(event => `data: ${JSON.stringify(event)}\n\n`).join("") });
+    });
     await page.goto("/coach/inbox");
     await page.getByRole("link", { name: /plateau/i }).first().click();
-    await page.getByRole("button", { name: "Open Coach", exact: true }).click();
+    const noticeURL = page.url();
+    await expect(page.getByRole("button", { name: "Accept change", exact: true })).toBeVisible();
+    expect(modelPosts).toBe(0);
+    await page.getByRole("button", { name: "Discuss with Coach", exact: true }).click();
+    await expect(page.getByText("These comparable workouts support a plateau.", { exact: false })).toBeVisible();
     await expect(page).toHaveURL(/\/coach\?thread=/, { timeout: 45_000 });
     await page.getByRole("link", { name: "See details and choices" }).click();
     await expect(page).toHaveURL(/\/coach\/episodes\//);
     const reviewURL = page.url();
-    await expect(page.getByRole("button", { name: /Change rep range/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Switch rep range/ })).toBeVisible();
     await page.getByText("See details", { exact: true }).click();
     await expect(page.getByText(/40 lb × 8/).first()).toBeVisible();
     await page.getByRole("button", { name: "Discuss with Coach", exact: true }).click();
@@ -57,10 +75,10 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
     await page.getByRole("button", { name: "Discuss with Coach", exact: true }).click();
     await expect(page).toHaveURL(threadURL);
     expect((await db.query("select count(*)::int n from public.coach_episode_thread where user_id=$1", [owner])).rows[0].n).toBe(1);
-    expect((await db.query("select count(*)::int n from public.agent_message where user_id=$1", [owner])).rows[0].n).toBe(1);
-    expect(modelPosts).toBe(0);
+    expect((await db.query("select count(*)::int n from public.agent_message where user_id=$1", [owner])).rows[0].n).toBe(2);
+    expect(modelPosts).toBe(1);
     await page.goto(reviewURL);
-    await page.getByRole("button", { name: /Change rep range/ }).click();
+    await page.getByRole("button", { name: /Switch rep range/ }).click();
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
     expect((await db.query("select count(*)::int n from public.movement_adaptation where user_id=$1", [owner])).rows[0].n).toBe(0);
     if (openWorkout) {
@@ -70,8 +88,13 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
       await page.getByRole("textbox", { name: "Reps", exact: true }).fill("9");
       await page.getByRole("button", { name: "Review with Coach", exact: true }).click();
     }
-    await page.getByRole("button", { name: /Change rep range/ }).click();
-    await page.getByRole("button", { name: "Confirm choice", exact: true }).click();
+    if (openWorkout) {
+      await page.getByRole("button", { name: /Switch rep range/ }).click();
+      await page.getByRole("button", { name: "Confirm choice", exact: true }).click();
+    } else {
+      await page.goto(noticeURL);
+      await page.getByRole("button", { name: "Accept change", exact: true }).click();
+    }
     await expect(page.getByText(/^Applied: 12–15 reps/)).toBeVisible();
     if (openWorkout) {
       await page.getByRole("button", { name: "Back to workout", exact: true }).click();

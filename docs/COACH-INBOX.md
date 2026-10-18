@@ -12,8 +12,12 @@ shows unread count and at-most-once compact arrivals outside immersive workout/p
 chrome. Opening a notice marks it read; Acknowledge records review only. A distinct confirmed
 **This pain situation has ended** records `user_reported_ended`, never medical clearance.
 Pain remains session-scoped and offers no invented pain-specific target. Structural training
-choices and episode-linked conversations use the shared #141 confirmation flow. Open Coach
-creates/reuses the episode thread without a model call; details and choices stay available from chat.
+choices appear directly on the notice review. A scoped **Accept change** (or named replacement)
+click is the explicit confirmation and uses the shared #141 action boundary; no chat or second
+confirmation screen is needed. Failed acceptance retries keep the same request UUID.
+**Discuss with Coach** creates/reuses the episode thread and starts its first response with
+current authorized evidence. Reopening an answered conversation and reloading stay passive;
+failed discussion requires an explicit Retry. Details and choices remain available from chat.
 The default coaching entry-point change and routine acceptance retirement remain #206.
 
 Preferences persist pain/reduction/plateau/decline categories and optional timezone-aware quiet

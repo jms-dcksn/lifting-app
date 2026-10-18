@@ -2,18 +2,21 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { AgentChat } from "@/components/agent/agent-chat";
+import type { EpisodeReview } from "./coach-conversation-data";
+import { parseThreadId, type AgentChatSnapshot } from "./agent/chat-state";
 import { CoachNoticeDetail } from "@/components/coach/coach-notice-detail";
 import { coachEvidence, coachObservation } from "./testing/coach-fixtures";
 import { DEFAULT_COACH_PREFERENCES, planCoachEpisodes } from "./coach-episodes";
 import type { CoachActionIntent } from "./coach-intervention";
-const actions = vi.hoisted(() => ({ episodeReview: vi.fn(), discussEpisode: vi.fn(), confirmEpisode: vi.fn(), openNotice: vi.fn(), markNotice: vi.fn(), push: vi.fn() }));
+const actions = vi.hoisted(() => ({ episodeReview: vi.fn(), discussEpisode: vi.fn(), confirmEpisode: vi.fn(), openNotice: vi.fn(), markNotice: vi.fn(), push: vi.fn(), threadReview: vi.fn() }));
 vi.mock("@/app/(app)/coach/episodes/actions", () => actions);
 vi.mock("@/app/(app)/coach/inbox/actions", () => ({ ...actions, endPainReview: vi.fn() }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: actions.push }) }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/coach", useRouter: () => ({ push: actions.push }) }));
 vi.mock("next/link", () => ({ default: ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href}>{children}</a> }));
 let root: Root, host: HTMLDivElement;
 const episode = planCoachEpisodes({ previous: [], observations: [coachObservation(coachEvidence("plateau"))], preferences: DEFAULT_COACH_PREFERENCES }).episodes[0];
-const review = { episodeId: "episode", episode, fresh: true, sessionId: null, threadId: null, receipts: [], suggestion: { action: "rep_change", repBand: { repMin: 12, repMax: 15 }, ladderStep: 0 } };
+const review: EpisodeReview = { sourceRevision: 0, stateVersion: 0, preferencesVersion: 0, episodeId: "episode", episode, fresh: true, sessionId: null, threadId: null, receipts: [], suggestion: { action: "rep_change", repBand: { repMin: 12, repMax: 15 }, ladderStep: 0, stalledExposures: 3 } };
 const receipt = (intent: CoachActionIntent) => ({ ...intent, status: "applied", adaptationId: "adaptation", slotId: "slot", repMin: 12, repMax: 15 });
 const button = (text: string) => [...host.querySelectorAll("button")].find(b => b.textContent === text)!;
 beforeEach(() => {
@@ -25,7 +28,7 @@ beforeEach(() => {
   actions.confirmEpisode.mockImplementation(async intent => receipt(intent));
   host = document.createElement("div"); document.body.append(host); root = createRoot(host);
 });
-afterEach(async () => { await act(async () => root.unmount()); host.remove(); });
+afterEach(async () => { await act(async () => root.unmount()); host.remove(); vi.unstubAllGlobals(); });
 it("puts a scoped recommendation and direct acceptance on the notice without starting chat", async () => {
   await act(async () => root.render(<CoachNoticeDetail noticeId="notice" />));
   expect(host.textContent).toContain("Switch rep range to 12–15 reps");
@@ -52,4 +55,16 @@ it("Discuss explicitly requests a response on the reused contextual thread", asy
   expect(actions.discussEpisode).toHaveBeenCalledWith("episode");
   expect(actions.push).toHaveBeenCalledWith("/coach?thread=thread&discuss=1");
   expect(actions.confirmEpisode).not.toHaveBeenCalled();
+});
+
+it("keeps the server-loaded review choices visible while the first discussion completes", async () => {
+  const snapshot: AgentChatSnapshot = { threads: [], open: { kind: "saved", threadId: parseThreadId("0199a3b2-0000-7000-8000-00000000000a")!, title: "Plateau", messages: [{ id: "seed", role: "user", createdAt: "2026-10-18T00:00:00Z", parts: [{ type: "text", text: "Opened a Coach exception review (evidence revision 1). Use the current authorized review context; this message does not confirm a training change." }] }] } };
+  const event = { type: "done", messages: [{ id: "answer", role: "assistant", createdAt: "2026-10-18T00:00:01Z", parts: [{ type: "text", text: "Here is the recommendation." }] }] };
+  const fetcher = vi.fn(async () => new Response(`data: ${JSON.stringify(event)}\n\n`, { headers: { "Content-Type": "text/event-stream" } }));
+  vi.stubGlobal("fetch", fetcher);
+  await act(async () => root.render(<AgentChat initial={snapshot} initialReview={review} variant="page" discuss />));
+  expect(fetcher).toHaveBeenCalledOnce();
+  expect(host.textContent).toContain("Here is the recommendation.");
+  expect(host.querySelector('a[href="/coach/episodes/episode"]')).not.toBeNull();
+  expect(actions.threadReview).not.toHaveBeenCalled();
 });

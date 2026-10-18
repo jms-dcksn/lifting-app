@@ -6,14 +6,16 @@ import type { EpisodeReview } from "@/lib/coach-conversation-data";
 import { episodeExplanation } from "@/lib/coach-intervention";
 import { exceptionCopy, signalCategory } from "@/lib/coach-episodes";
 
-export function CoachThreadReview({ threadId }: { threadId: string }) {
-  const [review, setReview] = useState<EpisodeReview | null>(null);
+export function CoachThreadReview({ threadId, initialReview }: { threadId: string; initialReview?: EpisodeReview | null }) {
+  const [loadedReview, setReview] = useState<EpisodeReview | null>(null);
+  const review = initialReview === undefined ? loadedReview : initialReview;
   const [failed, setFailed] = useState(false);
   useEffect(() => {
+    if (initialReview !== undefined) return;
     let active = true;
     void threadReview(threadId).then(r => { if (active) setReview(r); }, () => { if (active) setFailed(true); });
     return () => { active = false; };
-  }, [threadId]);
+  }, [threadId, initialReview]);
   if (failed) return <p className="mb-4 text-sm text-muted">Current review context is unavailable. Earlier messages may be out of date.</p>;
   if (!review) return null;
   const evidence = review.episode.evidence;

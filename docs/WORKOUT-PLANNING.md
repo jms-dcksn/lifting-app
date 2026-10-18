@@ -19,6 +19,13 @@ only that slot's planned choice. An open workout redirects to its active session
 
 ## Persistence and start boundary
 
+Day-local superset groups persist on program slots and pass through planner and session
+loaders. Numbered group labels (for example C1/C2) indicate alternating sets. The planner
+shows no-rest guidance before the next member and the final member's rest interval after
+the round. The active workout starts its automatic timer only after that final member;
+individual exercise logging and targets remain independent. Supersets are edited in the
+program builder, not in workout-only exercise-choice cookies.
+
 Planning choices apply to the upcoming workout only when the user picks **This workout
 only**. They are stored for up to 30 days in a same-site, HTTP-only cookie in the current
 browser; they do not sync across devices. The UI states this limitation. Creating a new
@@ -52,6 +59,11 @@ Workout-only choices stay cookie-scoped; program scope writes through
 `swap_program_slot_exercise` and leaves adaptation history intact for fluid programs.
 
 ## Verification
+
+`superset.test.ts` covers labels, group validation and template-to-program preservation.
+`effective-workout-target-ui.test.tsx` verifies C1/C2 rendering and the timer firing only
+after the last member. `supabase/tests/program_supersets.sql` is a rollback-only RPC check
+for persistence, clearing, invalid groups, atomicity, preserved deloads and owner isolation.
 
 `workout-plan.test.ts` covers user/program/day/exposure isolation, malformed cookies, removed
 slots, unknown exercises, and station-template rejection. `workout-planning-actions.test.ts`

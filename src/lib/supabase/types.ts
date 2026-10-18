@@ -476,6 +476,7 @@ export type Database = {
       }
       program_slot: {
         Row: {
+          superset_group: string | null
           created_at: string
           exercise_id: string
           id: string
@@ -491,6 +492,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          superset_group?: string | null
           created_at?: string
           exercise_id: string
           id?: string
@@ -506,6 +508,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          superset_group?: string | null
           created_at?: string
           exercise_id?: string
           id?: string

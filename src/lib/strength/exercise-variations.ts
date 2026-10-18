@@ -25,6 +25,17 @@ const machine = (id: string, name: string, pattern: Pattern, coefficient = 1, ex
   });
 
 export const EXERCISE_VARIATIONS: ExerciseDef[] = [
+  // Ogus variations retain distinct loading identities instead of borrowing generic history.
+  machine("machine-single-arm-chest-fly", "Single Arm Machine Chest Fly", "chest_fly", 1),
+  lift("neutral-grip-pulldown", "Neutral Grip Pulldown", "vertical_pull", "cable", 1, "cable"),
+  lift("cable-skullcrusher-daisy-chains", "Cable Skullcrusher (Daisy Chains)", "elbow_extension", "cable", 0.85, "cable"),
+  curl("db-lean-back-preacher-curl", "Lean Back DB Preacher Curls", "dumbbell"),
+  lift("cable-boxy-face-pull", "Boxy Face Pull", "lateral_raise", "cable", 0.9, "cable"),
+  machine("smith-ogus-45-back-extension", "Ogus 45 - Smith Machine 45 Degree Back Extension", "hinge", 0.4),
+  machine("straight-leg-machine-adductor", "Straight Leg Machine Adductor", "hip_adduction", 1),
+  machine("good-boy-external-rotation", "Good Boy External Rotation (on Adductor Machine)", "hip_thrust", 1),
+  lift("weighted-hanging-leg-raise", "Weighted Hanging Leg Raise", "core", "bodyweight", 1),
+
   curl("db-spider-curl", "Dumbbell Spider Curl", "dumbbell"),
   curl("ez-spider-curl", "EZ-Bar Spider Curl", "barbell", 0.8),
   curl("db-incline-curl", "Incline Dumbbell Curl", "dumbbell"),
@@ -100,6 +111,8 @@ export const EXERCISE_VARIATIONS: ExerciseDef[] = [
   machine("smith-squat", "Smith Machine Squat", "squat"),
   machine("smith-rdl", "Smith Machine Romanian Deadlift", "hinge", 0.85),
   machine("smith-split-squat", "Smith Machine Bulgarian Split Squat", "lunge", 1.8),
+  machine("smith-hip-thrust", "Smith Machine Hip Thrust", "hip_thrust", 0.9),
+  machine("machine-lunge", "Machine Lunge / Split Squat", "lunge", 1.8),
   machine("smith-shoulder-press", "Smith Machine Shoulder Press", "vertical_press", 0.9),
   lift("ab-wheel-rollout", "Ab Wheel Rollout", "core", "bodyweight", 1, "none", { loadMode: "reps_only" }),
   lift("hanging-leg-raise", "Hanging Straight-Leg Raise", "core", "bodyweight", 1, "none", { loadMode: "reps_only" }),
@@ -116,6 +129,7 @@ export const EXERCISE_VARIATIONS: ExerciseDef[] = [
   lift("assisted-dip", "Machine-Assisted Dip", "horizontal_press", "bodyweight", 1.05, "machine", { loadMode: "assisted", allowedMachineTypes: ["selectorized"] }),
   machine("hip-adduction", "Machine Hip Adduction", "hip_adduction", 1, { isReference: true }),
   machine("machine-glute-kickback", "Machine Glute Kickback / Hip Extension", "hip_extension", 1, { isReference: true }),
+  lift("cable-glute-kickback", "Cable Glute Kickback", "hip_extension", "cable", 0.5, "cable"),
   machine("machine-torso-rotation", "Machine Torso Rotation", "core_rotation", 1, { isReference: true }),
   machine("machine-tibialis-raise", "Machine Tibialis Raise / Dorsi-Flexion", "ankle_dorsiflexion", 1, { isReference: true }),
   machine("reverse-hyper", "Machine Reverse Hyperextension", "hinge", 0.4),

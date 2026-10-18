@@ -13,6 +13,7 @@ import {
 import { TEMPLATE_BY_ID } from "@/lib/program-templates";
 import { programDetailHref } from "@/lib/program-routes";
 import { validateProgramPhases } from "@/lib/periodization";
+import { validateSupersets } from "@/lib/superset";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -23,6 +24,7 @@ async function requireUser() {
 }
 
 export interface SaveSlotInput {
+  supersetGroup?: string | null;
   id: string;
   exerciseId: string;
   pattern: string;
@@ -71,6 +73,10 @@ export async function saveProgram(input: SaveProgramInput) {
 
   // Input validation remains in Server Action before calling RPC.
   if (input.days.length === 0) throw new Error("A program needs at least one day");
+  for (const day of input.days) {
+    const error = validateSupersets(day.slots);
+    if (error) throw new Error(error);
+  }
 
   const name = input.name.trim() || "My Program";
   const description = input.description?.trim() || null;
@@ -115,6 +121,7 @@ export async function saveProgram(input: SaveProgramInput) {
         repMax: s.repMax,
         targetRir: s.targetRir,
         restSeconds: s.restSeconds,
+        supersetGroup: s.supersetGroup ?? null,
         plateauPatience: s.plateauPatience,
       })),
     })),
@@ -196,7 +203,7 @@ export async function cloneProgram(id: string): Promise<string> {
   const { data: slots } = dayIds.length
     ? await supabase
         .from("program_slot")
-        .select("program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, position")
+        .select("program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position")
         .in("program_day_id", dayIds)
         .order("program_day_id", { ascending: true })
         .order("position", { ascending: true })
@@ -240,6 +247,7 @@ export async function cloneProgram(id: string): Promise<string> {
           repMax: s.rep_max,
           targetRir: s.target_rir,
           restSeconds: s.rest_seconds,
+          supersetGroup: s.superset_group,
           plateauPatience: s.plateau_patience,
         })),
     })),

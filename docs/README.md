@@ -34,6 +34,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Tape sites on Body | [Body measurements](BODY-MEASUREMENTS.md) |
 | Track Explore destinations, body measurements, or per-exercise volume | [Track body and volume plan](superpowers/plans/2026-09-19-track-body-volume.md) |
 | Strong Foundations template rationale | [Strong Foundations](STRONG-FOUNDATIONS.md) |
+| Glute Focus template, approved program and rationale | [Glute Focus](2026-10-17-glute-focus-program-proposal.md); [published-program research](2026-10-17-womens-glute-programs-research.md) |
 
 [PLAN](PLAN.md) mixes completed milestones with remaining work; its original estimates and
 phase checklists are historical. [SPEC](SPEC.md) is the original MVP baseline, superseded

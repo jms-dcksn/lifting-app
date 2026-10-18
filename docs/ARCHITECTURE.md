@@ -13,7 +13,7 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
 
 - `e1rm.ts` converts weight/reps/RIR through the RPE/RIR load model and inverts it for target
   loads. Preserve this model rather than replacing it with a bare Epley/Brzycki formula.
-- `coefficients.ts` and `exercise-variations.ts` own the 150 shared templates and population
+- `coefficients.ts` and `exercise-variations.ts` own the 162 shared templates and population
   coefficients. See [catalog inventory and model rules](EXERCISE-CATALOG.md). `recommend.ts` pools
   reference-lift strength by movement pattern and uses Bayesian shrinkage (`PRIOR_WEIGHT`).
   The expanded machine catalog includes supported-arm curls/extensions, lever pulldown,
@@ -48,6 +48,10 @@ from hydrated catalog, stats, and first-set history; writes and cache rebuilds r
   writes reject unresolved station templates. Picker copy is profile-specific
   (**Choose bench** / Choose cable / Choose rack / Choose platform / Choose machine).
   See [station composition](superpowers/specs/2026-09-21-station-composition-design.md).
+- Custom exercise creation returns `{ exercise }` or a safe `{ error }` result so expected
+  validation and save failures remain readable in production. The picker validates required
+  cable/station brands before submitting and preserves custom form values on failure for
+  retry. Machines still allow unbranded equipment; cables still require a brand.
 - Machines and cable brand variants require calibration because stack/leverage units do
   not transfer from free weights. `recomputeAndUpsertStat` in
   `src/app/(app)/session/actions.ts` anchors the personal coefficient against other
@@ -123,7 +127,28 @@ Use its descriptions for transcription approximations (percentage work, reverse 
 rest-pause), and its tests for catalog/pattern and week-range validation. Existing program
 copies are independent of template edits unless an explicit, scoped data migration is
 applied (as for the September 14 Strong Foundations variety revision). [Strong Foundations](STRONG-FOUNDATIONS.md) owns
-that template's time budget and coaching rationale.
+that template's time budget and coaching rationale. [Glute Focus](2026-10-17-glute-focus-program-proposal.md)
+owns the separate 12-week glute-specialization template, including distinct cable/machine
+kickbacks and the approved glute-drive repeat. Neither template updates existing copies.
+
+`Ogus October 26` is a six-week Classic template with Upper then Lower (seven slots each),
+pending two more days. Every slot has two working sets: week 1 at 2 RIR, weeks 2–5 at 1 RIR,
+and week 6 explicitly marked deload with one set at 4 RIR. Its description preserves optional
+external rotation/calves, C1/C2 ordering, and quad-compound alternatives. Nine distinct catalog
+variations preserve the photographed exercise identities; existing incline press, chest-supported
+T-bar row, leg extension, seated calf raise and hack squat entries are reused. Shared catalog
+entries live in source; station-specific DB variants are created through the existing picker.
+
+Slots may carry a nullable, day-local `superset_group`. Template creation, builder saves,
+cloning and loaders preserve it. Consecutive slots with the same group display numbered
+labels (C1/C2) in detail, planner and active workout; only the final member starts the rest
+timer. The builder and atomic save RPC reject single-member or separated groups. Groups
+do not merge exercise identity, prescriptions, set logs or progression. Ungrouped slots keep
+their existing timer behavior. Apply `20261017215800_program_supersets.sql` before deploying
+these readers; the additive column retains the existing owner-scoped RLS and the RPC stays
+security invoker. The follow-up `20261017221032_restore_program_save_source_lock.sql`
+restores the Coach source lock at the start of the replaced function, before any program
+row locks; apply both migrations together. The existing concurrency audit enforces this.
 
 Classic programs resolve effective sets and RIR through `periodization.ts`; fractional set
 counts round up with a minimum of one. RIR ranges display in full and use the upper bound

@@ -16,8 +16,9 @@ import { ExercisePicker } from "../../program/exercise-picker";
 import { SwapStationButton } from "../../program/swap-station-button";
 import { startPlannedSession } from "../../session/actions";
 import { saveWorkoutChoice } from "./actions";
+import { supersetLabel, isSupersetEnd } from "@/lib/superset";
 
-type Slot = { id: string; exerciseId: string; baseExerciseId: string; pattern: Pattern;
+type Slot = { id: string; exerciseId: string; baseExerciseId: string; pattern: Pattern; supersetGroup?: string | null;
   prescription: EffectivePrescription; restSeconds: number; effectiveTarget: EffectiveWorkoutTarget };
 
 export function WorkoutPlanner({ planKey, programName, dayName, week, slots, catalog: initialCatalog }: {
@@ -79,6 +80,7 @@ export function WorkoutPlanner({ planKey, programName, dayName, week, slots, cat
         const showStationSwap = canSwapStation(def, catalogMap);
         return <Card key={slot.id}>
           <CardLabel>Exercise {index + 1}</CardLabel>
+          {slot.supersetGroup && <p className="mt-1 text-caption font-medium">Superset {supersetLabel(slots, index)} · Alternate exercises</p>}
           <div className="mt-1 flex items-start gap-3">
             <ExerciseVisual exerciseId={slot.exerciseId} baseExerciseId={def?.baseExerciseId ?? slot.baseExerciseId} size="lg" />
             {def ? (
@@ -95,7 +97,7 @@ export function WorkoutPlanner({ planKey, programName, dayName, week, slots, cat
             <InfoButton title="Why this target">{effectiveTargetExplanation(slot.effectiveTarget)}</InfoButton>
           </div>
           {slot.effectiveTarget.reason === "repeated_effort_miss" && <p className="text-caption text-muted">Effort adjustment</p>}
-          <p className="mt-1 text-caption text-muted">Rest {slot.restSeconds} seconds between sets</p>
+          <p className="mt-1 text-caption text-muted">{!isSupersetEnd(slots, index) ? "Continue to the next superset exercise without resting" : `Rest ${slot.restSeconds} seconds ${slot.supersetGroup ? "after the round" : "between sets"}`}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {showStationSwap && (
               <SwapStationButton

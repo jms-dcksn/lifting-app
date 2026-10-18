@@ -26,6 +26,7 @@ export type ProgramTree = {
     id: string;
     name: string;
     slots: Array<{
+      supersetGroup?: string | null;
       id: string;
       exerciseId: string;
       pattern: string;
@@ -82,6 +83,7 @@ export function buildProgramTreeFromTemplate(
         repMax: slot.repMax,
         targetRir: slot.targetRir,
         restSeconds: slot.restSeconds,
+        supersetGroup: slot.supersetGroup ?? null,
         plateauPatience: null,
       })),
     })),

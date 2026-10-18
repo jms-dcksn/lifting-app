@@ -25,7 +25,7 @@ describe("relevant identities", () => {
     expect(matches("squat")).toEqual(expect.arrayContaining(["bb-back-squat", "bb-front-squat", "hack-squat", "db-split-squat"]));
     expect(matches("flat barbell bench").sort()).toEqual(["bb-bench", "bb-close-grip-bench"]);
     expect(matches("front squat")).toEqual(["bb-front-squat"]);
-    expect(matches("face pulls")).toEqual(["cable-face-pull"]);
+    expect(matches("face pulls").sort()).toEqual(["cable-boxy-face-pull", "cable-face-pull"]);
     expect(matches("incline bench press")).not.toContain("cable-incline-bench-fly");
   });
   it("never uses a stats hint to remove candidates", () => {

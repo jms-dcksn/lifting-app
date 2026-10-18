@@ -8,8 +8,9 @@ import { EXERCISE_BY_ID } from "./strength/coefficients";
 import type { WorkoutTargetHistory } from "./effective-workout-target";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }));
+const restStart = vi.hoisted(() => vi.fn());
 vi.mock("@/app/(app)/session/[id]/rest-timer", () => ({
-  RestBar: () => null, useSessionRestTimer: () => ({ start: vi.fn(), stop: vi.fn(), active: false }),
+  RestBar: () => null, useSessionRestTimer: () => ({ start: restStart, stop: vi.fn(), active: false }),
 }));
 vi.mock("@/app/(app)/session/actions", () => ({
   swapSessionExercise: vi.fn(), logSet: vi.fn(), editSet: vi.fn(), deleteSet: vi.fn(), finishSession: vi.fn(),
@@ -17,6 +18,7 @@ vi.mock("@/app/(app)/session/actions", () => ({
 }));
 
 import { ActiveSession, type SlotView } from "@/app/(app)/session/[id]/active-session";
+import { logSet } from "@/app/(app)/session/actions";
 
 let root: Root;
 let host: HTMLDivElement;
@@ -42,12 +44,30 @@ async function render(targetHistory = history(), slots = [view]) {
 }
 
 beforeEach(() => {
+  restStart.mockClear();
+  vi.mocked(logSet).mockResolvedValue({ recomputeWarning: null, id: "saved", exercise_id: "db-bench",
+    weight: 95, reps: 8, rir: 2, set_index: 0, e1rm: 120 });
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   host = document.createElement("div"); document.body.append(host); root = createRoot(host);
 });
 afterEach(async () => { await act(async () => root.unmount()); host.remove(); });
 
 describe("active workout effective target suggestions", () => {
+  it("shows C1/C2 and starts rest after the last superset exercise only", async () => {
+    await render(history(), [
+      { ...view, supersetGroup: "C" },
+      { ...view, programSlotId: "slot-2", supersetGroup: "C", restSeconds: 90 },
+    ]);
+    expect(host.textContent).toContain("Superset C1");
+    expect(host.textContent).toContain("Superset C2");
+    const logButtons = () => [...host.querySelectorAll<HTMLButtonElement>("button")]
+      .filter((button) => button.textContent === "Log set");
+    await act(async () => logButtons()[0].click());
+    expect(restStart).not.toHaveBeenCalled();
+    await act(async () => logButtons()[1].click());
+    expect(restStart).toHaveBeenCalledExactlyOnceWith(90);
+  });
+
   it("initializes set entry from the effective reduction without an acceptance step", async () => {
     await render();
     expect((host.querySelector('input[aria-label="Weight"]') as HTMLInputElement).value).toBe("95");

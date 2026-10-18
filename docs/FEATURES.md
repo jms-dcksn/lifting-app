@@ -55,6 +55,9 @@ Adaptive plateau engine under §5.
 ## 3. Programs (`/program`)
 
 ### Program grid and detail
+- **Ogus October 26 template** — six-week Classic Upper/Lower block (two more days pending),
+  two sets per exercise; week 1 at 2 RIR, weeks 2–5 at 1 RIR, week 6 one set at 4 RIR.
+  Lower pairs straight-leg adductor and optional external rotation as superset C1/C2.
 - **Responsive program grid** — header is Programs + primary **New program**; owned tiles
   sit under **My programs** (active first, then newest). Tiles show days, weeks, exercise
   count, style, and primary tag, plus a Remove control that confirms in a Sheet.
@@ -66,6 +69,11 @@ Adaptive plateau engine under §5.
 - **Templates** — compact Add rows stay below a divider (muted heading + "Start from a
   built-in split"). Never mixed into the My programs grid. Empty accounts still use the
   template-forward first-run screen on `page.tsx`.
+- **Glute Focus template** — twelve weeks, three full-body days, cable kickbacks on B
+  and machine kickbacks on C. Glute drive is the only weekly repeat and follows split
+  squat/kickback on C. Each day has twelve working sets, halved in recovery weeks 6/12.
+  Budget 45–60 minutes. Added as a separate shared template; existing copies remain
+  unchanged. [Program and rationale](2026-10-17-glute-focus-program-proposal.md).
 - **Make active** — `setActiveProgram`; a partial unique index enforces at most one active
   program per user.
 - **Clone program** — `cloneProgram` deep-copies a program (days, slots, per-slot rest
@@ -94,6 +102,10 @@ Adaptive plateau engine under §5.
   Low/Normal/High/Very-high stalled-exposure window before the engine intervenes.
 - **Per-slot rest override** — optional "Rest (s)" field; empty = use the profile default
   (stored as `null`).
+- **Superset groups** — assign the same group name (for example C) to consecutive exercises
+  in a day. Saving requires at least two members. Detail, planner and workout show C1/C2;
+  the automatic rest timer runs after the last member. Clear all members' group fields
+  to return to straight sets. Each exercise retains independent sets, loads and progression.
 - **Drag/animated reorder** — day cards and slot rows reorder with view-transition tweening
   (`withViewTransition`, `vt-<id>` names).
 - **Exercise picker** — `Sheet`-based picker filtered to the slot's pattern, with a "show all
@@ -296,9 +308,9 @@ style runs unchanged; the fluid layer is purely additive and only acts when a mo
 - **Merged catalog** — `catalog.ts` merges seeded templates with the user's
   `exercise` rows (seeded ids win collisions); threaded through every screen via
   `getCatalogMap`, including the calibration-critical session actions.
-- **Comprehensive variations and model identity** — 150 shared templates (90 added on
-  2026-10-15) and 67 manufacturer model choices. Optional models preserve separate machine
-  histories; null preserves legacy stations. Search accepts DB/BB, fly spellings, common
+- **Comprehensive variations and model identity** — 153 shared templates (90 added on
+  2026-10-15, three glute additions on 2026-10-17) and 77 manufacturer model choices.
+  Optional models preserve separate machine histories; null preserves legacy stations. Search accepts DB/BB, fly spellings, common
   aliases and model names. New fly/adduction/hip-extension/dorsiflexion/rotation patterns
   keep unrelated strength predictions separate. Assisted station controls store negative
   added load; rep-only rollouts/leg raises/glute-ham raises omit weight/e1RM and retain rep

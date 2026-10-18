@@ -6,6 +6,7 @@ import { useTransition } from "react";
 import type { Program, ProgramSlot } from "@/lib/program";
 import { rirLabel, type ProgramPhase } from "@/lib/periodization";
 import { programEditHref, programIndexHref } from "@/lib/program-routes";
+import { supersetLabel } from "@/lib/superset";
 import {
   PATTERN_LABEL,
   type Equipment,
@@ -97,8 +98,9 @@ export function ProgramDetail({
           <Card key={day.id}>
             <h2 className="break-words text-heading">{day.name}</h2>
             <ul className="mt-3 flex flex-col gap-2">
-              {day.slots.map((slot) => (
+              {day.slots.map((slot, index) => (
                 <li key={slot.id} className="rounded-control bg-surface p-3">
+                  {slot.supersetGroup && <p className="mb-2 text-caption font-medium">Superset {supersetLabel(day.slots, index)} · Alternate exercises, then rest after the round</p>}
                   <div className="flex items-start gap-3 break-words">
                     <ExerciseVisual
                       exerciseId={slot.exerciseId}

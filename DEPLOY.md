@@ -72,6 +72,20 @@ and intended preview origins. The app exchanges the callback code at `/auth/call
 `src/proxy.ts` refreshes cookies, while the app layout and actions authenticate with `getClaims()`.
 Verify dashboard/email settings in the actual environment instead of relying on old checkboxes.
 
+### Superset migration
+
+Superset support additionally requires `20261017215800_program_supersets.sql` before
+releasing its application readers. It adds nullable `program_slot.superset_group` and
+updates the existing security-invoker atomic save RPC to preserve and validate day-local
+groups. Existing slots remain ungrouped. Applied and verified on 2026-10-17 in both
+development (`uggyizzzczwwxkgnwuse`) and production (`jtcppebmosaffaajtgow`). Both ledgers
+record repository version `20261017215800`. Production retained all 229 program slots and
+506 saved sets; owner-scoped RLS and security-invoker save behavior remain enabled.
+Also apply `20261017221032_restore_program_save_source_lock.sql`: it preserves the
+existing Coach source-lock call at the beginning of `save_program` after the superset
+extension replaces that function. It is applied to both projects under the same version.
+The concurrency CI audit checks this ordering before app release.
+
 ### Exercise model migration
 
 Apply `20261015122122_exercise_station_models.sql` to the intended environment before

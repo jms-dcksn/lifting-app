@@ -1007,13 +1007,22 @@ flowchart LR
   Classify -->|needs_intake| Follow["Follow-up + chips"]
   Classify -->|ready| Assemble["assembleProgramDraft"]
   Assemble --> Persist["save_program RPC"]
-  Persist --> Summary["Recommend in chat"]
+  Persist --> SourceLock["Lock owner Coach source first"]
+  SourceLock --> ValidateGroups["Validate day-local superset groups"]
+  ValidateGroups --> SaveTree["Save program tree atomically"]
+  SaveTree --> Summary["Recommend in chat"]
   Summary --> Confirm["Open in builder chip"]
   Confirm -->|tap| Builder["/program/id?mode=edit"]
   classDef sink fill:#0f172a,color:#f8fafc,stroke:#0f172a;
   class Persist,Builder sink
           </pre>
         </div>
+        <p class="text-slate-700 max-w-3xl">The superset extension keeps each exercise's logs and progression separate. Program saves must still acquire the existing Coach source lock before program row locks, so a simultaneous Coach refresh cannot observe a partial source change. Migration <code>20261017221032_restore_program_save_source_lock.sql</code> amends the current RPC definition after the superset migration; the concurrency test audits the first statement.</p>
+        <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>definition := pg_get_functiondef('public.save_program(jsonb)'::regprocedure);
+if definition !~* E'begin\\s+perform private\\.lock_coach_source\\(\\)' then
+  definition := regexp_replace(definition, E'(?i)\\mbegin\\M', E'begin\n  perform private.lock_coach_source();');
+  execute definition;
+end if;</code></pre>
         <article class="space-y-2">
           <h3 class="font-mono text-sm">src/lib/agent/program-intake/classify.ts — Jev Choice / Noul / Score</h3>
           <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export function classifyProgramIntake(input: unknown): IntakeClassification {

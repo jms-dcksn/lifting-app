@@ -59,7 +59,7 @@ export function CoachEpisodeReview({ episodeId, embedded = false, showDiscussion
     {!loaded && !error && <p role="status">Loading review…</p>}
     {loaded && !review && <p>This review is unavailable.</p>}
     {review && <>
-      {(receipt ? [receipt] : review.receipts).map(r => <Card key={r.requestId}><p role="status">{r.status === "snoozed" ? "Keep going saved. Snoozed for two comparable exposures; no prescription changed." : r.action === "rep_change" ? `Applied: ${r.repMin}–${r.repMax} reps for the remainder of the program.` : `Applied replacement: ${r.replacementId}. Remainder of program.`}</p></Card>)}
+      {(receipt ? [receipt] : review.receipts).map(r => <Card key={r.requestId}><p role="status">{r.status === "snoozed" ? "Keep going saved. Snoozed for two comparable exposures; no prescription changed." : r.action === "rep_change" ? `Applied: ${r.repMin}–${r.repMax} reps for the remainder of the program.` : "Exercise replacement applied for the remainder of the program."}</p></Card>)}
       {suggestion && <Card><h2 className="font-semibold">{suggestion.action === "rep_change" && suggestion.repBand ? `Switch rep range to ${suggestion.repBand.repMin}–${suggestion.repBand.repMax} reps` : "Switch exercise"}</h2>
         <p className="my-3 text-sm text-muted">Changes apply to this slot for the remainder of the program{review.sessionId ? ", including its open workout" : ""}. Saved sets remain intact.</p>
         {suggestion.action === "rep_change" && suggestion.repBand && <Button pending={pending} disabled={direct && intent !== null} onClick={() => choose("rep_change")}>{direct ? "Accept change" : `Switch rep range to ${suggestion.repBand.repMin}–${suggestion.repBand.repMax}`}</Button>}

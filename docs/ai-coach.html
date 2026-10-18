@@ -1337,6 +1337,19 @@ async function discussReview(supabase: Client, userId: string, threadId: ThreadI
   return { thread: { ...thread, updatedAt: seed.createdAt }, userMessage: seed };
 }</code></pre><p>The action boundary uses signed-in ownership, server signatures and source revisions. The model cannot supply trusted loads, bands, ladder steps or authorization. Previous sets remain unchanged; a committed receipt is the evidence for “applied.”</p>
 </section>
+<section id="coach-entry" class="section-rail"><h2>One coaching entry, optional report details (#206)</h2>
+<p>Track, monthly stalls, old Coach links and the navigation tool open the relevant Coach conversation. Normal training progress stays silent. Asking a normal question still works.</p>
+<div style="display:flex;flex-wrap:wrap;gap:12px;font-family:system-ui"><div style="border:1px solid;padding:16px">Track / monthly / legacy link → authenticated entry</div><div style="border:1px solid;padding:16px">One matching episode → reuse its conversation</div><div style="border:1px solid;padding:16px">Several matching slots → choose a review</div><div style="border:1px solid;padding:16px">No matching exception → on-demand draft</div></div>
+<p>Exercise, exact equipment and selected month survive navigation and reload. A historical month is context; it never changes the dates of current exception evidence or weekly reporting. The resolver finishes at a conversation URL without its entry marker, so opening Coach cannot send the user around a chat loop.</p>
+<pre class="code-rail overflow-auto bg-stone-100 p-4"><code>export function coachEntryHref(input: Partial&lt;CoachFocus&gt; = {}) {
+  const params = coachFocusParams({ exerciseId: input.exerciseId ?? null, equipmentInstanceId: input.equipmentInstanceId ?? null, month: input.month ?? null });
+  params.set(&quot;review&quot;, &quot;1&quot;); return `/coach?${params}`;
+}
+export function coachConversationHref(focus: CoachFocus, threadId: string | null) {
+  const params = coachFocusParams(focus); params.set(&quot;thread&quot;, threadId ?? &quot;new&quot;); return `/coach?${params}`;
+}</code></pre>
+<div style="display:flex;flex-wrap:wrap;gap:12px"><div style="border:1px solid;padding:16px">Automatic workout targets: no approval chore</div><div style="border:1px solid;padding:16px">Structural changes: explicit confirmation and receipt</div><div style="border:1px solid;padding:16px">Report details: read-only summary, evidence and export</div></div>
+<p>Accept and Accept all are retired. Legacy review history is retained and never means a change was applied. Opening any entry or details screen makes no model call; only the user’s chat request starts generation.</p></section>
     </main>
   </body>
 </html>

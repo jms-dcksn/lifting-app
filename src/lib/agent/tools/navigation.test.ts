@@ -11,7 +11,7 @@ describe("agent navigation tools", () => {
     expect(openCoachCheckIn()).toEqual({
       source: "openCoachCheckIn",
       action: "navigate",
-      href: "/analytics/coach",
+      href: "/coach?review=1",
     });
     expect(openExerciseReview({ exerciseId: "bb-bench", equipmentInstanceId: null })).toEqual({
       source: "openExerciseReview",

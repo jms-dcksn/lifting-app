@@ -108,20 +108,16 @@ window/count, supporting first-set summary, confidence, and a plain-language dat
 statement. `loadReductionReason` is `repeated_effort_miss` or `below_rep_floor` for
 `reduce_load`, and null otherwise. The repeated-effort calculation lives in
 `strength/effort.ts`; `strength/trend.ts` shares the report's factual trend rule with the
-pure exception policy. Proposal keys, ranking, formatter and review actions retain their
-existing behavior. Accept, dismiss, and defer
-write only to `coach_recommendation_decision`; they never alter a program, slot, set, or session.
-A deferred proposal is hidden for seven days, while a new exposure produces a new proposal key.
+pure exception policy. Proposal keys, ranking and formatter retain their behavior.
+The old Accept / Later / Dismiss / Accept all application workflow and its server actions
+were retired in #206. Existing `coach_recommendation_decision` rows remain review history;
+they never altered a program, slot, set or session and cannot prove an intervention applied.
 
-The Proposed next steps UI shows only actionable proposals awaiting review. Accepted and
-dismissed items disappear after a successful save and stay hidden across reloads; active
-deferrals stay hidden until their deadline. The list applies a decision immediately so Accept,
-Later, Dismiss, and Accept all do not stay pending on the Coach page refresh; a failed save
-restores the proposal and shows an error. Insufficient-data kinds or confidence never render
-as next-step cards. The remaining section is collapsible (initially open), with an actionable
-count and rationale/evidence collapsed per suggestion. If nothing needs review, one compact
-empty-state line replaces the list. The API and coaching export retain the full diagnostic
-recommendations; this is a presentation change, not a change to the recommendation engine.
+The optional `/analytics/coach?view=details` report shows the canonical summary, export and
+collapsible read-only recommendation evidence. Unsupported proposals stay hidden in this
+presentation; tools and exports retain their diagnostics. Current targets update automatically
+through the shared effective-target composition. Structural choices use #141's revalidated
+confirmation and committed receipt, independent of legacy review state.
 
 After generation, proposals are ranked by confidence × impact so the list is not slot order.
 Medium-or-better `add_load` on compounds (press, pull, squat, hinge, lunge, hip thrust) scores

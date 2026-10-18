@@ -1,4 +1,5 @@
 "use client";
+import { coachEntryHref } from "@/lib/coach-entry";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -98,7 +99,7 @@ function TrackExploreBody({
               All lifts
             </button>
             <Link
-              href="/analytics/coach"
+              href={coachEntryHref()}
               className="min-h-11 py-3 text-body"
               onClick={onClose}
             >

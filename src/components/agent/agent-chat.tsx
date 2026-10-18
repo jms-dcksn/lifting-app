@@ -24,6 +24,7 @@ import type { AgentMessage } from "@/lib/agent/messages";
 import { coachActivityLabel } from "@/lib/agent/activity";
 import { readSseEvents } from "@/lib/agent/stream";
 import { AgentTranscript } from "./agent-transcript";
+import { coachFocusParams, coachDetailsHref, type CoachFocus } from "@/lib/coach-entry";
 import { CoachThreadReview } from "@/components/coach/coach-thread-review";
 import { COACH_DISCUSSION_PROMPT, isCoachReviewSeed, presentCoachReviewSeed } from "@/lib/coach-discussion";
 import { Button } from "@/components/ui/button";
@@ -34,10 +35,14 @@ export function AgentChat({
   initialReview,
   variant,
   onNavigate,
+  focus,
+  focusLabel,
   discuss = false,
 }: {
   initial?: AgentChatSnapshot;
   initialReview?: EpisodeReview | null;
+  focus?: CoachFocus;
+  focusLabel?: string;
   variant: "sheet" | "page";
   onNavigate?: () => void;
   discuss?: boolean;
@@ -50,7 +55,9 @@ export function AgentChat({
   const scroller = useRef<HTMLDivElement>(null);
   const stickToEnd = useRef(true);
   const navigable = canNavigate(screen);
-  const href = screen.name === "loading" ? null : fullScreenHref(screen.conversation);
+  const baseHref = screen.name === "loading" ? null : fullScreenHref(screen.conversation);
+  const focusQuery = focus ? coachFocusParams(focus).toString() : "";
+  const href = baseHref && focusQuery ? `${baseHref}${baseHref.includes("?") ? "&" : "?"}${focusQuery}` : baseHref;
   const shownHref = useRef(href);
   const view = screen.name === "chat" ? transcriptView(screen.conversation, screen.turn) : null;
   const inChat = view !== null;
@@ -102,7 +109,7 @@ export function AgentChat({
         body: JSON.stringify({
           ...(review ? { discuss: true } : { text }),
           threadId: conversation.kind === "saved" ? conversation.threadId : null,
-          context: parseScreenContextFromPath(pathname),
+          context: { ...parseScreenContextFromPath(pathname), ...(focus ? { focusedExerciseId: focus.exerciseId, focusedEquipmentInstanceId: focus.equipmentInstanceId, reviewMonth: focus.month } : {}) },
         }),
       });
       if (!response.ok || !response.body) {
@@ -121,7 +128,7 @@ export function AgentChat({
     } finally {
       if (!review && !userTextStored) setDraft((current) => current || text);
     }
-  }, [screen, pathname, router, onNavigate]);
+  }, [screen, pathname, router, onNavigate, focus]);
 
   const beginDiscussion = useEffectEvent(() => { void sendTurn("", true); });
 
@@ -158,6 +165,7 @@ export function AgentChat({
         ) : (
           <h2 className="mr-auto text-heading">Coach</h2>
         )}
+        {variant === "page" && navigable && <Link className="min-h-11 content-center text-caption underline" href={coachDetailsHref(focus ?? { exerciseId: null, equipmentInstanceId: null, month: null })}>Report details</Link>}
         <IconButton
           type="button"
           variant="ghost"
@@ -188,6 +196,7 @@ export function AgentChat({
           stickToEnd.current = node.scrollHeight - node.scrollTop - node.clientHeight < 48;
         }}
       >
+        {focus && (focus.exerciseId || focus.month) && <aside className="mb-3 rounded-card border border-border p-3 text-sm"><p>{focusLabel ?? "Training review"}{focus.month ? ` · ${focus.month}` : ""}</p><p className="mt-2 text-muted">Current exceptions use the latest training evidence. Historical reports keep their own date windows.</p><Link className="inline-flex min-h-11 items-center underline" href={coachDetailsHref(focus)}>See report details</Link></aside>}
         {screen.name === "loading" ? <p className="text-body text-muted">Loading</p> : null}
         {screen.name === "history" ? (
           <ThreadHistory

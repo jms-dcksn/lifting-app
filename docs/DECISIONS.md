@@ -968,6 +968,16 @@ New workout sessions record canonical loggable identities at creation for exact 
 Older sessions lacking a stored choice remain unavailable; no original identity is inferred
 retroactively. Open-workout review stays in a Sheet to preserve typed fields across confirmation.
 
+### AI Coach entry and retained report (2026-10-17)
+
+#206 completes the approved exception-only entry direction after #141 verification. Existing
+report loaders, deterministic recommendations and automatic effective targets remain canonical;
+the report is optional read-only detail, and routine review-write controls/actions are removed.
+Legacy route and saved navigation-tool results preserve exercise, equipment and month focus.
+A matching current episode reuses its conversation; ambiguous slots require a chooser, while
+normal on-demand questions start an unsaved draft. Entry completion uses document navigation
+and renders the resolver directly on legacy routes, avoiding streamed-redirect hydration races.
+
 ### Direct inbox choices and explicit discussion (2026-10-18)
 
 Preview testing showed that opening chat before exposing the recommendation required too

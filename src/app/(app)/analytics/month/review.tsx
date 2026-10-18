@@ -1,3 +1,4 @@
+import { coachEntryHref } from "@/lib/coach-entry";
 import { liftHref } from "./lift-detail";
 import { PeriodPerformanceCard } from "./period-performance";
 import Link from "next/link";
@@ -136,7 +137,7 @@ export function MonthlyReview({
             <span>{dateKey(new Date(point.sessionAt), report.timeZone)}</span><span>{amount(point.bestE1rm)} e1RM{point.repGain ? " · rep gain" : ""}</span>
           </Link></li>)}</ul>
         </details>
-        {report.inProgress && <Link href={`/analytics/coach?exercise=${encodeURIComponent(stall.exerciseId)}#coach-next-steps`} className="inline-block min-h-11 py-2 text-caption underline">Review current Coach next steps for this lift</Link>}
+        <Link href={coachEntryHref({ exerciseId: stall.exerciseId, equipmentInstanceId: stall.equipmentInstanceId, month: report.month })} className="inline-block min-h-11 py-2 text-caption underline">Review with Coach</Link>
       </li>)}</ul>
 
     </Card>}

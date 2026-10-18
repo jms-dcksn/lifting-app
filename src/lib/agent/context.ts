@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getActiveProgram } from "@/lib/program";
 import type { Database } from "@/lib/supabase/types";
+import { parseCoachFocus } from "@/lib/coach-entry";
+import { getCatalogMap } from "@/lib/catalog";
 
 type Client = SupabaseClient<Database>;
 
@@ -9,6 +11,8 @@ export type AgentScreenContext = {
   activeProgramId: string | null;
   openSessionId: string | null;
   focusedExerciseId: string | null;
+  focusedEquipmentInstanceId?: string | null;
+  reviewMonth?: string | null;
 };
 
 const SESSION_PATH = /^\/session\/([^/]+)(?:\/|$)/;
@@ -36,13 +40,17 @@ export function parseScreenContextFromPath(pathname: string): AgentScreenContext
 
 export function parseScreenContextInput(value: unknown): AgentScreenContext | null {
   if (!value || typeof value !== "object") return null;
-  const { pathname, activeProgramId, openSessionId, focusedExerciseId } = value as Record<string, unknown>;
+  const { pathname, activeProgramId, openSessionId, focusedExerciseId, focusedEquipmentInstanceId, reviewMonth } = value as Record<string, unknown>;
   if (typeof pathname !== "string" || !pathname.startsWith("/")) return null;
   return {
     pathname,
     activeProgramId: nullableString(activeProgramId),
     openSessionId: nullableString(openSessionId),
     focusedExerciseId: nullableString(focusedExerciseId),
+    ...(reviewMonth !== undefined || focusedEquipmentInstanceId !== undefined ? (() => {
+      const focus = parseCoachFocus({ month: reviewMonth, equipment: focusedEquipmentInstanceId });
+      return { reviewMonth: focus.month, focusedEquipmentInstanceId: focus.equipmentInstanceId };
+    })() : {}),
   };
 }
 
@@ -52,6 +60,14 @@ export async function enrichScreenContext(
   context: AgentScreenContext,
 ): Promise<AgentScreenContext> {
   const program = await getActiveProgram(supabase, userId);
+  if (context.focusedExerciseId && (context.reviewMonth !== undefined || context.focusedEquipmentInstanceId !== undefined)) {
+    const catalog = await getCatalogMap(supabase, userId);
+    if (!catalog[context.focusedExerciseId]) context = { ...context, focusedExerciseId: null, focusedEquipmentInstanceId: null };
+    if (context.focusedEquipmentInstanceId) {
+      const { data, error } = await supabase.from("equipment_instance").select("exercise_id").eq("user_id", userId).eq("id", context.focusedEquipmentInstanceId).maybeSingle();
+      if (error || data?.exercise_id !== context.focusedExerciseId) context = { ...context, focusedEquipmentInstanceId: null };
+    }
+  }
   return {
     ...context,
     activeProgramId: program?.id ?? context.activeProgramId,
@@ -65,6 +81,8 @@ export function formatScreenContextForPrompt(context: AgentScreenContext) {
     `- activeProgramId: ${context.activeProgramId ?? "none"}`,
     `- openSessionId: ${context.openSessionId ?? "none"}`,
     `- focusedExerciseId: ${context.focusedExerciseId ?? "none"}`,
+    ...(context.reviewMonth !== undefined ? [`- selected historical month: ${context.reviewMonth ?? "none"}. Preserve this focus; weeklyCoach still reports its own calendar windows, not this month. Do not relabel its figures.`] : []),
+    ...(context.focusedEquipmentInstanceId ? [`- focused equipment instance: ${context.focusedEquipmentInstanceId}`] : []),
     "Use navigation tools when the user asks to open a screen. Use focusedExerciseId when they mean the exercise on screen.",
   ];
   return `\n\n${lines.join("\n")}`;

@@ -1,11 +1,12 @@
+import type { CoachFocus } from "@/lib/coach-entry";
 import {
   coachCheckInHref,
   openExerciseReviewHref,
   openProgramHref,
 } from "../client-tools";
 
-export function openCoachCheckIn() {
-  const href = coachCheckInHref();
+export function openCoachCheckIn(focus: Partial<CoachFocus> = {}) {
+  const href = coachCheckInHref(focus);
   return {
     source: "openCoachCheckIn" as const,
     action: "navigate" as const,

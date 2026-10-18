@@ -18,7 +18,8 @@ confirmation screen is needed. Failed acceptance retries keep the same request U
 **Discuss with Coach** creates/reuses the episode thread and starts its first response with
 current authorized evidence. Reopening an answered conversation and reloading stay passive;
 failed discussion requires an explicit Retry. Details and choices remain available from chat.
-The default coaching entry-point change and routine acceptance retirement remain #206.
+The default entry uses relevant AI Coach conversations (#206); routine acceptance is retired.
+Report details remain optional and read-only.
 
 Preferences persist pain/reduction/plateau/decline categories and optional timezone-aware quiet
 hours. Quiet hours defer arrivals, not inbox visibility. Disabled categories consume their

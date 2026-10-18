@@ -61,6 +61,7 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
     await page.getByRole("button", { name: "Discuss with Coach", exact: true }).click();
     await expect(page.getByText("These comparable workouts support a plateau.", { exact: false })).toBeVisible();
     await expect(page).toHaveURL(/\/coach\?thread=/, { timeout: 45_000 });
+    await expect(page.getByRole("link", { name: "See details and choices" })).toBeVisible();
     await page.getByRole("link", { name: "See details and choices" }).click();
     await expect(page).toHaveURL(/\/coach\/episodes\//);
     const reviewURL = page.url();
@@ -70,6 +71,7 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
     await page.getByRole("button", { name: "Discuss with Coach", exact: true }).click();
     await expect(page).toHaveURL(/\/coach\?thread=/);
     await expect(page.getByRole("link", { name: "See details and choices" })).toBeVisible();
+    await expect.poll(() => new URL(page.url()).searchParams.has("discuss")).toBe(false);
     const threadURL = page.url();
     await page.goto(reviewURL);
     await page.getByRole("button", { name: "Discuss with Coach", exact: true }).click();

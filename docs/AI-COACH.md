@@ -627,7 +627,8 @@ refresh, acknowledgement and preferences never invoke the model.
 
 Each requested turn loads current linked evidence and receipts independently of transcript
 text. The initial seed is presented as a plain-language review request; its stored identity
-and authorization do not change. **See details and choices** remains available in chat.
+and authorization do not change. The initial page render loads the owned review panel before discussion begins, keeping
+**See details and choices** available while the first response streams.
 Stale/unavailable evidence cannot supply current target claims or actions.
 Deleted conversation URLs show unavailable; an explicit episode open can create a replacement.
 

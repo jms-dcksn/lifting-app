@@ -27,14 +27,17 @@ import { AgentTranscript } from "./agent-transcript";
 import { CoachThreadReview } from "@/components/coach/coach-thread-review";
 import { COACH_DISCUSSION_PROMPT, isCoachReviewSeed, presentCoachReviewSeed } from "@/lib/coach-discussion";
 import { Button } from "@/components/ui/button";
+import type { EpisodeReview } from "@/lib/coach-conversation-data";
 
 export function AgentChat({
   initial,
+  initialReview,
   variant,
   onNavigate,
   discuss = false,
 }: {
   initial?: AgentChatSnapshot;
+  initialReview?: EpisodeReview | null;
   variant: "sheet" | "page";
   onNavigate?: () => void;
   discuss?: boolean;
@@ -194,7 +197,7 @@ export function AgentChat({
             onOpen={openThread}
           />
         ) : null}
-        {screen.name === "chat" && screen.conversation.kind === "saved" ? <CoachThreadReview key={screen.conversation.threadId} threadId={screen.conversation.threadId} /> : null}
+        {screen.name === "chat" && screen.conversation.kind === "saved" ? <CoachThreadReview key={screen.conversation.threadId} threadId={screen.conversation.threadId} initialReview={initial?.open.kind === "saved" && initial.open.threadId === screen.conversation.threadId ? initialReview : undefined} /> : null}
         {view ? (
           <AgentTranscript
             {...view}

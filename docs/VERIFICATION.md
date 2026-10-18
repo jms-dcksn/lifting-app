@@ -118,7 +118,8 @@ and atomic open-workout replacement. The executor retains its realistic non-bypa
 
 `e2e/coach.spec.ts` uses real local Auth, Next actions, PostgREST/RLS and PostgreSQL. It covers
 notice → one-click acceptance or explicit discussion → reused conversation → evidence →
-cancellation/confirmation → persistent receipt. Discussion transport is stubbed with a saved
+cancellation/confirmation → persistent receipt. The test waits for the notice URL and
+recommendation before saving its return destination. Discussion transport is stubbed with a saved
 assistant response, so no paid model runs. Tests expect one initial request and no repeat
 on reopen; handler tests verify the owned seed and fresh episode context. Before-workout confirmation creates no session; open-workout
 review preserves typed set inputs and all saved history. 320px overflow is checked.

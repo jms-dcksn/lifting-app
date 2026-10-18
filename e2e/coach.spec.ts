@@ -55,8 +55,9 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
     });
     await page.goto("/coach/inbox");
     await page.getByRole("link", { name: /plateau/i }).first().click();
-    const noticeURL = page.url();
+    await expect(page).toHaveURL(/\/coach\/inbox\/[^/?]+$/);
     await expect(page.getByRole("button", { name: "Accept change", exact: true })).toBeVisible();
+    const noticeURL = page.url();
     expect(modelPosts).toBe(0);
     await page.getByRole("button", { name: "Discuss with Coach", exact: true }).click();
     await expect(page.getByText("These comparable workouts support a plateau.", { exact: false })).toBeVisible();
@@ -95,6 +96,7 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
       await page.getByRole("button", { name: "Confirm choice", exact: true }).click();
     } else {
       await page.goto(noticeURL);
+      await expect(page.getByRole("button", { name: "Accept change", exact: true })).toBeVisible();
       await page.getByRole("button", { name: "Accept change", exact: true }).click();
     }
     await expect(page.getByText(/^Applied: 12–15 reps/)).toBeVisible();

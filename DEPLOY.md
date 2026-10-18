@@ -254,3 +254,12 @@ plateau entry now uses the shared Coach flow, so keep rollout coordinated with t
 Disable the entry/flag first for rollback and retain additive storage and immutable receipts;
 rolling back UI never reverses a confirmed adaptation. No hosted migration or flag change is
 performed by a pull request or local verification.
+
+Production release verified on 2026-10-18: `lifting-app` (`jtcppebmosaffaajtgow`)
+records migration `20261017152248`. The new conversation/receipt tables retain RLS,
+the executor has no login/superuser/RLS bypass, and browser roles cannot read signing
+keys. Matching production-only signing settings and `COACH_INBOX_ENABLED=true` are
+configured in Vercel. Key ID `production-20261018-v1` expires on 2027-01-16; rotate it
+before that date. Exact UTF-8 Node signatures passed the database verifier, and an
+owner-scoped signed refresh returned `ready` in a rolled-back test transaction.
+Saved-set, workout-session and program-slot counts were unchanged by the release setup.

@@ -959,3 +959,14 @@ Legacy route and saved navigation-tool results preserve exercise, equipment and 
 A matching current episode reuses its conversation; ambiguous slots require a chooser, while
 normal on-demand questions start an unsaved draft. Entry completion uses document navigation
 and renders the resolver directly on legacy routes, avoiding streamed-redirect hydration races.
+
+### Direct inbox choices and explicit discussion (2026-10-18)
+
+Preview testing showed that opening chat before exposing the recommendation required too
+many steps and left a seed without an agent response. The owner requested direct acceptance
+and a discussion action that starts the agent. The notice now displays canonical recommendation
+and program scope beside Accept; that click is the explicit confirmation. It uses the same
+fresh-evidence, owner, pain, session-scope and replay guards as the existing Sheet.
+Discuss explicitly starts the first reply on the existing owned seed. Reloading or reopening
+an answered thread stays passive; failures require a user retry. No new model/provider,
+privileged application client, schema or training policy is introduced.

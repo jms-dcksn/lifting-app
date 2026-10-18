@@ -12,6 +12,7 @@ import {
   type TurnRequest,
 } from "./chat-state";
 import { parseParts, type AgentMessage, type AgentRole } from "./messages";
+import { presentCoachReviewSeed } from "@/lib/coach-discussion";
 
 type Client = SupabaseClient<Database>;
 type NewMessage = Omit<AgentMessage, "id" | "createdAt">;
@@ -63,7 +64,9 @@ export async function startTurn(
 ): Promise<StartedTurn | null> {
   const opened = request.kind === "new"
     ? await openThread(supabase, userId, request.text)
-    : await continueThread(supabase, userId, request.threadId, request.text);
+    : request.kind === "review"
+      ? await discussReview(supabase, userId, request.threadId)
+      : await continueThread(supabase, userId, request.threadId, request.text);
   if (!opened) return null;
 
   const { thread, userMessage } = opened;
@@ -75,7 +78,7 @@ export async function startTurn(
   return {
     thread,
     userMessage,
-    transcript,
+    transcript: request.kind === "review" ? transcript.map(presentCoachReviewSeed) : transcript,
     appendReply: async (messages) => {
       const saved: AgentMessage[] = [];
       for (const message of messages) {
@@ -84,6 +87,20 @@ export async function startTurn(
       return saved;
     },
   };
+}
+
+/** An explicit Discuss click answers the owned seed without inserting another user message. */
+async function discussReview(supabase: Client, userId: string, threadId: ThreadId) {
+  const { data: link, error } = await supabase.from("coach_episode_thread").select("seed_message_id")
+    .eq("user_id", userId).eq("thread_id", threadId).maybeSingle();
+  if (error) throw Error("Coach review is unavailable. Please retry.");
+  if (!link) return null;
+  const [thread, messages] = await Promise.all([
+    findThread(supabase, userId, threadId), loadTranscript(supabase, userId, threadId),
+  ]);
+  const seed = messages[0];
+  if (!thread || messages.length !== 1 || seed?.id !== link.seed_message_id || seed.role !== "user") return null;
+  return { thread: { ...thread, updatedAt: seed.createdAt }, userMessage: seed };
 }
 
 async function openThread(supabase: Client, userId: string, text: string) {

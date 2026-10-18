@@ -117,8 +117,10 @@ source/open-session scope, a competing set write, injected receipt failure rollb
 and atomic open-workout replacement. The executor retains its realistic non-bypass role.
 
 `e2e/coach.spec.ts` uses real local Auth, Next actions, PostgREST/RLS and PostgreSQL. It covers
-notice → reused conversation → evidence → cancellation/confirmation → persistent receipt,
-without opening a model turn. Before-workout confirmation creates no session; open-workout
+notice → one-click acceptance or explicit discussion → reused conversation → evidence →
+cancellation/confirmation → persistent receipt. Discussion transport is stubbed with a saved
+assistant response, so no paid model runs. Tests expect one initial request and no repeat
+on reopen; handler tests verify the owned seed and fresh episode context. Before-workout confirmation creates no session; open-workout
 review preserves typed set inputs and all saved history. 320px overflow is checked.
 The local #141 run passed all 14 ownership suites / 178 assertions and both concurrency
 scripts. Browser verification passed the pre-workout journey and the existing anonymous,

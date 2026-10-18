@@ -11,7 +11,7 @@ import { getCatalogMap } from "@/lib/catalog";
 export default async function AgentCoachPage({
   searchParams,
 }: {
-  searchParams: Promise<{ thread?: string | string[]; review?: string; exercise?: string; equipment?: string; month?: string }>;
+  searchParams: Promise<{ thread?: string | string[]; review?: string; exercise?: string; equipment?: string; month?: string; discuss?: string }>;
 }) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
@@ -19,7 +19,7 @@ export default async function AgentCoachPage({
   if (!userId) redirect("/login");
 
   const query = await searchParams;
-  const { thread } = query;
+  const { thread, discuss } = query;
   const focus = parseCoachFocus(query);
   if (query.review === "1") return <CoachEntry focus={focus} />;
   const catalog = focus.exerciseId ? await getCatalogMap(supabase, userId) : null;
@@ -30,7 +30,7 @@ export default async function AgentCoachPage({
 
   return (
     <div className="mx-auto flex h-[calc(100dvh-4.25rem-env(safe-area-inset-bottom))] w-full max-w-page min-h-0 flex-col overflow-hidden pt-6">
-      <AgentChat key={`${snapshot.open.kind === "saved" ? snapshot.open.threadId : "new"}:${focus.exerciseId}:${focus.equipmentInstanceId}:${focus.month}`} initial={snapshot} variant="page" focus={focus} focusLabel={focusLabel} />
+      <AgentChat key={`${snapshot.open.kind === "saved" ? snapshot.open.threadId : "new"}:${focus.exerciseId}:${focus.equipmentInstanceId}:${focus.month}`} initial={snapshot} variant="page" discuss={discuss === "1"} focus={focus} focusLabel={focusLabel} />
     </div>
   );
 }

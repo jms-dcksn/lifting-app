@@ -16,7 +16,7 @@ export function CoachSlotReview({ slotId, active }: { slotId: string; active: bo
     catch (e) { setError(e instanceof Error ? e.message : "Please retry."); }
   })}>Review with Coach</Button>}{error && <p role="alert" className="mt-2 text-sm text-danger">{error}</p>}
     {episodeId && <Sheet onClose={() => setEpisodeId(null)} ariaLabel="Coach workout review">
-      <div className="max-h-[80dvh] overflow-y-auto"><Button variant="ghost" onClick={() => setEpisodeId(null)}>Back to workout</Button>
+      <div className="max-h-[80dvh] overflow-y-auto px-4 py-6"><Button variant="ghost" onClick={() => setEpisodeId(null)}>Back to workout</Button>
         <CoachEpisodeReview episodeId={episodeId} embedded onApplied={() => router.refresh()} />
       </div>
     </Sheet>}

@@ -21,7 +21,7 @@ type Row = Record<string, unknown>;
 type Failure = { message: string; code: string };
 
 function memoryStore(options: { failMessageInsert?: boolean } = {}) {
-  const tables: Record<string, Row[]> = { agent_thread: [], agent_message: [] };
+  const tables: Record<string, Row[]> = { agent_thread: [], agent_message: [], coach_episode_thread: [] };
   let clock = Date.parse("2026-09-27T12:00:00.000Z");
   const tick = () => new Date((clock += 1000)).toISOString();
 
@@ -185,6 +185,27 @@ afterEach(() => {
 });
 
 describe("agent chat POST", () => {
+  it("Discuss answers the owned episode seed with current context and no second user row", async () => {
+    const { POST, store, runTurn } = setup();
+    const seed = store.tables.agent_message.find(row => row.thread_id === ownThread)!;
+    store.tables.coach_episode_thread.push({ user_id: userId, thread_id: ownThread, seed_message_id: seed.id });
+    vi.mocked(episodeContextForThread).mockResolvedValue("current plateau; 12–15 reps; not applied");
+    const streamed = await events(await POST(post({ discuss: true, threadId: ownThread })));
+    expect(streamed[0]).toMatchObject({ type: "thread", userMessage: { id: seed.id } });
+    expect(runTurn.mock.calls[0]?.[0].episodeContext).toContain("12–15 reps");
+    expect(store.tables.agent_message.filter(row => row.thread_id === ownThread).map(row => row.role)).toEqual(["user", "assistant"]);
+    expect((await POST(post({ discuss: true, threadId: ownThread }))).status).toBe(404);
+    expect(runTurn).toHaveBeenCalledTimes(1);
+  });
+  it("Discuss cannot answer an unlinked or foreign conversation, or create a new one", async () => {
+    const { POST, store, runTurn } = setup();
+    const before = rowCounts(store.tables);
+    expect((await POST(post({ discuss: true, threadId: ownThread }))).status).toBe(404);
+    expect((await POST(post({ discuss: true, threadId: otherThread }))).status).toBe(404);
+    expect((await POST(post({ discuss: true, threadId: null }))).status).toBe(400);
+    expect(runTurn).not.toHaveBeenCalled();
+    expect(rowCounts(store.tables)).toEqual(before);
+  });
   it("reloads authorized episode context on each turn independently of transcript claims", async () => {
     const { POST, runTurn } = setup();
     vi.mocked(episodeContextForThread).mockResolvedValueOnce("recommended; current target 95 lb")

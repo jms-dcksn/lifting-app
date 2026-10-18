@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useReducer, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useReducer, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cx } from "@/components/ui/cx";
@@ -24,15 +24,23 @@ import type { AgentMessage } from "@/lib/agent/messages";
 import { coachActivityLabel } from "@/lib/agent/activity";
 import { readSseEvents } from "@/lib/agent/stream";
 import { AgentTranscript } from "./agent-transcript";
+import { CoachThreadReview } from "@/components/coach/coach-thread-review";
+import { COACH_DISCUSSION_PROMPT, isCoachReviewSeed, presentCoachReviewSeed } from "@/lib/coach-discussion";
+import { Button } from "@/components/ui/button";
+import type { EpisodeReview } from "@/lib/coach-conversation-data";
 
 export function AgentChat({
   initial,
+  initialReview,
   variant,
   onNavigate,
+  discuss = false,
 }: {
   initial?: AgentChatSnapshot;
+  initialReview?: EpisodeReview | null;
   variant: "sheet" | "page";
   onNavigate?: () => void;
+  discuss?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -46,6 +54,9 @@ export function AgentChat({
   const shownHref = useRef(href);
   const view = screen.name === "chat" ? transcriptView(screen.conversation, screen.turn) : null;
   const inChat = view !== null;
+  const discussionStarted = useRef(false);
+  const unansweredReview = screen.name === "chat" && screen.conversation.kind === "saved"
+    && screen.conversation.messages.length === 1 && isCoachReviewSeed(screen.conversation.messages[0]);
 
   useEffect(() => {
     if (initial) return;
@@ -78,20 +89,18 @@ export function AgentChat({
     if (node && inChat && stickToEnd.current) node.scrollTop = node.scrollHeight;
   });
 
-  async function send(event: FormEvent) {
-    event.preventDefault();
-    const text = draft.trim();
-    if (!text || screen.name !== "chat" || screen.turn) return;
+  const sendTurn = useCallback(async (text: string, review = false) => {
+    if ((!text && !review) || screen.name !== "chat" || screen.turn) return;
     const { conversation } = screen;
-    setDraft("");
-    dispatch({ type: "send", optimisticId: `local-${Date.now()}`, text });
+    if (!review) setDraft("");
+    dispatch({ type: "send", optimisticId: review && conversation.kind === "saved" ? conversation.messages[0].id : `local-${Date.now()}`, text: review ? COACH_DISCUSSION_PROMPT : text });
     let userTextStored = false;
     try {
       const response = await fetch("/api/agent/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text,
+          ...(review ? { discuss: true } : { text }),
           threadId: conversation.kind === "saved" ? conversation.threadId : null,
           context: parseScreenContextFromPath(pathname),
         }),
@@ -110,8 +119,25 @@ export function AgentChat({
     } catch (caught) {
       dispatch({ type: "closed", error: caught instanceof Error ? caught.message : "Could not send." });
     } finally {
-      if (!userTextStored) setDraft((current) => current || text);
+      if (!review && !userTextStored) setDraft((current) => current || text);
     }
+  }, [screen, pathname, router, onNavigate]);
+
+  const beginDiscussion = useEffectEvent(() => { void sendTurn("", true); });
+
+  useEffect(() => {
+    if (!discuss || discussionStarted.current || screen.name !== "chat") return;
+    discussionStarted.current = true;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("discuss");
+    window.history.replaceState(null, "", url.pathname + url.search);
+    // Consume the explicit navigation intent once, after this mount commits.
+    if (unansweredReview) queueMicrotask(beginDiscussion);
+  }, [discuss, screen.name, unansweredReview]);
+
+  async function send(event: FormEvent) {
+    event.preventDefault();
+    await sendTurn(draft.trim());
   }
 
   async function openThread(threadId: ThreadId) {
@@ -171,9 +197,11 @@ export function AgentChat({
             onOpen={openThread}
           />
         ) : null}
+        {screen.name === "chat" && screen.conversation.kind === "saved" ? <CoachThreadReview key={screen.conversation.threadId} threadId={screen.conversation.threadId} initialReview={initial?.open.kind === "saved" && initial.open.threadId === screen.conversation.threadId ? initialReview : undefined} /> : null}
         {view ? (
           <AgentTranscript
             {...view}
+            messages={view.messages.map(presentCoachReviewSeed)}
             confirmedCallIds={confirmedCallIds}
             onConfirm={async (callId) => {
               const pending = pendingConfirmFromMessages(view.messages);
@@ -206,6 +234,7 @@ export function AgentChat({
         </form>
       ) : null}
       {error ? <p className="shrink-0 px-4 pb-3 text-caption text-danger">{error}</p> : null}
+      {error && unansweredReview ? <Button variant="secondary" className="mx-4 mb-3" onClick={() => void sendTurn("", true)}>Retry discussion</Button> : null}
     </div>
   );
 }

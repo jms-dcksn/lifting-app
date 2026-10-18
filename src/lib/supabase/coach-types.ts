@@ -6,6 +6,14 @@ type ReadTable<Row> = {
   Relationships: [];
 };
 export type CoachTables = {
+  coach_episode_thread: ReadTable<{
+    episode_id: string; user_id: string; thread_id: string; seed_message_id: string; seed_revision: number;
+  }>;
+  coach_action_receipt: ReadTable<{
+    id: string; user_id: string; request_id: string; episode_id: string;
+    occurrence: number; revision: number; action: string; intent_fingerprint: string;
+    confirmed_evidence: Json; result: Json; created_at: string;
+  }>;
   coach_refresh_state: ReadTable<{
     user_id: string;
     source_revision: number;
@@ -52,6 +60,8 @@ export type CoachTables = {
   }>;
 };
 export type CoachFunctions = {
+  open_coach_episode: { Args: { p_payload: string; p_mac: string }; Returns: Json };
+  commit_coach_episode_action: { Args: { p_payload: string; p_mac: string }; Returns: Json };
   reconcile_coach_episodes: {
     Args: { p_payload: string; p_mac: string };
     Returns: Json;

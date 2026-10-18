@@ -56,7 +56,7 @@ export function coachInboxEnabled() {
 }
 
 // UUID pagination does not assume the API honors our requested page size.
-async function allRows<T extends SourceTable>(
+export async function coachSourceRows<T extends SourceTable>(
   db: Client,
   userId: string,
   table: T,
@@ -72,7 +72,7 @@ async function allRows<T extends SourceTable>(
     return (data ?? []) as unknown as SourceRow<T>[];
   });
 }
-async function stateSnapshot(db: Client, userId: string) {
+export async function coachStateSnapshot(db: Client, userId: string) {
   const [state, prefs, episodes] = await Promise.all([
     db
       .from("coach_refresh_state")
@@ -84,13 +84,14 @@ async function stateSnapshot(db: Client, userId: string) {
       .select("settings,version")
       .eq("user_id", userId)
       .maybeSingle(),
-    allRows(db, userId, "coach_episode"),
+    coachSourceRows(db, userId, "coach_episode"),
   ]);
   if (state.error || prefs.error)
     throw new Error("Unable to load Coach. Please try again.");
   requireCoachVersion(state.data?.defaults_version);
   return {
     sourceRevision: state.data?.source_revision ?? 0,
+    reconciledRevision: state.data?.reconciled_revision ?? -1,
     stateVersion: state.data?.state_version ?? 0,
     bootstrap: state.data?.bootstrap_at == null,
     preferencesVersion: prefs.data?.version ?? 0,
@@ -121,15 +122,15 @@ export async function loadCoachEvidence(
     weights,
     profile,
   ] = await Promise.all([
-    allRows(db, userId, "workout_session"),
-    allRows(db, userId, "set_log"),
-    allRows(db, userId, "program"),
-    allRows(db, userId, "program_day"),
-    allRows(db, userId, "program_slot"),
-    allRows(db, userId, "program_phase"),
-    allRows(db, userId, "movement_adaptation"),
+    coachSourceRows(db, userId, "workout_session"),
+    coachSourceRows(db, userId, "set_log"),
+    coachSourceRows(db, userId, "program"),
+    coachSourceRows(db, userId, "program_day"),
+    coachSourceRows(db, userId, "program_slot"),
+    coachSourceRows(db, userId, "program_phase"),
+    coachSourceRows(db, userId, "movement_adaptation"),
     // A revision retry must not reuse React's request-cached catalog snapshot.
-    allRows(db, userId, "exercise").then(mergeCatalog),
+    coachSourceRows(db, userId, "exercise").then(mergeCatalog),
     db
       .from("user_exercise_stat")
       .select(
@@ -275,7 +276,7 @@ export async function refreshCoachInbox(
   try {
     for (let attempt = 0; attempt < 2; attempt++) {
       const now = new Date();
-      const snapshot = await stateSnapshot(db, userId);
+      const snapshot = await coachStateSnapshot(db, userId);
       const observations = await loadCoachEvidence(
         db,
         userId,
@@ -381,7 +382,7 @@ export async function reportPainEnded(
   const refreshed = await refreshCoachInbox(db, userId);
   if (refreshed.status !== "ready")
     throw new Error("Refresh Coach before ending this review.");
-  const snapshot = await stateSnapshot(db, userId);
+  const snapshot = await coachStateSnapshot(db, userId);
   const episode = snapshot.episodes.find((e) => e.id === episodeId);
   if (
     !episode ||

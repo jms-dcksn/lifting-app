@@ -14,12 +14,12 @@ and dependencies: [exception-only implementation plan](AI-COACH-EXCEPTIONS-PLAN.
 
 **Foundations (#210/#211):** pure exception classification and shared effective workout
 targets and the persistent foreground inbox (#195) are implemented. The coaching entry-point
-switch and episode-linked conversations/interventions remain planned. See [inbox contract](COACH-INBOX.md).
+switch remains planned; episode-linked conversations and confirmed interventions (#141) are implemented. See [inbox contract](COACH-INBOX.md).
 
 **Storage/action design (#212):** [episode design and Decision Card](AI-COACH-EPISODES-DESIGN.md)
 specify replay, owner isolation, preferences and confirmed Fluid actions. The owner approved
 proceeding with #195 on 2026-10-14. Four inbox tables, guarded reconciliation and delivery
-are implemented; conversation links and training-action receipts/RPCs remain #141.
+are implemented, including #141 thread links and training-action receipts/RPCs.
 
 **Status:** Slice 0 shipped 2026-09-20. Chat became multi-thread on 2026-09-27
 ([Threads](#threads)). Slice 1 (screen context and navigation) shipped 2026-09-29.
@@ -100,8 +100,7 @@ No paid/live model evaluation is part of this slice. Teaching walkthrough:
 It consumes an owner-validated history snapshot (including set IDs and `set_index`),
 current active-program slots with exact exercise/equipment instance and program week,
 completed-session pain feedback, and explicit `asOf`/`evidenceSince` dates. It performs
-no fetches or writes and is not yet wired to an inbox or the chat tools. Future authenticated
-loaders must supply current ownership/context; this pure function is not an authorization gate.
+no fetches or writes; the authenticated inbox and episode loaders supply current ownership/context; this pure function is not an authorization gate.
 
 - Significant pain produces one session-scoped review candidate and takes precedence over
   lift signals. It neither guesses the affected lift nor supplies a pain-specific load.
@@ -598,7 +597,7 @@ been run as part of implementing this contract. Traces stay in `lifting-app-agen
 See [COACH-INBOX.md](COACH-INBOX.md) for the implemented lifecycle, signed-command boundary,
 foreground hooks, preferences, explicit pain-end, rollout and verification. The inbox routes
 provide deterministic evidence without a model turn. They preserve the ordinary Coach chat
-and existing Track Coach entry while #141/#206 remain pending.
+and existing Track Coach entry while #206 remains pending.
 
 ## Executable hardening boundaries (#222–#228)
 
@@ -610,3 +609,55 @@ canonical target entry points and local-only privileged eval helpers. Generated 
 verify lifecycle invariants and repeated target reads. [Verification](VERIFICATION.md)
 owns the reproducible command, CI/browser profiles and staged strict/evidence migrations.
 No model/provider, permissions, comparison policy or skills installation changes.
+
+## Exception conversations and confirmed interventions (#141)
+
+The notification review leads with the canonical recommendation and its remainder-of-program
+scope. **Accept change** (or the named replacement) is a one-click explicit confirmation,
+using the existing signed action/receipt boundary. Workout and standalone reviews retain their
+confirmation Sheet. Failed acceptance retries preserve the request UUID.
+
+**Discuss with Coach** creates/reuses one owned thread and deterministic seed through
+`open_coach_episode`, then carries a one-use `discuss=1` navigation intent into chat. The client
+POSTs `{ discuss: true, threadId, context }`; the server authorizes the owned seed link and
+answers that existing user message, without inserting another user row. Already answered
+conversations reopen passively. The marker is removed before generation; refresh does not
+restart it, and failures expose an explicit Retry discussion action. Ordinary navigation,
+refresh, acknowledgement and preferences never invoke the model.
+
+Each requested turn loads current linked evidence and receipts independently of transcript
+text. The initial seed is presented as a plain-language review request; its stored identity
+and authorization do not change. The initial page render loads the owned review panel before discussion begins, keeping
+**See details and choices** available while the first response streams.
+Stale/unavailable evidence cannot supply current target claims or actions.
+Deleted conversation URLs show unavailable; an explicit episode open can create a replacement.
+
+`coach-conversation-data.ts` refreshes canonical evidence, checks source/state revisions
+around reads, and obtains the canonical Fluid suggestion/candidate pool. The browser sends
+only validated intent, episode occurrence/revision, a stable request UUID, selected replacement
+and explicit nullable open-session scope. Confirmation rechecks active Fluid program, exact
+context, unsnoozed plateau, no outstanding pain, current ladder/band and offered loggable
+replacement. Classic plateaus remain review-only. A newly opened workout requires a fresh
+scope confirmation. No workout is created just to apply an intervention.
+
+`commit_coach_episode_action` uses the established signed-command boundary and lock order.
+It atomically inserts one adaptation, updates an open-session swap when needed, records a
+receipt and supersedes/snoozes the episode. A lost-response retry returns the owned receipt
+before recomputing a consumed candidate, even if the old command expired or keys rotated.
+Reusing a request UUID for another intent conflicts. Keep going inserts a dismiss plus the
+two-exposure frontier without changing the prescription. Applied language requires a receipt.
+Historical sets remain authoritative and untouched. Post-commit planner cleanup removes only
+the affected choice and repeats on receipt replay; cache refresh is outside the transaction.
+
+Active-session plateau controls now use this same review/confirmation path; the old
+client-supplied ladder/band acceptance actions were removed. Ordinary manual swaps retain
+their existing workout/program scope. Source, ownership, RPC, property and authenticated
+phone verification are described in [Verification](VERIFICATION.md).
+
+Deployment adds `20261017152248_coach_episode_conversations_actions.sql` after #195.
+Keep inbox/actions disabled until the matching migration, keys and target-environment checks
+pass. This PR does not apply hosted migrations or enable production delivery.
+
+Open-workout review uses a Sheet so the set-entry component stays mounted. Prescription and
+identity refreshes update only untouched suggestion fields. New sessions record each loggable
+canonical identity at creation; old sessions with absent choices retain the unavailable state.

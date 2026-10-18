@@ -21,6 +21,7 @@ import { startNextSession, startPlannedSession } from "@/app/(app)/session/actio
 const insert = vi.fn();
 const from = vi.fn();
 const next = () => ({ key: "current", choices: { first: "a" }, open: null, week: 2,
+  slots: [{ id: "first", exerciseId: "a" }, { id: "second", exerciseId: "template" }],
   day: { id: "day", slots: [{ id: "first" }, { id: "second" }] },
   catalog: {
     a: { id: "a" },
@@ -80,6 +81,11 @@ describe("planning and starting boundary", () => {
     await expect(startNextSession()).rejects.toThrow("REDIRECT:/session/session");
     expect(insert).toHaveBeenCalledWith({ user_id: "user", program_id: "program", program_day_id: "day", week_index: 2, exercise_swaps: { first: "a" } });
     expect(mocks.del).toHaveBeenCalledOnce();
+  });
+  it("stores canonical default identities at creation but leaves unresolved stations unavailable", async () => {
+    mocks.load.mockResolvedValue({ ...next(), choices: {}, slots: [{ id: "first", exerciseId: "b" }, { id: "second", exerciseId: "template" }] });
+    await expect(startNextSession()).rejects.toThrow("REDIRECT:/session/session");
+    expect(insert.mock.calls[0][0].exercise_swaps).toEqual({ first: "b" });
   });
   it("preserves the draft after a failed start", async () => {
     insert.mockReturnValue({ select: () => ({ single: async () => ({ data: null, error: { message: "offline" } }) }) });

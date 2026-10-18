@@ -141,6 +141,12 @@ async function startSession(planKey?: string) {
   if (next.open) redirect(`/session/${next.open.id}`);
   if (planKey && planKey !== next.key) redirect("/workout/next");
   const { day, week, choices } = next;
+  // Persist the exact loggable identities selected at creation. Older sessions with missing
+  // choices remain unavailable for Coach actions; never infer their original selection later.
+  const storedChoices = { ...choices };
+  for (const slot of next.slots) {
+    if (isLoggableExercise(next.catalog[slot.exerciseId])) storedChoices[slot.id] = slot.exerciseId;
+  }
 
   const { data, error } = await supabase
     .from("workout_session")
@@ -149,7 +155,7 @@ async function startSession(planKey?: string) {
       program_id: program.id,
       program_day_id: day.id,
       week_index: week,
-      exercise_swaps: choices,
+      exercise_swaps: storedChoices,
     })
     .select("id")
     .single();
@@ -528,61 +534,6 @@ export async function finishSession(
       note,
     },
   };
-}
-
-// Fluid programs: record an accepted plateau intervention (rep-range change or swap) to the
-// append-only movement_adaptation log. The resulting ladder step is 0 after a swap (fresh
-// movement) or +1 after a rep change. The folded prescription advances, so the suggestion
-// self-clears next load.
-export async function acceptAdaptation(input: {
-  sessionId: string;
-  programSlotId: string;
-  exerciseId: string;
-  action: "rep_change" | "swap";
-  ladderStep: number;
-  newExerciseId?: string;
-  newRepMin?: number;
-  newRepMax?: number;
-}): Promise<void> {
-  const { supabase, userId } = await requireUser();
-
-  const resultingStep = input.action === "swap" ? 0 : input.ladderStep + 1;
-
-  const { error } = await supabase.from("movement_adaptation").insert({
-    user_id: userId,
-    program_slot_id: input.programSlotId,
-    exercise_id: input.exerciseId,
-    action: input.action,
-    new_exercise_id: input.newExerciseId ?? null,
-    new_rep_min: input.newRepMin ?? null,
-    new_rep_max: input.newRepMax ?? null,
-    ladder_step: resultingStep,
-  });
-  if (error) throw new Error(error.message);
-
-  if (input.action === "swap" && input.newExerciseId) {
-    await swapSessionExercise({ sessionId: input.sessionId, programSlotId: input.programSlotId,
-      exerciseId: input.newExerciseId, scope: "workout" });
-  }
-  await refreshCoachInbox(supabase, userId);
-  revalidateSession(input.sessionId);
-}
-
-// "Keep going": snooze the suggestion for SNOOZE_EXPOSURES more exposures.
-export async function dismissAdaptation(input: {
-  programSlotId: string;
-  exerciseId: string;
-}): Promise<void> {
-  const { supabase, userId } = await requireUser();
-
-  const { error } = await supabase.from("movement_adaptation").insert({
-    user_id: userId,
-    program_slot_id: input.programSlotId,
-    exercise_id: input.exerciseId,
-    action: "dismiss",
-  });
-  if (error) throw new Error(error.message);
-  await refreshCoachInbox(supabase, userId);
 }
 
 // The RPC checks session/slot ownership and saves both scopes in one transaction.

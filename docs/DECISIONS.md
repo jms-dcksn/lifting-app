@@ -957,3 +957,24 @@ source-revision boundary, 90/21-day evidence defaults and foreground-only delive
 implements four inbox tables; defer episode thread links, structural actions and receipts to
 #141. Hosted migration/key provisioning is a release step separate from raising the PR.
 See [inbox contract](COACH-INBOX.md) and [design](AI-COACH-EPISODES-DESIGN.md).
+
+### Coach action receipts and session context (2026-10-17)
+
+#141 retains the immutable adaptation ID/evidence inside an owner-scoped receipt without a
+restrictive FK to the append-only adaptation table. Program deletion already cascades that
+log; Coach review history must not block it or disappear with it. Clear Coach history deletes
+the derived receipts while leaving training/adaptations and ordinary conversations intact.
+New workout sessions record canonical loggable identities at creation for exact action scope.
+Older sessions lacking a stored choice remain unavailable; no original identity is inferred
+retroactively. Open-workout review stays in a Sheet to preserve typed fields across confirmation.
+
+### Direct inbox choices and explicit discussion (2026-10-18)
+
+Preview testing showed that opening chat before exposing the recommendation required too
+many steps and left a seed without an agent response. The owner requested direct acceptance
+and a discussion action that starts the agent. The notice now displays canonical recommendation
+and program scope beside Accept; that click is the explicit confirmation. It uses the same
+fresh-evidence, owner, pain, session-scope and replay guards as the existing Sheet.
+Discuss explicitly starts the first reply on the existing owned seed. Reloading or reopening
+an answered thread stays passive; failures require a user retry. No new model/provider,
+privileged application client, schema or training policy is introduced.

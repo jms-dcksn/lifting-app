@@ -20,6 +20,7 @@ export type ChatSelection =
 
 export type TurnRequest =
   | { kind: "new"; text: string; context: AgentScreenContext }
+  | { kind: "review"; threadId: ThreadId; context: AgentScreenContext }
   | { kind: "continue"; threadId: ThreadId; text: string; context: AgentScreenContext };
 
 type Turn = {

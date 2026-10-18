@@ -15,7 +15,7 @@
     "test:db": "supabase test db supabase/tests/*_rls.sql",
     "eval:agent:sync": "tsx scripts/agent-evals.ts sync",
     "eval:agent:regrade": "tsx scripts/agent-evals.ts regrade",
-    "test:db:concurrency": "node scripts/test-coach-concurrency.mjs",
+    "test:db:concurrency": "node scripts/test-coach-concurrency.mjs && node scripts/test-coach-actions-concurrency.mjs",
     "typecheck": "node scripts/typecheck.mjs",
     "typecheck:indexed": "tsc --project tsconfig.indexed.json",
     "verify": "node scripts/verify.mjs",

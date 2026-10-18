@@ -75,3 +75,8 @@ replace an authenticated browser test against the deployed Supabase instance.
 The planner program-scope path adds `swap_program_slot_exercise` (same slot/adaptation writes
 as in-session program scope, without touching `workout_session`). Type checking, ESLint,
 Vitest, and the production build are the shipping gates.
+
+Coach action context (#141): new sessions persist every selected, loggable slot identity in
+`exercise_swaps`, including canonical defaults and folded Fluid choices. Unresolved station
+templates are not guessed. This records context at creation; older open sessions with missing
+stored identities remain unavailable for Coach structural confirmation. No history is backfilled.

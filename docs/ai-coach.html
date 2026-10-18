@@ -1307,6 +1307,36 @@ export function resolveExactWorkoutTarget(input: Omit&lt;EffectiveTargetInput, &
         migration, provider change, extra training permission or Poteto skill installation is introduced.</p>
         <p><a class="underline" href="VERIFICATION.md">Commands, prerequisites, review focus and remaining migration batches</a></p>
       </section>
+<section id="episode-conversations" class="section-rail">
+<h2>Exception conversations and confirmed choices (#141)</h2>
+<p>The inbox review shows the canonical recommendation first. Accept confirms the displayed program scope in one click. Discuss with Coach starts the first reply on the owned episode seed, using current authorized evidence. The owned review panel is included in the initial chat render so its choices remain available during the response. Reloading or reopening an answered conversation stays passive; failures require an explicit retry.</p>
+<div style="display:flex;flex-wrap:wrap;gap:12px;font-family:system-ui"><div style="border:1px solid;padding:16px">Inbox notice → recommendation + scope</div><div style="border:1px solid;padding:16px">Accept → fresh evidence → saved receipt</div><div style="border:1px solid;padding:16px">Discuss → owned seed → streamed response</div><div style="border:1px solid;padding:16px">Reload → saved conversation, no automatic generation</div></div>
+<p>Routine workout numbers remain automatic. Rep-range changes and exercise replacements need confirmation for the remainder of the program. Keep going preserves the prescription and snoozes for two comparable exposures. Pain acknowledgement never means pain ended or that a safe load was calculated.</p>
+<div style="display:flex;flex-wrap:wrap;gap:12px"><div style="border:1px solid;padding:16px">Same request → same receipt, even after a lost response</div><div style="border:1px solid;padding:16px">Changed source, phase, exercise or workout scope → refresh and confirm again</div><div style="border:1px solid;padding:16px">Failure before commit → no partial training change</div></div>
+<pre class="code-rail overflow-auto bg-stone-100 p-4"><code>/** A calculated target and a legacy review never authorize a structural change. */
+export function availableCoachIntervention(episode: CoachEpisode, suggestion: PendingSuggestion | null) {
+  if (episode.family !== &quot;lift_performance&quot; || episode.state !== &quot;open&quot; || episode.validity !== &quot;current&quot;
+    || episode.snoozeSourceIds !== null || !suggestion) return null;
+  const signal = episode.evidence?.candidate.signals.find(s =&gt; s.reason === &quot;confirmed_plateau&quot;);
+  if (!signal || signal.action !== suggestion.action) return null;
+  if (signal.action === &quot;rep_change&quot; &amp;&amp; (signal.repBand.repMin !== suggestion.repBand?.repMin
+    || signal.repBand.repMax !== suggestion.repBand?.repMax)) return null;
+  return suggestion;
+}
+</code></pre><p>The discussion boundary reuses the owned seed and never inserts a duplicate user message.</p><pre class="code-rail overflow-auto bg-stone-100 p-4"><code>/** An explicit Discuss click answers the owned seed without inserting another user message. */
+async function discussReview(supabase: Client, userId: string, threadId: ThreadId) {
+  const { data: link, error } = await supabase.from(&quot;coach_episode_thread&quot;).select(&quot;seed_message_id&quot;)
+    .eq(&quot;user_id&quot;, userId).eq(&quot;thread_id&quot;, threadId).maybeSingle();
+  if (error) throw Error(&quot;Coach review is unavailable. Please retry.&quot;);
+  if (!link) return null;
+  const [thread, messages] = await Promise.all([
+    findThread(supabase, userId, threadId), loadTranscript(supabase, userId, threadId),
+  ]);
+  const seed = messages[0];
+  if (!thread || messages.length !== 1 || seed?.id !== link.seed_message_id || seed.role !== &quot;user&quot;) return null;
+  return { thread: { ...thread, updatedAt: seed.createdAt }, userMessage: seed };
+}</code></pre><p>The action boundary uses signed-in ownership, server signatures and source revisions. The model cannot supply trusted loads, bands, ladder steps or authorization. Previous sets remain unchanged; a committed receipt is the evidence for “applied.”</p>
+</section>
     </main>
   </body>
 </html>

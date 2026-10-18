@@ -105,3 +105,26 @@ that verification covers real authorization rather than a more privileged fixtur
 Mechanical internal edits should be supported by the executable checks above. Existing
 security review and merge policies remain in force. No Poteto/Cursor skills are installed;
 a future verification skill should select these commands instead of duplicating them.
+
+## Episode conversation/action regression (#141)
+
+`coach_conversations_rls.sql` checks both-owner link/receipt isolation, direct-write and
+anonymous denial, private-helper/MAC boundaries, deterministic seed reuse/deletion and
+history clearing. `scripts/test-coach-actions-concurrency.mjs` runs through the existing
+`test:db:concurrency` command and uses real competing connections: simultaneous opens and
+confirms, lost-response and expired-command replay, conflicting request intent, changed
+source/open-session scope, a competing set write, injected receipt failure rollback, snooze
+and atomic open-workout replacement. The executor retains its realistic non-bypass role.
+
+`e2e/coach.spec.ts` uses real local Auth, Next actions, PostgREST/RLS and PostgreSQL. It covers
+notice → one-click acceptance or explicit discussion → reused conversation → evidence →
+cancellation/confirmation → persistent receipt. The test waits for the notice URL and
+recommendation before saving its return destination. Discussion transport is stubbed with a saved
+assistant response, so no paid model runs. Tests expect one initial request and no repeat
+on reopen; handler tests verify the owned seed and fresh episode context. Before-workout confirmation creates no session; open-workout
+review preserves typed set inputs and all saved history. 320px overflow is checked.
+The local #141 run passed all 14 ownership suites / 178 assertions and both concurrency
+scripts. Browser verification passed the pre-workout journey and the existing anonymous,
+set/reload/swap/pain journey, then the final open-workout draft-preservation journey after
+recording canonical default identities at session creation. Hosted migrations/keys, email
+delivery and live-model language quality remain separate verification.

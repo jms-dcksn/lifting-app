@@ -38,10 +38,14 @@ Next.js (App Router) · Supabase (Postgres + Auth + RLS) · TypeScript recommend
 ## Setup
 
 ```bash
-npm install
+npm ci
 cp .env.local.example .env.local   # fill in Supabase URL + publishable key
 npm run dev
 ```
+
+Use Node 22 (as CI does). `npm ci` also installs Lefthook's commit and push gates,
+including on fresh cloud clones. See [verification and hook setup](docs/VERIFICATION.md#git-hooks)
+for required checks, prerequisites, and recovery when lifecycle scripts were disabled.
 
 Apply the schema to your Supabase project:
 

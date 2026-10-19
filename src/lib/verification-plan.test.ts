@@ -3,7 +3,7 @@ import { prerequisite, verificationPlan } from "../../scripts/verification-plan.
 
 describe("verification selection and prerequisites", () => {
   it("always regenerates types and includes strict checking, tests, lint and build in the base profile", () => {
-    expect(verificationPlan([]).map(step => step.script)).toEqual(["typecheck", "lint", "typecheck:indexed", "test", "build"]);
+    expect(verificationPlan([]).map(step => step.script)).toEqual(["typecheck", "lint", "typecheck:indexed", "test:hooks", "test", "build"]);
     expect(verificationPlan(["agent"]).map(step => step.script)).toEqual(["test:agent"]);
     expect(() => verificationPlan(["unknown"])).toThrow();
   });

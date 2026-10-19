@@ -1,5 +1,69 @@
 # Project verification and hardening
 
+## Git hooks
+
+Use Node 22, Git and `npm ci` on every new checkout, including cloud coding environments.
+Install dev dependencies and allow npm lifecycle scripts. The root `prepare` script runs
+the pinned Lefthook binary to install `pre-commit` and `pre-push`; configuration lives in
+`lefthook.yml`. No global hook tool, Docker, credentials or browser is needed for commit checks.
+
+| Gate | Required checks |
+| --- | --- |
+| Commit | Full ESLint, strict indexed-access TypeScript slice, hook regression tests, deterministic Vitest suite |
+| Push | Full `npm run verify`: fresh framework types, TypeScript, lint, strict slice, hook tests, Vitest, production build |
+| PR CI | Base verification plus disposable database ownership/concurrency tests and authenticated browser journeys |
+
+Commit checks run on every commit, including documentation changes. `scripts/git-hooks.mjs`
+exports the Git index to a temporary directory, links the checkout's installed dependencies,
+and runs the existing npm commands there. This checks staged additions/deletions and partial
+staging without stashing, formatting, or changing working files. Temporary files are removed
+afterward. Ignored local environment files and generated Next types are excluded. The strict
+slice needs no generated route types, so commits are safe while the dev server runs. Install
+dependencies again after changing the lockfile; the staged and working lockfiles must agree.
+
+Push verification uses the current checkout: commit or stash tracked and untracked work
+first, and stop the Next dev server/build. Next lock files block the push before generated
+types can be removed. Push the checked-out HEAD; pushing a different commit/ref is rejected.
+Ignored dependencies, environment files and build output can remain. Push checks are read-only
+with respect to hosted databases: the existing hosted migration gate is preserved, and a
+failure never authorizes a migration. Both hook runners force paid live evals off.
+
+After `npm ci --ignore-scripts`, explicitly run `npm run prepare` once scripts are allowed.
+`npm run prepare` also repairs missing hooks. If a managed environment blocks writes to
+`.git/hooks`, obtain that filesystem permission and rerun it. A conflicting `core.hooksPath`
+needs reconciliation with the environment's hook owner; preserve existing hooks rather than
+silently replacing the configured path. Use `npx --no-install lefthook validate` to check the
+configuration and `npm run check:commit` / `npm run check:push` to run gates manually.
+
+Keep hooks enabled for agent and human commits. If prerequisites are unavailable, report
+the blocked gate and resolve the environment instead of using `--no-verify`, `LEFTHOOK=0`,
+or local skip overrides. Local hooks remain bypassable; repository administrators should
+require the CI app and Database RLS checks on protected branches. The checked-in workflow
+runs them, but branch protection is a separate GitHub setting.
+
+## Session continuity across local and cloud clones
+
+`AGENTS.md` and `.agents/skills/close-session/SKILL.md` define the portable workflow.
+Start from the assigned issue/PR, current Git status and branch, and relevant versioned docs.
+At completion, update owning docs for durable changes and report checks, blocked verification,
+commit/push status and remaining work. When publishing a PR is authorized, its description
+also carries task-specific verification evidence. An ignored file is never the only home
+for a changed contract, decision or actionable follow-up.
+
+`.claude/LAST_SESSION.md` remains optional, ignored, checkout-local context. Fresh clones
+normally have no file. Its `Commit:` and `Branch:` lines must exactly match HEAD and the
+current branch (`DETACHED` for detached HEAD) before it is used; working-tree claims still
+need checking. Older notes without branch metadata are skipped. Cloud sessions can finish
+with the durable docs and self-contained final report, without generating a local note.
+
+`.claude/settings.json` configures only Claude Code's optional startup loader. There is no
+Stop gate requiring a local handoff or a matching HEAD. Codex follows `AGENTS.md` explicitly;
+the Claude configuration does not install lifecycle hooks in Codex. Shared Git commit/push
+gates are Lefthook's responsibility. `npm run test:hooks` covers staged checks, push guards,
+fresh/matching/stale/other-branch/detached local notes, and the absence of a Stop gate.
+
+## Verification profiles
+
 Run `npm run verify` from a checkout with dependencies installed and no running dev
 server/build. It regenerates both production and development route types, then runs
 typecheck, lint, the indexed-access slice, Vitest and the production build. Both Next

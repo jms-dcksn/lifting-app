@@ -1,0 +1,10 @@
+pre-commit:
+  jobs:
+    - name: staged-checks
+      run: npm run check:commit
+
+pre-push:
+  jobs:
+    - name: full-verification
+      use_stdin: true
+      run: npm run check:push

@@ -5,8 +5,10 @@ TypeScript strength engine. Workouts require connectivity; there is no offline s
 
 ## Start here
 
-1. Read `.claude/LAST_SESSION.md` if present. Check its commit against `git log` and the
-   working tree before treating its status or next action as current.
+1. Check `git status`, current HEAD/branch, recent history, and the assigned issue/PR.
+   Fresh local/cloud clones use versioned docs for continuity. `.claude/LAST_SESSION.md`
+   is optional local context only when its `Commit:` and `Branch:` match the checkout;
+   verify its claims against the working tree.
 2. Read the relevant reference below before changing that area. Use
    [the docs index](docs/README.md) to distinguish current contracts from historical plans.
 3. Before framework changes, check the installed docs in `node_modules/next/dist/docs/`.
@@ -33,6 +35,11 @@ TypeScript strength engine. Workouts require connectivity; there is no offline s
 
 ## Verification and continuity
 
+On fresh clones (including cloud VMs), run `npm ci` with dev dependencies and lifecycle
+scripts enabled; `prepare` installs the versioned Lefthook gates. Commit and push through
+Git with hooks enabled; fix failures rather than bypassing them. For hook setup, staged
+checks, push prerequisites, or blocked environments, read [Git hooks](docs/VERIFICATION.md#git-hooks).
+
 Commands are defined in `package.json`: `npm run dev`, `npm test`, `npm run lint`,
 `npm run build`; run `npm run verify` for the base checks, or `npm run typecheck`
 for fresh framework types plus TypeScript. Profile selection and prerequisites live in
@@ -48,16 +55,17 @@ browser when authenticated state is available. For docs-only edits, check refere
 claims against source. Record what was actually verified and any remaining limits.
 
 Use [close-session](.agents/skills/close-session/SKILL.md) when a session changes the repo
-or a commit lands. It refreshes the owning docs and overwrites `.claude/LAST_SESSION.md`
-with this session's work, checks, and current HEAD. The Stop hook blocks until that file
-names HEAD. Keep `CLAUDE.md` exactly `@AGENTS.md`; put new detail in the owning reference
+or a commit lands. It refreshes owning docs and produces a self-contained verification and
+handoff report. The ignored local note is optional; cloud sessions need no previous file.
+Claude's optional startup hook is not a Codex/cloud lifecycle hook; follow this workflow
+explicitly in every environment. Keep `CLAUDE.md` exactly `@AGENTS.md`; put new detail in the owning reference
 and add a trigger here only when a new task branch appears.
 
 ## Read before changing
 
 | Area | Reference |
 | --- | --- |
-| Architecture lint, validated evidence/identity/storage boundaries, strict indexed-access slice, or verification/browser smoke checks | [Verification and hardening](docs/VERIFICATION.md) |
+| Git hooks, architecture lint, validated evidence/identity/storage boundaries, strict indexed-access slice, or verification/browser smoke checks | [Verification and hardening](docs/VERIFICATION.md) |
 | Visual map of experiences, request path, or why a performance/scale choice exists | [Architecture map](docs/architecture.html) |
 | Strength, calibration, catalog identity, program loading, data ownership, auth | [Architecture](docs/ARCHITECTURE.md) and [decisions](docs/DECISIONS.md) |
 | UI primitives, motion, overlays, server/client boundaries | [UI conventions](docs/UI.md) |

@@ -3,7 +3,7 @@ export function verificationPlan(args) {
   const selected = args.length ? args.map(arg => arg.replace(/^--/, "")) : ["base"];
   for (const name of selected) if (!profiles.includes(name)) throw Error(`Unknown verification profile: ${name}. Choose ${profiles.join(", ")}.`);
   const commands = [];
-  if (selected.includes("base")) commands.push(["typecheck"], ["lint"], ["typecheck:indexed"], ["test"], ["build"]);
+  if (selected.includes("base")) commands.push(["typecheck"], ["lint"], ["typecheck:indexed"], ["test:hooks"], ["test"], ["build"]);
   if (selected.includes("database")) commands.push(["test:db"], ["test:db:concurrency"]);
   if (selected.includes("browser")) commands.push(["test:browser"]);
   if (selected.includes("agent")) commands.push(["test:agent"]);

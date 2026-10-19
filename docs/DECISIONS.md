@@ -16,6 +16,24 @@ weight for any exercise based on logged history of similar movements.
 Assumes internet during workouts, so no offline/local-first layer (deleted ~40% of the
 original complexity). No Fly.io, Docker, or sync engine.
 
+## Git verification gates (2026-10-19)
+
+Pinned Lefthook installs through `npm ci` on local and cloud clones. Commits check an
+isolated export of the staged index with the existing lint, strict-slice and deterministic
+test commands; unstaged fixes cannot mask failures. Pushes require a clean checkout of the
+pushed HEAD and run full base verification with Next stopped. Database/browser checks stay
+in CI and paid evals stay explicit. Hooks provide local feedback; protected-branch required
+CI checks are a separate remote control. See [Verification](VERIFICATION.md#git-hooks).
+
+## Portable session continuity (2026-10-19)
+
+Versioned owning docs, Git history and authorized issue/PR context carry continuity between
+local and cloud sessions. Close-session requires a self-contained final verification report;
+the ignored `.claude/LAST_SESSION.md` stays optional local context. Matching branch and HEAD
+metadata prevent stale startup injection. The Claude Stop gate is removed: fresh clones and
+read-only sessions must not depend on a machine-local file. Tracking the handoff would cause
+shared-file contention and invalidate its own exact-HEAD stamp whenever it was committed.
+
 ## Core algorithm (three layers)
 
 1. **Normalize every set to e1RM** via an RPE/RIR load table (RPE = 10 - RIR), not a bare

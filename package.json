@@ -20,7 +20,11 @@
     "typecheck:indexed": "tsc --project tsconfig.indexed.json",
     "verify": "node scripts/verify.mjs",
     "test:browser": "playwright test",
-    "test:agent": "vitest run src/lib/agent src/lib/coach-invariants.test.ts"
+    "test:agent": "vitest run src/lib/agent src/lib/coach-invariants.test.ts",
+    "prepare": "lefthook install",
+    "check:commit": "node scripts/git-hooks.mjs commit",
+    "check:push": "node scripts/git-hooks.mjs push",
+    "test:hooks": "node --test scripts/git-hooks.test.mjs scripts/session-hooks.test.mjs"
   },
   "dependencies": {
     "@langchain/core": "^1.2.12",
@@ -46,6 +50,7 @@
     "eslint-config-next": "16.2.6",
     "fast-check": "4.3.0",
     "jsdom": "^29.1.1",
+    "lefthook": "2.2.2",
     "pg": "8.16.3",
     "supabase": "^2.116.0",
     "tailwindcss": "^4",

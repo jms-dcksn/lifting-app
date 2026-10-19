@@ -1,11 +1,13 @@
 ---
 name: close-session
-description: Refresh owning docs and overwrite .claude/LAST_SESSION.md after a working session in this lifting app. Use when a session changes code, tests, or docs; when wrapping up; when the Stop hook says HEAD is missing from LAST_SESSION.md; or when the user says close the session, update last session, keep docs fresh, or record what this session did. Also use it after a small feature, fix, or test change, even if nobody said "phase" or "ship".
+description: Refresh owning docs and report verification and remaining work after changing this lifting app, landing a commit, or wrapping up a session. Use when the user says close the session, update last session, keep docs fresh, or record what this session did. Works in fresh local and cloud clones; a local handoff is optional.
 ---
 
 # Close a session
 
-The next session starts from `.claude/LAST_SESSION.md` and the docs, not from this conversation. Two jobs, in order. Do both before stopping when this skill applies.
+Shared continuity lives in versioned docs, Git history, and the task's issue or PR.
+Complete the docs refresh and final report before stopping. A fresh cloud clone needs
+no previous session file or Claude hooks to follow this skill.
 
 This skill does not build a feature, tick `docs/PLAN.md`, commit, or write project memory. Those are separate asks.
 
@@ -13,12 +15,13 @@ This skill does not build a feature, tick `docs/PLAN.md`, commit, or write proje
 
 The delta is this conversation's work, not a phase checklist.
 
-- Read `.claude/LAST_SESSION.md` if it exists. Its `Commit:` line is the previous handoff.
-- If that sha is an ancestor of `HEAD`, the committed delta is `git log --oneline <that-sha>..HEAD` plus `git diff <that-sha>..HEAD --stat`.
-- Also read `git status`. Uncommitted work is part of the session.
-- If there is no previous file, use the commits and files this conversation actually touched, plus `git status`.
+- Start with `git status`, current HEAD/branch, and the files and commits changed in this task. Use the assigned issue/PR and relevant owning docs for shared context.
+- For a PR, compare against its verified base or merge-base. Otherwise use the session's known starting commit. Separate this session's edits from pre-existing changes.
+- `.claude/LAST_SESSION.md` is optional local context. Use it only when its `Branch:` matches the current branch and its `Commit:` exactly matches HEAD. Treat other notes as stale; do not infer task scope from them.
+- If the starting point is unknown, report that limit and use the observed task changes; do not invent a previous session or treat all recent commits as this session's work.
 
-Skip the rest only when nothing changed: no new commit, a clean tree, and the existing file already names `HEAD`.
+For read-only sessions with no changes made by this task, report findings without creating
+a handoff or editing docs merely to record the session.
 
 ## 2. Refresh the owning docs
 
@@ -31,16 +34,24 @@ Update docs only where this delta makes them wrong or silent about new behavior.
 - Record a real decision in `docs/DECISIONS.md` when this session made one that is not already there.
 - Apply the working rules already in `AGENTS.md`, including the AI Coach explainer when that area changed.
 
-No doc edit is a valid result. The session file has to say why.
+No doc edit is a valid result; explain why in the final report. Durable decisions,
+changed contracts, and actionable remaining work belong in the owning versioned doc,
+not solely in chat or an ignored file. Put validation evidence and task-specific follow-up
+in the PR description when creating/updating a PR is already authorized; otherwise include
+them in the final report. This skill does not authorize external communication or a push.
 
-## 3. Overwrite the handoff
+## 3. Optional local handoff
 
-Overwrite `.claude/LAST_SESSION.md` entirely. It is gitignored local state; do not stage it. The Stop hook greps for the full `HEAD` sha, so the commit line has to be exact (`git rev-parse HEAD`).
+For continued work in this checkout, you may overwrite `.claude/LAST_SESSION.md` entirely.
+It stays gitignored and is not required in disposable cloud sessions. Record exact HEAD
+(`git rev-parse HEAD`) and branch (`git symbolic-ref --short -q HEAD`, or `DETACHED`).
+No Stop hook requires this file. It cannot replace the durable docs or final report.
 
 ```markdown
 # Last session — YYYY-MM-DD
 
 Commit: <full HEAD sha>
+Branch: <branch name or DETACHED>
 
 ## Done
 - <specific behavior, fix, or test, naming the files that matter>
@@ -65,4 +76,8 @@ Write it for the next session: what is true now, what was verified, what is stil
 
 ## Done
 
-Report the docs touched, the `Commit:` line, whether the tree is clean, and the single next action.
+Report what changed, the docs touched (or why none), checks passed/failed/blocked,
+current HEAD, whether this task's changes are committed, and remaining work. Distinguish
+local checks from hosted CI and state whether anything was pushed. If no work remains,
+say so rather than inventing a next task. A cloud session's report must stand alone without
+access to the ignored handoff.

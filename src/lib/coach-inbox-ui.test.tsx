@@ -61,6 +61,26 @@ describe("Coach inbox chrome", () => {
     expect(
       host.querySelector('a[aria-label="Coach inbox, 2 unread"]'),
     ).not.toBeNull();
+    expect(host.querySelector('a svg[aria-hidden="true"]')).not.toBeNull();
+    expect(host.textContent).toBe("2");
+  });
+  it("keeps the icon available with no unread notices", async () => {
+    actions.refreshInbox.mockResolvedValue({
+      refresh: { status: "ready", arrival: null },
+      page: { ...page, unread: 0 },
+    });
+    await act(async () => root.render(createElement(CoachInboxEntry, { pathname: "/settings", hide: false })));
+    expect(host.querySelector('a[aria-label="Coach inbox"]')).not.toBeNull();
+    expect(host.textContent).toBe("");
+  });
+  it("caps the badge while retaining the full accessible unread count", async () => {
+    actions.refreshInbox.mockResolvedValue({
+      refresh: { status: "ready", arrival: null },
+      page: { ...page, unread: 123 },
+    });
+    await act(async () => root.render(createElement(CoachInboxEntry, { pathname: "/", hide: false })));
+    expect(host.querySelector('a[aria-label="Coach inbox, 123 unread"]')).not.toBeNull();
+    expect(host.textContent).toBe("99+");
   });
   it("refreshes but never displays chrome or arrivals in a workout", async () => {
     actions.refreshInbox.mockResolvedValue({
@@ -78,16 +98,16 @@ describe("Coach inbox chrome", () => {
     expect(host.textContent).toBe("");
     expect(actions.refreshInbox).toHaveBeenCalledWith(false);
   });
-  it("hides the redundant floating entry on Coach pages", async () => {
+  it.each(["/coach", "/coach/inbox", "/coach/inbox/notice"])("keeps the notification icon on %s without claiming arrivals", async (pathname) => {
     await act(async () =>
       root.render(
         createElement(CoachInboxEntry, {
-          pathname: "/coach/inbox/notice",
+          pathname,
           hide: false,
         }),
       ),
     );
-    expect(host.textContent).toBe("");
+    expect(host.querySelector('a[aria-label="Coach inbox, 2 unread"]')).not.toBeNull();
     expect(actions.refreshInbox).toHaveBeenCalledWith(false);
   });
   it("coalesces multiple foreground events during an in-flight refresh", async () => {

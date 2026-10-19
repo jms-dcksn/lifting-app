@@ -3,6 +3,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { refreshInbox } from "@/app/(app)/coach/inbox/actions";
 import { IconButton } from "@/components/ui/icon-button";
+import { iconButtonClasses } from "@/components/ui/icon-button-styles";
+import { IconBell } from "@/components/ui/icons";
 
 // One refresh per shell, coalesced across route/visibility/mutation events.
 export function CoachInboxEntry({
@@ -73,27 +75,28 @@ export function CoachInboxEntry({
   useEffect(() => {
     window.dispatchEvent(new Event("coach:refresh"));
   }, [pathname, hide]);
-  if (
-    hide ||
-    !enabled ||
-    pathname === "/coach" ||
-    pathname.startsWith("/coach/")
-  )
-    return null;
+  if (hide || !enabled) return null;
   return (
     <>
       <Link
         href="/coach/inbox"
         aria-label={`Coach inbox${unread ? `, ${unread} unread` : ""}${failed ? ", refresh needed" : ""}`}
-        className="fixed left-4 z-30 bottom-[calc(4.25rem+env(safe-area-inset-bottom)+0.75rem)] flex min-h-11 items-center gap-2 rounded-control border border-border bg-background px-3 text-caption focus-visible:outline-2"
+        title="Coach inbox"
+        aria-current={pathname === "/coach/inbox" ? "page" : undefined}
+        className={iconButtonClasses(
+          "default",
+          "fixed right-[max(1rem,env(safe-area-inset-right))] top-[calc(0.75rem+env(safe-area-inset-top))] z-30 bg-background",
+        )}
       >
-        Coach inbox{" "}
-        {unread > 0 ? (
-          <span className="rounded-full bg-foreground px-2 text-background">
-            {unread}
+        <IconBell />
+        {unread > 0 || failed ? (
+          <span
+            aria-hidden
+            className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1 text-caption text-background"
+          >
+            {failed ? "!" : unread > 99 ? "99+" : unread}
           </span>
         ) : null}
-        {failed ? <span aria-hidden>!</span> : null}
       </Link>
       {arrival ? (
         <div

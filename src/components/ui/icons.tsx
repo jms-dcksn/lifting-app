@@ -14,6 +14,15 @@ function Svg({ size = 20, children }: IconProps & { children: React.ReactNode })
   );
 }
 
+export function IconBell({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 21h4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
 export function IconPlay({ size }: IconProps) {
   return (
     <Svg size={size}>

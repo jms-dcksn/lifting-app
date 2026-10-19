@@ -71,7 +71,10 @@ when adding helper text.
 Visible helper text that is not a label, value, error, or confirmation should be ≤ ~6 words
 or gone.
 
-The app layout remains a Server Component. `AppShell` renders a bottom tab bar (Lift,
+The app layout remains a Server Component. `AppShell` reserves top space for a fixed
+top-right Coach inbox bell with the shared 44px icon-button style and unread badge.
+It persists on Coach pages; immersive flows hide it with the rest of the shell chrome.
+`AppShell` renders a bottom tab bar (Lift,
 Track, Program, You) with `aria-current` on the active destination. Track is current on
 `/analytics`, `/analytics/*`, and `/history/...`. Hide it on `/session/[id]`
 (including `/session/[id]/recap`), `/workout/next`, `/program/new`, and program edit. Recap

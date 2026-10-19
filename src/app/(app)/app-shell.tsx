@@ -41,7 +41,7 @@ function ShellFrame({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cx("flex min-h-full flex-col", !hide && "pb-[calc(7.75rem+env(safe-area-inset-bottom))]")}>
+    <div className={cx("flex min-h-full flex-col", !hide && "pt-[calc(4.25rem+env(safe-area-inset-top))] pb-[calc(7.75rem+env(safe-area-inset-bottom))]")}>
       <main className="flex flex-1 flex-col">{children}</main>
       {pathname ? <CoachInboxEntry pathname={pathname} hide={hide} /> : null}
       {!hide && (

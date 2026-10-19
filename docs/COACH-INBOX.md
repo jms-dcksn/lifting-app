@@ -8,8 +8,12 @@ Supabase client. No model is called by refresh, read, acknowledge, preferences o
 ## User experience
 
 `/coach/inbox` contains immutable original notices and current episode evidence. The shell
-shows unread count and at-most-once compact arrivals outside immersive workout/planner/builder
-chrome. Opening a notice marks it read; Acknowledge records review only. A distinct confirmed
+shows a fixed top-right bell icon with an unread badge, including on Coach pages. It uses
+the shared 44px icon-button style, a safe-area inset and reserved space above page content.
+The accessible name includes the full unread count and refresh-needed status; the visual
+badge caps counts at 99+ and shows ! when refresh is needed. At-most-once compact arrivals
+stay outside Coach pages and immersive workout/planner/builder chrome; immersive flows also
+hide the bell. Opening a notice marks it read; Acknowledge records review only. A distinct confirmed
 **This pain situation has ended** records `user_reported_ended`, never medical clearance.
 Pain remains session-scoped and offers no invented pain-specific target. Structural training
 choices appear directly on the notice review. A scoped **Accept change** (or named replacement)

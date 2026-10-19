@@ -1163,6 +1163,21 @@ const window = range === "last8" ? eligible.slice(-REVIEW_CHART_SESSIONS) : elig
 
       <section id="inbox-implementation" class="space-y-4 rounded-lg border border-slate-300 p-5">
         <h2 class="font-serif text-2xl">The implemented foreground inbox (#195)</h2>
+        <p>The shell keeps a 44px notification bell fixed in the top right, with safe-area
+          spacing and room above page content. Its badge shows unread notices (up to 99+),
+          or ! when refresh is needed. The accessible name retains the full count. The bell
+          stays available on Coach pages; immersive workout, planner and builder flows hide it.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;font-family:system-ui">
+          <div style="border:1px solid;padding:12px">Top-right bell + unread badge</div>
+          <div style="border:1px solid;padding:12px">Open → persistent Coach inbox → notice review</div>
+          <div style="border:1px solid;padding:12px">Immersive flow → bell and arrivals hidden</div>
+        </div>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>// src/components/coach/coach-inbox-entry.tsx
+if (hide || !enabled) return null;
+// The link uses iconButtonClasses and an accessible Coach inbox label.
+&lt;IconBell /&gt;
+// Its badge prioritizes refresh failure, then caps the visual count:
+{failed ? "!" : unread &gt; 99 ? "99+" : unread}</code></pre>
         <p>One situation has a stable episode ID. Changing supporting sets updates evidence;
         reading a notice updates delivery state. Neither action applies a training change.
         The original notice and current evidence are shown separately. Pain stays a session

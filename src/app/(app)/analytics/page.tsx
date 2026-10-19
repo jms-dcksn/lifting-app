@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/page-header";
 import { redirect } from "next/navigation";
 import {
   exerciseSummaries,
@@ -114,17 +115,15 @@ export default async function AnalyticsPage() {
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
-      <header className="flex items-start justify-between gap-3">
-        <h1 className="text-display">Track</h1>
-        <div className="flex">
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 pb-6">
+      <PageHeader title="Track" actions={<>
+
           <TrackExploreMenu
             weekPrs={<WeekPrList sessions={week.sessions} catalog={catalog} />}
             allLifts={<ExerciseList items={listItems} catalog={catalog} />}
           />
           <PinEditorButton items={pinItems} catalog={catalog} />
-        </div>
-      </header>
+      </>} />
 
       {analyticsRows.length === 0 && lifts.length === 0 ? (
         <Card>

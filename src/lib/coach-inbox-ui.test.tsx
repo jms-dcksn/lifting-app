@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
-import { act, createElement } from "react";
+import React, { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CoachInboxEntry } from "@/components/coach/coach-inbox-entry";
+import { CoachInboxProvider } from "@/components/coach/coach-inbox-entry";
+import { CoachInboxButton } from "@/components/coach/coach-inbox-button";
+import { PageHeader } from "@/components/ui/page-header";
 import { CoachInbox } from "@/components/coach/coach-inbox";
 import { CoachNoticeDetail } from "@/components/coach/coach-notice-detail";
 import { DEFAULT_COACH_PREFERENCES } from "./coach-episodes";
@@ -25,6 +27,9 @@ vi.mock("next/link", () => ({
   }: React.AnchorHTMLAttributes<HTMLAnchorElement>) =>
     createElement("a", { href, ...props }, children),
 }));
+function CoachInboxEntry(props: { pathname: string; hide: boolean }) {
+  return <CoachInboxProvider {...props}><CoachInboxButton /></CoachInboxProvider>;
+}
 let root: Root, host: HTMLDivElement;
 const page = {
   notices: [],
@@ -52,6 +57,26 @@ afterEach(async () => {
   host.remove();
 });
 describe("Coach inbox chrome", () => {
+  it("shares notification state with the current page header across navigation", async () => {
+    const renderScreen = (pathname: string, title: string) => (
+      <CoachInboxProvider pathname={pathname} hide={false}>
+        <PageHeader title={title} actions={<button type="button">Screen action</button>} />
+      </CoachInboxProvider>
+    );
+    await act(async () => root.render(renderScreen("/", "Lift")));
+    expect(host.querySelectorAll("header")).toHaveLength(1);
+    expect(host.querySelector('header a[aria-label="Coach inbox, 2 unread"]')).not.toBeNull();
+    expect(actions.refreshInbox).toHaveBeenCalledTimes(1);
+    actions.refreshInbox.mockResolvedValue({
+      refresh: { status: "ready", arrival: null },
+      page: { ...page, unread: 5 },
+    });
+    await act(async () => root.render(renderScreen("/analytics", "Track")));
+    expect(host.querySelector("header h1")?.textContent).toBe("Track");
+    expect(host.querySelector("header button")?.textContent).toBe("Screen action");
+    expect(host.querySelector('header a[aria-label="Coach inbox, 5 unread"]')).not.toBeNull();
+    expect(actions.refreshInbox).toHaveBeenCalledTimes(2);
+  });
   it("shows an accessible persistent unread count outside workouts", async () => {
     await act(async () =>
       root.render(
@@ -99,6 +124,10 @@ describe("Coach inbox chrome", () => {
     expect(actions.refreshInbox).toHaveBeenCalledWith(false);
   });
   it.each(["/coach", "/coach/inbox", "/coach/inbox/notice"])("keeps the notification icon on %s without claiming arrivals", async (pathname) => {
+    actions.refreshInbox.mockResolvedValue({
+      refresh: { status: "ready", arrival: { id: "notice", title: "Pain review" } },
+      page,
+    });
     await act(async () =>
       root.render(
         createElement(CoachInboxEntry, {
@@ -108,6 +137,7 @@ describe("Coach inbox chrome", () => {
       ),
     );
     expect(host.querySelector('a[aria-label="Coach inbox, 2 unread"]')).not.toBeNull();
+    expect(host.querySelector('[role="status"]')).toBeNull();
     expect(actions.refreshInbox).toHaveBeenCalledWith(false);
   });
   it("coalesces multiple foreground events during an in-flight refresh", async () => {

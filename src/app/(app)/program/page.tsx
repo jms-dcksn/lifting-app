@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/page-header";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -27,9 +28,10 @@ export default async function ProgramPage() {
   // First run, no programs: offer the template before showing a blank builder.
   if (programs.length === 0) {
     return (
-      <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-6 py-10">
+      <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-4 pb-6">
+        <PageHeader title="Programs" />
         <div>
-          <h1 className="text-display">Build your program</h1>
+          <h2 className="text-heading">Build your program</h2>
           <p className="text-body text-muted">Start from a template, or build one from scratch.</p>
         </div>
         <ul className="flex flex-col gap-3">

@@ -1,4 +1,5 @@
 "use client";
+import { PageHeader } from "@/components/ui/page-header";
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { openRelevantCoach } from "@/app/(app)/coach/entry-actions";
@@ -20,8 +21,8 @@ export function CoachEntry({ focus }: { focus: CoachFocus }) {
     }, () => { if (active) setError("Current reviews could not be loaded."); });
     return () => { active = false; };
   }, [exerciseId, equipmentInstanceId, month]);
-  return <div className="mx-auto w-full max-w-page space-y-4 px-4 py-6">
-    <h1 className="text-display">Coach</h1>
+  return <div className="mx-auto w-full max-w-page space-y-4 px-4 pb-6">
+    <PageHeader title="Coach" />
     {!result && !error && <p role="status">Opening your Coach review…</p>}
     {(error || result?.kind === "unavailable") && <p role="status">Current reviews could not be verified. You can still ask Coach about your training.</p>}
     {(error || result?.kind === "unavailable") && <Button variant="secondary" pending={pending} onClick={() => start(async () => {

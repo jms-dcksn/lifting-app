@@ -1,18 +1,19 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { refreshInbox } from "@/app/(app)/coach/inbox/actions";
 import { IconButton } from "@/components/ui/icon-button";
-import { iconButtonClasses } from "@/components/ui/icon-button-styles";
-import { IconBell } from "@/components/ui/icons";
+import { CoachInboxContext } from "./coach-inbox-button";
 
 // One refresh per shell, coalesced across route/visibility/mutation events.
-export function CoachInboxEntry({
+export function CoachInboxProvider({
   pathname,
   hide,
+  children,
 }: {
   pathname: string;
   hide: boolean;
+  children: ReactNode;
 }) {
   const [unread, setUnread] = useState(0);
   const [enabled, setEnabled] = useState(false);
@@ -22,11 +23,11 @@ export function CoachInboxEntry({
   );
   const inFlight = useRef(false);
   const rerun = useRef(false);
-  const hidden = useRef(hide);
+  const suppressArrivals = hide || pathname === "/coach" || pathname.startsWith("/coach/");
+  const hidden = useRef(suppressArrivals);
   useEffect(() => {
-    hidden.current =
-      hide || pathname === "/coach" || pathname.startsWith("/coach/");
-  }, [hide, pathname]);
+    hidden.current = suppressArrivals;
+  }, [suppressArrivals]);
   useEffect(() => {
     let mounted = true;
     const refresh = async () => {
@@ -75,30 +76,10 @@ export function CoachInboxEntry({
   useEffect(() => {
     window.dispatchEvent(new Event("coach:refresh"));
   }, [pathname, hide]);
-  if (hide || !enabled) return null;
   return (
-    <>
-      <Link
-        href="/coach/inbox"
-        aria-label={`Coach inbox${unread ? `, ${unread} unread` : ""}${failed ? ", refresh needed" : ""}`}
-        title="Coach inbox"
-        aria-current={pathname === "/coach/inbox" ? "page" : undefined}
-        className={iconButtonClasses(
-          "default",
-          "fixed right-[max(1rem,env(safe-area-inset-right))] top-[calc(0.75rem+env(safe-area-inset-top))] z-30 bg-background",
-        )}
-      >
-        <IconBell />
-        {unread > 0 || failed ? (
-          <span
-            aria-hidden
-            className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1 text-caption text-background"
-          >
-            {failed ? "!" : unread > 99 ? "99+" : unread}
-          </span>
-        ) : null}
-      </Link>
-      {arrival ? (
+    <CoachInboxContext.Provider value={{ unread, failed, visible: !hide && enabled, pathname }}>
+      {children}
+      {!suppressArrivals && enabled && arrival ? (
         <div
           role="status"
           className="fixed inset-x-4 bottom-[calc(8rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-page items-center justify-between gap-2 rounded-card border border-border-strong bg-background p-3 shadow-lg"
@@ -117,6 +98,6 @@ export function CoachInboxEntry({
           </IconButton>
         </div>
       ) : null}
-    </>
+    </CoachInboxContext.Provider>
   );
 }

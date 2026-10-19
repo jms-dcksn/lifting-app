@@ -1,4 +1,7 @@
 "use client";
+import { IconButton } from "@/components/ui/icon-button";
+import { IconSettings } from "@/components/ui/icons";
+import { PageHeader } from "@/components/ui/page-header";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import {
@@ -53,27 +56,13 @@ export function CoachInbox() {
     });
   }
   return (
-    <div className="mx-auto w-full max-w-page space-y-5 px-4 py-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1">
-          <h1 className="text-2xl font-semibold">Coach inbox</h1>
-          <InfoButton title="Coach inbox">
-            <p>
-              Only meaningful training exceptions appear here. Reading or
-              acknowledging a notice never changes your training or ends a pain
-              review. Refresh runs while you use the app; notifications are not
-              delivered while it is closed.
-            </p>
-          </InfoButton>
-        </div>
-        <Button
-          variant="secondary"
-          onClick={() => setSettings(true)}
-          disabled={!page}
-        >
-          Preferences
-        </Button>
-      </div>
+    <div className="mx-auto w-full max-w-page space-y-5 px-4 pb-6">
+      <PageHeader title="Coach inbox" actions={<>
+        <InfoButton title="Coach inbox">
+          <p>Only meaningful training exceptions appear here. Reading or acknowledging a notice never changes your training or ends a pain review. Refresh runs while you use the app; notifications are not delivered while it is closed.</p>
+        </InfoButton>
+        <IconButton variant="ghost" aria-label="Coach preferences" title="Coach preferences" onClick={() => setSettings(true)} disabled={!page}><IconSettings /></IconButton>
+      </>} />
 
       {status === "loading" ? <p role="status">Loading…</p> : null}
       {status === "disabled" ? <p>Coach inbox is not available yet.</p> : null}

@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/page-header";
 import { formatExerciseSet } from "@/lib/strength/load-mode";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -14,7 +15,6 @@ import {
 } from "@/lib/exercise-review-sessions";
 import { reviewCompareDefaults } from "@/lib/exercise-review-months";
 import { reviewMonthSides, type ReviewMonthSource } from "@/lib/exercise-review-month-stats";
-import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
 import { exerciseCardLabel } from "@/lib/exercise-card-label";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
@@ -59,10 +59,8 @@ export type ExerciseReviewProps = {
 export function ExerciseReview(props: ExerciseReviewProps) {
   if (props.status === "missing") {
     return (
-      <ReviewShell reviewMonth={props.reviewMonth}>
-        <header>
-          <h1 className="text-display">Exercise not found</h1>
-        </header>
+      <ReviewShell>
+        <PageHeader title="Exercise not found" back={<ReviewBack month={props.reviewMonth} />} />
         <p className="text-body text-muted">This exercise is not in your catalog.</p>
       </ReviewShell>
     );
@@ -76,18 +74,19 @@ export function ExerciseReview(props: ExerciseReviewProps) {
       }
     : { name };
   return (
-    <ReviewShell reviewMonth={reviewMonth}>
-      <header className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-3">
-          <ExerciseVisual
-            exerciseId={props.exerciseId ?? pin?.exerciseId}
-            baseExerciseId={props.baseExerciseId}
-            size="lg"
-          />
-          <ExerciseCardLabel as="h1" size="display" lines={labelLines} />
-        </div>
-        {pin && <PinButton exerciseId={pin.exerciseId} pinned={pin.pinned} name={pin.name} />}
-      </header>
+    <ReviewShell>
+      <PageHeader
+        title={labelLines.name}
+        back={<ReviewBack month={reviewMonth} />}
+        actions={pin && <PinButton exerciseId={pin.exerciseId} pinned={pin.pinned} name={pin.name} />}
+        context={<div className="flex items-center gap-3">
+          <ExerciseVisual exerciseId={props.exerciseId ?? pin?.exerciseId} baseExerciseId={props.baseExerciseId} />
+          {(labelLines.secondary || labelLines.tertiary) && <div className="text-caption text-muted">
+            {labelLines.secondary && <p>{labelLines.secondary}</p>}
+            {labelLines.tertiary && <p>{labelLines.tertiary}</p>}
+          </div>}
+        </div>}
+      />
       {equipmentChoices && equipmentChoices.length > 1 && (
         <nav aria-label="Equipment" className="flex flex-wrap gap-x-4 gap-y-1">
           {equipmentChoices.map((choice) => (
@@ -121,20 +120,19 @@ export function ExerciseReview(props: ExerciseReviewProps) {
   );
 }
 
+function ReviewBack({ month }: { month: string | null }) {
+  return <Link href={month ? `/analytics/month?month=${month}` : "/analytics"}>
+    {month ? `← Back to ${month} month review` : "← Track"}
+  </Link>;
+}
+
 function ReviewShell({
-  reviewMonth,
   children,
 }: {
-  reviewMonth: string | null;
   children: ReactNode;
 }) {
   return (
-    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
-      {reviewMonth && (
-        <Link href={`/analytics/month?month=${reviewMonth}`} className="min-h-11 py-2 text-body underline">
-          ← Back to {reviewMonth} month review
-        </Link>
-      )}
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 pb-6">
       {children}
     </div>
   );

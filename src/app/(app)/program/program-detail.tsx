@@ -1,5 +1,6 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/page-header";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
@@ -33,40 +34,21 @@ export function ProgramDetail({
   const exerciseCount = program.days.reduce((count, day) => count + day.slots.length, 0);
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 px-4 py-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
-      <header>
-        <Link href={programIndexHref()} className="text-caption text-muted hover:text-foreground">
-          ← Programs
-        </Link>
-        <div className="mt-3 flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="break-words text-display">{title}</h1>
-            <p className="text-body text-muted">
-              {program.days.length} days/wk · {program.weeks} weeks · {exerciseCount} exercises · {program.style}
-            </p>
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 px-4 pb-[calc(7rem+env(safe-area-inset-bottom))]">
+      <PageHeader
+        title={title}
+        back={<Link href={programIndexHref()}>← Programs</Link>}
+        context={<>
+          <div className="flex flex-wrap items-center gap-2 text-caption text-muted">
+            {program.isActive && <span className="rounded-full border border-border px-2 py-0.5 font-medium">Active</span>}
+            <span>{program.days.length} days/wk · {program.weeks} weeks · {exerciseCount} exercises · {program.style}</span>
           </div>
-          {program.isActive && (
-            <span className="shrink-0 rounded-control border border-border px-2 py-1 text-caption font-medium uppercase tracking-wide text-muted">
-              active
-            </span>
-          )}
-        </div>
-        {program.description && (
-          <p className="mt-3 whitespace-pre-line text-body text-muted">{program.description}</p>
-        )}
-        {program.tags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1">
-            {program.tags.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full border border-border px-2 py-0.5 text-caption text-muted"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </header>
+          {program.tags.length > 0 && <div className="flex flex-wrap gap-1">
+            {program.tags.map(tag => <span key={tag} className="rounded-full border border-border px-2 py-0.5 text-caption text-muted">{tag}</span>)}
+          </div>}
+        </>}
+      />
+      {program.description && <p className="whitespace-pre-line text-body text-muted">{program.description}</p>}
 
       {program.phases.length > 0 && (
         <Card>

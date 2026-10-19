@@ -1,4 +1,5 @@
 "use client";
+import { PageHeader } from "@/components/ui/page-header";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -52,9 +53,9 @@ export function CoachEpisodeReview({ episodeId, embedded = false, showDiscussion
   })}>Discuss with Coach</Button>;
   const evidence = review?.episode.evidence;
   const suggestion = review?.suggestion;
-  return <div className={embedded ? "space-y-4" : "mx-auto w-full max-w-page space-y-4 px-4 py-6"}>
-    {!embedded && <Link className="inline-flex min-h-11 items-center text-muted" href="/coach/inbox">← Coach inbox</Link>}
-    {(!embedded || !direct) && <h1 className="text-2xl font-semibold">{evidence?.name ?? "Coach review"}</h1>}
+  return <div className={embedded ? "space-y-4" : "mx-auto w-full max-w-page space-y-4 px-4 pb-6"}>
+    {!embedded && <PageHeader title={evidence?.name ?? "Coach review"} back={<Link href="/coach/inbox">← Coach inbox</Link>} />}
+    {embedded && !direct && <h2 className="text-heading">{evidence?.name ?? "Coach review"}</h2>}
     {error && <p role="alert" className="text-danger">{error} <Button variant="secondary" pending={pending} onClick={() => run(async () => { setIntent(null); await load(); })}>Refresh review</Button></p>}
     {!loaded && !error && <p role="status">Loading review…</p>}
     {loaded && !review && <p>This review is unavailable.</p>}

@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/page-header";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -107,9 +108,8 @@ export default async function VolumePage({
     : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
-      <Link href="/analytics" className="min-h-11 py-2 text-body text-muted">← Track</Link>
-      <h1 className="text-display">Volume</h1>
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 pb-6">
+      <PageHeader title="Volume" back={<Link href="/analytics">← Track</Link>} />
       <Card>
         <div className="mb-3">
           <div className="mb-1 flex items-center gap-2">

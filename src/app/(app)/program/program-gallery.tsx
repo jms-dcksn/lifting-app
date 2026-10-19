@@ -1,12 +1,14 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/page-header";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { ProgramSummary } from "@/lib/program-summary";
 import { programNewHref } from "@/lib/program-routes";
 import { filterByTag, uniqueTags } from "@/lib/program-tags";
 import { Button } from "@/components/ui/button";
-import { buttonClasses } from "@/components/ui/button-styles";
+import { iconButtonClasses } from "@/components/ui/icon-button-styles";
+import { IconPlus } from "@/components/ui/icons";
 import { createFromTemplate } from "./actions";
 import { ProgramTile } from "./program-tile";
 import { TagFilter } from "./tag-filter";
@@ -32,13 +34,12 @@ export function ProgramGallery({
   const visible = useMemo(() => filterByTag(programs, tag), [programs, tag]);
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-display">Programs</h1>
-        <Link href={programNewHref()} className={buttonClasses("primary", "md")}>
-          New program
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 pb-[calc(7rem+env(safe-area-inset-bottom))]">
+      <PageHeader title="Programs" actions={
+        <Link href={programNewHref()} aria-label="New program" title="New program" className={iconButtonClasses("ghost")}>
+          <IconPlus />
         </Link>
-      </div>
+      } />
 
       <section className="flex flex-col gap-3">
         <TagFilter tags={tags} active={tag} onSelect={setTag} />

@@ -1,4 +1,5 @@
 "use client";
+import { PageHeader } from "@/components/ui/page-header";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import {
@@ -48,13 +49,8 @@ export function CoachNoticeDetail({ noticeId }: { noticeId: string }) {
     });
   }
   return (
-    <div className="mx-auto w-full max-w-page space-y-5 px-4 py-6">
-      <Link
-        className="inline-flex min-h-11 items-center text-muted"
-        href="/coach/inbox"
-      >
-        ← Coach inbox
-      </Link>
+    <div className="mx-auto w-full max-w-page space-y-5 px-4 pb-6">
+      <PageHeader title={data?.notice.title ?? "Coach notice"} back={<Link href="/coach/inbox">← Coach inbox</Link>} />
       {error ? (
         <p role="alert" className="text-danger">
           {error}
@@ -67,7 +63,6 @@ export function CoachNoticeDetail({ noticeId }: { noticeId: string }) {
       {loaded && !data ? <p>This notice is unavailable.</p> : null}
       {data ? (
         <>
-          <h1 className="text-2xl font-semibold">{data.notice.title}</h1>
           <CoachEpisodeReview episodeId={data.episodeId} embedded showDiscussion direct />
           <details className="rounded-card border border-border p-4">
             <summary className="min-h-11 content-center cursor-pointer font-semibold">

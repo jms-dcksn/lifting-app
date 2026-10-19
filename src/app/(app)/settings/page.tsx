@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/page-header";
 import { parseCoachFocus } from "@/lib/coach-entry";
 import { CoachEntry } from "@/components/coach/coach-entry";
 import { redirect } from "next/navigation";
@@ -69,8 +70,8 @@ export default async function SettingsPage({
   const currentWeight = trend.latest?.weight ?? profile?.bodyweight ?? null;
 
   return (
-    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-6 px-6 py-10">
-      <h1 className="text-display">You</h1>
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 pb-6">
+      <PageHeader title="You" />
 
       <Card className="flex flex-col gap-4">
         <div>

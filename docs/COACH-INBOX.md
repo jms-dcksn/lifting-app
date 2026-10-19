@@ -8,8 +8,11 @@ Supabase client. No model is called by refresh, read, acknowledge, preferences o
 ## User experience
 
 `/coach/inbox` contains immutable original notices and current episode evidence. The shell
-shows a fixed top-right bell icon with an unread badge, including on Coach pages. It uses
-the shared 44px icon-button style, a safe-area inset and reserved space above page content.
+keeps notification state in one `CoachInboxProvider`. Each standard screen uses `PageHeader`:
+the title and screen actions share one row with a 44px ghost-style bell on the right.
+Program pills and other context sit directly beneath that row in the same sticky header.
+The header handles safe-area spacing and stays visible while scrolling; the shell adds no
+separate top row or top padding. Coach pages use the same header and notification state.
 The accessible name includes the full unread count and refresh-needed status; the visual
 badge caps counts at 99+ and shows ! when refresh is needed. At-most-once compact arrivals
 stay outside Coach pages and immersive workout/planner/builder chrome; immersive flows also

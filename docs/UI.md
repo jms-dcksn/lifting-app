@@ -32,7 +32,8 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   updates optimistically and reverts on failed writes.
 - `ExerciseVisual` is the only exercise illustration. 16:9 `rounded-control` frame,
   `object-cover` (never square + contain). `sm` is 36×64 on rows/tiles; `lg` is 64×114
-  on session, planner, review, and in-session history. Mapped catalog ids show art
+  on session, planner, and in-session history. Exercise review uses the compact `sm`
+  visual beneath its title in the shared page header. Mapped catalog ids show art
   from `/exercises/{id}.jpg`; everything else uses `IconDumbbell` in the same box.
   Map by seeded / template id, not name. See
   [exercise visuals](superpowers/specs/2026-09-28-exercise-visuals-design.md).
@@ -71,9 +72,15 @@ when adding helper text.
 Visible helper text that is not a label, value, error, or confirmation should be ≤ ~6 words
 or gone.
 
-The app layout remains a Server Component. `AppShell` reserves top space for a fixed
-top-right Coach inbox bell with the shared 44px icon-button style and unread badge.
-It persists on Coach pages; immersive flows hide it with the rest of the shell chrome.
+The app layout remains a Server Component. Standard screens use `PageHeader` for one
+sticky, safe-area-aware header: the title sits left, screen actions and a 44px ghost-style
+Coach inbox bell sit right, and relevant pills/context sit beneath. Keep page containers
+at `px-4` without top padding; the header owns top spacing, a subtle bottom divider and
+the translucent background. Keep titles wrapping within `min-w-0` while action touch
+targets remain 44px. Text actions that crowd the title use named icons (New program,
+Coach preferences). `AppShell` owns one `CoachInboxProvider`, so changing headers does
+not reset unread state or add refresh listeners. It adds no notification spacer.
+Coach pages share the header; immersive flows retain their own chrome and hide the bell.
 `AppShell` renders a bottom tab bar (Lift,
 Track, Program, You) with `aria-current` on the active destination. Track is current on
 `/analytics`, `/analytics/*`, and `/history/...`. Hide it on `/session/[id]`

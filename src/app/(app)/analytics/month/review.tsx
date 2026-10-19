@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/page-header";
 import { coachEntryHref } from "@/lib/coach-entry";
 import { liftHref } from "./lift-detail";
 import { PeriodPerformanceCard } from "./period-performance";
@@ -57,11 +58,11 @@ export function MonthlyReview({
     ["Top-weight PRs", report.current.topWeightPrs, report.prior.topWeightPrs],
   ] as const;
   return <>
-    <header>
-      <p className="text-caption text-muted">Month review</p>
-      <h1 className="text-display">{label(report.month)}</h1>
-      {report.inProgress && <p className="mt-1 text-caption font-medium">In progress · month to date</p>}
-    </header>
+    <PageHeader
+      title={label(report.month)}
+      back={<Link href="/analytics">← Track</Link>}
+      context={<p className="text-caption text-muted">Month review{report.inProgress ? " · In progress · month to date" : ""}</p>}
+    />
     <nav aria-label="Month navigation" className="flex flex-wrap items-center justify-between gap-2">
       {report.month > "0002-01" && <Link className={buttonClasses("secondary", "sm")} href={`?month=${shiftMonth(report.month, -1)}`}>← Previous month</Link>}
       {report.month < currentMonth && <Link className={buttonClasses("secondary", "sm")} href={`?month=${shiftMonth(report.month, 1)}`}>Next month →</Link>}

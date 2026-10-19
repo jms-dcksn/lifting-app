@@ -130,7 +130,7 @@ describe("ProgramGallery", () => {
     render();
 
     expect(host.querySelector("h1")?.textContent).toBe("Programs");
-    const create = [...host.querySelectorAll("a")].find((anchor) => anchor.textContent === "New program");
+    const create = host.querySelector('header a[aria-label="New program"]');
     expect(create?.getAttribute("href")).toBe("/program/new");
     expect(host.textContent).not.toContain("+ New");
 

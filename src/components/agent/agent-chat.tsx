@@ -1,5 +1,6 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/page-header";
 import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useReducer, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -157,15 +158,7 @@ export function AgentChat({
     }
   }
 
-  return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 items-center gap-1 px-4 pb-3">
-        {variant === "page" ? (
-          <h1 className="mr-auto text-display">Coach</h1>
-        ) : (
-          <h2 className="mr-auto text-heading">Coach</h2>
-        )}
-        {variant === "page" && navigable && <Link className="min-h-11 content-center text-caption underline" href={coachDetailsHref(focus ?? { exerciseId: null, equipmentInstanceId: null, month: null })}>Report details</Link>}
+  const headerActions = (<>
         <IconButton
           type="button"
           variant="ghost"
@@ -185,8 +178,21 @@ export function AgentChat({
         >
           <IconPlus />
         </IconButton>
-        {variant === "sheet" ? <FullScreenLink href={navigable ? href : null} /> : null}
-      </div>
+  </>);
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      {variant === "page" ? (
+        <div className="shrink-0 px-4 pb-3">
+          <PageHeader title="Coach" actions={headerActions} />
+        </div>
+      ) : (
+        <div className="flex shrink-0 items-center gap-1 px-4 pb-3">
+          <h2 className="mr-auto text-heading">Coach</h2>
+          {headerActions}
+          <FullScreenLink href={navigable ? href : null} />
+        </div>
+      )}
       <div
         key={screen.name}
         ref={scroller}
@@ -196,6 +202,7 @@ export function AgentChat({
           stickToEnd.current = node.scrollHeight - node.scrollTop - node.clientHeight < 48;
         }}
       >
+        {variant === "page" && navigable && <Link className="mb-3 inline-flex min-h-11 items-center text-caption underline" href={coachDetailsHref(focus ?? { exerciseId: null, equipmentInstanceId: null, month: null })}>Report details</Link>}
         {focus && (focus.exerciseId || focus.month) && <aside className="mb-3 rounded-card border border-border p-3 text-sm"><p>{focusLabel ?? "Training review"}{focus.month ? ` · ${focus.month}` : ""}</p><p className="mt-2 text-muted">Current exceptions use the latest training evidence. Historical reports keep their own date windows.</p><Link className="inline-flex min-h-11 items-center underline" href={coachDetailsHref(focus)}>See report details</Link></aside>}
         {screen.name === "loading" ? <p className="text-body text-muted">Loading</p> : null}
         {screen.name === "history" ? (

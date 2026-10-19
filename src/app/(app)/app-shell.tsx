@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { cx } from "@/components/ui/cx";
 import { IconGrid, IconPlay, IconProgram, IconUser } from "@/components/ui/icons";
-import { CoachInboxEntry } from "@/components/coach/coach-inbox-entry";
+import { CoachInboxProvider } from "@/components/coach/coach-inbox-entry";
 import { AgentEntry } from "@/components/agent/agent-entry";
 import { hideAppChrome, isTrackPath } from "@/lib/app-chrome";
 
@@ -40,17 +40,24 @@ function ShellFrame({
   pathname?: string;
   children: React.ReactNode;
 }) {
+  const onCoach = pathname === "/coach" || pathname?.startsWith("/coach/");
   return (
-    <div className={cx("flex min-h-full flex-col", !hide && "pt-[calc(4.25rem+env(safe-area-inset-top))] pb-[calc(7.75rem+env(safe-area-inset-bottom))]")}>
-      <main className="flex flex-1 flex-col">{children}</main>
-      {pathname ? <CoachInboxEntry pathname={pathname} hide={hide} /> : null}
-      {!hide && (
-        <>
-          {pathname && pathname !== "/coach" && !pathname.startsWith("/coach/") ? <AgentEntry /> : null}
-          <TabBar pathname={pathname} />
-        </>
-      )}
-    </div>
+    <CoachInboxProvider pathname={pathname ?? ""} hide={hide}>
+      <div className={cx(
+        "flex min-h-full flex-col",
+        !hide && (onCoach
+          ? "pb-[calc(4.25rem+env(safe-area-inset-bottom))]"
+          : "pb-[calc(7.75rem+env(safe-area-inset-bottom))]"),
+      )}>
+        <main className="flex flex-1 flex-col">{children}</main>
+        {!hide && (
+          <>
+            {pathname && !onCoach ? <AgentEntry /> : null}
+            <TabBar pathname={pathname} />
+          </>
+        )}
+      </div>
+    </CoachInboxProvider>
   );
 }
 

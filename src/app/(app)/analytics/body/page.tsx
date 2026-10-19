@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/page-header";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { WeightTrendCard } from "../weight-trend-card";
@@ -32,9 +33,8 @@ export default async function BodyPage() {
     .filter((row): row is NonNullable<typeof row> => row != null);
 
   return (
-    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 py-6">
-      <Link href="/analytics" className="min-h-11 py-2 text-body text-muted">← Track</Link>
-      <h1 className="text-display">Body</h1>
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 pb-6">
+      <PageHeader title="Body" back={<Link href="/analytics">← Track</Link>} />
       <WeightTrendCard entries={bodyweightEntries} today={today} goal={profile?.goal_weight ?? null} />
       <MeasurementTrendCard entries={entries} today={today} />
     </div>

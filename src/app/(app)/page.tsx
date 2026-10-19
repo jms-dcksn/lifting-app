@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/page-header";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveProgram } from "@/lib/program";
@@ -24,9 +25,10 @@ export default async function Home() {
 
   if (!program || program.days.length === 0) {
     return (
-      <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-6 py-10">
+      <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-4 pb-6">
+        <PageHeader title="Lift" />
         <div>
-          <h1 className="text-display">No active program</h1>
+          <h2 className="text-heading">No active program</h2>
           <p className="text-body text-muted">Build one to start training.</p>
         </div>
         <Link href="/program" className={buttonClasses("primary", "lg", "w-full")}>
@@ -73,22 +75,24 @@ export default async function Home() {
   }).filter((lift) => lift.isCompound && lift.recentRecord);
 
   return (
-    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-6 px-6 py-10">
-      <div className="flex flex-col gap-3">
-        <p className="w-fit rounded-full border border-border px-3 py-1 text-caption text-muted">
-          {program.name}
-          {program.style === "fluid" ? "" : ` · Week ${week}/${program.weeks}`}
-        </p>
-        <h1 className="text-display">Lift</h1>
-        {program.style === "fluid" ? (
-          <p className="flex items-center gap-1 text-caption text-muted">
-            Session {completed + 1} · Adaptive
-            <InfoButton title="Adaptive program">Movements adjust as you plateau.</InfoButton>
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 pb-6">
+      <PageHeader
+        title="Lift"
+        context={
+          <p className="w-fit max-w-full rounded-full border border-border px-3 py-1 text-caption text-muted">
+            {program.name}
+            {program.style === "fluid" ? "" : ` · Week ${week}/${program.weeks}`}
           </p>
-        ) : (
-          <BlockProgress completed={completed} total={totalSessions} />
-        )}
-      </div>
+        }
+      />
+      {program.style === "fluid" ? (
+        <p className="flex items-center gap-1 text-caption text-muted">
+          Session {completed + 1} · Adaptive
+          <InfoButton title="Adaptive program">Movements adjust as you plateau.</InfoButton>
+        </p>
+      ) : (
+        <BlockProgress completed={completed} total={totalSessions} />
+      )}
 
       {open ? (
         <Link href={`/session/${open.id}`} className={buttonClasses("primary", "lg", "w-full")}>

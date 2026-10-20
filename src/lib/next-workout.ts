@@ -1,15 +1,51 @@
 import { exactExerciseIdentity } from "@/lib/strength/identity";
 import { cookies } from "next/headers";
 import type { createClient } from "./supabase/server";
-import type { Program } from "./program";
+import type { Program, ProgramDay } from "./program";
 import { getCatalogMap } from "./catalog";
 import { resolvePrescription } from "./periodization";
 import { foldPrescription, type AdaptationRow } from "./strength/plateau";
 import { readWorkoutPlan, workoutPlanKey, WORKOUT_PLAN_COOKIE } from "./workout-plan";
 import { getCurrentBodyweight } from "./current-bodyweight";
 import { loadWorkoutTargetHistory } from "./workout-target-data";
-import { resolveExactWorkoutTarget } from "./effective-workout-target";
+import { resolveExactWorkoutTarget, type WorkoutTargetHistory } from "./effective-workout-target";
 import { isDeload, stallContext } from "./stall-report";
+import type { ExerciseDef } from "./strength/coefficients";
+import type { ExerciseStat } from "./strength/recommend";
+
+type Adaptation = { program_slot_id: string; action: string; new_exercise_id: string | null;
+  new_rep_min: number | null; new_rep_max: number | null; created_at: string };
+type LoggedIdentity = { program_slot_id: string | null; exercise_id: string; equipment_instance_id: string | null };
+
+/** Shared prescription/identity/target composition for the planner and program-week reads. */
+export function resolveWorkoutSlots(input: {
+  program: Program; day: ProgramDay; week: number; choices: Record<string, string>;
+  logged: LoggedIdentity[]; adaptations: Adaptation[]; targetHistory: WorkoutTargetHistory;
+  catalog: Record<string, ExerciseDef>; stats: ExerciseStat[]; bodyweight: number | null;
+  defaultRestSeconds: number; sessionIsDeload?: boolean;
+}) {
+  const { program, day, week, choices, targetHistory, catalog, stats, bodyweight } = input;
+  const lastBySlot = new Map(input.logged.map(set => [set.program_slot_id, set]));
+  return day.slots.map((slot) => {
+    const rows: AdaptationRow[] = input.adaptations.filter((r) => r.program_slot_id === slot.id)
+      .map((r) => ({ action: r.action as AdaptationRow["action"], newExerciseId: r.new_exercise_id,
+        newRepMin: r.new_rep_min, newRepMax: r.new_rep_max, createdAt: r.created_at }));
+    const folded = foldPrescription(slot, rows);
+    const baseExerciseId = folded.exerciseId;
+    const exerciseId = choices[slot.id] ?? lastBySlot.get(slot.id)?.exercise_id ?? baseExerciseId;
+    const last = lastBySlot.get(slot.id);
+    const equipmentInstanceId = last?.exercise_id === exerciseId ? last.equipment_instance_id : null;
+    const prescription = resolvePrescription({ ...slot, repMin: folded.repMin, repMax: folded.repMax },
+      week, program.style === "classic" ? program.phases : []);
+    const context = stallContext({ ...slot, programId: program.id, programDayId: day.id },
+      exerciseId, equipmentInstanceId, prescription, folded.phaseStartAt);
+    const effectiveTarget = resolveExactWorkoutTarget({ slotId: slot.id, identity: exactExerciseIdentity(exerciseId, equipmentInstanceId),
+      prescription, context, isDeload: input.sessionIsDeload ?? isDeload(prescription.phase),
+      history: targetHistory, catalog, stats, bodyweight });
+    return { ...slot, baseExerciseId, exerciseId, prescription, targetContext: context, effectiveTarget,
+      restSeconds: slot.restSeconds ?? input.defaultRestSeconds };
+  });
+}
 
 export async function loadNextWorkout(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -49,7 +85,6 @@ export async function loadNextWorkout(
       .eq("user_id", userId).eq("session_id", open.data.id).order("set_index") : Promise.resolve({ data: [], error: null }),
   ]);
   if (logged.error) throw new Error(logged.error.message);
-  const lastBySlot = new Map((logged.data ?? []).map(set => [set.program_slot_id, set]));
   const stats = (statRows.data ?? []).map(row => ({ exerciseId: row.exercise_id, currentE1rm: row.current_e1rm ?? 0,
     personalCoefficient: row.personal_coefficient, confidenceN: row.coeff_confidence_n }));
   const adaptations = program.style === "fluid" && day.slots.length
@@ -59,24 +94,9 @@ export async function loadNextWorkout(
       .order("created_at", { ascending: true })
     : { data: [], error: null };
   if (adaptations.error) throw new Error(adaptations.error.message);
-  const slots = day.slots.map((slot) => {
-    const rows: AdaptationRow[] = (adaptations.data ?? []).filter((r) => r.program_slot_id === slot.id)
-      .map((r) => ({ action: r.action as AdaptationRow["action"], newExerciseId: r.new_exercise_id,
-        newRepMin: r.new_rep_min, newRepMax: r.new_rep_max, createdAt: r.created_at }));
-    const folded = foldPrescription(slot, rows);
-    const baseExerciseId = folded.exerciseId;
-    const exerciseId = choices[slot.id] ?? lastBySlot.get(slot.id)?.exercise_id ?? baseExerciseId;
-    const last = lastBySlot.get(slot.id);
-    const equipmentInstanceId = last?.exercise_id === exerciseId ? last.equipment_instance_id : null;
-    const prescription = resolvePrescription({ ...slot, repMin: folded.repMin, repMax: folded.repMax },
-      week, program.style === "classic" ? program.phases : []);
-    const context = stallContext({ ...slot, programId: program.id, programDayId: day.id },
-      exerciseId, equipmentInstanceId, prescription, folded.phaseStartAt);
-    const effectiveTarget = resolveExactWorkoutTarget({ slotId: slot.id, identity: exactExerciseIdentity(exerciseId, equipmentInstanceId),
-      prescription, context, isDeload: open.data?.is_deload ?? isDeload(prescription.phase),
-      history: targetHistory, catalog, stats, bodyweight });
-    return { ...slot, baseExerciseId, exerciseId, prescription, targetContext: context, effectiveTarget,
-      restSeconds: slot.restSeconds ?? profile.data?.default_rest_seconds ?? 120 };
-  });
-  return { key, choices, completed, week, day, slots, catalog, open: open.data, targetHistory, stats, bodyweight };
+  const defaultRestSeconds = profile.data?.default_rest_seconds ?? 120;
+  const slots = resolveWorkoutSlots({ program, day, week, choices, logged: logged.data ?? [],
+    adaptations: adaptations.data ?? [], targetHistory, catalog, stats, bodyweight,
+    defaultRestSeconds, sessionIsDeload: open.data?.is_deload });
+  return { key, choices, completed, week, day, slots, catalog, open: open.data, targetHistory, stats, bodyweight, defaultRestSeconds };
 }

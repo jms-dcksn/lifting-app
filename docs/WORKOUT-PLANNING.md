@@ -8,6 +8,12 @@ effort reductions are included without Accept or a chat visit. See
 [the target contract](AI-COACH.md#effective-workout-targets-211). Calculation never writes
 choices, sessions, adaptations, slots or sets.
 
+Coach's weekly target scopes (#208) reuse `loadNextWorkout()` for the actual next/open
+occurrence and `resolveWorkoutSlots()` for other program days. Workout-only planner choices
+stay on that occurrence. Week-wide reads do not start workouts or write cookies; future
+targets are current-history estimates. See [program-week targets](AI-COACH.md#program-week-workout-targets-208)
+for completion status, saved identity gaps and the programmed-block boundary.
+
 Open-workout target reads preserve stored day/week/choices and use pre-start history. Active
 entry carries forward saved same-exercise weight/reps; refresh does not replace typed values.
 Missing stored exercise identity stays explicit rather than silently choosing a default.

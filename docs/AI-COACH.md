@@ -168,6 +168,53 @@ Reasons are `starting_weight`, `add_load`, `add_rep`, `hold_load`, `below_rep_fl
 and negative assistance conventions. Reads never mutate source rows or slots: a 100 lb
 exposure reduced to 95 lb never becomes 90 lb through another read.
 
+### Program-week workout targets (#208)
+
+`nextWorkout` accepts optional `scope: next_workout | current_week | upcoming_week`.
+Omitted/`next_workout` calls retain the existing `{ source, workout }` response and parity
+with Home/planner/open-session targets. Weekly calls return `{ source, scope, boundary,
+status, programId, programName, week, currentWeek, totalWeeks, historyAsOf, workouts }`;
+`boundary` is `program_week`. No active program (or one with no days) returns
+`no_active_program`, `week: null` and an empty workout list.
+
+Program position is the open workout's stored week (legacy null falls back to 1), otherwise
+`floor(completed sessions / program days) + 1`. `current_week` includes **every ordered day**
+in that week; `upcoming_week` includes every day in the following program week. These are
+not the Monday–Sunday Chicago windows used by `weeklyCoach`; no workout dates are invented.
+A requested week beyond `program.weeks` returns `beyond_program` and an empty list, for
+Classic and Fluid. This projection boundary does not change the existing next-workout or
+session-creation behavior after a block ends.
+
+Each workout names its program/day/week, status, open session and matching completed
+session IDs. Completion reads filter by signed-in owner, program, saved week/day and paginate
+to exhaustion. Status is `open`, `completed` or `upcoming`; if sequence position passed a
+day but matching saved completion metadata is missing, it is explicitly `unknown`.
+Completed/unknown days show **current** phase-resolved prescriptions with null targets and
+null effective results, not reconstructed historical prescriptions or performed sets.
+Use Exercise review for historical performance.
+
+`loadProgramWeekWorkouts()` reuses `loadNextWorkout()` for the actual next/open occurrence,
+including browser planner choices, saved exercise/station identity, persisted deload and
+pre-start evidence. Other occurrences use the shared `resolveWorkoutSlots()` composition
+with batched recorded history and current Fluid adaptations. Workout-only swaps do not leak
+to another day/week; program-scope choices remain in their slots/adaptations. Slots expose
+sets, rep range, RIR, phase, rest, superset group, exact exercise/equipment, target availability,
+canonical effective target/reason/evidence and explanation. Missing targets remain null.
+
+`targetBasis` distinguishes `open_workout_pre_start_history`, `current_history_estimate` and
+`not_applicable`. Future targets use the currently recorded evidence independently for each
+slot; no successful intervening workouts or compounded gains are simulated. A different
+future phase can change sets/RIR/targets through the existing engine. The agent names the
+returned program week, labels estimates, preserves missing values and reports the block
+boundary instead of falling back to another scope to invent a week.
+
+These are owner-scoped reads: no sessions, planning-cookie writes, program advancement,
+adaptations or notifications are created. `program-week-workouts.test.ts` verifies actual
+loader composition, partial/boundary/recovery weeks, open workouts, swaps, Fluid ordering,
+repeated-exercise prescriptions, effort reductions, missing data, capped pages and read errors.
+Scripted agent turns exercise the registered schema and returned evidence; they do not
+measure live-model tool selection or narrative quality.
+
 ## Module
 
 ```

@@ -30,6 +30,63 @@
         </p>
       </header>
 
+      <section id="program-week-targets" class="space-y-4">
+        <h2 class="font-serif text-2xl">Targets across a program week (#208)</h2>
+        <p class="text-slate-700">Ask “What are my targets across this week?” or “What should I
+          aim for next week?” Coach calls the existing <code>nextWorkout</code> tool with
+          <code>current_week</code> or <code>upcoming_week</code>. It returns every program day in order.
+          These are training-program weeks, not Monday–Sunday reporting windows or a calendar schedule.</p>
+        <pre class="mermaid">
+flowchart TD
+  Ask[User asks for workout targets] --> Scope{Scope}
+  Scope -->|omitted or next_workout| Next[Existing next workout: Home and planner parity]
+  Scope -->|current_week or upcoming_week| Week[Resolve program week from finished count or open saved week]
+  Week --> End{Beyond programmed block?}
+  End -->|Yes| Empty[beyond_program: no invented week]
+  End -->|No| Days[Every ordered program day]
+  Days --> Reuse[Next or open occurrence: reuse saved choices and evidence]
+  Days --> Others[Other days: shared resolveWorkoutSlots and recorded history]
+  Reuse --> Result[Prescriptions, exact identity, status and available targets]
+  Others --> Result
+  Result --> Complete[Completed or unknown completion: withhold targets]
+  Result --> Estimate[Future: current-history estimates, no simulated gains]
+        </pre>
+        <p class="text-slate-700">In a three-day program, seven completed sessions put the next
+          workout in program week 3. The current scope shows A, B and C; the upcoming scope shows
+          program week 4. After the final programmed week, weekly retrieval returns an empty list
+          with <code>beyond_program</code>. Default next-workout calls retain their existing response
+          and behavior. Exact lines from <code>src/lib/program-week-workouts.ts</code>:</p>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>  const next = await loadNextWorkout(client, userId, program);
+  const week = next.week + (scope === &quot;upcoming_week&quot; ? 1 : 0);</code></pre>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
+          <div style="border:1px solid #94a3b8;border-radius:8px;padding:16px">
+            <h3 class="font-semibold">A · Completed</h3><p>Current prescription details remain visible.
+              Targets are null. These details do not reconstruct what was prescribed or lifted then.</p></div>
+          <div style="border:1px solid #94a3b8;border-radius:8px;padding:16px">
+            <h3 class="font-semibold">B · Open or upcoming</h3><p>The actual next occurrence retains its
+              planner swap. An open workout keeps its stored day/week/station, deload flag and pre-start
+              evidence. Reads preserve typed inputs and saved sets.</p></div>
+          <div style="border:1px solid #94a3b8;border-radius:8px;padding:16px">
+            <h3 class="font-semibold">C · Upcoming estimate</h3><p>Resolve this slot's own sets, reps, RIR,
+              rest, phase and current Fluid changes. Do not assume B was completed successfully or add
+              another progression step. Workout-only swaps stay on their original occurrence.</p></div>
+        </div>
+        <p class="text-slate-700">The same slot composer serves Home/planner and weekly projections.
+          Different prescriptions for the same exercise stay separate, including recovery phases and
+          supported effort reductions. Unknown exercise/equipment or insufficient evidence leaves a
+          null target. Source excerpt from <code>src/lib/program-week-workouts.ts</code>:</p>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>    const slots = isNext ? next.slots : resolveWorkoutSlots({ program, day, week, choices: {}, logged: [],
+      adaptations, targetHistory: history, catalog: next.catalog, stats: next.stats, bodyweight: next.bodyweight,
+      defaultRestSeconds: next.defaultRestSeconds });</code></pre>
+        <p class="text-sm text-slate-600">Completion comes from saved owner/program/week/day identity.
+          If program position passed a day but its completion metadata is missing, status is
+          <code>unknown</code> and targets stay null. No active program returns
+          <code>no_active_program</code>. Reads create no sessions, cookies, adaptations or notifications.
+          Deterministic tests cover loaders, owner filters, capped pages, phases, swaps, open workouts,
+          missing data and the real agent tool loop with a scripted model. They do not evaluate a live
+          model's routing or prose.</p>
+      </section>
+
       <section id="e1rm-calculator" class="space-y-4">
         <h2 class="font-serif text-2xl">Hypothetical e1RM — the calculator (#205)</h2>
         <p class="text-slate-700">Ask “If I bench 100 kg total for 5 reps with 2 RIR, what is my

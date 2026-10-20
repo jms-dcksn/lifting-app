@@ -1006,3 +1006,17 @@ fresh-evidence, owner, pain, session-scope and replay guards as the existing She
 Discuss explicitly starts the first reply on the existing owned seed. Reloading or reopening
 an answered thread stays passive; failures require a user retry. No new model/provider,
 privileged application client, schema or training policy is introduced.
+
+### Program-week target projections (2026-10-20)
+
+For #208, the owner confirmed program-week scopes, every ordered day with completed/open/
+upcoming status, current-history future estimates and no upcoming week beyond the final
+programmed week. Position follows the existing finished-session count/open saved week,
+independent of calendar reporting. Weekly projections stop at `program.weeks` for both
+Classic and Fluid; the compatible default next-workout path retains its existing behavior.
+Completed days show current prescriptions without newly calculated targets or claims about
+historical performance. Missing saved completion identity is explicit (`unknown`), not an
+inferred historical prescription. Open workouts reuse saved choices, exact station identity
+and pre-start evidence. Other occurrences use shared slot composition and recorded history;
+workout-only choices and hypothetical future gains never carry into later occurrences.
+No schema, provider, notification policy or progression formula changes are needed.

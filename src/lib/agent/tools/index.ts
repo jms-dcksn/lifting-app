@@ -76,11 +76,14 @@ export function bindReadTools(supabase: Client, userId: string) {
         }),
       },
     ),
-    tool(async () => asJson(await nextWorkout(supabase, userId)), {
+    tool(async ({ scope }) => asJson(await nextWorkout(supabase, userId, scope ?? "next_workout")), {
       name: "nextWorkout",
       description:
-        "Load the current effective next-workout target suggestions, reasons and evidence, shared with Home, planner and the session screen. Repeated effort reductions are already included; never apply another reduction or infer a program change. If workout is null, say there is no next workout. If a slot target is null, say that target is not set.",
-      schema: z.object({}),
+        "Load effective workout targets shared with Home, planner and the session screen. Omit scope or use next_workout for the existing next workout. current_week returns every ordered day in the current PROGRAM week; upcoming_week returns the following program week. Program position follows completed sessions, or the open workout's saved week, not Monday–Sunday calendar dates. Completed days show current prescriptions without targets; unknown status means missing saved completion identity and has no target; open workouts retain saved choices and pre-start evidence. Future targets are estimates from current recorded performance, with no simulated gains. beyond_program means the requested week exceeds the programmed block: do not invent another week. Repeated effort reductions are already included; never reduce again, infer applied changes, or invent missing targets. Use weeklyCoach for calendar-week progress reports. Read-only; creates no sessions or notifications.",
+      schema: z.object({
+        scope: z.enum(["next_workout", "current_week", "upcoming_week"]).optional()
+          .describe("Default next_workout. Weekly scopes use program weeks, list completed/open/upcoming days, and stop at totalWeeks; no calendar scheduling or future-performance simulation."),
+      }),
     }),
   ];
 }

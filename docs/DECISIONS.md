@@ -1020,3 +1020,15 @@ inferred historical prescription. Open workouts reuse saved choices, exact stati
 and pre-start evidence. Other occurrences use shared slot composition and recorded history;
 workout-only choices and hypothetical future gains never carry into later occurrences.
 No schema, provider, notification policy or progression formula changes are needed.
+
+
+## Upcoming-workout editor persistence (2026-10-24, #238)
+
+Owner approved [the persistence Decision Card](WORKOUT-EDITOR-DESIGN.md): database-backed
+full occurrence plans, stable per-set normal-week prescriptions and session snapshots.
+Workout-only saves remain occurrence-local. Program saves modify only the chosen day and
+retire removed slots to preserve historical foreign keys/adaptations. Entered loads seed
+future suggestions until comparable logged evidence exists; they do not lock progression.
+Recovery reduces normal rows once and overrides edited normal-week RIR. Heavy/lighter rows
+match separate saved prescription identities. Save/start serialize under the existing owner
+source lock, enforce expected revisions and roll back atomically. Hosted rollout is separate.

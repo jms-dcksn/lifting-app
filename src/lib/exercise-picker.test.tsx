@@ -47,6 +47,7 @@ function render(resolveStations = true, onPick = vi.fn()) {
   act(() => {
     root.render(
       <ExercisePicker
+        key={resolveStations ? "resolved-picker" : "builder-picker"}
         catalog={catalog}
         resolveStations={resolveStations}
         onPick={onPick}
@@ -212,6 +213,8 @@ describe("ExercisePicker station forms", () => {
     const sessionPick = render(true);
     act(() => row("Barbell Row").click());
     expect(sessionPick).toHaveBeenCalledWith(EXERCISE_BY_ID["bb-row"]);
+    act(() => row("Barbell Row").click());
+    expect(sessionPick).toHaveBeenCalledOnce();
 
     const builderPick = render(false);
     act(() => row("Lat Pulldown (Cable)").click());

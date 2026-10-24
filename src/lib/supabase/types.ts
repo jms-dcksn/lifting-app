@@ -1,3 +1,4 @@
+import type { WorkoutEditorTables, WorkoutEditorFunctions } from "./workout-editor-types";
 import type { CoachTables, CoachFunctions } from "./coach-types";
 
 export type Json =
@@ -15,7 +16,7 @@ export type Database = {
     PostgrestVersion: "14.5"
   }
   public: {
-    Tables: CoachTables & {
+    Tables: CoachTables & WorkoutEditorTables & {
       agent_message: {
         Row: {
           created_at: string
@@ -476,6 +477,8 @@ export type Database = {
       }
       program_slot: {
         Row: {
+          retired_at: string | null
+          set_prescriptions: Json | null
           superset_group: string | null
           created_at: string
           exercise_id: string
@@ -492,6 +495,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          retired_at?: string | null
+          set_prescriptions?: Json | null
           superset_group?: string | null
           created_at?: string
           exercise_id: string
@@ -508,6 +513,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          retired_at?: string | null
+          set_prescriptions?: Json | null
           superset_group?: string | null
           created_at?: string
           exercise_id?: string
@@ -535,6 +542,8 @@ export type Database = {
       }
       set_log: {
         Row: {
+          planned_slot_id: string | null
+          planned_set_id: string | null
           is_deload: boolean
           created_at: string
           e1rm: number | null
@@ -553,6 +562,8 @@ export type Database = {
           weight: number
         }
         Insert: {
+          planned_slot_id?: string | null
+          planned_set_id?: string | null
           is_deload?: boolean
           created_at?: string
           e1rm?: number | null
@@ -571,6 +582,8 @@ export type Database = {
           weight: number
         }
         Update: {
+          planned_slot_id?: string | null
+          planned_set_id?: string | null
           is_deload?: boolean
           created_at?: string
           e1rm?: number | null
@@ -665,6 +678,7 @@ export type Database = {
       }
       workout_session: {
         Row: {
+          plan_snapshot: Json | null
           is_deload: boolean
           exercise_swaps: Json
           finished_at: string | null
@@ -679,6 +693,7 @@ export type Database = {
           week_index: number | null
         }
         Insert: {
+          plan_snapshot?: Json | null
           is_deload?: boolean
           exercise_swaps?: Json
           finished_at?: string | null
@@ -693,6 +708,7 @@ export type Database = {
           week_index?: number | null
         }
         Update: {
+          plan_snapshot?: Json | null
           is_deload?: boolean
           exercise_swaps?: Json
           finished_at?: string | null
@@ -727,7 +743,7 @@ export type Database = {
     Views: {
       [_ in never]: never
     }
-    Functions: CoachFunctions & {
+    Functions: CoachFunctions & WorkoutEditorFunctions & {
       save_bodyweight_entry: {
         Args: { p_entry_id: string | null; p_logged_on: string; p_weight: number; p_replace_entry_id?: string | null }
         Returns: string

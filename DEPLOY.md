@@ -72,6 +72,21 @@ and intended preview origins. The app exchanges the callback code at `/auth/call
 `src/proxy.ts` refreshes cookies, while the app layout and actions authenticate with `getClaims()`.
 Verify dashboard/email settings in the actual environment instead of relying on old checkboxes.
 
+### Complete workout editor migration (#238)
+
+`20261024164436_workout_editor.sql` adds saved occurrence plans, per-set program intent,
+retired slot markers, captured session plans and planned-row references on set logs. Apply
+it through a separately approved release before enabling these application readers. Slot
+retirement and the matching readers must ship together; the full-program builder preserves
+untouched heterogeneous prescriptions and updates explicitly changed scalar fields coherently.
+Existing sessions without snapshots keep their compatibility loader; do not backfill guessed
+prescriptions. The private catalog metadata snapshot must stay aligned with seeded exact
+identity/load-mode rules when the catalog changes.
+
+This change has been exercised on a disposable local stack only. No hosted migration was
+applied by the implementation task. Production's ledger gate remains intact. See
+[planning](docs/WORKOUT-PLANNING.md) and [the approved design](docs/WORKOUT-EDITOR-DESIGN.md).
+
 ### Superset migration
 
 Superset support additionally requires `20261017215800_program_supersets.sql` before

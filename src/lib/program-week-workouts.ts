@@ -49,7 +49,7 @@ export async function loadProgramWeekWorkouts(client: Client, userId: string, pr
       : missingCompletion ? "unknown" as const : "upcoming" as const;
     const slots = isNext ? next.slots : resolveWorkoutSlots({ program, day, week, choices: {}, logged: [],
       adaptations, targetHistory: history, catalog: next.catalog, stats: next.stats, bodyweight: next.bodyweight,
-      defaultRestSeconds: next.defaultRestSeconds });
+      defaultRestSeconds: next.defaultRestSeconds, plannedHistory: next.plannedHistory });
     return { programId: program.id, dayId: day.id, dayName: day.name, week, status, openSessionId, completedSessionIds,
       targetBasis: status === "completed" || status === "unknown" ? "not_applicable" as const
         : openSessionId ? "open_workout_pre_start_history" as const : "current_history_estimate" as const,

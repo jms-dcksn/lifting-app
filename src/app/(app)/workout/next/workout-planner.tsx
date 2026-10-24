@@ -1,161 +1,314 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ExerciseCardLabel, exerciseCardAriaLabel } from "@/components/ui/exercise-card-label";
-import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card, CardLabel } from "@/components/ui/card";
-import { InfoButton } from "@/components/ui/info-button";
-import { effectiveTargetExplanation, type EffectiveWorkoutTarget } from "@/lib/effective-workout-target";
-import { Sheet } from "@/components/ui/sheet";
-import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
-import { canSwapStation } from "@/lib/station";
-import { rirLabel, type EffectivePrescription } from "@/lib/periodization";
+import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
+import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
+import { ExerciseVisual } from "@/components/ui/exercise-visual";
+import { recoverySets, newPlannedSet, normalizeGroups, validateEditorPlan, type EditorIssue, type PlannedSet, type PlannedSlot, type WorkoutEditorPlan } from "@/lib/workout-editor";
+import { resolveExactWorkoutTarget } from "@/lib/effective-workout-target";
+import { exactExerciseIdentity } from "@/lib/strength/identity";
+import { draftStation } from "@/lib/workout-editor-station";
+import type { ExerciseDef } from "@/lib/strength/coefficients";
+import { isSupersetEnd, supersetLabel } from "@/lib/superset";
 import { ExercisePicker } from "../../program/exercise-picker";
-import { SwapStationButton } from "../../program/swap-station-button";
-import { startPlannedSession } from "../../session/actions";
-import { saveWorkoutChoice } from "./actions";
-import { supersetLabel, isSupersetEnd } from "@/lib/superset";
+import { preparePlannedWorkout } from "../../session/actions";
+import { saveWorkoutDraft } from "./actions";
 
-type Slot = { id: string; exerciseId: string; baseExerciseId: string; pattern: Pattern; supersetGroup?: string | null;
-  prescription: EffectivePrescription; restSeconds: number; effectiveTarget: EffectiveWorkoutTarget };
-
-export function WorkoutPlanner({ planKey, programName, dayName, week, slots, catalog: initialCatalog }: {
-  planKey: string; programName: string; dayName: string; week: number; slots: Slot[]; catalog: ExerciseDef[];
+export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRevision, revision,
+  programName, dayName, week, plan, recovery, stats, bodyweight, targetHistory, catalog: initialCatalog }: {
+  stats: import("@/lib/strength/recommend").ExerciseStat[]; bodyweight: number | null; targetHistory: import("@/lib/effective-workout-target").WorkoutTargetHistory;
+  planKey: string; programId: string; dayId: string; completed: number; sourceRevision: number; revision: number;
+  programName: string; dayName: string; week: number; recovery: import("@/lib/periodization").ProgramPhase | null; slots: unknown[]; plan: WorkoutEditorPlan; catalog: ExerciseDef[];
 }) {
+  const router = useRouter();
   const [catalog, setCatalog] = useState(initialCatalog);
-  const catalogMap = Object.fromEntries(catalog.map((d) => [d.id, d]));
-  const [pickingExercise, setPickingExercise] = useState<Slot | null>(null);
-  const [pickedSwap, setPickedSwap] = useState<{ slot: Slot; exercise: ExerciseDef } | null>(null);
+  const catalogMap = Object.fromEntries(catalog.map(d => [d.id, d]));
+  const [draft, setDraft] = useState<WorkoutEditorPlan | null>(null);
+  const [saved, setSaved] = useState(plan);
+  const [picking, setPicking] = useState<string | "add" | null>(null);
+  const [removed, setRemoved] = useState<{ slot: PlannedSlot; index: number; before: PlannedSlot[] }[]>([]);
+  const [scope, setScope] = useState<"workout" | "program">("workout");
   const [pending, startSaving] = useTransition();
+  const [issues, setIssues] = useState<EditorIssue[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const phase = slots[0]?.prescription.phase;
+  const [notice, setNotice] = useState("");
+  const root = useRef<HTMLDivElement>(null);
+  const [keyboardInset,setKeyboardInset]=useState(0);
+  const request = useRef<{ content: string; id: string } | null>(null);
+  const editing = draft !== null;
+  const current = draft ?? saved;
+  const dirty = editing && JSON.stringify(draft) !== JSON.stringify(saved);
 
-  function confirmSwap(scope: "workout" | "program") {
-    if (!pickedSwap || pending) return;
-    const { slot, exercise } = pickedSwap;
-    setError(null);
-    setNotice(null);
-    startSaving(async () => {
-      try {
-        await saveWorkoutChoice(planKey, slot.id, exercise.id, scope);
-        setPickedSwap(null);
-        setPickingExercise(null);
-        setNotice(scope === "program"
-          ? "Saved for this day for the rest of your program."
-          : "Saved for this workout only.");
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not save. Please try again.");
+  // Preserve a failed/unsaved draft when revalidation changes server props.
+  const [sourcePlan, setSourcePlan] = useState(plan);
+  if (sourcePlan !== plan) { setSourcePlan(plan); if (!draft) setSaved(plan); }
+  useEffect(() => {
+    if (!dirty) return;
+    const unload = (event: BeforeUnloadEvent) => { event.preventDefault(); };
+    const navigate = (event: MouseEvent) => {
+      const anchor = (event.target as HTMLElement).closest("a[href]");
+      if (anchor && !window.confirm("Discard unsaved workout changes?")) { event.preventDefault(); event.stopPropagation(); }
+    };
+    window.addEventListener("beforeunload", unload);
+    document.addEventListener("click", navigate, true);
+    // Browsers cannot cancel popstate; retain a sentinel while editing and restore it
+    // when Back is declined. Explicit Cancel/Save removes the sentinel without navigation.
+    history.pushState({ workoutEditor: true }, "", location.href);
+    const back = () => {
+      if (window.confirm("Discard unsaved workout changes?")) { setDraft(null); history.back(); }
+      else history.pushState({ workoutEditor: true }, "", location.href);
+    };
+    window.addEventListener("popstate", back);
+    return () => {
+      window.removeEventListener("beforeunload", unload);
+      document.removeEventListener("click", navigate, true);
+      window.removeEventListener("popstate", back);
+      if (history.state?.workoutEditor) history.replaceState(null, "", location.href);
+    };
+  }, [dirty]);
+
+  useEffect(()=>{
+    const viewport=window.visualViewport;
+    if(!editing || !viewport) return;
+    const update=()=>setKeyboardInset(Math.max(0,window.innerHeight-viewport.height-viewport.offsetTop));
+    const frame=requestAnimationFrame(update);
+    viewport.addEventListener("resize",update);viewport.addEventListener("scroll",update);
+    return ()=>{cancelAnimationFrame(frame);viewport.removeEventListener("resize",update);viewport.removeEventListener("scroll",update);};
+  },[editing]);
+
+  function suggestedRow(def: ExerciseDef, row: PlannedSet, slotId: string): PlannedSet {
+    const target = resolveExactWorkoutTarget({slotId,identity:exactExerciseIdentity(def.id,null),
+      prescription:{repMin:row.repMin,repMax:row.repMax,targetRir:row.rirMax},context:null,
+      history:targetHistory,catalog:{...catalogMap,[def.id]:def},stats,bodyweight,isDeload:recovery?.isDeload}).target;
+    return {...row,weight:null,seedAt:null,suggestedWeight:target?.weight??null,targetReps:target?.targetReps??row.repMin};
+  }
+  function change(update: (value: WorkoutEditorPlan) => WorkoutEditorPlan) {
+    setDraft(value => value ? update(value) : value);
+    setIssues([]); setError(null);
+  }
+  function updateSlot(id: string, update: (slot: PlannedSlot) => PlannedSlot) {
+    change(p => ({ ...p, slots: p.slots.map(s => s.id === id ? update(s) : s) }));
+  }
+  function updateSet(slotId: string, setId: string, field: keyof PlannedSet, value: number | null) {
+    const now=new Date().toISOString();
+    const patch=(row:PlannedSet):PlannedSet=>{
+      if(row.id!==setId) return row;
+      if(field==="repMin" || field==="repMax") {
+        const next={...row,[field]:value,repsEdited:true,contextAt:now};
+        return {...next,targetReps:next.repMin};
       }
+      if(field==="rirMin" || field==="rirMax") return {...row,[field]:value,rirEdited:true,contextAt:now};
+      return {...row,[field]:value,...(field==="weight"?{seedAt:value===null?null:now}:{})};
+    };
+    updateSlot(slotId,slot=>({...slot,sets:slot.sets.map(patch),normalSets:slot.normalSets?.map(patch)}));
+  }
+  function addSet(slotId:string) {
+    const id=crypto.randomUUID();
+    updateSlot(slotId,slot=>{
+      const previous=slot.sets.at(-1);
+      const fallback=newPlannedSet(id,{repMin:8,repMax:12,targetRirMin:2,targetRirMax:2});
+      const normal=slot.normalSets?.find(r=>r.id===previous?.id);
+      return {...slot,sets:[...slot.sets,previous?{...previous,id}:fallback],
+        normalSets:slot.normalSets?[...slot.normalSets,normal?{...normal,id}:fallback]:undefined};
     });
   }
-
-  function reset(slotId: string) {
-    setError(null);
-    setNotice(null);
-    startSaving(async () => {
-      try {
-        await saveWorkoutChoice(planKey, slotId, null);
-        setNotice("Reset to program default.");
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not save. Please try again.");
-      }
+  function reorder(index: number, offset: number) {
+    change(p => {
+      const rows = [...p.slots];
+      const other = index + offset;
+      if (other < 0 || other >= rows.length) return p;
+      [rows[index], rows[other]] = [rows[other], rows[index]];
+      return { ...p, slots: normalizeGroups(rows) };
     });
   }
+  function apply(slot: PlannedSlot, field: "reps" | "weight" | "rir", suggested = false) {
+    const first=slot.sets[0],now=new Date().toISOString();
+    const patch=(row:PlannedSet):PlannedSet=>field==="reps"
+      ? {...row,repMin:first.repMin,repMax:first.repMax,targetReps:first.repMin,repsEdited:true,contextAt:now}
+      :field==="rir"?{...row,rirMin:first.rirMin,rirMax:first.rirMax,rirEdited:true,contextAt:now}
+      :{...row,weight:suggested?null:first.weight,seedAt:suggested?null:now};
+    updateSlot(slot.id,s=>({...s,sets:s.sets.map(patch),
+      normalSets:s.normalSets?.map(row=>s.sets.some(visible=>visible.id===row.id)?patch(row):row)}));
+  }
+  function focusIssue(found: EditorIssue[]) {
+    setIssues(found);
+    requestAnimationFrame(() => {
+      const field = root.current?.querySelector<HTMLElement>(`[data-field="${found[0]?.path}"]`)
+        ?? root.current?.querySelector<HTMLElement>("[aria-invalid=true]");
+      field?.focus(); field?.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+  }
+  function save() {
+    if (!draft || pending) return;
+    const found = validateEditorPlan(draft, catalogMap);
+    if (found.length) { focusIssue(found); return; }
+    const content = JSON.stringify({ draft, scope, sourceRevision, revision });
+    if (request.current?.content !== content) request.current = { content, id: crypto.randomUUID() };
+    setError(null);
+    startSaving(async () => {
+      try {
+        const result = await saveWorkoutDraft({ key: planKey, programId, dayId, completed, sourceRevision,
+          revision, scope, plan: draft, requestId: request.current!.id });
+        if (result.issues.length) { focusIssue(result.issues); return; }
+        setSaved(draft); setDraft(null); setRemoved([]); request.current = null;
+        setNotice(scope === "program" ? "Saved for this day for the remainder of the program." : "Workout changes saved.");
+        router.refresh();
+      } catch (e) { setError(e instanceof Error ? e.message : "Could not save. Your changes are still here. Try again."); }
+    });
+  }
+  function field(path: string) {
+    return { "data-field": path, "aria-invalid": issues.some(i => i.path === path) || undefined,
+      "aria-describedby": issues.some(i => i.path === path) ? "editor-errors" : undefined };
+  }
+  function numeric(path: string, label: string, value: number | null, onChange: (value: number | null) => void, nullable = false) {
+    return <label className="flex min-w-0 flex-col gap-1 text-caption">{label}
+      <Input {...field(path)} type="number" inputMode="decimal" step="any" value={value ?? ""}
+        onChange={event => onChange(event.target.value === "" ? nullable ? null : NaN : Number(event.target.value))} />
+    </label>;
+  }
 
-  return (
-    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-6 py-6">
-      <Link href="/" className="w-fit text-body text-muted underline underline-offset-4">← Home</Link>
-      <header>
-        <p className="text-caption text-muted">{programName} · Week {week}</p>
-        <h1 className="text-display">{dayName}</h1>
-      </header>
-      {phase && <Card><CardLabel>{phase.name}</CardLabel>{phase.description && <p className="mt-1 text-body text-muted">{phase.description}</p>}</Card>}
-      <p className="text-caption text-muted">{slots.length} exercises · {slots.reduce((sum, s) => sum + s.prescription.targetSets, 0)} working sets</p>
-      {slots.map((slot, index) => {
-        const def = catalogMap[slot.exerciseId];
-        const p = slot.prescription;
-        const showStationSwap = canSwapStation(def, catalogMap);
-        return <Card key={slot.id}>
-          <CardLabel>Exercise {index + 1}</CardLabel>
-          {slot.supersetGroup && <p className="mt-1 text-caption font-medium">Superset {supersetLabel(slots, index)} · Alternate exercises</p>}
-          <div className="mt-1 flex items-start gap-3">
-            <ExerciseVisual exerciseId={slot.exerciseId} baseExerciseId={def?.baseExerciseId ?? slot.baseExerciseId} size="lg" />
-            {def ? (
-              <ExerciseCardLabel as="h2" size="heading" def={def} catalog={catalogMap} />
-            ) : (
-              <h2 className="text-heading">{slot.exerciseId}</h2>
-            )}
+  return <div ref={root} className="mx-auto flex w-full max-w-page flex-1 flex-col gap-5 px-4 pb-6">
+    <PageHeader title={dayName} back={<Link href="/">← Home</Link>}
+      context={<p className="text-caption text-muted">{programName} · Week {week}{editing ? " · Editing workout" : ""}</p>}
+      actions={!editing ? <Button type="button" variant="ghost" aria-label="Edit workout" onClick={() => {
+        setCatalog(initialCatalog);setDraft(structuredClone(saved)); setRemoved([]); setScope("workout"); setNotice(""); setError(null);
+      }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m15 4 5 5M4 20l5-1L21 7l-5-5L4 14Z" stroke="currentColor" strokeWidth="1.75" /></svg><span className="hidden sm:inline">Edit workout</span></Button> : undefined} />
+    {editing && scope==="program" && recovery?.setMultiplier!=null && recovery.setMultiplier<1 && <p className="text-caption">Editing normal-week sets. Recovery uses {Math.round(recovery.setMultiplier*100)}% volume and recovery RIR.</p>}
+    <p className="text-caption text-muted">{current.slots.length} {current.slots.length===1?"exercise":"exercises"} · {current.slots.reduce((n,s) => n+s.sets.length,0)} working sets</p>
+    <fieldset disabled={pending} className="contents">
+    {current.slots.length === 0 && <Card><p>Add an exercise to build this workout.</p></Card>}
+    {current.slots.map((slot, index) => {
+      const def = catalogMap[slot.exerciseId];
+      const path = `slots.${index}`;
+      const restSlot=slot.supersetGroup?current.slots.filter(s=>s.supersetGroup===slot.supersetGroup).at(-1)!:slot;
+      return <Card key={slot.id}>
+        <CardLabel>Exercise {index + 1}</CardLabel>
+        <div className="mt-2 flex items-start gap-3">
+          <ExerciseVisual exerciseId={slot.exerciseId} baseExerciseId={def?.baseExerciseId} size="lg" />
+          <div className="min-w-0">{def ? <ExerciseCardLabel as="h2" size="heading" def={def} catalog={catalogMap} /> : <h2>{slot.exerciseId}</h2>}
+            {slot.supersetGroup && <p className="text-caption">Superset {supersetLabel(current.slots,index)}</p>}
           </div>
-          <p className="mt-2 text-body tabular-nums">{p.targetSets} sets × {p.repMin}{p.repMin !== p.repMax ? `–${p.repMax}` : ""} reps · {rirLabel(p)} RIR</p>
-          <div className="mt-2 flex items-center gap-1 text-body tabular-nums">
-            {slot.effectiveTarget.target ? (
-              <span>Target {slot.effectiveTarget.target.weight} {def?.equipment === "bodyweight" ? "added" : "lb"} × {slot.effectiveTarget.target.targetReps}</span>
-            ) : <span className="text-muted">Target not set</span>}
-            <InfoButton title="Why this target">{effectiveTargetExplanation(slot.effectiveTarget)}</InfoButton>
+        </div>
+        {slot.normalSets && slot.normalSets.length !== slot.sets.length && <p className="mt-3 text-caption">Recovery: {slot.sets.length} of {slot.normalSets.length} normal-week sets</p>}
+        {editing && <div className="mt-3 flex flex-wrap gap-2">
+          <Button type="button" variant="secondary" {...field(`${path}.exerciseId`)} onClick={() => setPicking(slot.id)}>Replace exercise</Button>
+          <Button type="button" variant="ghost" aria-label={`Move exercise ${index+1} up`} disabled={index===0} onClick={() => reorder(index,-1)}>Move up</Button>
+          <Button type="button" variant="ghost" aria-label={`Move exercise ${index+1} down`} disabled={index===current.slots.length-1} onClick={() => reorder(index,1)}>Move down</Button>
+          <Button type="button" variant="ghost" aria-label={`Remove exercise ${index+1}`} onClick={() => {
+            setRemoved(r => [...r,{ slot: structuredClone(slot), index, before: structuredClone(current.slots) }]);
+            change(p => ({ ...p, slots: normalizeGroups(p.slots.filter(s => s.id!==slot.id)) }));
+          }}>Remove exercise</Button>
+        </div>}
+        <div className="mt-4 flex flex-col gap-3">
+          {slot.sets.map((set, si) => {
+            const sp = `${path}.sets.${si}`;
+            return <fieldset key={set.id} className="min-w-0 rounded-control border border-border p-3">
+              <legend className="px-1 text-caption">Set {si+1}</legend>
+              {editing ? <>
+                <div className="grid grid-cols-2 gap-3">
+                  {numeric(`${sp}.repMin`, "Minimum reps",set.repMin,v => updateSet(slot.id,set.id,"repMin",v))}
+                  {numeric(`${sp}.repMax`, "Maximum reps",set.repMax,v => updateSet(slot.id,set.id,"repMax",v))}
+                  {numeric(`${sp}.weight`, def?.loadMode === "assisted" ? "Load (negative lb assistance)" : "Target weight (lb)",set.weight,v => updateSet(slot.id,set.id,"weight",v),true)}
+                  <p className="self-center text-caption text-muted">Suggested: {set.suggestedWeight ?? "unavailable"}{set.suggestedWeight!==null ? " lb" : ""}</p>
+                  {numeric(`${sp}.rirMin`, "Minimum RIR",set.rirMin,v => updateSet(slot.id,set.id,"rirMin",v))}
+                  {numeric(`${sp}.rirMax`, "Maximum RIR",set.rirMax,v => updateSet(slot.id,set.id,"rirMax",v))}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button type="button" variant="ghost" onClick={() => updateSet(slot.id,set.id,"weight",null)}>Use suggested weight</Button>
+                  <Button type="button" variant="ghost" aria-label={`Remove set ${si+1} from exercise ${index+1}`}
+                    onClick={() => updateSlot(slot.id,s => ({ ...s,normalSets:s.normalSets?.filter(r=>r.id!==set.id),sets:s.sets.filter(r => r.id!==set.id) }))}>Remove set</Button>
+                </div>
+              </> : <p className="text-body tabular-nums">{set.repMin}{set.repMax!==set.repMin ? `–${set.repMax}` : ""} reps · {set.rirMin}{set.rirMax!==set.rirMin ? `–${set.rirMax}` : ""} RIR · {set.weight!==null ? `${set.weight} lb · Your target` : set.suggestedWeight!==null ? `${set.suggestedWeight} lb · Suggested` : "Weight not set"}</p>}
+            </fieldset>;
+          })}
+        </div>
+        {editing && <>
+          <Button type="button" variant="secondary" className="mt-3" {...field(`${path}.sets`)} onClick={() => addSet(slot.id)}>Add set</Button>
+          {slot.sets.length>0 && <div className="mt-3 flex flex-wrap gap-2">
+            <Button type="button" variant="ghost" onClick={() => apply(slot,"reps")}>Apply first set reps to all sets</Button>
+            <Button type="button" variant="ghost" onClick={() => apply(slot,"weight")}>Apply first set weight to all sets</Button>
+            <Button type="button" variant="ghost" onClick={() => apply(slot,"rir")}>Apply first set RIR to all sets</Button>
+            <Button type="button" variant="ghost" onClick={() => apply(slot,"weight",true)}>Use suggested weight for all sets</Button>
+          </div>}
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {numeric(`${path}.restSeconds`,slot.supersetGroup ? "Rest after round (seconds)" : "Rest between sets (seconds)",restSlot.restSeconds,v => updateSlot(restSlot.id,s => ({...s,restSeconds:v ?? NaN})))}
+            <label className="flex min-w-0 flex-col gap-1 text-caption">Superset
+              <select className="min-h-11 rounded-control border border-border bg-surface px-2 text-body" value={slot.supersetGroup ?? ""} onChange={event => {
+                const group=event.target.value;
+                change(p => {
+                  if (!group) return {...p,slots:p.slots.map(s => s.supersetGroup===slot.supersetGroup ? {...s,supersetGroup:null}:s)};
+                  const groupId=group==="previous" ? p.slots[index-1]?.supersetGroup ?? `G${index}` : group;
+                  const rows=p.slots.map((s,i) => i===index || (group==="previous" && i===index-1) ? {...s,supersetGroup:groupId}:s);
+                  return {...p,slots:normalizeGroups(rows)};
+                });
+              }}><option value="">Independent</option>{slot.supersetGroup && <option value={slot.supersetGroup}>{slot.supersetGroup}</option>}{index>0 && <option value="previous">Group with previous</option>}</select>
+            </label>
           </div>
-          {slot.effectiveTarget.reason === "repeated_effort_miss" && <p className="text-caption text-muted">Effort adjustment</p>}
-          <p className="mt-1 text-caption text-muted">{!isSupersetEnd(slots, index) ? "Continue to the next superset exercise without resting" : `Rest ${slot.restSeconds} seconds ${slot.supersetGroup ? "after the round" : "between sets"}`}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {showStationSwap && (
-              <SwapStationButton
-                exerciseId={slot.exerciseId}
-                catalog={catalog}
-                disabled={pending}
-                onPick={(picked) => {
-                  setError(null);
-                  setPickedSwap({ slot, exercise: picked });
-                }}
-              />
-            )}
-            <Button
-              type="button"
-              variant={showStationSwap ? "ghost" : "secondary"}
-              disabled={pending}
-              onClick={() => setPickingExercise(slot)}
-              aria-label={`Swap ${def ? exerciseCardAriaLabel(def, catalogMap) : slot.exerciseId} for another exercise`}
-            >
-              Swap exercise
-            </Button>
-            {slot.exerciseId !== slot.baseExerciseId && <Button type="button" variant="ghost" disabled={pending}
-              onClick={() => reset(slot.id)}>Reset</Button>}
-          </div>
-        </Card>;
-      })}
-      <div className="sticky bottom-0 -mx-6 border-t border-border bg-background px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        {error && <p role="alert" className="mb-3 text-caption text-danger">{error}</p>}
-        <p role="status" className="mb-2 text-caption text-muted">{pending ? "Saving…" : notice}</p>
-        <form action={startPlannedSession.bind(null, planKey)}>
-          <Button size="lg" className="w-full" disabled={pending || !!pickingExercise || !!pickedSwap}>Start workout</Button>
-        </form>
-      </div>
-      {pickingExercise && <ExercisePicker catalog={catalog} patternFilter={pickingExercise.pattern} resolveStations
-        onPick={(def) => {
-          setCatalog((current) => current.some((d) => d.id === def.id) ? current : [...current, def]);
-          setPickedSwap({ slot: pickingExercise, exercise: def });
-        }} onClose={() => setPickingExercise(null)} />}
-      {pickedSwap && !pickingExercise && (
-        <Sheet ariaLabel="Apply exercise swap" dismissible={!pending} onClose={() => setPickedSwap(null)}>
-          <div className="flex flex-col gap-3 px-4 pb-6 pt-2">
-            <div className="flex items-start gap-3">
-              <ExerciseVisual exerciseId={pickedSwap.exercise.id} baseExerciseId={pickedSwap.exercise.baseExerciseId} />
-              <div className="min-w-0">
-                <p className="text-caption text-muted">Use for…</p>
-                <ExerciseCardLabel as="h2" size="heading" def={pickedSwap.exercise} catalog={catalogMap} />
-              </div>
-            </div>
-            <Button type="button" pending={pending} onClick={() => confirmSwap("workout")}>
-              This workout only
-            </Button>
-            <Button type="button" variant="secondary" pending={pending} onClick={() => confirmSwap("program")}>
-              Remainder of program
-            </Button>
-            <Button type="button" variant="ghost" disabled={pending} onClick={() => setPickedSwap(null)}>Cancel</Button>
-          </div>
-        </Sheet>
-      )}
+        </>}
+        <p className="mt-3 text-caption text-muted">{!isSupersetEnd(current.slots,index) ? "No rest before the next superset exercise" : `Rest ${slot.restSeconds} seconds ${slot.supersetGroup ? "after the round" : "between sets"}`}</p>
+      </Card>;
+    })}
+    {editing && <>
+      <Button type="button" variant="secondary" onClick={() => setPicking("add")}>Add exercise</Button>
+      {removed.length>0 && <div role="status" className="flex flex-wrap items-center gap-3"><p className="text-caption">Exercise removed</p><Button type="button" variant="secondary" onClick={() => {
+        const last=removed.at(-1)!;
+        change(p => {
+          const rows=[...p.slots]; rows.splice(Math.min(last.index,rows.length),0,last.slot);
+          // Restore grouping when surviving neighbors still have their original order.
+          return {...p,slots:normalizeGroups(rows.map(s => ({...s,supersetGroup:last.before.find(b=>b.id===s.id)?.supersetGroup ?? s.supersetGroup})))};
+        }); setRemoved(r=>r.slice(0,-1));
+      }}>Undo removal</Button></div>}
+    </>}
+    </fieldset>
+    <div style={{bottom:editing?keyboardInset:0}} className="sticky bottom-0 z-20 -mx-4 border-t border-border bg-background px-4 py-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      {issues.length>0 && <div id="editor-errors" role="alert" className="mb-3 text-caption text-danger">{issues.map((i,n)=><p key={n}>{i.message}</p>)}</div>}
+      {error && <p role="alert" className="mb-3 text-caption text-danger">{error}</p>}
+      <p role="status" className="text-caption text-muted">{pending ? "Saving changes…" : notice}</p>
+      {editing ? <>
+        <label className="mb-3 flex flex-col gap-1 text-caption">Apply changes to
+          <select className="min-h-11 w-full rounded-control border border-border bg-surface px-2 text-body" value={scope} disabled={pending} onChange={e=>{
+              const nextScope=e.target.value as "workout"|"program";
+              if(recovery?.setMultiplier!=null && recovery.setMultiplier<1) change(p=>({...p,slots:p.slots.map(s=>{
+                if(!s.sets.length) return s;
+                if(nextScope==="program") return {...s,sets:s.normalSets??s.sets,normalSets:undefined};
+                const first=s.sets[0];
+                return {...s,normalSets:s.sets,sets:recoverySets(s.sets,{targetSets:s.sets.length,repMin:first.repMin,repMax:first.repMax,targetRir:recovery.targetRirMax??first.rirMax,targetRirMin:recovery.targetRirMin??first.rirMin,targetRirMax:recovery.targetRirMax??first.rirMax,phase:recovery})};
+              })}));
+              setScope(nextScope);
+            }}>
+            <option value="workout">This workout only</option><option value="program">This day for the remainder of the program</option>
+          </select>
+        </label>
+        <div className="flex gap-3"><Button type="button" className="flex-1" pending={pending} onClick={save}>Save changes</Button>
+          <Button type="button" variant="secondary" disabled={pending} onClick={()=>{setCatalog(initialCatalog);setDraft(null);setRemoved([]);setIssues([]);setError(null);setPicking(null);}}>Cancel</Button></div>
+      </> : <Button type="button" size="lg" className="w-full" pending={pending} disabled={!current.slots.length} onClick={()=>{
+        startSaving(async()=>{
+          const result=await preparePlannedWorkout(planKey);
+          if("error" in result) {setError(result.error);return;}
+          if(result.destination==="/workout/next") {setError("Your workout changed. Review the latest plan before starting.");router.refresh();return;}
+          router.push(result.destination);
+        });
+      }}>Start workout</Button>}
     </div>
-  );
+    {picking && <ExercisePicker catalog={catalog} resolveStations allowCustom={false}
+      resolveVariantAction={async input => {
+        const existing=catalog.find(d=>d.baseExerciseId===input.baseExerciseId && (d.brand??null)===input.brand && d.machineType===input.machineType && (d.stationModel??null)===(input.stationModel??null));
+        if(existing) return existing;
+        const def=draftStation(input,`station-${crypto.randomUUID()}`);
+        change(p=>({...p,variants:[...(p.variants??[]),{id:def.id,baseExerciseId:input.baseExerciseId,brand:input.brand,machineType:input.machineType,stationModel:input.stationModel??null}]}));
+        return def;
+      }}
+      onPick={def=>{
+        setCatalog(c=>c.some(d=>d.id===def.id)?c:[...c,def]);
+        if(picking==="add") change(p=>({...p,slots:[...p.slots,{id:crypto.randomUUID(),programSlotId:null,exerciseId:def.id,pattern:def.pattern,
+          restSeconds:120,supersetGroup:null,sets:Array.from({length:3},()=>suggestedRow(def,newPlannedSet(crypto.randomUUID(),{repMin:8,repMax:12,targetRirMin:2,targetRirMax:2}),"new"))}]}));
+        else updateSlot(picking,s=>def.id===s.exerciseId?s:({...s,equipmentInstanceId:null,exerciseId:def.id,pattern:def.pattern,normalSets:s.normalSets?.map(row=>suggestedRow(def,row,s.id)),
+          sets:s.sets.map(row=>suggestedRow(def,row,s.id))}));
+      }} onClose={()=>setPicking(null)} />}
+  </div>;
 }

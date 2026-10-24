@@ -213,3 +213,27 @@ suite runs with a fresh dev server and then exits before generated-type/base ver
 Final #206 base verification passed fresh framework types, TypeScript, lint (the existing
 `board.ts` unused-variable warning remains), indexed-access checks, 1,193 tests with one gated
 live test skipped, and the production build. No hosted rollout or paid model evaluation ran.
+
+
+## Complete workout editor (#238)
+
+`workout-editor.test.ts` checks the versioned plan boundary, equipment load rules, recovery
+row retention, seed-to-performance progression and independent set identity/context.
+`workout-editor-ui.test.tsx` checks draft-only removal/Undo, Cancel, failed-save request reuse,
+invalid-field focus and normal-week effort/volume during recovery editing. The shared picker
+suite prevents duplicate selection during dismissal. Target tests also check active swap
+projection without carrying the captured exercise's manual load.
+
+`workout_editor_rls.sql` uses authenticated owners to check direct/anonymous denial, complete
+scope writes, request receipts, stale revisions, failed-save/start rollback, immutable session
+captures, retired historical references and stable added-slot IDs. The concurrency command
+now includes `test-workout-editor-concurrency.mjs`, which uses competing real connections for
+save conflicts and exactly one captured/resumed start.
+
+`e2e/workout-editor.spec.ts` runs real Auth → Next actions → PostgREST/RLS → PostgreSQL → UI
+at 390px mobile and 1280px desktop. It covers global edits, deferred station creation and
+Cancel, remove/Undo, keyboard reorder, supersets/round rest, distinct rows, navigation/reload
+protection, both scopes/starts, snapshot logging, historical stability, a 4-to-2 recovery week
+with 3–4 RIR, and a return to four normal sets with edited 1 RIR and independently progressed
+heavy/lighter loads. Browser fixtures are synthetic and owner-cleaned; paid model calls and
+hosted deployment/migration behavior remain separate. The PR records exact executed results.

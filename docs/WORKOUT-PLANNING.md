@@ -1,88 +1,89 @@
-# Plan the next workout
+# Plan and edit the next workout
 
-## Effective target suggestions
+`/workout/next` uses one **Edit workout** action. Exercise cards stay in place while their
+sets, rep bounds, RIR bounds, loads, rest and superset grouping become labeled controls.
+Add/replace uses the shared station-resolving catalog picker. Move up/down works with
+keyboard or touch; removal supports draft Undo. A temporary empty draft is allowed,
+but Save requires an exercise with a working set. Start is replaced by sticky Save/Cancel
+while editing. Local validation focuses the first invalid field; failed writes retain the
+draft. Navigation/reload guards use browser confirmation where supported.
 
-`loadNextWorkout()` attaches shared effective targets for Home/planner and Coach. Planner
-displays the nullable load/rep target and a **Why this target** InfoButton. Supported repeated
-effort reductions are included without Accept or a chat visit. See
-[the target contract](AI-COACH.md#effective-workout-targets-211). Calculation never writes
-choices, sessions, adaptations, slots or sets.
+## Save scopes and persistence
 
-Coach's weekly target scopes (#208) reuse `loadNextWorkout()` for the actual next/open
-occurrence and `resolveWorkoutSlots()` for other program days. Workout-only planner choices
-stay on that occurrence. Week-wide reads do not start workouts or write cookies; future
-targets are current-history estimates. See [program-week targets](AI-COACH.md#program-week-workout-targets-208)
-for completion status, saved identity gaps and the programmed-block boundary.
+One scope selector applies to the whole draft, defaulting to **This workout only**.
+**This day for the remainder of the program** writes this occurrence and only the selected
+owner's day. Other days, shared templates, completed sets and unrelated adaptations remain
+unchanged. Catalog station selections are deferred until Save; Cancel creates no variants.
 
-Open-workout target reads preserve stored day/week/choices and use pre-start history. Active
-entry carries forward saved same-exercise weight/reps; refresh does not replace typed values.
-Missing stored exercise identity stays explicit rather than silently choosing a default.
+`workout_plan` stores the full versioned occurrence by owner/program/day/completed count.
+It syncs across devices, expires after 30 days, and is consumed atomically by successful
+session creation. A failed save/start retains it. The old substitution cookie is a read-only
+compatibility input when no database plan exists; clear it only after a successful write.
+Planning creates no sessions, performance evidence, duration or adherence statistics.
 
-Home's Upcoming workout card links to `/workout/next`. The full-page planner shows every
-exercise with the effective week-specific sets, reps, RIR, rest, and phase description.
-It shares the station-resolving ExercisePicker (`resolveStations`) with the active workout. Reset removes
-only that slot's planned choice. An open workout redirects to its active session.
+`save_workout_plan` and `start_workout_plan` use the existing owner source lock, expected
+source/plan revisions, and current active-program position. Saves have immutable request
+receipts for lost-response retries. Starts resume an existing open session before considering
+new input; concurrent starts return one session. A changed day/program fingerprint or stale
+revision returns a conflict requiring review. No partial program write reports success.
+Owner RLS and the private non-login/non-bypass executor deny direct plan writes.
 
-## Persistence and start boundary
+## Program intent, recovery and targets
 
-Day-local superset groups persist on program slots and pass through planner and session
-loaders. Numbered group labels (for example C1/C2) indicate alternating sets. The planner
-shows no-rest guidance before the next member and the final member's rest interval after
-the round. The active workout starts its automatic timer only after that final member;
-individual exercise logging and targets remain independent. Supersets are edited in the
-program builder, not in workout-only exercise-choice cookies.
+`program_slot.set_prescriptions` stores ordered normal-week rows with stable set UUIDs and
+explicit/inherited field flags. Explicit rep/RIR edits persist; untouched fields still follow
+phase/Fluid rules. Exercise replacement appends existing Fluid `manual_swap` semantics.
+Retirement removes a future slot without nulling historical set references or deleting its
+adaptations. Future program/Coach readers exclude retired slots; history retains them.
 
-Planning choices apply to the upcoming workout only when the user picks **This workout
-only**. They are stored for up to 30 days in a same-site, HTTP-only cookie in the current
-browser; they do not sync across devices. The UI states this limitation. Creating a new
-station variant still persists its catalog row through the existing authenticated picker
-action. Planning never creates a session or logs a set, so it contributes no duration,
-adherence, or training-history data.
+Recovery applies `effectiveSetCount` once to normal rows, retaining the first N in order,
+then applies configured recovery RIR over normal-week effort edits. Normal intent remains
+separate from effective recovery rows while switching scopes or saving during recovery. Four sets become two
+at 0.5 volume. In program scope during recovery, the editor exposes normal-week rows;
+the server derives the effective occurrence separately. Saved reduced rows do not become
+next week's normal count.
 
-Choosing **Remainder of program** after Swap exercise or Swap machine uses the same
-`swap_program_slot_exercise` RPC path as in-session program-scope swaps: it updates the
-matching `program_slot` and, on fluid programs, appends a `manual_swap` adaptation row.
-It clears any cookie override for that slot so the durable program change is what future
-planner loads and session starts inherit.
+An entered weight remains exact for the saved upcoming occurrence. For future occurrences
+it is a seed until comparable actual performance exists after that edit. Read/refresh never
+simulates completion or compounds a weight increase. Distinct set rows match by stable set
+identity, exact exercise/equipment and saved rep/effort context; heavy and lighter rows do
+not share the old card-wide first-set reference. Context edits start a new comparison window.
+The canonical `resolveExactWorkoutTarget` calculation still owns suggestions and repeated
+effort adjustments. Legacy uniform slots retain their existing first-working-set behavior.
 
-The cookie identity contains the authenticated user, active program, next day, and completed
-session count. Reads reject other identities and filter deleted slots, unknown exercises,
-and unresolved station templates. Saves authenticate, reload the active program and current
-position, validate the slot/exercise, and reject stale pages or already-open workouts.
-Cookie size is checked before writing; errors are visible instead of reporting success.
+**Use suggested weight** clears only that row's weight adjustment. Its apply-to-all control
+explicitly names all sets in the exercise. It does not reset reps, RIR, rest, order, grouping,
+or exercise identity, and remains a draft change until Save.
 
-`loadNextWorkout` is shared by Home, the planner, and Start. It resolves classic weekly
-phases and folds fluid adaptations using the same functions as the active session. Database
-read errors surface instead of silently defaulting to week one. Both Start buttons insert
-validated draft choices directly into `workout_session.exercise_swaps` alongside session
-creation. A failed insert retains the draft. A successful insert clears it. An existing
-session is resumed without overwriting its choices. A stale planner Start refreshes the
-planning route instead of starting a different workout.
+## Session boundary and compatibility
 
-In-session swapping still offers workout-only / remainder-of-program scope. The planner
-uses the same confirmation sheet copy and scope buttons after picking a replacement.
-Workout-only choices stay cookie-scoped; program scope writes through
-`swap_program_slot_exercise` and leaves adaptation history intact for fluid programs.
+Home Start and planner Start share `loadNextWorkout()` and the atomic start RPC. New sessions
+capture `workout_session.plan_snapshot`: ordered slots, exact identities, per-set targets,
+rest, groups and phase context. Active logging reads this capture and advances through the
+individual planned rows. `set_log.planned_slot_id` and `planned_set_id` distinguish added
+workout-only exercises and completion even after deleting a logged row. `program_slot_id`
+continues to preserve historical program identity. Extra sets remain separate.
 
-## Verification
+Later program edits cannot rewrite a capture. Explicit in-session swaps overlay the saved
+identity and rederive compatible targets without changing logged rows. Workout-only added
+slots support workout-only in-session swaps. Existing sessions without a snapshot retain
+the legacy loader; no historical prescriptions are guessed or backfilled. An open workout
+continues to redirect the planner to Resume.
 
-`superset.test.ts` covers labels, group validation and template-to-program preservation.
-`effective-workout-target-ui.test.tsx` verifies C1/C2 rendering and the timer firing only
-after the last member. `supabase/tests/program_supersets.sql` is a rollback-only RPC check
-for persistence, clearing, invalid groups, atomicity, preserved deloads and owner isolation.
+Superset members remain contiguous; singleton/split groups dissolve in the draft. Intermediate
+members do not start rest; the final member uses its saved interval after the round. Every group rest control edits that final member's round interval. Active
+counts and the expandable Planned sets list use the captured rows.
 
-`workout-plan.test.ts` covers user/program/day/exposure isolation, malformed cookies, removed
-slots, unknown exercises, and station-template rejection. `workout-planning-actions.test.ts`
-checks the authenticated action boundary with mocked database/cookie adapters: saving without
-session creation, preserving other choices, program-scope RPC delegation, reset, stale/invalid
-rejection, resume behavior, atomic insert payload, and draft retention on failure. These do not
-replace an authenticated browser test against the deployed Supabase instance.
+## Verification and rollout
 
-The planner program-scope path adds `swap_program_slot_exercise` (same slot/adaptation writes
-as in-session program scope, without touching `workout_session`). Type checking, ESLint,
-Vitest, and the production build are the shipping gates.
+[The approved persistence design](WORKOUT-EDITOR-DESIGN.md) records the decision, compatibility
+boundaries and acceptance matrix. Pure tests cover serialization, equipment validation,
+recovery retention and per-set evidence matching. UI tests cover local draft/Undo/Cancel,
+failed-save retry identity and invalid-field focus. `workout_editor_rls.sql` covers scope,
+ownership, immutable snapshots, version conflicts, rollback and historical references.
+`test-workout-editor-concurrency.mjs` exercises actual competing save/start connections.
+`e2e/workout-editor.spec.ts` checks authenticated mobile/desktop save/reload/start/logging
+and both scopes against the disposable stack. The PR records actual results and limits.
 
-Coach action context (#141): new sessions persist every selected, loggable slot identity in
-`exercise_swaps`, including canonical defaults and folded Fluid choices. Unresolved station
-templates are not guessed. This records context at creation; older open sessions with missing
-stored identities remain unavailable for Coach structural confirmation. No history is backfilled.
+The migration must be applied through the existing hosted deployment workflow before
+production can run this code; no hosted migration is authorized by local verification.

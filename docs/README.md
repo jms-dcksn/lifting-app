@@ -28,7 +28,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Exception storage, replay, preferences and action authorization | [Episode design and Decision Card](AI-COACH-EPISODES-DESIGN.md) — #195 inbox and #141 conversations/confirmed actions implemented |
 | Implemented persistent exception inbox, foreground refresh and rollout | [Inbox contract](COACH-INBOX.md) |
 | Planned exercise-review matching and eval improvements | [Implementation plan](AI-COACH-EVAL-IMPROVEMENTS.md), [annotated review](2026-10-11-ai-coach-annotated-eval-review.md) |
-| Active substitutions / pre-workout choices | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
+| Full upcoming-workout editor, saved occurrence plans and active substitutions | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
 | Weight observations, charts and goal distance | [Calendar](WEIGHT-CALENDAR.md), [trends](WEIGHT-TRENDS.md) |
 | Monthly comparisons, shared stall evidence, or period × performance weeks | [Monthly progress](MONTHLY-PROGRESS.md) |
 | Tape sites on Body | [Body measurements](BODY-MEASUREMENTS.md) |

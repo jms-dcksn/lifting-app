@@ -131,39 +131,34 @@ export async function startPlannedSession(planKey: string) {
   return startSession(planKey);
 }
 
-async function startSession(planKey?: string) {
-  const { supabase, userId } = await requireUser();
+async function startSession(planKey?: string) { redirect(await upcomingSessionDestination(planKey)); }
+
+export async function preparePlannedWorkout(planKey:string):Promise<{destination:string}|{error:string}> {
+  try { return {destination:await upcomingSessionDestination(planKey)}; }
+  catch(error) { return {error:error instanceof Error?error.message:"Could not start. Your saved workout is still available. Try again."}; }
+}
+
+async function upcomingSessionDestination(planKey?: string) {
+  const supabase=await createClient();
+  const {data:claims}=await supabase.auth.getClaims();
+  const userId=claims?.claims?.sub;
+  if(!userId) return "/login";
 
   const program = await getActiveProgram(supabase, userId);
-  if (!program || program.days.length === 0) redirect("/program");
+  if (!program || program.days.length === 0) return "/program";
 
   const next = await loadNextWorkout(supabase, userId, program);
-  if (next.open) redirect(`/session/${next.open.id}`);
-  if (planKey && planKey !== next.key) redirect("/workout/next");
-  const { day, week, choices } = next;
-  // Persist the exact loggable identities selected at creation. Older sessions with missing
-  // choices remain unavailable for Coach actions; never infer their original selection later.
-  const storedChoices = { ...choices };
-  for (const slot of next.slots) {
-    if (isLoggableExercise(next.catalog[slot.exerciseId])) storedChoices[slot.id] = slot.exerciseId;
-  }
-
-  const { data, error } = await supabase
-    .from("workout_session")
-    .insert({
-      user_id: userId,
-      program_id: program.id,
-      program_day_id: day.id,
-      week_index: week,
-      exercise_swaps: storedChoices,
-    })
-    .select("id")
-    .single();
-
-  if (error || !data) throw new Error(error?.message ?? "Could not start session");
+  if (next.open) return `/session/${next.open.id}`;
+  if (planKey && planKey !== next.key) return "/workout/next";
+  const { data: sessionId, error } = await supabase.rpc("start_workout_plan", {
+    p_program: program.id, p_day: next.day.id, p_completed: next.completed,
+    p_source: next.sourceRevision, p_revision: next.planRevision,
+    p_plan: next.editorPlan as unknown as import("@/lib/supabase/types").Json,
+  });
+  if (error || !sessionId) throw new Error(error?.message ?? "Could not start session");
   (await cookies()).delete(WORKOUT_PLAN_COOKIE);
   revalidatePath("/");
-  redirect(`/session/${data.id}`);
+  return `/session/${sessionId}`;
 }
 
 export interface LogSetInput {
@@ -174,6 +169,8 @@ export interface LogSetInput {
   reps: number;
   rir: number;
   idempotencyKey?: string;
+  plannedSlotId?: string;
+  plannedSetId?: string;
 }
 
 // Compute e1RM, insert the set, refresh the derived stat. Returns the persisted row.
@@ -196,7 +193,8 @@ export async function logSet(input: LogSetInput) {
     .from("set_log")
     .select("id", { count: "exact", head: true })
     .eq("session_id", input.sessionId);
-  setIndexQuery = input.programSlotId
+  if (input.plannedSlotId) setIndexQuery = setIndexQuery.eq("planned_slot_id", input.plannedSlotId);
+  else setIndexQuery = input.programSlotId
     ? setIndexQuery.eq("program_slot_id", input.programSlotId)
     : setIndexQuery.eq("exercise_id", input.exerciseId);
 
@@ -205,7 +203,7 @@ export async function logSet(input: LogSetInput) {
       // The session id comes from the client — confirm it is this user's session.
       supabase
         .from("workout_session")
-        .select("id, is_deload")
+        .select("id, is_deload, plan_snapshot")
         .eq("id", input.sessionId)
         .eq("user_id", userId)
         .maybeSingle(),
@@ -222,6 +220,14 @@ export async function logSet(input: LogSetInput) {
     ]);
   if (!session) throw new Error("Session not found");
 
+  let equipmentInstanceId: string | null = null;
+  if (session.plan_snapshot && input.plannedSlotId) {
+    const { parseStoredPlan } = await import("@/lib/workout-editor");
+    const slot = parseStoredPlan(session.plan_snapshot).slots.find(s=>s.id===input.plannedSlotId);
+    if (!slot) throw new Error("Exercise is not in this saved workout.");
+    if (slot.exerciseId===input.exerciseId) equipmentInstanceId=slot.equipmentInstanceId??null;
+  }
+
   const load = effectiveLoad(def, input.weight, bodyweight);
   const e1rm =
     load != null && load > 0 && input.reps > 0 ? computeE1rm(load, input.reps, input.rir) : null;
@@ -232,6 +238,9 @@ export async function logSet(input: LogSetInput) {
       user_id: userId,
       session_id: input.sessionId,
       program_slot_id: input.programSlotId,
+      planned_slot_id: input.plannedSlotId ?? null,
+      planned_set_id: input.plannedSetId ?? null,
+      equipment_instance_id: equipmentInstanceId,
       exercise_id: input.exerciseId,
       set_index: priorThisSession ?? 0,
       weight: input.weight,

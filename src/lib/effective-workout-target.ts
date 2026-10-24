@@ -18,7 +18,7 @@ export interface WorkoutTargetHistory {
   effortBySlot: Record<string, { context: StallContext; exposures: TargetPerformance[] }>;
 }
 
-export type EffectiveTargetReason = "unavailable" | "starting_weight" | "recovery" | "below_rep_floor"
+export type EffectiveTargetReason = "unavailable" | "manual_target" | "starting_weight" | "recovery" | "below_rep_floor"
   | "add_load" | "add_rep" | "hold_load" | "repeated_effort_miss";
 
 export interface EffectiveWorkoutTarget {
@@ -134,6 +134,7 @@ export function resolveEffectiveWorkoutTarget(input: EffectiveTargetInput): Effe
 
 export function effectiveTargetExplanation(result: EffectiveWorkoutTarget): string {
   switch (result.reason) {
+    case "manual_target": return "This target was chosen for the saved upcoming workout. Future suggestions continue from comparable logged performance.";
     case "repeated_effort_miss": return "The first working set was harder than the prescribed RIR in two consecutive comparable exposures. The upcoming target uses one increment less load; this is a calculated suggestion, not a program change.";
     case "recovery": return "This target follows the current recovery prescription. Repeated effort misses do not override recovery.";
     case "below_rep_floor": return "The selected first set was below the current rep range. The target returns to the rep floor using recorded reps and effort.";

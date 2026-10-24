@@ -1,3 +1,6 @@
+import { editorSlot, parseStoredPlan, recoverySets, type PlannedSet } from "./workout-editor";
+import { plannedCardTarget, plannedSetTarget, type PlannedPerformance } from "./workout-editor-targets";
+import { loadPlannedPerformances } from "./workout-editor-data";
 import { exactExerciseIdentity } from "@/lib/strength/identity";
 import { cookies } from "next/headers";
 import type { createClient } from "./supabase/server";
@@ -22,7 +25,7 @@ export function resolveWorkoutSlots(input: {
   program: Program; day: ProgramDay; week: number; choices: Record<string, string>;
   logged: LoggedIdentity[]; adaptations: Adaptation[]; targetHistory: WorkoutTargetHistory;
   catalog: Record<string, ExerciseDef>; stats: ExerciseStat[]; bodyweight: number | null;
-  defaultRestSeconds: number; sessionIsDeload?: boolean;
+  defaultRestSeconds: number; sessionIsDeload?: boolean; plannedHistory?: PlannedPerformance[];
 }) {
   const { program, day, week, choices, targetHistory, catalog, stats, bodyweight } = input;
   const lastBySlot = new Map(input.logged.map(set => [set.program_slot_id, set]));
@@ -39,10 +42,25 @@ export function resolveWorkoutSlots(input: {
       week, program.style === "classic" ? program.phases : []);
     const context = stallContext({ ...slot, programId: program.id, programDayId: day.id },
       exerciseId, equipmentInstanceId, prescription, folded.phaseStartAt);
-    const effectiveTarget = resolveExactWorkoutTarget({ slotId: slot.id, identity: exactExerciseIdentity(exerciseId, equipmentInstanceId),
+    let effectiveTarget = resolveExactWorkoutTarget({ slotId: slot.id, identity: exactExerciseIdentity(exerciseId, equipmentInstanceId),
       prescription, context, isDeload: input.sessionIsDeload ?? isDeload(prescription.phase),
       history: targetHistory, catalog, stats, bodyweight });
+    let plannedSets: PlannedSet[] | undefined;
+    let normalSets: PlannedSet[] | undefined;
+    if (slot.setPrescriptions) {
+      const normalPrescription=isDeload(prescription.phase)
+        ? resolvePrescription({...slot,repMin:folded.repMin,repMax:folded.repMax},week,[]) : {...prescription,phase:null};
+      normalSets=recoverySets(slot.setPrescriptions,{...normalPrescription,phase:null}).map(set=>plannedSetTarget({
+        slotId:slot.id,exerciseId,equipmentInstanceId,set,history:input.plannedHistory??[],
+        context:{...context,phaseId:null},catalog,stats,bodyweight,isDeload:false}));
+      const rows = recoverySets(slot.setPrescriptions, prescription);
+      plannedSets = rows.map(set => plannedSetTarget({ slotId: slot.id, exerciseId, equipmentInstanceId, set,
+        history: input.plannedHistory ?? [], context, catalog, stats, bodyweight, isDeload: input.sessionIsDeload ?? isDeload(prescription.phase) }));
+      prescription.targetSets = plannedSets.length;
+      if(plannedSets[0]) effectiveTarget=plannedCardTarget(effectiveTarget,plannedSets[0]);
+    }
     return { ...slot, baseExerciseId, exerciseId, prescription, targetContext: context, effectiveTarget,
+      plannedSets, normalSets,
       restSeconds: slot.restSeconds ?? input.defaultRestSeconds };
   });
 }
@@ -52,10 +70,13 @@ export async function loadNextWorkout(
   userId: string,
   program: Program,
 ) {
+  const revisionRead = await supabase.from("coach_refresh_state").select("source_revision").eq("user_id", userId).maybeSingle();
+  if (revisionRead.error) throw new Error(revisionRead.error.message);
+  const sourceRevision = revisionRead.data?.source_revision ?? 0;
   const [finished, open, catalog, profile, bodyweight, statRows] = await Promise.all([
     supabase.from("workout_session").select("id", { count: "exact", head: true })
       .eq("user_id", userId).eq("program_id", program.id).not("finished_at", "is", null),
-    supabase.from("workout_session").select("id, performed_at, program_day_id, week_index, exercise_swaps, is_deload").eq("user_id", userId)
+    supabase.from("workout_session").select("id, performed_at, program_day_id, week_index, exercise_swaps, is_deload, plan_snapshot").eq("user_id", userId)
       .eq("program_id", program.id).not("program_day_id", "is", null)
       .is("finished_at", null).order("performed_at", { ascending: false }).limit(1).maybeSingle(),
     getCatalogMap(supabase, userId),
@@ -74,10 +95,7 @@ export async function loadNextWorkout(
   const swaps = open.data?.exercise_swaps;
   const stored = swaps && typeof swaps === "object" && !Array.isArray(swaps) ? swaps : {};
   const choices: Record<string, string> = open.data
-    ? Object.fromEntries(day.slots.flatMap(slot => {
-      const exerciseId = stored[slot.id];
-      return typeof exerciseId === "string" ? [[slot.id, exerciseId]] : [];
-    }))
+    ? Object.fromEntries(Object.entries(stored).flatMap(([slotId,exerciseId])=>typeof exerciseId==="string"?[[slotId,exerciseId]]:[]))
     : readWorkoutPlan((await cookies()).get(WORKOUT_PLAN_COOKIE)?.value, key, day.slots, catalog);
   const [targetHistory, logged] = await Promise.all([
     loadWorkoutTargetHistory(supabase, userId, catalog, open.data ? new Date(open.data.performed_at) : new Date(), day.slots.map(slot => slot.id)),
@@ -95,8 +113,46 @@ export async function loadNextWorkout(
     : { data: [], error: null };
   if (adaptations.error) throw new Error(adaptations.error.message);
   const defaultRestSeconds = profile.data?.default_rest_seconds ?? 120;
-  const slots = resolveWorkoutSlots({ program, day, week, choices, logged: logged.data ?? [],
+  const plannedHistory = await loadPlannedPerformances(supabase, userId, open.data ? new Date(open.data.performed_at) : new Date());
+  let slots = resolveWorkoutSlots({ program, day, week, choices, logged: logged.data ?? [],
     adaptations: adaptations.data ?? [], targetHistory, catalog, stats, bodyweight,
-    defaultRestSeconds, sessionIsDeload: open.data?.is_deload });
-  return { key, choices, completed, week, day, slots, catalog, open: open.data, targetHistory, stats, bodyweight, defaultRestSeconds };
+    defaultRestSeconds, sessionIsDeload: open.data?.is_deload, plannedHistory });
+  const saved = open.data ? null : await supabase.from("workout_plan").select("plan,revision,updated_at")
+    .eq("user_id", userId).eq("program_id", program.id).eq("program_day_id", day.id).eq("completed_count", completed).maybeSingle();
+  if (saved?.error) throw new Error(saved.error.message);
+  const storedPlan = open.data?.plan_snapshot ?? saved?.data?.plan;
+  const parsedPlan=storedPlan ? parseStoredPlan(storedPlan) : null;
+  const editorPlan = parsedPlan ? open.data ? {...parsedPlan,slots:parsedPlan.slots.map(slot=>{
+    const selected=choices[slot.id]??slot.exerciseId;
+    if(selected===slot.exerciseId) return slot;
+    return {...slot,exerciseId:selected,equipmentInstanceId:null,sets:slot.sets.map(row=>{
+      const target=resolveExactWorkoutTarget({slotId:slot.id,identity:exactExerciseIdentity(selected,null),
+        prescription:{repMin:row.repMin,repMax:row.repMax,targetRir:row.rirMax},context:null,
+        history:targetHistory,catalog,stats,bodyweight,isDeload:open.data?.is_deload}).target;
+      return {...row,weight:null,seedAt:null,suggestedWeight:target?.weight??null,targetReps:target?.targetReps??row.repMin};
+    })};
+  })} : {...parsedPlan,slots:parsedPlan.slots.map(s=>({...s,
+    programSlotId:s.programSlotId && day.slots.some(b=>b.id===s.programSlotId)?s.programSlotId:null}))}
+    : { version: 1 as const, dayName:day.name,phase:slots[0]?.prescription.phase??null, slots: slots.map(editorSlot) };
+  if (storedPlan) slots = editorPlan.slots.map(s => {
+    const base = slots.find(b => b.id === s.id);
+    const first = s.sets[0];
+    return { ...base, ...s, baseExerciseId: base?.baseExerciseId ?? s.exerciseId,
+      pattern: s.pattern as import("./strength/coefficients").Pattern,
+      targetSets: s.sets.length, repMin: first.repMin, repMax: first.repMax, targetRir: first.rirMax,
+      plateauPatience: base?.plateauPatience ?? null,
+      prescription: { targetSets: s.sets.length, repMin: first.repMin, repMax: first.repMax,
+        targetRir: first.rirMax, targetRirMin: first.rirMin, targetRirMax: first.rirMax, phase: base?.prescription.phase ?? null },
+      effectiveTarget: plannedCardTarget(base?.effectiveTarget ?? { status: "current_target" as const, target: null,
+        reason: "unavailable" as const, reference: { lastSameSlot: null, bestRecent: null, selected: null }, evidence: [] }, first),
+      targetContext: base?.targetContext ?? stallContext({ id: s.programSlotId ?? s.id, programId: program.id,
+        programDayId: day.id, exerciseId: s.exerciseId, targetSets: s.sets.length,
+        repMin: first.repMin, repMax: first.repMax, targetRir: first.rirMax }, s.exerciseId, null,
+        { targetSets: s.sets.length, repMin: first.repMin, repMax: first.repMax, targetRir: first.rirMax,
+          targetRirMin: first.rirMin, targetRirMax: first.rirMax, phase: null }, null), plannedSets: s.sets, normalSets: s.normalSets,
+    };
+  });
+  return { key, choices, completed, week, day, slots, catalog, open: open.data, targetHistory, stats, bodyweight,
+    defaultRestSeconds, plannedHistory, editorPlan, sourceRevision, planRevision: saved?.data?.revision ?? 0,
+    savedExpired: !!saved?.data && Date.parse(saved.data.updated_at) < Date.now() - 30 * 86400000 };
 }

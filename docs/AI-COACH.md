@@ -732,3 +732,17 @@ Accept all, Later or Dismiss controls. Their old application server actions were
 existing legacy decision rows and deterministic engines/tool lookups remain intact. Accepted
 legacy reviews never become action receipts or proof that a program changed. No schema,
 provider, scheduler, notification policy or target formula changes are added by #206.
+
+
+### Complete workout editor target projection (#238)
+
+`nextWorkout` and `weeklyCoach.currentWorkout` retain the full saved upcoming occurrence.
+Edited slots expose `perSetTargets`, including stable set ID, rep/RIR bounds, resolved weight,
+target reps and `user`/`suggested` source. `manual_target` identifies an explicit saved weight;
+it is not completed evidence or a permanent load lock. Do not flatten heavy/lighter rows to
+one shared card target. Program-week reads use current actual per-set history for future
+occurrences and keep workout-only changes on the current occurrence. Open-session reads
+overlay explicit in-session choices and clear incompatible captured loads without rewriting
+the immutable structure. New plan writes invalidate the existing Coach source revision;
+retired slots retain historical evidence but do not authorize a fresh structural confirmation.
+See [planning](WORKOUT-PLANNING.md) and the [HTML explainer](ai-coach.html#edited-workout-targets).

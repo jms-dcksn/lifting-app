@@ -1,0 +1,17 @@
+{
+  "workspaceId": "44921cef-3b56-490c-945e-8213da32949f",
+  "endpoint": "https://api.smith.langchain.com",
+  "application": "lifting-app",
+  "applicationTagValueId": "5d1cac39-6e97-4dc5-bc23-82ad45ab7f06",
+  "developmentTagValueId": "ec346d40-1a6d-42a6-ae96-f4a227bb6570",
+  "productionTagValueId": "96b874e3-a190-4492-bbd0-3b8f68bccaa1",
+  "developmentProject": {
+    "name": "lifting-app-dev",
+    "id": "3898e4f1-608e-47b2-b365-505fd4051b43",
+    "url": "https://smith.langchain.com/o/44921cef-3b56-490c-945e-8213da32949f/projects/p/3898e4f1-608e-47b2-b365-505fd4051b43"
+  },
+  "productionProject": {
+    "name": "lifting-app",
+    "id": "a73675d0-6c20-445c-adcf-8539a14eeba3"
+  }
+}

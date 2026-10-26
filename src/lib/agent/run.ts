@@ -10,6 +10,7 @@ import {
   AI_GATEWAY_BASE_URL,
   TOOL_CALL_BUDGET,
   agentModelId,
+  agentTraceMetadata,
   gatewayApiKey,
 } from "./policy";
 import { AGENT_SYSTEM_PROMPT } from "./prompt";
@@ -69,7 +70,7 @@ export async function runAgentTurn(input: {
     { messages: toLangChainMessages(windowed) },
     {
       version: "v3",
-      metadata: { ...input.traceMetadata, thread_id: input.threadId },
+      metadata: { ...agentTraceMetadata(), ...input.traceMetadata, thread_id: input.threadId },
       callbacks: input.callbacks,
     },
   );

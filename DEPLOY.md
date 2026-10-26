@@ -19,7 +19,8 @@ the 2026-09-13 documentation review.
 | `AI_GATEWAY_API_KEY` | Server-only Vercel AI Gateway key for the in-app agent. Vercel deployments may use `VERCEL_OIDC_TOKEN` instead |
 | `LANGSMITH_API_KEY` | Server-only LangSmith key. Agent traces go here |
 | `LANGSMITH_TRACING` | Set `true` to emit traces. The route also enables this when a LangSmith key is present |
-| `LANGSMITH_PROJECT` | Dedicated project name. Default and recommended: `lifting-app-agent` |
+| `LANGSMITH_PROJECT` | Production: `lifting-app`; local/Preview: `lifting-app-dev` |
+| `LANGSMITH_WORKSPACE_ID` | Optional explicit workspace shared by CLI, datasets and SDK traces |
 | `AGENT_MODEL` | Optional Gateway model id (`provider/model`). Default `openai/gpt-5.4` |
 
 The first two are required for the app and exposed in the browser bundle.
@@ -33,8 +34,9 @@ agent migrations before dogfooding chat. `20260920181553_agent_threads.sql` crea
 threads per user. It deletes threads that have no messages (Slice 0 left one whenever
 chat opened) and backfills thread titles. Thread inserts then need an app-chosen id and
 a title, and the app now writes both, so ship the migration with the app version that
-expects it. Use the dedicated LangSmith project `lifting-app-agent`; do not share it
-with other apps.
+expects it. LangSmith resources are grouped under Application `lifting-app`. Production
+traces use `lifting-app`; local/Preview traces use `lifting-app-dev`. Offline experiments
+keep their dataset-linked trace trees. See [LangSmith organization](docs/LANGSMITH.md).
 
 Keep real values in ignored `.env.local` or Vercel environment settings. Configure Production
 and Preview separately; verify which database a preview uses before writing test data.

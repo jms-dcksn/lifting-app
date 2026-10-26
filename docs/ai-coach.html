@@ -87,6 +87,80 @@ flowchart TD
           model's routing or prose.</p>
       </section>
 
+      <section id="langsmith-environments" class="space-y-4">
+        <h2 class="font-serif text-2xl">LangSmith: one application, separate environments</h2>
+        <p class="text-slate-700">Select Application <strong>lifting-app</strong> in LangSmith. It groups
+          Production and development tracing projects, both regression datasets, and their native experiments.
+          See the <a class="underline" href="LANGSMITH.md">organization and routing runbook</a>.</p>
+        <div class="grid gap-3 sm:grid-cols-3" role="img" aria-label="Application lifting-app groups production traces, dev traces, and datasets with native experiments">
+          <div class="rounded-lg border border-slate-300 p-4">Production app traces: lifting-app, Environment prod.</div>
+          <div class="rounded-lg border border-slate-300 p-4">Local / Preview app traces: lifting-app-dev, Environment dev.</div>
+          <div class="rounded-lg border border-slate-300 p-4">Dataset-linked experiments: SDK-generated names, Application lifting-app, Environment dev.</div>
+        </div>
+        <p class="text-slate-700">Real source from <code>src/lib/agent/run.ts</code>:</p>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>metadata: { ...agentTraceMetadata(), ...input.traceMetadata, thread_id: input.threadId },</code></pre>
+        <p class="text-sm text-slate-600">Common metadata records app, environment and source; Vercel supplies
+          branch/revision when available. Experiment metadata adds suite, dataset version and code revision.
+          The SDK owns the experiment trace tree; ExperimentClient only adds resource grouping tags.
+          The verified synthetic routing command <code>npm run check:langsmith</code> makes no model calls.
+          The user-run weekly baseline has been inspected; no production redeploy ran. Preview settings take effect on its next deployment.</p>
+      </section>
+
+      <section id="weekly-narration-evals" class="space-y-4">
+        <h2 class="font-serif text-2xl">Weekly narration evaluation setup (#140)</h2>
+        <p class="text-slate-700">The <a class="underline" href="weekly-coach-evals.html">self-contained weekly evaluation lab</a>
+          includes ten synthetic examples, the reference schema, two-question grounded/complete rubric,
+          full tool snapshots and run instructions. The <a class="underline" href="https://smith.langchain.com/o/44921cef-3b56-490c-945e-8213da32949f/datasets/f65b9733-f24e-42b8-b89e-14458bd67053">LangSmith dataset</a>
+          now contains all ten verified examples; the JSON snapshot and remote ID/version are persisted in the repo.
+          The user ran baseline <code>weekly-coach-4429b245</code>: all ten answers were judged, and all ten factual gates failed.
+          See the <a class="underline" href="WEEKLY-COACH-EVAL-REVIEW.md">investigation</a> for narration failures and judge calibration concerns.
+          The owner simplified future evaluation to grounded and complete; historical baseline scores remain unchanged. The prompt now clarifies weekly-report routing and evidence-backed discrepancy explanations; canonical report/target paths are preserved. The authenticated acceptance check remains open.</p>
+        <div class="grid gap-3 sm:grid-cols-3" role="img" aria-label="Fixed synthetic tool evidence flows through the real agent to grounded and complete scores">
+          <div class="rounded-lg border border-slate-300 p-4">1. Canonical builders create fixed synthetic report and target evidence.</div>
+          <div class="rounded-lg border border-slate-300 p-4">2. Actual Coach model uses runAgentTurn and real tool schemas; every execution returns fixtures or an unavailable stub.</div>
+          <div class="rounded-lg border border-slate-300 p-4">3. One Jev request produces grounded and complete scores. Both must reach 0.7; no average or extra graders.</div>
+        </div>
+        <p class="text-slate-700">Real source from <code>src/lib/agent/evals/weekly-runner.ts</code>:</p>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>if (definition.name === "weeklyCoach") return JSON.stringify(inputs.evidence.weeklyCoach);
+if (definition.name === "nextWorkout") return JSON.stringify({ source: "nextWorkout", workout: inputs.evidence.weeklyCoach.currentWorkout });
+return JSON.stringify({ status: "unavailable", reason: "No fixture supplied for this tool. No action performed." });</code></pre>
+        <p class="text-sm text-slate-600">Run <code>npm run eval:weekly:export -- --output /private/tmp/weekly-coach-v1.json</code>
+          to create reviewable JSON without network calls. The dataset is already uploaded;
+          <code>npm run eval:weekly</code> explicitly starts paid model/judge calls against the persisted dataset ID/version. The existing
+          exercise-review experiment remains separate. Scripted tests prove harness wiring, not narration quality.</p>
+      </section>
+
+      <section id="weekly-eval-diagnostics" class="space-y-4">
+        <h2 class="font-serif text-2xl">Saving results and seeing the judge</h2>
+        <div class="grid gap-3 sm:grid-cols-3" role="img" aria-label="Two Jev questions check grounding and completeness; materialized rows are saved before the failure gate">
+          <div class="rounded-lg border border-slate-300 p-4">Grounded: materially truthful to the evidence, with reasonable inference and substantive Coach boundaries.</div>
+          <div class="rounded-lg border border-slate-300 p-4">Complete: meets the user’s practical need; minor wording or metadata omissions alone do not fail.</div>
+          <div class="rounded-lg border border-slate-300 p-4">Save every materialized result, then fail the command when any case needs review.</div>
+        </div>
+        <p>LangSmith SDK 0.10.4 consumes its iterator inside evaluate(). The original runner saved zero local rows. Both experiment runners now read the materialized array. Real source from <code>weekly-experiment.ts</code>:</p>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>for (const row of results.results) {
+    const feedback = row.evaluationResults.results;</code></pre>
+        <p>The new <code>Jev judge</code> trace captures rubric, evidence and raw scores. Follow either feedback source to its evaluator trace. Both questions share one request; each stores its raw score without extra raw/pass columns. The rubric is weekly-judge-v3. It accepts the owner-reviewed recovery, history-edit and partial-week answers; the two scores also cover substantive Coach boundaries. The subsequent v3 agent evaluation passed all ten cases; additional judge checks/calibration are deferred. The original baseline used an untraced HTTP request, but its stored raw scores confirm judging completed.</p>
+      </section>
+
+      <p class="text-sm text-slate-600">Owner alignment: judge material accuracy, answering the user’s need and substantive guidelines. Expected recovery can be described directly as not a setback. A dropped session may be inferred from snapshots. Omitting a timezone label alone is not a failure. Medical advice and menstrual/cycle discussion remain out of scope. The three accepted outputs are held-out local calibration labels, not judge prompt examples.</p>
+
+      <section id="weekly-prompt-updates" class="space-y-4">
+        <h2 class="font-serif text-2xl">Weekly answers: use the report and explain only supported causes</h2>
+        <p>The reviewed v3 experiment <code>weekly-coach-256ada1b</code> passed all ten cases. It still exposed an unsupported “earlier phase” explanation and redundant exerciseReview calls. The system prompt now gives the following guidance; the model still chooses tools at runtime.</p>
+        <div class="grid gap-3 sm:grid-cols-3" role="img" aria-label="Read weekly report, answer directly when sufficient, fetch exercise review for missing detail; explain a discrepancy only from supporting evidence">
+          <div class="rounded-lg border border-slate-300 p-4">Weekly question → weeklyCoach. Its returned progress figures can answer the request directly.</div>
+          <div class="rounded-lg border border-slate-300 p-4">Deeper history, records or missing comparisons → exerciseReview. Existing weekly figures need no second validation call.</div>
+          <div class="rounded-lg border border-slate-300 p-4">Different proposal/current target → distinguish both. Explain the cause only when evidence establishes it.</div>
+        </div>
+        <p>Real excerpts from <code>src/lib/agent/prompt.ts</code>:</p>
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>For weekly summaries, use weeklyCoach. Its returned adherence, session metrics, fixed-load rep progress and e1RM trends are sufficient when they answer the request.
+Do not call exerciseReview just to revalidate figures already returned by weeklyCoach.
+If a report proposal differs, distinguish the two and explain why only when returned evidence establishes the cause; otherwise say the cause isn't established.</code></pre>
+        <p>For example, a 200 lb proposal and a current 190 lb target establish that the numbers differ. They do not establish an earlier phase, different exercise identity or effort correction. Effort-adjustment language applies when the returned reason is repeated_effort_miss.</p>
+        <p class="text-sm text-slate-600">The existing canonical calculations, tools, dataset and two-score judge are preserved. The all-pass experiment predates these prompt changes. Local checks cannot establish that the model follows them; no paid rerun or deployment was made. Additional judge checks/calibration are deferred by the owner.</p>
+      </section>
+
       <section id="e1rm-calculator" class="space-y-4">
         <h2 class="font-serif text-2xl">Hypothetical e1RM — the calculator (#205)</h2>
         <p class="text-slate-700">Ask “If I bench 100 kg total for 5 reps with 2 RIR, what is my

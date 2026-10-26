@@ -1,9 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   CLIENT_NAV_TOOL_NAMES,
   CONFIRM_TOOL_NAMES,
   CONTEXT_MESSAGE_LIMIT,
   LANGSMITH_PROJECT_NAME,
+  enableLangSmithTracing,
+  agentTraceMetadata,
   MODEL_CONTEXT_CHAR_BUDGET,
   READ_TOOL_NAMES,
   TOOL_CALL_BUDGET,
@@ -24,7 +26,7 @@ describe("agent policy", () => {
     expect(CONTEXT_MESSAGE_LIMIT).toBeGreaterThan(0);
     expect(MODEL_CONTEXT_CHAR_BUDGET).toBeGreaterThan(1000);
     expect(TOOL_CALL_BUDGET).toBeGreaterThan(0);
-    expect(LANGSMITH_PROJECT_NAME).toBe("lifting-app-agent");
+    expect(LANGSMITH_PROJECT_NAME).toBe("lifting-app-dev");
     expect(WRITE_TOOL_NAMES).toEqual(["draftProgramFromIntake"]);
     expect(READ_TOOL_NAMES).toEqual([
       "weeklyCoach",
@@ -67,5 +69,40 @@ describe("agent policy", () => {
     );
     expect(omitted.length).toBeGreaterThan(0);
     expect(windowed.some((message) => message.role === "user")).toBe(true);
+  });
+});
+
+
+describe("LangSmith environment routing", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it.each([undefined, "preview", "production"])("defaults correctly for VERCEL_ENV=%s without using NODE_ENV", (environment) => {
+    vi.stubEnv("LANGSMITH_API_KEY", "fixture-key");
+    vi.stubEnv("LANGSMITH_PROJECT", "");
+    vi.stubEnv("VERCEL_ENV", environment);
+    vi.stubEnv("NODE_ENV", "production");
+    enableLangSmithTracing();
+    expect(process.env.LANGSMITH_PROJECT).toBe(environment === "production" ? "lifting-app" : "lifting-app-dev");
+    expect(agentTraceMetadata()).toMatchObject({ app: "lifting-app", environment: environment === "production" ? "prod" : "dev",
+      source: environment === "preview" ? "preview" : environment === "production" ? "production" : "local" });
+  });
+
+  it("preserves an explicit deployment project and disabled tracing", () => {
+    vi.stubEnv("LANGSMITH_API_KEY", "fixture-key");
+    vi.stubEnv("LANGSMITH_PROJECT", "lifting-app");
+    vi.stubEnv("LANGSMITH_TRACING", "false");
+    vi.stubEnv("VERCEL_ENV", "preview");
+    expect(enableLangSmithTracing()).toBe(true);
+    expect(process.env.LANGSMITH_PROJECT).toBe("lifting-app");
+    expect(process.env.LANGSMITH_TRACING).toBe("false");
+  });
+
+  it("adds available revision and branch metadata without reading git at runtime", () => {
+    vi.stubEnv("VERCEL_GIT_COMMIT_SHA", "vercel-sha");
+    vi.stubEnv("VERCEL_GIT_COMMIT_REF", "feature-branch");
+    vi.stubEnv("LANGSMITH_REVISION_ID", "local-sha");
+    expect(agentTraceMetadata()).toMatchObject({ codeSha: "vercel-sha", branch: "feature-branch" });
+    vi.stubEnv("VERCEL_GIT_COMMIT_SHA", "");
+    expect(agentTraceMetadata().codeSha).toBe("local-sha");
   });
 });

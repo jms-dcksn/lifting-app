@@ -1,6 +1,5 @@
 import type { AgentPart } from "../messages";
 
-export const LIVE_EVAL_PROJECT = "lifting-app-agent-evals";
 export const LIVE_DATASET = "ai-coach-live";
 export const LIVE_POLICY_VERSION = "exercise-review-2026-10-11-v2";
 export const LIVE_JUDGE_VERSION = "exercise-review-correctness-2026-10-11-v1";

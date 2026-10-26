@@ -7,8 +7,8 @@ export const MODEL_CONTEXT_CHAR_BUDGET = 24_000;
 /** Max tool calls the agent may make in one turn. */
 export const TOOL_CALL_BUDGET = 8;
 
-/** Dedicated LangSmith project for this agent. Do not share with other apps. */
-export const LANGSMITH_PROJECT_NAME = "lifting-app-agent";
+/** Local and Preview fallback; Vercel Production uses lifting-app. */
+export const LANGSMITH_PROJECT_NAME = "lifting-app-dev";
 
 /** Gateway model id (`provider/model`). Override with server-only `AGENT_MODEL`. */
 export const DEFAULT_AGENT_MODEL = "openai/gpt-5.4";
@@ -64,9 +64,21 @@ export function enableLangSmithTracing() {
   if (!process.env.LANGSMITH_API_KEY?.trim()) return false;
   if (!process.env.LANGSMITH_TRACING) process.env.LANGSMITH_TRACING = "true";
   if (!process.env.LANGSMITH_PROJECT?.trim()) {
-    process.env.LANGSMITH_PROJECT = LANGSMITH_PROJECT_NAME;
+    process.env.LANGSMITH_PROJECT = process.env.VERCEL_ENV === "production" ? "lifting-app" : LANGSMITH_PROJECT_NAME;
   }
   return true;
+}
+
+export function agentTraceMetadata(): Record<string, string> {
+  const deployment = process.env.VERCEL_ENV;
+  const codeSha = process.env.VERCEL_GIT_COMMIT_SHA || process.env.LANGSMITH_REVISION_ID;
+  return {
+    app: "lifting-app",
+    environment: deployment === "production" ? "prod" : "dev",
+    source: deployment === "preview" ? "preview" : deployment === "production" ? "production" : "local",
+    ...(codeSha ? { codeSha } : {}),
+    ...(process.env.VERCEL_GIT_COMMIT_REF ? { branch: process.env.VERCEL_GIT_COMMIT_REF } : {}),
+  };
 }
 
 export function partChars(value: unknown): number {

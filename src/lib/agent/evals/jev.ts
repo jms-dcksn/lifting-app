@@ -1,3 +1,5 @@
+import { traceable } from "langsmith/traceable";
+
 const JEV_URL = "https://api.typesafe.ai/v1/systemone";
 
 type NoulQuestion = {
@@ -15,7 +17,7 @@ export function jevModelId() {
   return process.env.JEV_MODEL?.trim() || "jev-latest";
 }
 
-export async function askJev(request: JevRequest) {
+const tracedJevRequest = traceable(async (request: JevRequest) => {
   const apiKey = process.env.JEV_API_KEY?.trim();
   if (!apiKey) throw new Error("JEV_API_KEY is not set");
 
@@ -36,6 +38,14 @@ export async function askJev(request: JevRequest) {
     throw new Error(`Jev returned ${response.status}`);
   }
   return noulAnswers(body);
+}, {
+  name: "Jev judge",
+  run_type: "llm",
+  getInvocationParams: () => ({ ls_provider: "jev", ls_model_name: jevModelId(), ls_model_type: "chat" }),
+});
+
+export async function askJev(request: JevRequest) {
+  return tracedJevRequest(request);
 }
 
 function noulAnswers(body: unknown) {

@@ -336,11 +336,12 @@ sheet fetches its snapshot each time it opens.
 ### Env (Slice 0, server-only)
 
 `AI_GATEWAY_API_KEY` (or Vercel OIDC `VERCEL_OIDC_TOKEN`), `LANGSMITH_API_KEY`,
-`LANGSMITH_TRACING`, and `LANGSMITH_PROJECT=lifting-app-agent`. Optional `AGENT_MODEL`.
+`LANGSMITH_TRACING`, and `LANGSMITH_PROJECT=lifting-app-dev` locally; Vercel Production uses
+`lifting-app`. Optional `AGENT_MODEL` and explicit `LANGSMITH_WORKSPACE_ID`.
 None may use a `NEXT_PUBLIC_` prefix. Listed in `.env.local.example` and
-[DEPLOY.md](../DEPLOY.md). The chat route's LangSmith project is dedicated to this
-agent. Local experiments use a second project, `lifting-app-agent-evals`, so reruns
-do not land in the Vercel firehose. `JEV_API_KEY` is read only by that eval script.
+[DEPLOY.md](../DEPLOY.md). [LangSmith organization](LANGSMITH.md) owns the environment map,
+Application grouping and synthetic routing check. Both eval runners use dataset-linked native
+experiments rather than overriding the app-trace project. `JEV_API_KEY` is eval-only.
 
 ## Slices
 
@@ -551,6 +552,112 @@ sessions. No schema or RLS policy changed.
 See [implementation and validation](AI-COACH-EVAL-IMPROVEMENTS.md) and the
 [original annotated experiment review](2026-10-11-ai-coach-annotated-eval-review.md).
 
+## Weekly narration evaluation setup (#140)
+
+[Weekly evaluation lab](weekly-coach-evals.html) is the self-contained dataset/rubric/run
+explainer, including all ten exportable synthetic examples. `weekly-cases.ts` owns fixed
+conversation/tool snapshots built through the canonical report builder, formatter and target
+resolver. The new suite reuses `runAgentTurn`, production tool definitions, output extraction,
+LangSmith `evaluate()` and Jev; every tool execution is intercepted. It does not read a user
+ledger, write programs, export production traces or exercise real notification delivery.
+Tools and calculation paths are preserved; the system-prompt clarifications below follow
+review of actual model answers.
+
+```bash
+# Offline harness/controls, then create-only JSON export (choose a new output path).
+npm test -- src/lib/agent/evals/weekly.test.ts
+npm run eval:weekly:export -- --output /private/tmp/weekly-coach-v1.json
+# The dataset already exists; inspect it without running models.
+langsmith dataset get lifting-app-weekly-coach-v1
+# Explicit paid Coach + Jev experiment; never part of default tests or export.
+npm run eval:weekly
+```
+
+Use `LANGSMITH_API_KEY`, `AI_GATEWAY_API_KEY`, `JEV_API_KEY` in shell/ignored `.env.local`;
+CLI OAuth profiles do not configure SDK authentication. Native experiment traces are linked
+to the dataset and grouped under Application `lifting-app`, Environment `dev`; ordinary local app traces use `lifting-app-dev`.
+No Supabase key is needed. `AGENT_MODEL` and `JEV_MODEL`
+select models; record fixed IDs where supported. The dataset and ten examples are persisted:
+[LangSmith dataset](https://smith.langchain.com/o/44921cef-3b56-490c-945e-8213da32949f/datasets/f65b9733-f24e-42b8-b89e-14458bd67053).
+`src/lib/agent/evals/datasets/weekly-coach-v1.json` stores the full fixture snapshot;
+`weekly-coach-v1.langsmith.json` records its remote ID, URL, verified version and source hash.
+The runner reads that ID and defaults to the persisted immutable version. An explicit
+`WEEKLY_DATASET_VERSION` as-of timestamp can select another reviewed version; missing, duplicate
+or edited cases that differ from local source are refused. There is no automatic sync or overwrite.
+
+The installed LangSmith CLI 0.2.32 upload dropped explicit null fields and source metadata.
+The new rows were repaired with SDK `updateExample`, then all ten inputs/references were
+round-trip verified with ownership metadata intact. Future fixture writes must preserve nulls
+and source metadata; verify a new version before updating the local snapshot/manifest.
+
+The weekly rubric (`weekly-judge-v3`) has exactly two feedback columns:
+
+- `grounded`: the answer is materially truthful to app evidence and follows substantive Coach
+  boundaries. Reasonable inferences from current evidence, history and user context are allowed.
+  This score also covers no medical advice/diagnosis, no menstrual/cycle discussion, privacy
+  and authorization; ordinary training guidance and explaining targets are allowed.
+- `complete`: the answer meets the user’s practical need. An omission matters only when it
+  materially changes understanding or leaves the question unanswered.
+
+One traced Jev request asks both Noul questions. Each column stores its raw 0–1 score; both
+must reach the existing 0.7 threshold for the local case to pass. There are no duplicate
+raw/pass columns, overall factual grader, tool allowlist/count grader or regex number grader.
+An empty answer fails both without a judge call; judge errors or missing scores require review.
+The pinned dataset retains its original tool-expectation fields for historical continuity,
+but v3 does not pass those fields to the judge or enforce them. Required facts and
+qualifications are context, not mandatory checklists. Missing timezone/year labels or extra
+caveats alone do not fail a clear, correct answer. Current tool results govern current state;
+history may support before/after comparisons without replacing refreshed facts. Direct
+recovery interpretations supported by the prescription are acceptable.
+
+The user-run v2 experiment `weekly-coach-1d2fb20f` saved all ten answers and twenty scores,
+with seven passing and three flagged. The owner accepted those three flagged answers
+(recovery, edited history and partial-week comparison) as good answers. Their exact outputs
+and human acceptance labels are stored in `datasets/weekly-coach-human-labels-v1.json` under
+`src/lib/agent/evals/`, joined by case ID to the pinned fixture snapshot. These are held-out
+calibration labels, never supplied to the judge. The user then ran v3 experiment
+`weekly-coach-256ada1b` (`4dfc2b0c-5cd3-4059-8b83-28de01fb903b`): all ten cases passed both
+scores with no run errors. That is a fresh agent evaluation, not a calibration against the
+fixed human-labeled answers or deliberate error controls. Additional judge checks/calibration
+are deferred by the owner. Jev returns no rationale; inspect answers/evidence when surprising.
+Each registered evaluator returns one metric, sharing one cached `Jev judge` request.
+Follow feedback into evaluator traces to inspect the input and scores.
+The installed SDK materializes `results.results` before returning
+from `evaluate()`; both runners read that array rather than its exhausted iterator.
+Results retain input/reference/output/feedback under ignored `test-results/` or a new
+`WEEKLY_RESULTS_PATH`. Metadata records dataset version, fixture/prompt/tool hashes, model IDs,
+policy/judge configuration (including substantive Coach boundaries), code SHA and dirty state. Commit reviewed source before baseline
+execution for reproducibility. The paid test requires both `EVAL_LIVE=1` and
+`EVAL_WEEKLY_LIVE=1`; the npm command sets these explicitly.
+
+The user ran baseline `weekly-coach-4429b245` (experiment
+`2c119e5d-6598-47d3-b216-95a154ec8244`). All ten answers and all eleven feedback metrics per
+answer exist; all ten factual gates failed. The initial local archive had no rows because of
+the SDK iterator bug. See the [baseline investigation](WEEKLY-COACH-EVAL-REVIEW.md) for recovered
+results, actual narration failures and calibration concerns. No prompt/tool change was made
+during that initial investigation; later prompt changes are described below. An authenticated
+spot check remains outstanding. The owner simplified the rubric to grounded/complete after that review; previous scores remain
+unchanged and are not directly comparable across rubric versions. Human-label answers before paid reruns; a signed-in canonical-report comparison
+is still needed before closing #140.
+
+### Weekly report narration after v3 review
+
+The system prompt uses weeklyCoach directly for weekly summaries, including its returned
+fixed-load rep progress and e1RM trends. exerciseReview is for exercise-specific records,
+deeper history/charts or comparisons missing from the report. Do not call it solely to
+revalidate figures already returned by weeklyCoach. Hypothetical e1RM questions retain the
+calculateE1rm route.
+
+If a report proposal and current target differ, distinguish the values. Explain the
+discrepancy only when returned evidence establishes its cause; a difference alone does not
+prove an earlier phase, identity mismatch or effort correction. Describe a repeated-effort
+adjustment only when the returned reason is repeated_effort_miss. Current targets still
+come from nextWorkout or weeklyCoach.currentWorkout; their engine and calculations are unchanged.
+
+These prompt-only changes address the reviewed v3 answers. They have not had a paid rerun or
+authenticated acceptance check. The two evaluators, threshold, fixture snapshot and historical
+feedback remain unchanged. Additional judge checks/calibration are deferred.
+
 ## Evals
 
 Fixed catalog/history/Chicago-clock tests are the regression gate. Scripted two-turn tests
@@ -636,7 +743,9 @@ toolResults } }, example: { inputs: { id } }, feedback }] }`. The command calls 
 new mode-600 file, and retains original feedback separately. It never changes historical
 labels or submits revised feedback to LangSmith. Original silent answers remain negatives;
 new transparent answers are new cases. Regrading, dataset apply and live execution have not
-been run as part of implementing this contract. Traces stay in `lifting-app-agent-evals`.
+been run as part of implementing this contract. New runs keep their native dataset-linked
+experiment traces under Application `lifting-app`, Environment `dev`; historical experiments
+and feedback are preserved. See [LangSmith organization](LANGSMITH.md).
 
 ## Persistent exception inbox (#195)
 

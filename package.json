@@ -24,7 +24,10 @@
     "prepare": "lefthook install",
     "check:commit": "node scripts/git-hooks.mjs commit",
     "check:push": "node scripts/git-hooks.mjs push",
-    "test:hooks": "node --test scripts/git-hooks.test.mjs scripts/session-hooks.test.mjs"
+    "test:hooks": "node --test scripts/git-hooks.test.mjs scripts/session-hooks.test.mjs",
+    "eval:weekly:export": "tsx scripts/weekly-coach-evals.ts",
+    "eval:weekly": "EVAL_LIVE=1 EVAL_WEEKLY_LIVE=1 vitest run src/lib/agent/evals/weekly-experiment.test.ts",
+    "check:langsmith": "tsx scripts/check-langsmith.ts"
   },
   "dependencies": {
     "@langchain/core": "^1.2.12",

@@ -1,0 +1,12 @@
+{
+  "name": "lifting-app-weekly-coach-v1",
+  "id": "f65b9733-f24e-42b8-b89e-14458bd67053",
+  "url": "https://smith.langchain.com/o/44921cef-3b56-490c-945e-8213da32949f/datasets/f65b9733-f24e-42b8-b89e-14458bd67053",
+  "endpoint": "https://api.smith.langchain.com",
+  "version": "2026-10-21T23:56:09.383604+00:00",
+  "exampleCount": 10,
+  "policyVersion": "weekly-v1",
+  "source": "lifting-app/weekly-cases",
+  "fixtureSha256": "3782ab4fa5ee396ae1bdeff9792beb25d1957ff39ab8c94ba460fe8fbbabc6b4",
+  "createdAt": "2026-10-21T23:55:08.384036+00:00"
+}

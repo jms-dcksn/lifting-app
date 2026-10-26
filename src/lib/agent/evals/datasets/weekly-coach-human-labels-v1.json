@@ -1,0 +1,59 @@
+{
+  "sourceExperiment": "weekly-coach-1d2fb20f",
+  "sourceExperimentId": "7e8f5312-bb0a-4139-85d7-955411c94c9d",
+  "datasetVersion": "2026-10-21T23:56:09.383604+00:00",
+  "fixtureHash": "3782ab4fa5ee396ae1bdeff9792beb25d1957ff39ab8c94ba460fe8fbbabc6b4",
+  "reviewSource": "Direct owner feedback in this conversation on 2026-10-26",
+  "purpose": "Held-out human acceptance labels for judge calibration. Do not include these labels or answers in judge requests.",
+  "examples": [
+    {
+      "id": "recovery-week",
+      "answer": "Not a setback — this week's lower workload is the prescription, not a drop-off. Your sessions are labeled **Recovery** (1 set at 4 RIR), and you completed **3/3** prescribed working sets at 100%, with all 3 sets inside the RIR target.\n\n- Sessions: 3/4 completed this week vs 4/4 last week\n- Working sets: 3/3 (100%) vs 8/8 prior\n- RIR: 4.0 average, 3 in range, 0 harder, 0 easier\n- Squat trend: flat, 0.0% across the last 4 comparable exposures\n\nThe next workout follows that same recovery prescription: Lower A, **1 set of Barbell Back Squat at 165 lb × 8 @ 4 RIR**. The engine's explanation is that the target follows the current recovery prescription, and repeated effort misses don't override recovery — so no further reduction is needed.\n\nSource: Track Coach / Coach check-in; next workout",
+      "toolCalls": [
+        {
+          "name": "weeklyCoach",
+          "args": {}
+        },
+        {
+          "name": "nextWorkout",
+          "args": {}
+        }
+      ],
+      "expected": {
+        "grounded": "pass",
+        "complete": "pass"
+      },
+      "reason": "The owner accepts the direct recovery interpretation and current workout explanation as a good answer."
+    },
+    {
+      "id": "edited-history-freshness",
+      "answer": "Correction: **2 of 4** sessions completed this week (Oct 19–25), not 3. The removed duplicate was the Oct 21 session, so the count dropped by one.\n\n- Working sets: **4/4** completed (100%)\n- Average session: **45 min**, on target\n- Prior week: **4/4** sessions\n\nSource: Track Coach",
+      "toolCalls": [
+        {
+          "name": "weeklyCoach",
+          "args": {}
+        }
+      ],
+      "expected": {
+        "grounded": "pass",
+        "complete": "pass"
+      },
+      "reason": "The owner accepts the refreshed count and the dropped-session inference from the old and new snapshots."
+    },
+    {
+      "id": "partial-calendar-comparison",
+      "answer": "**This week is not complete** — 3 of 4 planned sessions are done, and the window runs through Sunday.\n\n- This week (Mon Oct 19 – Sun Oct 25): **3/4 sessions**, 45 min average vs 45 min target, 6/6 working sets (100%), RIR 1.0 average, 6 sets in range\n- Last week (Mon Oct 12 – Sun Oct 18): **4/4 sessions**, 45 min average vs 45 min target, 8/8 working sets (100%), RIR 1.0 average, 8 sets in range\n- Barbell Back Squat at 185 lb: **8 reps** this week vs 6 last week (+2), both at RIR 1 — e1RM 243 lb vs 228 lb, a **+6.4%** gaining trend over the last 4 comparable exposures\n- Specialization volume: quads and glutes at 6/6 working and hard sets this week, 8/8 last week\n- Bodyweight: not logged, so no change is available for either week\n\nSource: Track Coach / Coach check-in",
+      "toolCalls": [
+        {
+          "name": "weeklyCoach",
+          "args": {}
+        }
+      ],
+      "expected": {
+        "grounded": "pass",
+        "complete": "pass"
+      },
+      "reason": "The answer serves the question with correct date ranges and partial-week status; omitting the Chicago label alone is not a material failure."
+    }
+  ]
+}

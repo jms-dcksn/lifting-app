@@ -16,7 +16,7 @@ vi.mock("@/app/(app)/session/actions", async (importOriginal) => {
 });
 
 import { saveWorkoutChoice } from "@/app/(app)/workout/next/actions";
-import { startNextSession, startPlannedSession } from "@/app/(app)/session/actions";
+import { startNextSession, startPlannedSession, preparePlannedWorkout } from "@/app/(app)/session/actions";
 
 const rpc = vi.fn();
 const insert = vi.fn();
@@ -85,14 +85,20 @@ describe("planning and starting boundary", () => {
     expect(insert).not.toHaveBeenCalled();
     expect(mocks.del).toHaveBeenCalledOnce();
   });
-  it("passes the full resolved plan unchanged to snapshot validation", async () => {
-    mocks.load.mockResolvedValue({ ...next(), choices: {}, slots: [{ id: "first", exerciseId: "b" }, { id: "second", exerciseId: "template" }] });
-    await expect(startNextSession()).rejects.toThrow("REDIRECT:/session/session");
-    expect(rpc.mock.calls[0][1].p_plan).toEqual(next().editorPlan);
+  it.each([startNextSession, () => startPlannedSession("current")])("passes pending equipment through either start entry without guessing a variant", async (start) => {
+    const plan = { version: 1, slots: [{ id: "first", exerciseId: "bb-bench" }, { id: "second", exerciseId: "lat-pulldown" }] };
+    mocks.load.mockResolvedValue({ ...next(), choices: {}, editorPlan: plan });
+    await expect(start()).rejects.toThrow("REDIRECT:/session/session");
+    expect(rpc.mock.calls[0][1].p_plan).toEqual(plan);
   });
   it("preserves the draft after a failed start", async () => {
     rpc.mockResolvedValue({ data:null,error:{message:"offline"} });
-    await expect(startNextSession()).rejects.toThrow("offline");
+    await expect(startNextSession()).rejects.toThrow("REDIRECT:/workout/next?startError=1");
+    expect(mocks.del).not.toHaveBeenCalled();
+  });
+  it("keeps planner start failures inline and retains its saved plan", async () => {
+    rpc.mockResolvedValue({ data: null, error: { message: "Please retry" } });
+    await expect(preparePlannedWorkout("current")).resolves.toEqual({ error: "Please retry" });
     expect(mocks.del).not.toHaveBeenCalled();
   });
   it("reopens planning instead of starting a different workout from a stale page", async () => {

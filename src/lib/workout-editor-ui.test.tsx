@@ -25,6 +25,14 @@ beforeEach(async()=>{
     programName:"Program",dayName:"Upper",week:1,slots:[],plan,recovery:null,stats:[],bodyweight:180,targetHistory:{progressionByExercise:{},effortBySlot:{}},catalog:Object.values(EXERCISE_BY_ID)})));
 });
 afterEach(async()=>{await act(async()=>root.unmount());host.remove();});
+it("shows a Home start failure beside a retryable saved workout",async()=>{
+  await act(async()=>root.render(createElement(WorkoutPlanner,{key:"retry",planKey:"key",programId:"program",dayId:"day",completed:0,sourceRevision:1,revision:0,
+    initialError:"Could not start your workout. Your plan is still saved. Try again.",
+    programName:"Program",dayName:"Upper",week:1,slots:[],plan,recovery:null,stats:[],bodyweight:180,targetHistory:{progressionByExercise:{},effortBySlot:{}},catalog:Object.values(EXERCISE_BY_ID)})));
+  expect(host.querySelector('[role="alert"]')?.textContent).toContain("Your plan is still saved");
+  expect(button("Start workout").disabled).toBe(false);
+  expect(host.textContent).toContain("100 lb · Your target");
+});
 it("keeps removal and Undo in one draft; Cancel restores the saved prescription",async()=>{
   await act(async()=>host.querySelector<HTMLButtonElement>('[aria-label="Edit workout"]')!.click());
   expect(button("Start workout")).toBeUndefined();

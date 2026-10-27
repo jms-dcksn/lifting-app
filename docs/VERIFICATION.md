@@ -41,6 +41,49 @@ or local skip overrides. Local hooks remain bypassable; repository administrator
 require the CI app and Database RLS checks on protected branches. The checked-in workflow
 runs them, but branch protection is a separate GitHub setting.
 
+## Compatibility review
+
+For stricter validation, shared writes/RPCs, or a requirement moved earlier in a flow:
+
+1. List affected callers and the existing valid states they send. Include untouched
+   built-in programs, pending equipment, saved edits, resumed sessions and historical rows
+   where relevant. Use shipped builders/data in fixtures; hand-picked resolved exercises
+   alone do not establish compatibility.
+2. State when each requirement becomes necessary. Starting a workout accepts known
+   equipment templates; saving editor changes and logging new snapshot-backed sets require
+   specific equipment. A shared validator must preserve these operation-specific rules.
+3. Add a regression at the boundary that rejected the user, plus a browser journey through
+   each affected entry point. Mocked RPC success proves argument forwarding, not SQL behavior.
+   For a reported bug, verify the test fails for the original reason before the fix when a
+   disposable reproduction is available; record any gap rather than claiming a reproduction.
+4. Assert failure leaves existing data intact and gives a usable retry/recovery path.
+   Keep ownership, exact exercise identity, resume/idempotency and historical evidence checks.
+5. Run database/browser CI for the final PR head. Report which input states were exercised;
+   a successful build or hosted migration-ledger check alone does not prove a user journey.
+
+The #239 regression moved equipment selection from before logging to before Start. Tests
+covered resolved exercises and editor flows, missing untouched programs on Home/planner.
+`e2e/workout-start-station.spec.ts` now covers both buttons, pending bench/cable choices,
+selection, logging and reload. `workout_start_station_rls.sql` checks Start versus Save/Log
+rules against real authenticated SQL, including rejected writes and immutable captures.
+
+`npm run test:db:compatibility` builds every shipped template with the gallery's
+`buildProgramTreeFromTemplate`, in Classic and Fluid styles, saves through the authenticated
+`save_program` RPC and starts/resumes every day of the first cycle through `start_workout_plan`.
+It uses `editorSlot` without preselecting equipment, compares exact captures and checks that
+Start creates no performance evidence. New templates automatically join this matrix. Each
+case rolls back its synthetic data. The command requires `COACH_TEST_DATABASE_URL` on a
+disposable loopback database, runs in the database verification profile and is an explicit
+CI step. Later weeks, equipment selection and edited plans have separate tests; this matrix
+checks the untouched path.
+
+Commit hooks already run deterministic action/error tests; retain real database and browser
+verification in CI where those prerequisites are supplied. Add behavior tests at the failing
+boundary rather than source-text checks for SQL strings or a generic "test file changed" rule.
+When replacing executor-owned functions, verify migration-role membership/inheritance and
+function ownership; runtime fixtures must retain deployed non-bypass roles. See
+[Deployment](../DEPLOY.md) for hosted migration verification and release ordering.
+
 ## Session continuity across local and cloud clones
 
 `AGENTS.md` and `.agents/skills/close-session/SKILL.md` define the portable workflow.
@@ -80,7 +123,7 @@ The existing production migration gate remains part of the build.
 | --- | --- |
 | `base` (default) | Fresh route types, TypeScript, ESLint, strict slice, Vitest, build |
 | `agent` | Deterministic agent tests and generated Coach invariants; no model calls |
-| `database` | Existing pgTAP and competing connections; running disposable local Supabase plus `COACH_TEST_DATABASE_URL` on loopback |
+| `database` | pgTAP, untouched-template compatibility and competing connections; running disposable local Supabase plus `COACH_TEST_DATABASE_URL` on loopback |
 | `browser` | Real Auth → app action → PostgREST/RLS → DB → rendered UI; prerequisites below |
 | `live` | Existing paid model evals, explicitly selected and with all eval credentials present; never selected by default |
 

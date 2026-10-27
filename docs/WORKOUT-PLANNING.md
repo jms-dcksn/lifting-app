@@ -64,6 +64,16 @@ individual planned rows. `set_log.planned_slot_id` and `planned_set_id` distingu
 workout-only exercises and completion even after deleting a logged row. `program_slot_id`
 continues to preserve historical program identity. Extra sets remain separate.
 
+Starting an untouched program may capture known equipment templates (for example barbell
+bench or cable pulldown) before a station is selected. The active exercise card then offers
+Choose bench/cable/machine and hides set entry until a concrete variant is selected. The
+selection overlays the snapshot through the existing session swap; the captured prescription
+and planned set IDs remain stable. Start-only validation still checks owner, exercise catalog,
+structure, numeric values and revisions. Editor saves retain strict station validation.
+Direct API logging into a captured session also rejects unresolved equipment; historical
+set edits retain their existing behavior. Home Start failures reopen the plan with a retry
+message, while plan-page failures stay inline and retain saved changes.
+
 Later program edits cannot rewrite a capture. Explicit in-session swaps overlay the saved
 identity and rederive compatible targets without changing logged rows. Workout-only added
 slots support workout-only in-session swaps. Existing sessions without a snapshot retain
@@ -87,3 +97,7 @@ and both scopes against the disposable stack. The PR records actual results and 
 
 The migration must be applied through the existing hosted deployment workflow before
 production can run this code; no hosted migration is authorized by local verification.
+The start compatibility fix additionally requires `20261027173401_allow_unresolved_workout_start.sql`.
+`workout_start_station_rls.sql` and `e2e/workout-start-station.spec.ts` cover starting an
+untouched program from Home and the planner, pending-equipment logging rejection, and
+equipment selection followed by logging/reload without rewriting the snapshot.

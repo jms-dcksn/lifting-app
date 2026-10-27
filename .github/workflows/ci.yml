@@ -46,6 +46,11 @@ jobs:
       - name: Run pgTAP ownership tests
         run: npm run test:db
 
+      - name: Verify untouched built-in program compatibility
+        run: npm run test:db:compatibility
+        env:
+          COACH_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
       - name: Verify competing Coach transactions
         run: npm run test:db:concurrency
         env:

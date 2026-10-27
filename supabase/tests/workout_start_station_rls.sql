@@ -23,7 +23,7 @@ insert into public.exercise(id,user_id,name,pattern,equipment,base_exercise_id,b
 set local role authenticated;
 select set_config('request.jwt.claim.sub','a2390000-0000-0000-0000-000000000001',true);
 select set_config('request.jwt.claim.role','authenticated',true);
-select ok(not has_function_privilege('authenticated','private.validate_workout_editor(jsonb,uuid,boolean)','EXECUTE') and not has_function_privilege('anon','private.validate_workout_editor(jsonb,uuid,boolean)','EXECUTE'),'start-only validation is not exposed to API callers');
+select ok(not has_function_privilege('authenticated','private.validate_workout_editor(jsonb,uuid,boolean)','EXECUTE') and not has_function_privilege('anon','private.validate_workout_editor(jsonb,uuid,boolean)','EXECUTE') and not has_schema_privilege('workout_editor_executor','private','CREATE'),'start-only validation stays private and executor cannot create schema objects');
 do $$ declare src bigint;p jsonb;begin
  select plan into p from editor_fixture;
  select source_revision into src from public.coach_refresh_state where user_id=auth.uid();

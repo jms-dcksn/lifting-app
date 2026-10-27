@@ -1,4 +1,5 @@
 -- Existing programs may contain equipment templates. Capture them at Start; resolve before logging.
+grant create on schema private to workout_editor_executor;
 create function private.validate_workout_editor(p_plan jsonb,p_day uuid,p_allow_unresolved boolean) returns void
 language plpgsql security invoker set search_path='' as $$
 declare s jsonb; r jsonb; d jsonb; v jsonb; b jsonb; ids text[]:='{}';
@@ -112,6 +113,8 @@ language sql security invoker set search_path='' as $$
   select private.validate_workout_editor(p_plan,p_day,false);
 $$;
 
+-- The migration role does not inherit the executor's ownership privileges.
+set local role workout_editor_executor;
 create or replace function private.start_workout_plan(p_program uuid,p_day uuid,p_completed integer,p_source bigint,p_revision bigint,p_plan jsonb) returns uuid
 language plpgsql security definer set search_path='' as $$
 declare saved public.workout_plan; session_id uuid; week integer; tree jsonb; swaps jsonb;
@@ -138,6 +141,7 @@ $$;
 alter function private.start_workout_plan(uuid,uuid,integer,bigint,bigint,jsonb) owner to workout_editor_executor;
 revoke all on function private.start_workout_plan(uuid,uuid,integer,bigint,bigint,jsonb) from public,anon;
 grant execute on function private.start_workout_plan(uuid,uuid,integer,bigint,bigint,jsonb) to authenticated;
+reset role;
 -- A captured template is intent only. Direct API inserts must resolve equipment too.
 create function private.require_logged_workout_station() returns trigger
 language plpgsql security definer set search_path='' as $$
@@ -155,7 +159,8 @@ begin
   return new;
 end;
 $$;
-alter function private.require_logged_workout_station() owner to workout_editor_executor;
 revoke all on function private.require_logged_workout_station() from public,anon,authenticated;
 create trigger require_logged_workout_station before insert or update of exercise_id,session_id
   on public.set_log for each row execute function private.require_logged_workout_station();
+alter function private.require_logged_workout_station() owner to workout_editor_executor;
+revoke create on schema private from workout_editor_executor;

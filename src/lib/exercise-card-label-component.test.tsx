@@ -11,7 +11,7 @@ function render(def: ExerciseDef, size?: "display" | "heading" | "body") {
 }
 
 describe("ExerciseCardLabel", () => {
-  it("renders three lines for a machine variant", () => {
+  it("puts the equipment chip before supporting brand and load details", () => {
     const html = render({
       ...EXERCISE_BY_ID["hack-squat"],
       id: "hack-squat__cybex__plate_loaded",
@@ -23,13 +23,16 @@ describe("ExerciseCardLabel", () => {
     expect(html).toContain("Cybex");
     expect(html).toContain("Plate-loaded");
     expect(html).toContain("text-heading");
-    expect(html).toContain("text-caption text-muted");
+    expect(html.indexOf(">Machine</span>")).toBeLessThan(html.indexOf("Cybex"));
+    expect(html).toContain("Cybex · Plate-loaded");
+    expect(html).not.toContain("<button");
   });
 
   it("omits a third line for dumbbell movements", () => {
     const html = render(EXERCISE_BY_ID["db-lateral-raise"], "body");
     expect(html).toContain("Lateral Raise");
     expect(html).toContain("Dumbbell");
-    expect(html.match(/<span class="block/g)?.length).toBe(2);
+    expect(html).not.toContain("Selectorized");
+    expect(html).not.toContain("Weight stack");
   });
 });

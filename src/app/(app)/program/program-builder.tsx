@@ -418,8 +418,8 @@ export function ProgramBuilder({
                   style={{ viewTransitionName: `vt-${slot.id}` }}
                   className="rounded-control bg-surface p-3"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="flex min-w-0 items-center gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <span className="flex min-w-0 flex-1 basis-64 flex-wrap items-start gap-3">
                       <ExerciseVisual
                         exerciseId={slot.exerciseId}
                         baseExerciseId={byId[slot.exerciseId]?.baseExerciseId}
@@ -430,13 +430,13 @@ export function ProgramBuilder({
                           size="body"
                           def={byId[slot.exerciseId]}
                           catalog={byId}
-                          className="truncate"
+                          className="flex-1 basis-32"
                         />
                       ) : (
                         <span className="min-w-0 truncate text-body font-medium">{slot.exerciseId}</span>
                       )}
                     </span>
-                    <span className="flex items-center gap-1">
+                    <span className="ml-auto flex shrink-0 items-center gap-1">
                       <ReorderButtons
                         what={exerciseName(byId, slot.exerciseId)}
                         onUp={() => moveSlot(day.id, si, -1)}

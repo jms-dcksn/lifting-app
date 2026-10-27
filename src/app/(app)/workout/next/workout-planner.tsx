@@ -189,9 +189,9 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
       const restSlot=slot.supersetGroup?current.slots.filter(s=>s.supersetGroup===slot.supersetGroup).at(-1)!:slot;
       return <Card key={slot.id}>
         <CardLabel>Exercise {index + 1}</CardLabel>
-        <div className="mt-2 flex items-start gap-3">
+        <div className="mt-2 flex flex-wrap items-start gap-3">
           <ExerciseVisual exerciseId={slot.exerciseId} baseExerciseId={def?.baseExerciseId} size="lg" />
-          <div className="min-w-0">{def ? <ExerciseCardLabel as="h2" size="heading" def={def} catalog={catalogMap} /> : <h2>{slot.exerciseId}</h2>}
+          <div className="min-w-0 flex-1 basis-32">{def ? <ExerciseCardLabel as="h2" size="heading" def={def} catalog={catalogMap} /> : <h2>{slot.exerciseId}</h2>}
             {slot.supersetGroup && <p className="text-caption">Superset {supersetLabel(current.slots,index)}</p>}
           </div>
         </div>

@@ -237,3 +237,15 @@ protection, both scopes/starts, snapshot logging, historical stability, a 4-to-2
 with 3–4 RIR, and a return to four normal sets with edited 1 RIR and independently progressed
 heavy/lighter loads. Browser fixtures are synthetic and owner-cleaned; paid model calls and
 hosted deployment/migration behavior remain separate. The PR records exact executed results.
+
+## Tempo (#236)
+
+`tempo.test.ts` checks explicit/default precedence, station inheritance, validation and
+plan serialization. The active-card tests exercise logging controls; the workout editor's
+RLS fixture now preserves an explicit tempo. `workout_tempo_rls.sql` checks database
+validation, unspecified legacy sets, numeric-edit preservation and owner isolation.
+`e2e/workout-details.spec.ts` runs real Auth → program edit → planner → captured workout →
+performed override → numeric edit → finish/history at mobile and desktop widths. This
+session passed all 16 ownership suites / 202 assertions and the tempo browser journey;
+base verification passed 1,300 tests, typecheck, lint, strict slice and production build.
+The existing board unused-variable lint warning remains. No hosted migration ran.

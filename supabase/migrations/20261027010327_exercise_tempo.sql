@@ -35,6 +35,13 @@ do $$ declare body text; original text; begin
   if body=original then raise exception 'Plan tempo validation seam changed'; end if;
   execute body;
 
+end $$;
+
+-- The executor role owns these functions and deliberately does not inherit into the
+-- migration role. Replace them as their owner, granting schema CREATE only here.
+grant create on schema private to workout_editor_executor;
+set local role workout_editor_executor;
+do $$ declare body text; original text; begin
   original:=pg_get_functiondef('private.save_workout_plan(uuid,uuid,integer,bigint,bigint,text,jsonb,uuid)'::regprocedure);
   body:=replace(original,'superset_group,set_prescriptions)','superset_group,set_prescriptions,tempo)');
   body:=replace(body,$find$s->>'supersetGroup',coalesce(s->'normalSets',s->'sets'))$find$,$replacement$s->>'supersetGroup',coalesce(s->'normalSets',s->'sets'),nullif(s->'tempo','null'::jsonb))$replacement$);
@@ -55,3 +62,6 @@ do $$ declare body text; original text; begin
   if body=original then raise exception 'Start tempo snapshot seam changed'; end if;
   execute body;
 end $$;
+
+reset role;
+revoke create on schema private from workout_editor_executor;

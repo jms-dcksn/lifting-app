@@ -85,6 +85,7 @@ describe("active workout set progress", () => {
     expect(progress?.textContent).toBe(`Sets ${done}/3`);
     expect(progress?.getAttribute("aria-label")).toBe(`${done} of 3 sets logged`);
     expect(button("Log set").disabled).toBe(false);
+    expect(host.querySelector('input[aria-label="Reps"]')?.matches(":disabled")).toBe(false);
   });
 
   it("marks completion while keeping results editable and extra sets available", async () => {
@@ -123,6 +124,7 @@ describe("active workout set progress", () => {
     await act(async () => button("Log set").click());
     expect(host.querySelector('[role="status"]')?.textContent).toBe("Done 3/3");
     expect(button("Add set").disabled).toBe(true);
+    expect(host.querySelector('input[aria-label="Reps"]')?.matches(":disabled")).toBe(true);
     await act(async () => rejectWrite(new Error("Save failed")));
     expect(host.querySelector('[role="status"]')?.textContent).toBe("Sets 2/3");
     expect(button("Log set").disabled).toBe(false);

@@ -122,7 +122,7 @@ test("workout notes, exact setup reuse and historical set context",async({page,c
     await page.setViewportSize({width:320,height:760});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     await page.screenshot({path:'/tmp/workout-notes-mobile.png',fullPage:true});
     await page.setViewportSize({width:1280,height:900});
-    await page.getByRole('button',{name:'Finish workout',exact:true}).click();await page.getByRole('button',{name:'Finish workout',exact:true}).last().click();
+    await page.getByRole('button',{name:'Finish workout',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'Finish workout',exact:true}).click();
     await expect.poll(async()=>(await db.query('select finished_at is not null as done from public.workout_session where id=$1',[session])).rows[0].done).toBe(true);
     await expect(page).toHaveURL(new RegExp(`/session/${session}/recap$`));
     await page.goto(`/session/${session}`);await machine.getByText('Earlier exercise details',{exact:true}).click();await expect(machine.getByRole('button',{name:'Exercise note: Recovered network draft',exact:true})).toBeVisible();

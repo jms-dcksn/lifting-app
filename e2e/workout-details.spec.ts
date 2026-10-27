@@ -48,7 +48,7 @@ test("prescribed and performed tempo survive program, plan, workout and history"
     await page.reload(); await expect(page.getByText('Tempo 2-1-1-0',{exact:false}).first()).toBeVisible();
     await page.setViewportSize({width:1280,height:900});
     await page.getByRole('button',{name:'Finish workout',exact:true}).click();
-    await page.getByRole('button',{name:'Finish workout',exact:true}).last().click();
+    await page.getByRole('dialog').getByRole('button',{name:'Finish workout',exact:true}).click();
     await expect.poll(async()=>(await db.query('select finished_at is not null as done from public.workout_session where id=$1',[session])).rows[0].done).toBe(true);
     await expect(page).toHaveURL(new RegExp(`/session/${session}/recap$`));
     await page.goto(`/session/${session}`); await expect(page.getByRole('listitem').getByText('Tempo 4-1-1-0',{exact:true})).toBeVisible();

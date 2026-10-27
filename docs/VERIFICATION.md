@@ -250,6 +250,15 @@ session passed all 16 ownership suites / 202 assertions and the tempo browser jo
 base verification passed 1,300 tests, typecheck, lint, strict slice and production build.
 The existing board unused-variable lint warning remains. No hosted migration ran.
 
+The #242 CI database job exposed a browser selector that counted the new Tempo legend
+as a planned set. Planner set-count assertions now select only numbered Set legends.
+The tempo journey also scopes saved values to set rows and awaits committed Finish/recap
+before reading history. These fixes belong to the tempo PR independently of notes/setup.
+
+Set-entry fields stay disabled for the entire pending save, including optimistic
+advancement to the next planned row. This prevents early next-set input from being
+reset by the committed form replacement; the progress test checks pending/recovery state.
+
 ## Workout setup and notes (#240)
 
 `workout-details.test.ts` checks canonical machine/cable eligibility and Unicode text

@@ -1,5 +1,6 @@
 "use server";
 
+import { tempoSchema, type Tempo } from "@/lib/tempo";
 import { refreshCoachInbox } from "@/lib/coach-inbox-data";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -24,6 +25,7 @@ async function requireUser() {
 }
 
 export interface SaveSlotInput {
+  tempo?: Tempo | null;
   supersetGroup?: string | null;
   id: string;
   exerciseId: string;
@@ -114,6 +116,7 @@ export async function saveProgram(input: SaveProgramInput) {
       name: d.name.trim() || "",
       slots: d.slots.map((s) => ({
         id: s.id,
+        tempo: s.tempo == null ? null : tempoSchema.parse(s.tempo),
         exerciseId: s.exerciseId,
         pattern: s.pattern,
         targetSets: s.targetSets,
@@ -203,7 +206,7 @@ export async function cloneProgram(id: string): Promise<string> {
   const { data: slots } = dayIds.length
     ? await supabase
         .from("program_slot")
-        .select("program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position")
+        .select("program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position, tempo")
         .in("program_day_id", dayIds)
         .order("program_day_id", { ascending: true })
         .order("position", { ascending: true })
@@ -240,6 +243,7 @@ export async function cloneProgram(id: string): Promise<string> {
         .filter((s) => s.program_day_id === day.id)
         .map((s) => ({
           id: crypto.randomUUID(),
+          tempo: s.tempo,
           exerciseId: s.exercise_id,
           pattern: s.pattern,
           targetSets: s.target_sets,

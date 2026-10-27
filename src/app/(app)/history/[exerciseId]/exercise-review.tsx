@@ -330,6 +330,7 @@ function SetList({
           ) : null}
           {formatExerciseSet({ equipment: isBodyweight ? "bodyweight" : "machine", loadMode }, set.weight, set.reps)}
           {set.rir != null ? ` @ ${set.rir} RIR` : ""}
+          <span className="block text-caption text-muted">Tempo {set.tempo?.join("-") ?? "unspecified"}</span>
         </li>
       ))}
     </ul>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
+import { tempoSchema, formatTempo } from "@/lib/tempo";
 import { Sheet, useSheetDismiss } from "@/components/ui/sheet";
 import { getExerciseHistory } from "../actions";
 
@@ -105,6 +106,7 @@ function HistoryContent({
                   {def?.loadMode !== "reps_only" && <div><dt className="text-caption text-muted">{def?.loadMode === "assisted" ? "Assistance (lb)" : isBodyweight ? "Added lb" : "Weight (lb)"}</dt><dd>{def?.loadMode === "assisted" ? Math.abs(row.weight) : row.weight}</dd></div>}
                   <div><dt className="text-caption text-muted">Reps</dt><dd>{row.reps}</dd></div>
                   <div><dt className="text-caption text-muted">RIR</dt><dd>{row.rir ?? "—"}</dd></div>
+                  <div><dt className="text-caption text-muted">Tempo</dt><dd>{row.tempo == null ? "Unspecified" : formatTempo(tempoSchema.parse(row.tempo))}</dd></div>
                 </dl>
               </li>
             ))}

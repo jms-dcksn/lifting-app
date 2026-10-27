@@ -87,3 +87,8 @@ and both scopes against the disposable stack. The PR records actual results and 
 
 The migration must be applied through the existing hosted deployment workflow before
 production can run this code; no hosted migration is authorized by local verification.
+
+Tempo is editable per exercise in both the program builder and upcoming-workout editor.
+Explicit four-phase seconds survive save, copy, station selection and start; an inherited
+default follows the destination exercise on swaps. Session captures and logged sets freeze
+their own tempo. See [workout details](WORKOUT-DETAILS.md) for notation and compatibility.

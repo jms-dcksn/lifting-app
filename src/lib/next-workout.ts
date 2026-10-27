@@ -1,3 +1,4 @@
+import { resolveTempo } from "./tempo";
 import { editorSlot, parseStoredPlan, recoverySets, type PlannedSet } from "./workout-editor";
 import { plannedCardTarget, plannedSetTarget, type PlannedPerformance } from "./workout-editor-targets";
 import { loadPlannedPerformances } from "./workout-editor-data";
@@ -59,7 +60,7 @@ export function resolveWorkoutSlots(input: {
       prescription.targetSets = plannedSets.length;
       if(plannedSets[0]) effectiveTarget=plannedCardTarget(effectiveTarget,plannedSets[0]);
     }
-    return { ...slot, baseExerciseId, exerciseId, prescription, targetContext: context, effectiveTarget,
+    return { ...slot, resolvedTempo: resolveTempo(catalog[exerciseId], slot.tempo), baseExerciseId, exerciseId, prescription, targetContext: context, effectiveTarget,
       plannedSets, normalSets,
       restSeconds: slot.restSeconds ?? input.defaultRestSeconds };
   });
@@ -137,7 +138,7 @@ export async function loadNextWorkout(
   if (storedPlan) slots = editorPlan.slots.map(s => {
     const base = slots.find(b => b.id === s.id);
     const first = s.sets[0];
-    return { ...base, ...s, baseExerciseId: base?.baseExerciseId ?? s.exerciseId,
+    return { ...base, ...s, resolvedTempo: s.resolvedTempo ?? resolveTempo(catalog[s.exerciseId], s.tempo), baseExerciseId: base?.baseExerciseId ?? s.exerciseId,
       pattern: s.pattern as import("./strength/coefficients").Pattern,
       targetSets: s.sets.length, repMin: first.repMin, repMax: first.repMax, targetRir: first.rirMax,
       plateauPatience: base?.plateauPatience ?? null,

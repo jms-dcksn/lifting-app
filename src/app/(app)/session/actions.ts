@@ -1,5 +1,6 @@
 "use server";
 
+import { resolveTempo, tempoSchema, type Tempo } from "@/lib/tempo";
 import { refreshCoachInbox } from "@/lib/coach-inbox-data";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
@@ -153,7 +154,7 @@ async function upcomingSessionDestination(planKey?: string) {
   const { data: sessionId, error } = await supabase.rpc("start_workout_plan", {
     p_program: program.id, p_day: next.day.id, p_completed: next.completed,
     p_source: next.sourceRevision, p_revision: next.planRevision,
-    p_plan: next.editorPlan as unknown as import("@/lib/supabase/types").Json,
+    p_plan: {...next.editorPlan, slots: next.editorPlan.slots.map(slot => ({...slot, resolvedTempo: resolveTempo(next.catalog[slot.exerciseId], slot.tempo)}))} as unknown as import("@/lib/supabase/types").Json,
   });
   if (error || !sessionId) throw new Error(error?.message ?? "Could not start session");
   (await cookies()).delete(WORKOUT_PLAN_COOKIE);
@@ -171,6 +172,7 @@ export interface LogSetInput {
   idempotencyKey?: string;
   plannedSlotId?: string;
   plannedSetId?: string;
+  tempo?: Tempo;
 }
 
 // Compute e1RM, insert the set, refresh the derived stat. Returns the persisted row.
@@ -221,11 +223,13 @@ export async function logSet(input: LogSetInput) {
   if (!session) throw new Error("Session not found");
 
   let equipmentInstanceId: string | null = null;
+  let tempo = resolveTempo(def, input.tempo == null ? null : tempoSchema.parse(input.tempo));
   if (session.plan_snapshot && input.plannedSlotId) {
     const { parseStoredPlan } = await import("@/lib/workout-editor");
     const slot = parseStoredPlan(session.plan_snapshot).slots.find(s=>s.id===input.plannedSlotId);
     if (!slot) throw new Error("Exercise is not in this saved workout.");
     if (slot.exerciseId===input.exerciseId) equipmentInstanceId=slot.equipmentInstanceId??null;
+    if (input.tempo == null) tempo = slot.exerciseId === input.exerciseId ? slot.resolvedTempo ?? resolveTempo(def, slot.tempo) : resolveTempo(def, slot.tempo);
   }
 
   const load = effectiveLoad(def, input.weight, bodyweight);
@@ -243,6 +247,7 @@ export async function logSet(input: LogSetInput) {
       equipment_instance_id: equipmentInstanceId,
       exercise_id: input.exerciseId,
       set_index: priorThisSession ?? 0,
+      tempo,
       weight: input.weight,
       reps: input.reps,
       rir: input.rir,
@@ -251,14 +256,14 @@ export async function logSet(input: LogSetInput) {
       is_calibration: !session.is_deload && !!def.needsCalibration && (priorEver ?? 0) === 0,
       idempotency_key: input.idempotencyKey ?? null,
     })
-    .select("id, exercise_id, weight, reps, rir, set_index, e1rm")
+    .select("id, exercise_id, weight, reps, rir, set_index, e1rm, tempo")
     .single();
 
   // Idempotent insert: on unique constraint violation, return existing row.
   if (error?.code === "23505" && input.idempotencyKey) {
     const { data: existing, error: readError } = await supabase
       .from("set_log")
-      .select("id, exercise_id, weight, reps, rir, set_index, e1rm")
+      .select("id, exercise_id, weight, reps, rir, set_index, e1rm, tempo")
       .eq("session_id", input.sessionId)
       .eq("idempotency_key", input.idempotencyKey)
       .maybeSingle();
@@ -282,6 +287,7 @@ export async function logSet(input: LogSetInput) {
 }
 
 export interface EditSetInput {
+  tempo?: Tempo | null;
   setId: string;
   weight: number;
   reps: number;
@@ -313,7 +319,8 @@ export async function editSet(input: EditSetInput) {
 
   const { error } = await supabase
     .from("set_log")
-    .update({ weight: input.weight, reps: input.reps, rir: input.rir, e1rm })
+    .update({ weight: input.weight, reps: input.reps, rir: input.rir, e1rm,
+      ...(input.tempo === undefined ? {} : {tempo: input.tempo === null ? null : tempoSchema.parse(input.tempo)}) })
     .eq("id", input.setId)
     .eq("user_id", userId);
   if (error) throw new Error(error.message);

@@ -5,6 +5,8 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardLabel } from "@/components/ui/card";
+import { TempoFields, TempoLabel } from "@/components/ui/tempo";
+import { resolveTempo } from "@/lib/tempo";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
@@ -194,6 +196,7 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
             {slot.supersetGroup && <p className="text-caption">Superset {supersetLabel(current.slots,index)}</p>}
           </div>
         </div>
+        {editing ? <TempoFields value={resolveTempo(def, slot.tempo)} onChange={tempo => updateSlot(slot.id, s => ({...s, tempo}))} /> : <TempoLabel value={resolveTempo(def, slot.tempo)} />}
         {slot.normalSets && slot.normalSets.length !== slot.sets.length && <p className="mt-3 text-caption">Recovery: {slot.sets.length} of {slot.normalSets.length} normal-week sets</p>}
         {editing && <div className="mt-3 flex flex-wrap gap-2">
           <Button type="button" variant="secondary" {...field(`${path}.exerciseId`)} onClick={() => setPicking(slot.id)}>Replace exercise</Button>

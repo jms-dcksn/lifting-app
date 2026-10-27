@@ -15,7 +15,7 @@ create temp table editor_fixture(plan jsonb,request uuid,session_id uuid);
 grant select,update on editor_fixture to authenticated;
 insert into editor_fixture(plan,request) select jsonb_build_object('version',1,'slots',jsonb_build_array(jsonb_build_object(
  'id','d2380000-0000-0000-0000-000000000001','programSlotId','d2380000-0000-0000-0000-000000000001',
- 'exerciseId','db-bench','pattern','horizontal_press','restSeconds',90,'supersetGroup',null,'sets',jsonb_build_array(
+ 'tempo','[2,1,1,0]'::jsonb,'exerciseId','db-bench','pattern','horizontal_press','restSeconds',90,'supersetGroup',null,'sets',jsonb_build_array(
  jsonb_build_object('id','e2380000-0000-0000-0000-000000000001','repMin',5,'repMax',8,'rirMin',1,'rirMax',1,'repsEdited',true,'rirEdited',true,'weight',100,'suggestedWeight',95,'targetReps',5,'seedAt',null),
  jsonb_build_object('id','e2380000-0000-0000-0000-000000000002','repMin',10,'repMax',12,'rirMin',2,'rirMax',2,'repsEdited',true,'rirEdited',true,'weight',60,'suggestedWeight',55,'targetReps',10,'seedAt',null)
  )))),gen_random_uuid();
@@ -31,6 +31,7 @@ do $$ declare p jsonb;req uuid;src bigint;r jsonb;begin
  assert (select source_revision from public.coach_refresh_state where user_id=auth.uid())>src,'plan save must invalidate old Coach confirmations';
  assert r=public.save_workout_plan('b2380000-0000-0000-0000-000000000001','c2380000-0000-0000-0000-000000000001',0,src,0,'workout',p,req),'lost-response retry must return original receipt';
  assert (select target_sets from public.program_slot where id='d2380000-0000-0000-0000-000000000001')=3;
+ assert (select plan->'slots'->0->'tempo' from public.workout_plan where user_id=auth.uid())='[2,1,1,0]'::jsonb;
  assert not exists(select 1 from public.workout_session where user_id=auth.uid());
  assert (select plan->'slots'->0->'sets'->1->>'weight' from public.workout_plan where user_id=auth.uid())='60';
 end $$;

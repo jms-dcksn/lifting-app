@@ -45,7 +45,7 @@ it("retains the whole draft on failed Save and retries the same request",async()
   await act(async()=>button("Add set").click());
   await act(async()=>button("Save changes").click());
   expect(host.textContent).toContain("Connection failed");
-  expect(host.querySelectorAll("legend")).toHaveLength(2);
+  expect([...host.querySelectorAll("legend")].filter(l=>/^Set \d/.test(l.textContent ?? ""))).toHaveLength(2);
   await act(async()=>button("Save changes").click());
   expect(save.mock.calls[0][0].requestId).toBe(save.mock.calls[1][0].requestId);
   expect(save.mock.calls[0][0].scope).toBe("workout");
@@ -69,6 +69,6 @@ it("opens preserved normal-week effort and volume when editing a recovery occurr
   expect((host.querySelector('[data-field="slots.0.sets.0.rirMax"]') as HTMLInputElement).value).toBe("4");
   const scope=[...host.querySelectorAll('select')].find(s=>[...s.options].some(o=>o.value==="program"))!;
   await act(async()=>{scope.value="program";scope.dispatchEvent(new Event("change",{bubbles:true}));});
-  expect(host.querySelectorAll('legend')).toHaveLength(4);
+  expect([...host.querySelectorAll("legend")].filter(l=>/^Set \d/.test(l.textContent ?? ""))).toHaveLength(4);
   expect((host.querySelector('[data-field="slots.0.sets.0.rirMax"]') as HTMLInputElement).value).toBe("1");
 });

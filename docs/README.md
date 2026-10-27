@@ -13,6 +13,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Visual map of experiences, request path, and why the system stays fast | [Architecture map](architecture.html) |
 | Current module boundaries and engine/data invariants | [Architecture](ARCHITECTURE.md) |
 | Shared exercise variations, machine models, load modes and catalog migration | [Exercise catalog](EXERCISE-CATALOG.md) |
+| Tempo and workout personal details | [Workout details](WORKOUT-DETAILS.md) |
 | Shared components and UI gotchas | [UI conventions](UI.md) |
 | Copy density (proposed) | [2026-09-16 spec](superpowers/specs/2026-09-16-visual-copy-density-design.md) |
 | Exercise review (Slices A–F shipped) | [2026-09-19 spec](superpowers/specs/2026-09-19-exercise-review-design.md) |

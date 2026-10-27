@@ -45,7 +45,7 @@ async function render(targetHistory = history(), slots = [view]) {
 
 beforeEach(() => {
   restStart.mockClear();
-  vi.mocked(logSet).mockResolvedValue({ recomputeWarning: null, id: "saved", exercise_id: "db-bench",
+  vi.mocked(logSet).mockResolvedValue({ tempo: null, recomputeWarning: null, id: "saved", exercise_id: "db-bench",
     weight: 95, reps: 8, rir: 2, set_index: 0, e1rm: 120 });
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   host = document.createElement("div"); document.body.append(host); root = createRoot(host);

@@ -1078,3 +1078,13 @@ establishes its cause. A numeric difference does not establish a phase or identi
 repeated-effort explanations require the corresponding returned reason. Canonical calculations
 and tools are preserved. The judge, dataset and threshold are unchanged; additional judge
 checks/calibration are deferred. Paid verification of the changed prompt remains outstanding.
+
+## Workout tempo (#236)
+
+Tempo is supported as four non-negative whole-second phases, independently of strength
+calculations. Explicit exercise prescriptions override the shared compound/ordinary default.
+Session captures and each actual set preserve their own values; old logs stay unspecified.
+No PR/progression/calibration eligibility or comparison scope changes. See
+[workout details](WORKOUT-DETAILS.md) for the storage and interaction contract. Program-design
+requests (#201) may now use numeric tempo prescriptions; unsupported advanced sequencing
+such as intra-set tempo changes remains separate.

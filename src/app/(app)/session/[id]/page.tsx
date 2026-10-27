@@ -1,3 +1,4 @@
+import { tempoSchema } from "@/lib/tempo";
 import { parseStoredPlan } from "@/lib/workout-editor";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -45,7 +46,7 @@ export default async function SessionPage({
       : Promise.resolve({ data: null }),
     supabase
       .from("program_slot")
-      .select("id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position")
+      .select("id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position, tempo")
       .eq("program_day_id", session.program_day_id ?? "00000000-0000-0000-0000-000000000000")
       .order("position", { ascending: true }),
     session.program_id
@@ -72,7 +73,7 @@ export default async function SessionPage({
         .eq("user_id", userId),
       supabase
         .from("set_log")
-        .select("id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, set_index, e1rm, planned_slot_id, planned_set_id")
+        .select("id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, set_index, e1rm, planned_slot_id, planned_set_id, tempo")
         .eq("session_id", id)
         .order("set_index", { ascending: true }),
       recentExerciseIds(supabase, userId),
@@ -121,6 +122,7 @@ export default async function SessionPage({
       rir: s.rir,
       setIndex: s.set_index,
       plannedSetId: s.planned_set_id,
+      tempo: s.tempo == null ? null : tempoSchema.parse(s.tempo),
     });
     setsBySlot.set(slotId, list);
     sessionExercise.set(slotId, s.exercise_id);
@@ -216,6 +218,7 @@ export default async function SessionPage({
     const last = (setsBySlot.get(slot.id) ?? []).at(-1);
     const equipmentInstanceId = last?.exerciseId === exerciseId ? last.equipmentInstanceId : null;
     return {
+      tempo: slot.tempo == null ? null : tempoSchema.parse(slot.tempo),
       programSlotId: slot.id,
       exerciseId,
       targetContext: session.program_id ? stallContext({ id: slot.id, programId: session.program_id,
@@ -247,7 +250,7 @@ export default async function SessionPage({
       return { programSlotId: slot.id, sourceProgramSlotId: slot.programSlotId,
         exerciseId: selected, pattern: slot.pattern as Pattern, restSeconds: slot.restSeconds,
         supersetGroup: slot.supersetGroup, plannedSets: slot.sets,
-        snapshotExerciseId: slot.exerciseId,
+        snapshotExerciseId: slot.exerciseId, tempo: slot.tempo, resolvedTempo: slot.resolvedTempo,
         prescription: { targetSets: slot.sets.length, repMin: first.repMin, repMax: first.repMax,
           targetRir: first.rirMax, targetRirMin: first.rirMin, targetRirMax: first.rirMax },
         targetContext: null, sets: setsBySlot.get(slot.id) ?? [], pendingSuggestion: null,

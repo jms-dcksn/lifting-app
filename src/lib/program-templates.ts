@@ -16,6 +16,7 @@ import type { Pattern } from "@/lib/strength/coefficients";
 import type { ProgramPhase } from "@/lib/periodization";
 
 export interface TemplateSlot {
+  tempo?: import("./tempo").Tempo | null;
   supersetGroup?: string | null;
   exerciseId: string;
   pattern: Pattern;

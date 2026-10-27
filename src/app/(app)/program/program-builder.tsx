@@ -13,6 +13,8 @@ import { InfoButton } from "@/components/ui/info-button";
 import { Input } from "@/components/ui/input";
 import { Stepper } from "@/components/ui/stepper";
 import { withViewTransition } from "@/components/ui/view-transition";
+import { TempoFields } from "@/components/ui/tempo";
+import { resolveTempo } from "@/lib/tempo";
 import { saveProgram, type SaveDayInput, type SavePhaseInput, type SaveSlotInput } from "./actions";
 import { ExercisePicker } from "./exercise-picker";
 import { TagInput } from "./tag-input";
@@ -218,6 +220,7 @@ export function ProgramBuilder({
               repMin: s.repMin,
               repMax: s.repMax,
               targetRir: s.targetRir,
+              tempo: s.tempo ?? null,
               restSeconds: s.restSeconds,
               supersetGroup: s.supersetGroup ?? null,
               plateauPatience: s.plateauPatience,
@@ -458,6 +461,7 @@ export function ProgramBuilder({
                     <NumField label="RIR" value={slot.targetRir} min={0} max={5}
                       onChange={(v) => updateSlot(day.id, slot.id, { targetRir: v })} />
                   </div>
+                  <TempoFields value={resolveTempo(byId[slot.exerciseId], slot.tempo)} onChange={tempo => updateSlot(day.id, slot.id, { tempo })} />
                   <RestField
                     value={slot.restSeconds}
                     onChange={(v) => updateSlot(day.id, slot.id, { restSeconds: v })}

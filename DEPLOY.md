@@ -93,6 +93,15 @@ RPC were verified; security advisors reported no new findings. The hosted post-l
 requires an authenticated session for release smoke testing. Production's ledger gate remains intact. See
 [planning](docs/WORKOUT-PLANNING.md) and [the approved design](docs/WORKOUT-EDITOR-DESIGN.md).
 
+### Workout Start compatibility fix
+
+Before releasing the post-#239 Start fix, apply
+`20261027173401_allow_unresolved_workout_start.sql` to the intended environment. It permits
+known equipment templates only at session creation and preserves strict editor-save validation.
+Captured-session logging still requires concrete equipment, including direct API writes.
+The application rollback remains in place until the fix's separate hosted release is approved.
+This migration does not backfill historical sets or rewrite existing workout captures.
+
 ### Superset migration
 
 Superset support additionally requires `20261017215800_program_supersets.sql` before

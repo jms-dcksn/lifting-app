@@ -20,7 +20,8 @@ import { preparePlannedWorkout } from "../../session/actions";
 import { saveWorkoutDraft } from "./actions";
 
 export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRevision, revision,
-  programName, dayName, week, plan, recovery, stats, bodyweight, targetHistory, catalog: initialCatalog }: {
+  programName, dayName, week, plan, recovery, stats, bodyweight, targetHistory, initialError, catalog: initialCatalog }: {
+  initialError?: string;
   stats: import("@/lib/strength/recommend").ExerciseStat[]; bodyweight: number | null; targetHistory: import("@/lib/effective-workout-target").WorkoutTargetHistory;
   planKey: string; programId: string; dayId: string; completed: number; sourceRevision: number; revision: number;
   programName: string; dayName: string; week: number; recovery: import("@/lib/periodization").ProgramPhase | null; slots: unknown[]; plan: WorkoutEditorPlan; catalog: ExerciseDef[];
@@ -35,7 +36,7 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
   const [scope, setScope] = useState<"workout" | "program">("workout");
   const [pending, startSaving] = useTransition();
   const [issues, setIssues] = useState<EditorIssue[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError ?? null);
   const [notice, setNotice] = useState("");
   const root = useRef<HTMLDivElement>(null);
   const [keyboardInset,setKeyboardInset]=useState(0);

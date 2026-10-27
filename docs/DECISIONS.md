@@ -1032,3 +1032,49 @@ future suggestions until comparable logged evidence exists; they do not lock pro
 Recovery reduces normal rows once and overrides edited normal-week RIR. Heavy/lighter rows
 match separate saved prescription identities. Save/start serialize under the existing owner
 source lock, enforce expected revisions and roll back atomically. Hosted rollout is separate.
+
+### LangSmith application and environment organization (2026-10-21)
+
+Use one workspace and Application `lifting-app` to group production tracing, development
+tracing, datasets and native experiments. Production keeps project `lifting-app`; local and
+Preview use `lifting-app-dev`. Separate Vercel environment entries preserve that mapping.
+Offline evals keep the SDK's dataset-linked experiment trees and add resource tags at creation;
+they do not override the ordinary app-trace project with per-suite names. This keeps production
+metrics separate while preserving shared regression datasets and experiment comparisons.
+See [LangSmith organization](LANGSMITH.md) for identities, metadata and the synthetic routing check.
+
+### Two weekly answer evaluators (2026-10-21, #140)
+
+The owner requested only grounding and completeness after reviewing the first weekly
+experiment. Rubric `weekly-judge-v2` produces exactly two raw Noul scores: `grounded`
+checks claims against current returned tool evidence; `complete` checks requested facts
+and qualifications. Both must reach the existing 0.7 threshold; there is no average or
+extra aggregate/pass column. Tool selection/count and regex number graders are removed.
+The immutable dataset retains historical tool-expectation fields, but the v2 judge does
+not receive or enforce them. Previous answers and feedback remain unchanged. This changes
+the evaluation contract, not Coach behavior or canonical calculations. No paid v2 run or
+calibration is implied by offline harness checks.
+
+### Judge material accuracy and usefulness (2026-10-26, #140)
+
+The owner accepted all three answers flagged by the v2 weekly run. Expected recovery
+reassurance, a dropped-session inference from snapshots, and an otherwise clear calendar
+comparison without a timezone label are acceptable. Rubric `weekly-judge-v3` keeps the two
+scores and 0.7 threshold, but judges material truth and meeting the user's practical need.
+References are context, not mandatory checklists; history can support reasonable inference
+while fresh tools govern current state. `grounded` also checks substantive Coach boundaries:
+no medical advice/diagnosis, menstrual/cycle discussion, privacy or authorization violation.
+Ordinary training guidance remains allowed. No new grader or production behavior change.
+The three exact accepted answers are held-out local human labels, never judge inputs.
+Historical feedback stays unchanged; paid v3 agreement has not been verified.
+
+### Weekly report evidence and discrepancy explanations (2026-10-26, #140)
+
+The owner approved targeted system-prompt changes after inspecting an all-pass v3 run.
+weeklyCoach's returned progress figures answer weekly summaries directly; exerciseReview
+is reserved for deeper exercise records/history or missing comparisons. Distinguish report
+proposals from current calculated targets, and explain a discrepancy only when evidence
+establishes its cause. A numeric difference does not establish a phase or identity change;
+repeated-effort explanations require the corresponding returned reason. Canonical calculations
+and tools are preserved. The judge, dataset and threshold are unchanged; additional judge
+checks/calibration are deferred. Paid verification of the changed prompt remains outstanding.

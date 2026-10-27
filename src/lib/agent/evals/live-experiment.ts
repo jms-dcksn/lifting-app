@@ -10,10 +10,11 @@ import { enrichScreenContext } from "../context";
 import type { AgentMessage } from "../messages";
 import { runAgentTurn } from "../run";
 import { bindReadTools } from "../tools";
-import { agentModelId } from "../policy";
+import { agentModelId, enableLangSmithTracing } from "../policy";
+import { ExperimentClient, experimentMetadata } from "./experiment-client";
 import { gradeSupportedFigures } from "./evidence-grade";
 import { askJev, jevModelId } from "./jev";
-import { LIVE_DATASET, LIVE_EVAL_PROJECT, LIVE_EXAMPLES, LIVE_FOLLOW_UP_EXAMPLES, LIVE_POLICY_VERSION, LIVE_JUDGE_VERSION,
+import { LIVE_DATASET, LIVE_EXAMPLES, LIVE_FOLLOW_UP_EXAMPLES, LIVE_POLICY_VERSION, LIVE_JUDGE_VERSION,
   REFERENCE_MATCH_THRESHOLD, REVIEW_JUDGE_QUESTIONS, gradeFoundExercise, gradeRightTool, gradeToolCount,
   outputFromTurn, reviewJudgeRequest, reviewRecord, scoreNoul,
   type ExpectedReview, type LiveExample, type LiveTurnOutput } from "./live";
@@ -35,7 +36,7 @@ export function validateEvalTarget(url: string, expectedProject = DEVELOPMENT_PR
 
 export async function runLiveExperiment() {
   loadLocalEnv();
-  process.env.LANGSMITH_PROJECT = LIVE_EVAL_PROJECT;
+  enableLangSmithTracing();
   process.env.LANGSMITH_TRACING = "true";
   const missing = ["LANGSMITH_API_KEY", "AI_GATEWAY_API_KEY", "SUPABASE_SECRET_KEY", "NEXT_PUBLIC_SUPABASE_URL", "JEV_API_KEY"]
     .filter((key) => !process.env[key]?.trim());
@@ -44,7 +45,7 @@ export async function runLiveExperiment() {
   const supabase = createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } });
   const userId = await userIdForEmail(supabase, process.env.EVAL_USER_EMAIL?.trim() || DEFAULT_EVAL_EMAIL);
-  const client = new Client();
+  const client = new ExperimentClient();
   const dataset = await client.readDataset({ datasetName: LIVE_DATASET });
   const version = await client.readDatasetVersion({ datasetId: dataset.id,
     ...(process.env.EVAL_DATASET_VERSION?.trim() ? { asOf: process.env.EVAL_DATASET_VERSION.trim() } : { tag: "latest" }) });
@@ -57,7 +58,7 @@ export async function runLiveExperiment() {
   const snapshot = await trainingSnapshot(supabase, userId);
   const codeSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
   const dirty = Boolean(execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim());
-  const metadata = { source: "local-eval", scenarioSet, policyVersion: LIVE_POLICY_VERSION, datasetVersion: version.as_of,
+  const metadata = { ...experimentMetadata("exercise-review"), scenarioSet, policyVersion: LIVE_POLICY_VERSION, datasetVersion: version.as_of,
     agentModel: agentModelId(), judgeModel: jevModelId(), judgeThreshold: REFERENCE_MATCH_THRESHOLD,
     judgeVersion: LIVE_JUDGE_VERSION, judgeConfiguration: REVIEW_JUDGE_QUESTIONS, judgeModelIsFloating: jevModelId().endsWith("latest"), codeSha, dirty, databaseProject, userId,
     asOf: new Date().toISOString(), trainingSnapshot: snapshot };
@@ -69,19 +70,19 @@ export async function runLiveExperiment() {
     for (const [index, question] of [inputs.question, ...(inputs.followUps ?? [])].entries()) {
       persisted.push({ id: `user-${index}`, role: "user", parts: [{ type: "text", text: question }], createdAt: new Date().toISOString() });
       const generated = await runAgentTurn({ persisted, threadId: `eval-${inputs.id ?? "live"}`, screenContext,
-        tools: bindReadTools(supabase, userId), traceMetadata: { source: "local-eval", dataset: LIVE_DATASET, datasetVersion: version.as_of } });
+        tools: bindReadTools(supabase, userId), traceMetadata: { ...experimentMetadata("exercise-review"), dataset: LIVE_DATASET, datasetVersion: version.as_of, codeSha } });
       turns.push(outputFromTurn(generated));
       for (const [messageIndex, message] of generated.entries()) persisted.push({ ...message,
         id: `turn-${index}-${messageIndex}`, createdAt: new Date().toISOString() });
     }
     return { ...turns.at(-1)!, turns };
-  }, { data: selectedExamples, experimentPrefix: "exercise-review", maxConcurrency: 1, metadata,
+  }, { data: selectedExamples, client, experimentPrefix: "exercise-review", maxConcurrency: 1, metadata,
     evaluators: [async (args: { inputs: Record<string, unknown>; outputs: Record<string, unknown>; referenceOutputs?: Record<string, unknown> }) => {
       const outputs = args.outputs as unknown as LiveScenarioOutput;
       const reference = args.referenceOutputs ?? {};
       return { results: await gradeScenario(args.inputs, outputs, reference) };
     }] });
-  for await (const row of results) console.log(row.evaluationResults.results.map((result) => `${result.key}=${result.score} (${result.comment ?? ""})`).join("\n"));
+  for (const row of results.results) console.log(row.evaluationResults.results.map((result) => `${result.key}=${result.score} (${result.comment ?? ""})`).join("\n"));
   const after = await trainingSnapshot(supabase, userId);
   const experiment = await client.readProject({ projectName: results.experimentName });
   await client.updateProject(experiment.id, { metadata: { ...experiment.extra?.metadata, ...metadata,

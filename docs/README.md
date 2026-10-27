@@ -27,6 +27,8 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Planned exception-only notifications, Coach entry point, or meaningful interventions | [Exception-only implementation plan](AI-COACH-EXCEPTIONS-PLAN.md) |
 | Exception storage, replay, preferences and action authorization | [Episode design and Decision Card](AI-COACH-EPISODES-DESIGN.md) — #195 inbox and #141 conversations/confirmed actions implemented |
 | Implemented persistent exception inbox, foreground refresh and rollout | [Inbox contract](COACH-INBOX.md) |
+| LangSmith environment routing, Application grouping and synthetic trace verification | [LangSmith organization](LANGSMITH.md) |
+| Fixed-evidence weekly Coach dataset, rubric and experiment run guide (#140) | [Weekly evaluation lab](weekly-coach-evals.html), [baseline investigation](WEEKLY-COACH-EVAL-REVIEW.md), [AI Coach](AI-COACH.md#weekly-narration-evaluation-setup-140) |
 | Planned exercise-review matching and eval improvements | [Implementation plan](AI-COACH-EVAL-IMPROVEMENTS.md), [annotated review](2026-10-11-ai-coach-annotated-eval-review.md) |
 | Full upcoming-workout editor, saved occurrence plans and active substitutions | [Exercise swaps](EXERCISE-SWAPS.md), [planning](WORKOUT-PLANNING.md) |
 | Weight observations, charts and goal distance | [Calendar](WEIGHT-CALENDAR.md), [trends](WEIGHT-TRENDS.md) |

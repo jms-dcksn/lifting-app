@@ -35,8 +35,10 @@ class ScriptedChatModel extends BaseChatModel {
 
 function recordStartMetadata() {
   const starts: string[] = [];
+  const metadataSeen: Array<Record<string, unknown>> = [];
   const record = (kind: string, metadata?: Record<string, unknown>) => {
     starts.push(`${kind}:${String(metadata?.thread_id)}`);
+    metadataSeen.push(metadata ?? {});
   };
   const handler = {
     handleChainStart(...args: unknown[]) {
@@ -49,12 +51,12 @@ function recordStartMetadata() {
       record("tool", args[5] as Record<string, unknown> | undefined);
     },
   };
-  return { starts, handler };
+  return { starts, handler, metadataSeen };
 }
 
 describe("runAgentTurn", () => {
   it("tags every chain, model, and tool run with the conversation's thread id", async () => {
-    const { starts, handler } = recordStartMetadata();
+    const { starts, handler, metadataSeen } = recordStartMetadata();
     const events: AgentStreamEvent[] = [];
     const echo = tool(async () => "ok", {
       name: "echo",
@@ -76,6 +78,7 @@ describe("runAgentTurn", () => {
         new AIMessage("All set."),
       ]),
       callbacks: [handler],
+      traceMetadata: { source: "experiment", suite: "routing-control", codeSha: "fixture-sha" },
       onEvent: (event) => events.push(event),
     });
     await awaitAllCallbacks();
@@ -89,6 +92,8 @@ describe("runAgentTurn", () => {
       { type: "tool-start", name: "echo", callId: "call-1" },
       { type: "tool-end", callId: "call-1", outcome: "complete" },
     ]);
+    expect(metadataSeen.every((metadata) => metadata.app === "lifting-app" && metadata.source === "experiment"
+      && metadata.suite === "routing-control" && metadata.codeSha === "fixture-sha")).toBe(true);
     expect(new Set(starts)).toEqual(new Set([
       `chain:${THREAD_ID}`,
       `model:${THREAD_ID}`,

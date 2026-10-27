@@ -60,7 +60,7 @@ describe("calculator agent contract (scripted model, real tools)", () => {
     const estimate = (output.toolResults[0]?.result as { estimatedOneRepMax: number }).estimatedOneRepMax;
     expect(output.answer).toContain(estimate.toFixed(1));
     expect(model.seen[1].some((message) => message.type === "tool" && String(message.content).includes("estimatedOneRepMax"))).toBe(true);
-    expect(JSON.stringify(model.seen[0][0].content)).toContain("For actual logged e1RM, records or trends, use exerciseReview");
+    expect(JSON.stringify(model.seen[0][0].content)).toContain("For exercise-specific records or e1RM history beyond the weekly report, use exerciseReview");
     expect(db.from).not.toHaveBeenCalled();
     expect(db.rpc).not.toHaveBeenCalled();
   });

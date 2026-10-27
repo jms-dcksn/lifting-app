@@ -35,6 +35,10 @@ TypeScript strength engine. Workouts require connectivity; there is no offline s
 
 ## Verification and continuity
 
+When tightening validation, changing shared writes/RPCs, or moving a user requirement to
+an earlier step, follow [compatibility review](docs/VERIFICATION.md#compatibility-review).
+Cover existing valid states through every affected entry point before considering the change verified.
+
 On fresh clones (including cloud VMs), run `npm ci` with dev dependencies and lifecycle
 scripts enabled; `prepare` installs the versioned Lefthook gates. Commit and push through
 Git with hooks enabled; fix failures rather than bypassing them. For hook setup, staged

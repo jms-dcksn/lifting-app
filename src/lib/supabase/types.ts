@@ -545,6 +545,9 @@ export type Database = {
       }
       set_log: {
         Row: {
+          note: string | null
+          setup_snapshot: string | null
+          edit_revision: number
           tempo: Json | null
           planned_slot_id: string | null
           planned_set_id: string | null
@@ -566,6 +569,9 @@ export type Database = {
           weight: number
         }
         Insert: {
+          note?: string | null
+          setup_snapshot?: string | null
+          edit_revision?: number
           tempo?: Json | null
           planned_slot_id?: string | null
           planned_set_id?: string | null
@@ -587,6 +593,9 @@ export type Database = {
           weight: number
         }
         Update: {
+          note?: string | null
+          setup_snapshot?: string | null
+          edit_revision?: number
           tempo?: Json | null
           planned_slot_id?: string | null
           planned_set_id?: string | null

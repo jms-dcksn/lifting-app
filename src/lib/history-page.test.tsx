@@ -45,8 +45,12 @@ const instanceQuery = {
     Promise.resolve(resolve({ data: instanceRows, error: null })),
 };
 
+const detailQuery = {
+  select:()=>detailQuery,eq:()=>detailQuery,in:()=>detailQuery,order:()=>detailQuery,gt:()=>detailQuery,
+  limit:async()=>({data:[],error:null}),
+};
 function from(table?: string) {
-  return table === "equipment_instance" ? instanceQuery : query;
+  return table === "workout_exercise_detail" ? detailQuery : table === "equipment_instance" ? instanceQuery : query;
 }
 
 beforeEach(() => {

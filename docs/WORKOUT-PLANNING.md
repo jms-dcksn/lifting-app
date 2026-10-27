@@ -92,3 +92,6 @@ Tempo is editable per exercise in both the program builder and upcoming-workout 
 Explicit four-phase seconds survive save, copy, station selection and start; an inherited
 default follows the destination exercise on swaps. Session captures and logged sets freeze
 their own tempo. See [workout details](WORKOUT-DETAILS.md) for notation and compatibility.
+
+Personal setup and observations are recorded during the workout, outside the plan.
+Planner/program edits never update recorded notes, set setup snapshots or performed tempo.

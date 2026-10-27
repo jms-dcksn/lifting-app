@@ -86,14 +86,14 @@ function client(result: { data: unknown; error: unknown }) {
     select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), in: vi.fn().mockReturnThis(),
     neq: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), limit: vi.fn().mockResolvedValue(result),
   };
-  return { query, db: { from: vi.fn(() => query) } as unknown as Parameters<typeof loadExerciseHistory>[0] };
+  return { query, db: { from: vi.fn((table:string) => table==="workout_exercise_detail" ? {select:()=>({eq:()=>({in:()=>({order:()=>({limit:async()=>({data:[],error:null})})})})})} : query) } as unknown as Parameters<typeof loadExerciseHistory>[0] };
 }
 
 describe("history query", () => {
   it("scopes to the user and exercise family, excludes this workout, and limits to ten newest sets", async () => {
     const rows = [{ id: "set", weight: 0, reps: 12, rir: null }];
     const { db, query } = client({ data: rows, error: null });
-    expect(await loadExerciseHistory(db, "user", [base.id, "hammer", "life"], "active")).toEqual(rows);
+    expect(await loadExerciseHistory(db, "user", [base.id, "hammer", "life"], "active")).toEqual(rows.map(row=>({...row,exercise_note:null})));
     expect(query.eq).toHaveBeenCalledWith("user_id", "user");
     expect(query.in).toHaveBeenCalledWith("exercise_id", [base.id, "hammer", "life"]);
     expect(query.neq).toHaveBeenCalledWith("session_id", "active");

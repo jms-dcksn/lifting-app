@@ -6,6 +6,9 @@ export const REVIEW_RECENT_DAYS = 21;
 export const REVIEW_CHART_SESSIONS = 8;
 
 export type ReviewSetRow = {
+  note?: string | null;
+  setup?: string | null;
+  exerciseNote?: string | null;
   tempo?: import("./tempo").Tempo | null;
   id: string;
   sessionId: string;
@@ -21,6 +24,9 @@ export type ReviewSetRow = {
 };
 
 export type ReviewSessionSet = {
+  note?: string | null;
+  setup?: string | null;
+  exerciseNote?: string | null;
   tempo?: import("./tempo").Tempo | null;
   id: string;
   weight: number;
@@ -81,6 +87,9 @@ export function groupReviewSessions(
       bySession.set(row.sessionId, session);
     }
     session.sets.push({
+      ...(row.note === undefined ? {} : {note:row.note}),
+      ...(row.setup === undefined ? {} : {setup:row.setup}),
+      ...(row.exerciseNote === undefined ? {} : {exerciseNote:row.exerciseNote}),
       ...(row.tempo === undefined ? {} : {tempo: row.tempo}),
       id: row.id,
       weight: row.weight,

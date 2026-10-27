@@ -1,3 +1,4 @@
+import { collectIdPages } from "./pagination";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
 import type { createClient } from "@/lib/supabase/server";
 
@@ -32,7 +33,7 @@ export async function loadExerciseHistory(
   sessionId: string,
 ) {
   const { data, error } = await supabase.from("set_log")
-    .select("id, exercise_id, weight, reps, rir, is_warmup, is_deload, created_at, tempo")
+    .select("id, exercise_id, weight, reps, rir, is_warmup, is_deload, created_at, tempo, note, setup_snapshot, session_id, planned_slot_id, program_slot_id, equipment_instance_id")
     .eq("user_id", userId)
     .in("exercise_id", exerciseIds)
     .neq("session_id", sessionId)
@@ -40,5 +41,11 @@ export async function loadExerciseHistory(
     .order("id", { ascending: false })
     .limit(10);
   if (error) throw new Error("Unable to load exercise history. Please try again.");
-  return data ?? [];
+  const details = data?.length ? await collectIdPages(async after=>{
+    let query=supabase.from("workout_exercise_detail").select("id,session_id,occurrence_id,exercise_id,equipment_instance_id,note")
+      .eq("user_id",userId).in("session_id",[...new Set(data.map(r=>r.session_id))]).order("id").limit(500);
+    if(after) query=query.gt("id",after);
+    const {data: rows,error: detailError}=await query;if(detailError) throw new Error("Unable to load exercise observations. Please try again.");return rows??[];
+  }) : [];
+  return (data??[]).map(row=>({...row,exercise_note:details.find(d=>d.session_id===row.session_id && d.occurrence_id===(row.planned_slot_id??row.program_slot_id) && d.exercise_id===row.exercise_id && d.equipment_instance_id===row.equipment_instance_id)?.note??null}));
 }

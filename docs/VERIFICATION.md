@@ -249,3 +249,23 @@ performed override → numeric edit → finish/history at mobile and desktop wid
 session passed all 16 ownership suites / 202 assertions and the tempo browser journey;
 base verification passed 1,300 tests, typecheck, lint, strict slice and production build.
 The existing board unused-variable lint warning remains. No hosted migration ran.
+
+## Workout setup and notes (#240)
+
+`workout-details.test.ts` checks canonical machine/cable eligibility and Unicode text
+limits without truncation. Action tests cover note-only preservation (including historical
+null RIR/e1RM), numeric edits, lost-response replays, explicit unspecified tempo and stale
+revision rejection. Sheet tests cover failed drafts, deliberate Clear/Save, guarded
+dismissal and Strict Mode navigation. `workout_details_rls.sql` checks independent duplicate
+occurrences, machine/cable and physical equipment identity, snapshots, owner isolation,
+validation and original associations after swaps. The concurrency profile includes
+`test-workout-details-concurrency.mjs` for competing text/numeric saves and atomic setup
+capture during a concurrent set log.
+
+`e2e/workout-notes.spec.ts` uses real local Auth/actions/PostgREST/RLS. It checks notes
+before sets, 2,000-character validation, long previews, explicit clearing, an aborted
+write and retry, stale-save recovery, saved-content discovery, focus restoration,
+remembered setup, per-set text/tempo, numeric edits, an unchanged rest timestamp, reload,
+swap associations, finish/history and next-workout reuse at 320px and desktop widths.
+Viewport tests exercise responsive/keyboard focus behavior; physical iOS/Android keyboard
+and device safe-area behavior still require device QA. No hosted rollout or paid eval ran.

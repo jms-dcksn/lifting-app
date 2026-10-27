@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/ui/page-header";
 import { formatExerciseSet } from "@/lib/strength/load-mode";
 import Link from "next/link";
+import { SavedSetDetails } from "@/components/ui/set-details";
 import type { ReactNode } from "react";
 import { Card, CardLabel } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
@@ -330,7 +331,8 @@ function SetList({
           ) : null}
           {formatExerciseSet({ equipment: isBodyweight ? "bodyweight" : "machine", loadMode }, set.weight, set.reps)}
           {set.rir != null ? ` @ ${set.rir} RIR` : ""}
-          <span className="block text-caption text-muted">Tempo {set.tempo?.join("-") ?? "unspecified"}</span>
+          <SavedSetDetails tempo={set.tempo} note={set.note} setup={set.setup}/>
+          {set.exerciseNote && <details className="text-caption text-muted"><summary className="min-h-11 cursor-pointer py-3">Exercise note</summary><p className="whitespace-pre-wrap break-words">{set.exerciseNote}</p></details>}
         </li>
       ))}
     </ul>

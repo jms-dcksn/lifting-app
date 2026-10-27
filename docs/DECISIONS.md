@@ -1085,6 +1085,5 @@ Tempo is supported as four non-negative whole-second phases, independently of st
 calculations. Explicit exercise prescriptions override the shared compound/ordinary default.
 Session captures and each actual set preserve their own values; old logs stay unspecified.
 No PR/progression/calibration eligibility or comparison scope changes. See
-[workout details](WORKOUT-DETAILS.md) for the storage and interaction contract. Program-design
-requests (#201) may now use numeric tempo prescriptions; unsupported advanced sequencing
-such as intra-set tempo changes remains separate.
+[workout details](WORKOUT-DETAILS.md) for the storage and interaction contract. For #201's later program-design checks, numeric four-phase prescriptions are now representable;
+AI discovery and advanced sequencing such as intra-set tempo changes remain separate.

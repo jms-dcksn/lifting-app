@@ -1,10 +1,13 @@
 "use client";
+import { WorkoutExerciseDetails } from "./workout-exercise-details";
+import { SavedSetDetails } from "@/components/ui/set-details";
+import { normalizeWorkoutText, WORKOUT_TEXT_LIMIT, type WorkoutExerciseDetail, type RememberedSetup } from "@/lib/workout-details";
 import { CoachSlotReview } from "@/components/coach/coach-slot-review";
 import { exactExerciseIdentity } from "@/lib/strength/identity";
 import { supersetLabel, isSupersetEnd } from "@/lib/superset";
 
 import Link from "next/link";
-import { Suspense, use, useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
+import { Suspense, use, useCallback, useEffect, useMemo, useOptimistic, useRef, useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
 import { canSwapStation, isLoggableExercise } from "@/lib/station";
@@ -73,6 +76,9 @@ function WorkoutRecordsSync({
 }
 
 export interface LoggedSet {
+  note?: string | null;
+  setup?: string | null;
+  editRevision?: number;
   tempo?: Tempo | null;
   id: string;
   exerciseId: string;
@@ -85,6 +91,10 @@ export interface LoggedSet {
 }
 
 export interface SlotView {
+  details?: WorkoutExerciseDetail[];
+  remembered?: RememberedSetup[];
+  equipmentLabels?: Record<string,string>;
+  equipmentInstanceId?: string | null;
   tempo?: Tempo | null;
   resolvedTempo?: Tempo;
   plannedSets?: import("@/lib/workout-editor").PlannedSet[];
@@ -332,6 +342,8 @@ function SlotCard({
     },
   );
   const [isPending, startTransition] = useTransition();
+  const editingSet = useRef<LoggedSet|null>(null);
+  const logRequest = useRef<{content:string;id:string}|null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   // Rows fading out before their delete commits, and the last failed-write message.
   const [exitingIds, setExitingIds] = useState<string[]>([]);
@@ -428,9 +440,11 @@ function SlotCard({
 
   const prescribedTempo = slot.snapshotExerciseId === exerciseId ? slot.resolvedTempo ?? resolveTempo(def, slot.tempo) : resolveTempo(def, slot.tempo);
 
-  function handleLog(weight: number, reps: number, rir: number, tempo?: Tempo | null) {
+  function handleLog(weight: number, reps: number, rir: number, tempo?: Tempo | null, note?: string | null) {
     if (isPending) return;
-    const idempotencyKey = generateIdempotencyKey();
+    const content=JSON.stringify({exerciseId,weight,reps,rir,tempo,note,plannedSet:plannedRow?.id});
+    if(logRequest.current?.content!==content) logRequest.current={content,id:generateIdempotencyKey()};
+    const idempotencyKey = logRequest.current.id;
     setError(null);
     setRecomputeWarning(null);
     // Rest starts the moment the set is logged (optimistically) — a failed write doesn't
@@ -439,7 +453,7 @@ function SlotCard({
     startTransition(async () => {
       applyOptimistic({
         type: "add",
-        set: { tempo: tempo ?? prescribedTempo, id: `temp-${Date.now()}`, exerciseId, equipmentInstanceId: slot.sets.at(-1)?.equipmentInstanceId ?? null, weight, reps, rir, setIndex: optimisticSets.length, plannedSetId: plannedRow?.id },
+        set: { note, tempo: tempo === undefined ? prescribedTempo : tempo, id: `temp-${Date.now()}`, exerciseId, equipmentInstanceId: slot.sets.at(-1)?.equipmentInstanceId ?? null, weight, reps, rir, setIndex: optimisticSets.length, plannedSetId: plannedRow?.id },
       });
       try {
         const result = await retryServerAction(
@@ -448,16 +462,19 @@ function SlotCard({
             programSlotId: slot.sourceProgramSlotId === undefined ? slot.programSlotId : slot.sourceProgramSlotId,
             plannedSlotId: slot.plannedSets ? slot.programSlotId : undefined,
             plannedSetId: plannedRow?.id,
+            equipmentInstanceId:slot.equipmentInstanceId??null,
             exerciseId,
             weight,
             reps,
             rir,
-            tempo: tempo ?? prescribedTempo,
+            note,
+            tempo: tempo === undefined ? prescribedTempo : tempo,
             idempotencyKey,
           }),
           { onRetry: () => setError("Retrying…") }
         );
         setError(null);
+        logRequest.current=null;
         if (result.recomputeWarning) {
           setRecomputeWarning(result.recomputeWarning);
         }
@@ -496,14 +513,14 @@ function SlotCard({
     }, 160);
   }
 
-  function handleEdit(id: string, weight: number, reps: number, rir: number, tempo?: Tempo | null) {
+  function handleEdit(id: string, weight: number, reps: number, rir: number, tempo?: Tempo | null, note?: string | null, numericEdited=true) {
     if (isPending) return;
     setError(null);
     setRecomputeWarning(null);
     startTransition(async () => {
       try {
         const result = await retryServerAction(
-          () => editSet({ setId: id, weight, reps, rir, ...(tempo === undefined ? {} : {tempo}) }),
+          () => editSet({ setId: id, weight, reps, rir, detailsOnly:!numericEdited, expectedRevision:editingSet.current?.editRevision, ...(tempo === undefined ? {} : {tempo}), ...(note === undefined ? {} : {note}) }),
           { onRetry: () => setError("Retrying…") }
         );
         setError(null);
@@ -511,8 +528,8 @@ function SlotCard({
         if (result.recomputeWarning) {
           setRecomputeWarning(result.recomputeWarning);
         }
-      } catch {
-        setError("Couldn’t save those changes. Please try again.");
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Couldn’t save those changes. Please try again.");
       }
     });
   }
@@ -531,7 +548,7 @@ function SlotCard({
   return (
     <Card tone={tone} className={complete ? "bg-surface/60" : undefined}>
       {slot.supersetLabel && <p className="mb-2 text-caption font-medium">Superset {slot.supersetLabel} · Alternate exercises, then rest after the round</p>}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} size="lg" />
           <h2 className="min-w-0">
@@ -550,7 +567,7 @@ function SlotCard({
             </Link>
           </h2>
         </div>
-        <div className="flex shrink-0">
+        <div className="flex shrink-0 flex-wrap justify-end">
           {lastUsedDef && !isTemplate && (
             <IconButton
               variant="ghost"
@@ -610,6 +627,8 @@ function SlotCard({
       </div>
 
       <TempoLabel value={prescribedTempo} />
+      <WorkoutExerciseDetails key={exerciseId} sessionId={sessionId} slotId={slot.programSlotId} exerciseId={exerciseId}
+        equipmentInstanceId={slot.equipmentInstanceId??null} catalog={catalog} details={slot.details??[]} remembered={slot.remembered??[]} equipmentLabels={slot.equipmentLabels??{}} />
       {slot.plannedSets && <details className="mt-3 text-caption"><summary className="min-h-11 cursor-pointer py-3">Planned sets</summary>
         <ol className="space-y-2">{slot.plannedSets.map((row,i)=><li key={row.id}>Set {i+1}: {row.repMin}{row.repMax!==row.repMin?`–${row.repMax}`:""} reps · {row.rirMin}{row.rirMax!==row.rirMin?`–${row.rirMax}`:""} RIR · {row.weight??row.suggestedWeight??"—"} lb</li>)}</ol>
       </details>}
@@ -682,9 +701,11 @@ function SlotCard({
                   defaultRir={p.targetRir}
                   initial={{ weight: s.weight, reps: s.reps, rir: s.rir ?? p.targetRir }}
                   initialTempo={s.tempo ?? null}
+                  initialNote={s.note ?? null}
+                  savedSetup={s.setup ?? null}
                   label="Save"
                   disabled={isPending}
-                  onSubmit={(w, r, rir, tempo) => handleEdit(s.id, w, r, rir, tempo)}
+                  onSubmit={(w, r, rir, tempo, note, numericEdited) => handleEdit(s.id, w, r, rir, tempo, note, numericEdited)}
                   onCancel={() => setEditingId(null)}
                 />
               </li>
@@ -694,19 +715,19 @@ function SlotCard({
                 data-exiting={exitingIds.includes(s.id) || undefined}
                 className="flex animate-row-in items-center justify-between rounded-control bg-surface px-3 py-1 text-body"
               >
-                <span className="tabular-nums">
+                <div className="min-w-0 flex-1 tabular-nums">
                   <span className="text-faint">{i + 1}.</span>{" "}
                   {formatExerciseSet(catalog[s.exerciseId], s.weight, s.reps)}
                   {s.rir != null ? ` @ ${s.rir}` : ""}
-                  <span className="block text-caption text-muted">Tempo {s.tempo ? s.tempo.join("-") : "unspecified"}</span>
+                  <SavedSetDetails tempo={s.tempo} note={s.note} setup={s.setup} />
                   {s.exerciseId !== exerciseId && <span className="block text-caption text-muted">{catalog[s.exerciseId]?.name ?? s.exerciseId}</span>}
-                </span>
-                <span className="flex items-center gap-1 text-caption">
+                </div>
+                <span className="flex shrink-0 items-center gap-1 text-caption">
                   <button
                     type="button"
-                    onClick={() => setEditingId(s.id)}
+                    onClick={() => {editingSet.current=s;setEditingId(s.id);}}
                     disabled={s.id.startsWith("temp-")}
-                    className="px-2 py-2 text-muted disabled:opacity-40"
+                    className="min-h-11 px-2 py-2 text-muted disabled:opacity-40"
                   >
                     Edit
                   </button>
@@ -714,7 +735,7 @@ function SlotCard({
                     type="button"
                     onClick={() => handleDelete(s.id)}
                     disabled={s.id.startsWith("temp-")}
-                    className="px-2 py-2 text-danger disabled:opacity-40"
+                    className="min-h-11 px-2 py-2 text-danger disabled:opacity-40"
                   >
                     Delete
                   </button>
@@ -725,7 +746,7 @@ function SlotCard({
         </ul>
       )}
 
-      {error && <p className="mt-2 text-caption text-danger">{error}</p>}
+      {error && <p role="alert" className="mt-2 text-caption text-danger">{error}</p>}
 
       {recomputeWarning && (
         <div className="mt-2 flex flex-col gap-2 rounded-card border border-border bg-surface p-2">
@@ -770,7 +791,7 @@ function SlotCard({
         </div>
       ) : null}
 
-      {!isTemplate && editingId === null ? (
+      {!alreadyFinished && !isTemplate && editingId === null ? (
         <div className="mt-3">
           <SetEntry
             key={`${exerciseId}:${slot.sets.length}`}
@@ -933,6 +954,8 @@ function SetEntry({
   defaultRir,
   initial,
   initialTempo = null,
+  initialNote = null,
+  savedSetup = null,
   label,
   variant = "primary",
   disabled,
@@ -946,15 +969,27 @@ function SetEntry({
   defaultRir: number;
   initial: { weight: number; reps: number; rir: number };
   initialTempo?: Tempo | null;
+  initialNote?: string | null;
+  savedSetup?: string | null;
   label: string;
   variant?: ButtonVariant;
   disabled?: boolean;
   // Recommender-derived weight for given reps/RIR; the weight field follows it live
   // until the user touches weight manually.
   liveWeight?: (reps: number, rir: number) => number | null;
-  onSubmit: (weight: number, reps: number, rir: number, tempo?: Tempo | null) => void;
+  onSubmit: (weight: number, reps: number, rir: number, tempo?: Tempo | null, note?: string | null, numericEdited?:boolean) => void;
   onCancel?: () => void;
 }) {
+  const noteId=useId();
+  const [note,setNote]=useState(initialNote??"");
+  const noteDirty=note!==(initialNote??"");
+  useEffect(()=>{
+    if(!noteDirty) return;
+    const unload=(event:BeforeUnloadEvent)=>event.preventDefault();
+    const navigate=(event:MouseEvent)=>{if((event.target as HTMLElement).closest("a[href]") && !confirm("Discard unsaved set note?")){event.preventDefault();event.stopPropagation();}};
+    window.addEventListener("beforeunload",unload);document.addEventListener("click",navigate,true);
+    return ()=>{window.removeEventListener("beforeunload",unload);document.removeEventListener("click",navigate,true);};
+  },[noteDirty]);
   const [tempo, setTempo] = useState<Tempo | null>(initialTempo);
   const [tempoTouched, setTempoTouched] = useState(false);
   const tempoKey = JSON.stringify(initialTempo);
@@ -983,7 +1018,7 @@ function SetEntry({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-2">
       <div className={`grid ${loadMode === "reps_only" ? "grid-cols-2" : "grid-cols-3"} gap-2`}>
         {loadMode !== "reps_only" && <Stepper
           label={loadMode === "assisted" ? "Assistance (lb)" : "Weight"}
@@ -1021,7 +1056,13 @@ function SetEntry({
           }}
         />
       </div>
-      <details className="text-caption"><summary className="min-h-11 cursor-pointer py-3">Set details · Tempo {tempo?.join("-") ?? "unspecified"}</summary>
+      <details className="text-caption"><summary className="min-h-11 cursor-pointer py-3">Set details · Tempo {tempo?.join("-") ?? "unspecified"}{note ? " · Note" : ""}</summary>
+        {savedSetup && <SavedSetDetails tempo={initialTempo} setup={savedSetup}/>}
+        <label className="mt-2 block text-caption text-muted" htmlFor={noteId}>Note for this set (optional)</label>
+        <textarea id={noteId} rows={3} value={note} placeholder="Left shoulder discomfort on this set"
+          className="mt-1 w-full rounded-control border border-border bg-surface p-3 text-body focus-visible:outline-2 focus-visible:outline-foreground"
+          aria-invalid={Array.from(note).length>WORKOUT_TEXT_LIMIT || undefined} onChange={event=>{setNote(event.target.value);setDetailError(null);}} />
+        <p className="text-caption text-muted">{Array.from(note).length} / {WORKOUT_TEXT_LIMIT} characters</p>
         <TempoFields value={tempo ?? [2,0,1,0]} onChange={value => {setTempo(value);setTempoTouched(true);setDetailError(null);}} />
         {tempo && <Button type="button" variant="ghost" onClick={() => {setTempo(null);setTempoTouched(true);}}>Mark tempo unspecified</Button>}
       </details>
@@ -1034,19 +1075,20 @@ function SetEntry({
           className="flex-1"
           onClick={() => {
             if (tempo && !tempoSchema.safeParse(tempo).success) { setDetailError("Enter four non-negative whole seconds."); return; }
-            onSubmit(loadMode === "reps_only" ? 0 : weight, reps, rir, tempo);
+            try { const normalized=normalizeWorkoutText(note);onSubmit(loadMode === "reps_only" ? 0 : weight, reps, rir, tempo, normalized,weightTouched || repsTouched || rirTouched); }
+            catch(cause) {setDetailError(cause instanceof Error?cause.message:"Enter a valid set note.");}
           }}
           disabled={disabled}
         >
           {label}
         </Button>
         {onCancel && (
-          <Button type="button" variant="secondary" size="md" onClick={onCancel}>
+          <Button type="button" variant="secondary" size="md" onClick={()=>{if(!noteDirty || confirm("Discard unsaved set note?")) onCancel();}}>
             Cancel
           </Button>
         )}
       </div>
-    </div>
+    </fieldset>
   );
 }
 

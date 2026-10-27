@@ -27,12 +27,16 @@ export function Sheet({
   className,
   ariaLabel,
   dismissible = true,
+  onBeforeDismiss,
+  style,
   children,
 }: {
   onClose: () => void;
   className?: string;
   ariaLabel?: string;
   dismissible?: boolean;
+  onBeforeDismiss?: () => boolean;
+  style?: React.CSSProperties;
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -40,19 +44,23 @@ export function Sheet({
   const dragStartY = useRef<number | null>(null);
 
   useEffect(() => {
-    ref.current?.showModal();
+    const dialog=ref.current;
+    const invoking=document.activeElement instanceof HTMLElement?document.activeElement:null;
+    dialog?.showModal();
+    return ()=>{dialog?.close();invoking?.focus({preventScroll:true});};
   }, []);
 
   const dismiss = useCallback(() => {
     const dialog = ref.current;
     if (!dismissible || !dialog || closing.current) return;
+    if (onBeforeDismiss && !onBeforeDismiss()) return;
     closing.current = true;
     dialog.setAttribute("data-closing", "");
     setTimeout(() => {
       dialog.close();
       onClose();
     }, EXIT_MS);
-  }, [onClose, dismissible]);
+  }, [onClose, dismissible, onBeforeDismiss]);
 
   function endDrag(e: React.PointerEvent, allowDismiss: boolean) {
     if (dragStartY.current == null) return;
@@ -68,6 +76,7 @@ export function Sheet({
   return (
     <dialog
       ref={ref}
+      style={style}
       aria-label={ariaLabel}
       onCancel={(e) => {
         e.preventDefault();

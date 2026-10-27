@@ -14,6 +14,10 @@ function Svg({ size = 20, children }: IconProps & { children: React.ReactNode })
   );
 }
 
+export function IconNote({ size }: IconProps) {
+  return <Svg size={size}><path d="M5 3h14v18H5zM8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" /></Svg>;
+}
+
 export function IconSettings({ size }: IconProps) {
   return (
     <Svg size={size}>

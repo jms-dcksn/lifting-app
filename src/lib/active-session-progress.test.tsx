@@ -57,7 +57,7 @@ afterEach(async () => { await act(async () => root.unmount()); host.remove(); })
 describe("active workout set progress", () => {
   it("logs rep-only work with zero stored load and no weight control", async () => {
     vi.mocked(logSet).mockResolvedValue({ id: "rollout-set", exercise_id: "ab-wheel-rollout", weight: 0,
-      reps: 6, rir: 2, set_index: 0, e1rm: null, tempo: null, recomputeWarning: null });
+      reps: 6, rir: 2, set_index: 0, e1rm: null, note: null, setup_snapshot: null, edit_revision: 0, tempo: null, recomputeWarning: null });
     await render(0, 3, EXERCISE_BY_ID["ab-wheel-rollout"]);
     expect(host.querySelector('input[aria-label="Weight"]')).toBeNull();
     expect(host.textContent).toContain("6 reps");
@@ -69,7 +69,7 @@ describe("active workout set progress", () => {
   it("accepts positive assistance in the control and persists the negative convention", async () => {
     const def = { ...EXERCISE_BY_ID["assisted-pullup"], id: "assisted-station", baseExerciseId: "assisted-pullup", stationProfile: undefined };
     vi.mocked(logSet).mockResolvedValue({ id: "assist-set", exercise_id: def.id, weight: -5,
-      reps: 6, rir: 2, set_index: 0, e1rm: 200, tempo: null, recomputeWarning: null });
+      reps: 6, rir: 2, set_index: 0, e1rm: 200, note: null, setup_snapshot: null, edit_revision: 0, tempo: null, recomputeWarning: null });
     await render(0, 3, def);
     const increase = host.querySelector('button[aria-label="Increase Assistance (lb)"]') as HTMLButtonElement;
     expect(increase).not.toBeNull();
@@ -95,7 +95,7 @@ describe("active workout set progress", () => {
     expect(button("Delete")).toBeDefined();
     expect(button("Add set").disabled).toBe(false);
     vi.mocked(logSet).mockResolvedValue({ id: "extra", exercise_id: "db-bench", weight: 50,
-      reps: 8, rir: 2, set_index: 3, e1rm: null, tempo: null, recomputeWarning: null });
+      reps: 8, rir: 2, set_index: 3, e1rm: null, note: null, setup_snapshot: null, edit_revision: 0, tempo: null, recomputeWarning: null });
     await act(async () => button("Add set").click());
     expect(logSet).toHaveBeenCalledWith(expect.objectContaining({
       sessionId: "open", programSlotId: "slot", weight: 50, reps: 8, rir: 2,
@@ -128,4 +128,12 @@ describe("active workout set progress", () => {
     expect(button("Log set").disabled).toBe(false);
     expect(host.textContent).toContain("Couldn’t save that set.");
   });
+  it("logs an explicitly unspecified tempo without substituting the prescription",async()=>{
+    vi.mocked(logSet).mockResolvedValue({id:"unspecified",exercise_id:"db-bench",weight:50,reps:6,rir:2,set_index:0,e1rm:null,note:null,setup_snapshot:null,edit_revision:0,tempo:null,recomputeWarning:null});
+    await render(0);
+    await act(async()=>button("Mark tempo unspecified").click());
+    await act(async()=>button("Log set").click());
+    expect(logSet).toHaveBeenCalledWith(expect.objectContaining({tempo:null}));
+  });
+
 });

@@ -1,3 +1,4 @@
+import { loadWorkoutDetails } from "@/lib/workout-details-data";
 import { tempoSchema } from "@/lib/tempo";
 import { parseStoredPlan } from "@/lib/workout-editor";
 import { notFound, redirect } from "next/navigation";
@@ -73,13 +74,14 @@ export default async function SessionPage({
         .eq("user_id", userId),
       supabase
         .from("set_log")
-        .select("id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, set_index, e1rm, planned_slot_id, planned_set_id, tempo")
+        .select("id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, set_index, e1rm, planned_slot_id, planned_set_id, tempo, note, setup_snapshot, edit_revision")
         .eq("session_id", id)
         .order("set_index", { ascending: true }),
       recentExerciseIds(supabase, userId),
     ]);
 
   const catalog = await getCatalogMap(supabase, userId);
+  const personalDetails = await loadWorkoutDetails(supabase, userId, id);
   const pinRows = await loadUserPinRows(supabase, userId);
   const pinnedIds = pinnedExerciseIds(pinRows, defaultCompoundIds(catalog), catalog);
 
@@ -123,6 +125,7 @@ export default async function SessionPage({
       setIndex: s.set_index,
       plannedSetId: s.planned_set_id,
       tempo: s.tempo == null ? null : tempoSchema.parse(s.tempo),
+      note: s.note, setup: s.setup_snapshot, editRevision: s.edit_revision,
     });
     setsBySlot.set(slotId, list);
     sessionExercise.set(slotId, s.exercise_id);
@@ -256,6 +259,16 @@ export default async function SessionPage({
         targetContext: null, sets: setsBySlot.get(slot.id) ?? [], pendingSuggestion: null,
         lastUsedAlternate: lastUsedBySlot.get(slot.programSlotId ?? slot.id) ?? null };
     });
+  }
+
+  for (const slot of slots) {
+    slot.details = personalDetails.details.filter(d=>d.occurrence_id===slot.programSlotId);
+    const identities=new Set([slot.exerciseId,...slot.details.map(d=>d.exercise_id)]);
+    slot.remembered = personalDetails.remembered.filter(r=>identities.has(r.exercise_id));
+    slot.equipmentLabels = personalDetails.equipmentLabels;
+    const captured = capturedPlan?.slots.find(s=>s.id===slot.programSlotId);
+    slot.equipmentInstanceId = captured?.exerciseId===slot.exerciseId ? captured.equipmentInstanceId??null :
+      slot.sets.findLast(s=>s.exerciseId===slot.exerciseId)?.equipmentInstanceId??null;
   }
 
   if (isFluid) {

@@ -46,6 +46,14 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   the cream-paper art and center zoom described in the historical spec.
   Use the [art generation specification](EXERCISE-ART.md) for reusable prompts, committed
   style references, exercise mechanics, export settings, and thumbnail review.
+- `ExerciseCardLabel` shares the exercise-name → equipment-chip → supporting-details
+  hierarchy across Active, Plan, program cards and the exercise picker. Always show the
+  canonical equipment category (Machine, Cable, Dumbbell, Barbell or Bodyweight), even
+  before station selection. Bench/rack/platform context complements Barbell. Brand/model
+  and machine loading details stay secondary; use “Weight stack” rather than
+  “Selectorized” on cards. Resolve variants through their catalog/base identity, never
+  infer equipment from a name or brand. Labels and adjacent controls wrap at narrow
+  widths; chips are read-only text, not buttons or color-only indicators.
 - Program tiles wrap visible content in their detail `Link`; the Remove control is a
   positioned sibling. An empty overlay link beneath positioned text lets that text
   intercept taps, making the tile appear intermittently unresponsive.

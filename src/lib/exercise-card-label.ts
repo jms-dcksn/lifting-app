@@ -1,15 +1,14 @@
 import { stationModelLabel } from "./machine-models";
 import {
   EXERCISE_BY_ID,
-  MACHINE_TYPE_LABEL,
   type Equipment,
   type ExerciseDef,
-  type MachineType,
-  type StationTag,
 } from "./strength/coefficients";
 
 export type ExerciseCardLabelLines = {
   name: string;
+  equipment?: string;
+  station?: string;
   secondary?: string;
   tertiary?: string;
 };
@@ -37,60 +36,32 @@ function baseExercise(def: ExerciseDef, catalog?: Record<string, ExerciseDef>): 
   return catalog?.[def.baseExerciseId] ?? EXERCISE_BY_ID[def.baseExerciseId] ?? def;
 }
 
-function stationInstanceLabel(brand: string, tag: "bench" | "rack" | "platform"): string {
-  return `${brand} ${STATION_LABEL[tag]}`;
-}
-
-function isMachineType(tag: StationTag | undefined): tag is MachineType {
-  return tag === "plate_loaded" || tag === "selectorized";
-}
-
-function isStationType(tag: StationTag | undefined): tag is "bench" | "rack" | "platform" {
-  return tag === "bench" || tag === "rack" || tag === "platform";
-}
-
 export function exerciseCardLabel(
   def: ExerciseDef,
   catalog?: Record<string, ExerciseDef>,
 ): ExerciseCardLabelLines {
   const base = baseExercise(def, catalog);
-  const stripped = stripEquipmentPrefix(base.name);
+  const isMachine = base.equipment === "machine" || base.stationProfile === "machine";
   const brand = [def.brand?.trim(), stationModelLabel(def.stationModel)].filter(Boolean).join(" · ") || null;
-  const machineType = def.machineType;
+  const lines: ExerciseCardLabelLines = {
+    name: stripEquipmentPrefix(base.name),
+    equipment: isMachine ? "Machine" : EQUIPMENT_LABEL[base.equipment],
+  };
+  if (isMachine && base.loadMode === "assisted") lines.station = "Assisted";
+  if (brand) lines.secondary = brand;
 
-  if ((base.equipment === "machine" || base.stationProfile === "machine") && isMachineType(machineType)) {
-    const lines: ExerciseCardLabelLines = { name: stripped };
-    if (brand) lines.secondary = brand;
-    lines.tertiary = MACHINE_TYPE_LABEL[machineType];
-    return lines;
+  // A weight stack is shared by cables and dedicated machines; it is not a category.
+  if (isMachine) {
+    if (def.machineType === "selectorized") lines.tertiary = "Weight stack";
+    if (def.machineType === "plate_loaded") lines.tertiary = "Plate-loaded";
   }
-
-  if (isStationType(machineType) && brand) {
-    return {
-      name: stripped,
-      secondary: EQUIPMENT_LABEL[base.equipment],
-      tertiary: stationInstanceLabel(brand, machineType),
-    };
+  const station = def.machineType ?? base.stationProfile;
+  if (base.equipment === "barbell" && (station === "bench" || station === "rack" || station === "platform")) {
+    lines.station = STATION_LABEL[station];
   }
-
-  if (base.equipment === "cable" && brand) {
-    return {
-      name: stripped,
-      secondary: brand,
-      tertiary: EQUIPMENT_LABEL.cable,
-    };
-  }
-
-  if (stripped !== base.name && base.equipment !== "bodyweight") {
-    return {
-      name: stripped,
-      secondary: EQUIPMENT_LABEL[base.equipment],
-    };
-  }
-
-  return { name: def.name };
+  return lines;
 }
 
 export function exerciseCardLabelText(lines: ExerciseCardLabelLines): string {
-  return [lines.name, lines.secondary, lines.tertiary].filter(Boolean).join(" ");
+  return [lines.name, lines.equipment, lines.station, lines.secondary, lines.tertiary].filter(Boolean).join(" ");
 }

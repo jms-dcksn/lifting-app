@@ -35,11 +35,11 @@ test("prescribed and performed tempo survive program, plan, workout and history"
     await page.getByLabel('Lower',{exact:true}).fill('4');
     await page.getByRole('button',{name:'Log set',exact:true}).click();
     await expect.poll(async()=>(await db.query('select tempo from public.set_log where session_id=$1',[session])).rows[0]?.tempo).toEqual([4,1,1,0]);
-    await expect(page.getByText('Tempo 4-1-1-0',{exact:true})).toBeVisible();
+    await expect(page.getByRole('listitem').getByText('Tempo 4-1-1-0',{exact:true})).toBeVisible();
     // A new set returns to the prescription, rather than inheriting the last override.
     await page.locator('summary').filter({hasText:'Set details'}).click();
     await expect(page.getByLabel('Lower',{exact:true})).toHaveValue('2');
-    await page.reload(); await expect(page.getByText('Tempo 4-1-1-0',{exact:true})).toBeVisible();
+    await page.reload(); await expect(page.getByRole('listitem').getByText('Tempo 4-1-1-0',{exact:true})).toBeVisible();
     await page.getByRole('button',{name:'Edit',exact:true}).click();
     await page.getByRole('textbox',{name:'Reps',exact:true}).fill('7');
     await page.getByRole('button',{name:'Save',exact:true}).click();
@@ -49,8 +49,10 @@ test("prescribed and performed tempo survive program, plan, workout and history"
     await page.setViewportSize({width:1280,height:900});
     await page.getByRole('button',{name:'Finish workout',exact:true}).click();
     await page.getByRole('button',{name:'Finish workout',exact:true}).last().click();
-    await page.goto(`/session/${session}`); await expect(page.getByText('Tempo 4-1-1-0',{exact:true})).toBeVisible();
-    await page.goto('/history/db-bench'); await expect(page.getByText('Tempo 4-1-1-0',{exact:true}).first()).toBeVisible();
+    await expect.poll(async()=>(await db.query('select finished_at is not null as done from public.workout_session where id=$1',[session])).rows[0].done).toBe(true);
+    await expect(page).toHaveURL(new RegExp(`/session/${session}/recap$`));
+    await page.goto(`/session/${session}`); await expect(page.getByRole('listitem').getByText('Tempo 4-1-1-0',{exact:true})).toBeVisible();
+    await page.goto('/history/db-bench'); await expect(page.getByRole('listitem').getByText('Tempo 4-1-1-0',{exact:true}).first()).toBeVisible();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   } finally { if(owner) await db.query('delete from auth.users where id=$1',[owner]); await db.end(); }
 });

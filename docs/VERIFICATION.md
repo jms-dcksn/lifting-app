@@ -249,3 +249,8 @@ performed override → numeric edit → finish/history at mobile and desktop wid
 session passed all 16 ownership suites / 202 assertions and the tempo browser journey;
 base verification passed 1,300 tests, typecheck, lint, strict slice and production build.
 The existing board unused-variable lint warning remains. No hosted migration ran.
+
+The #242 CI database job exposed a browser selector that counted the new Tempo legend
+as a planned set. Planner set-count assertions now select only numbered Set legends.
+The tempo journey also scopes saved values to set rows and awaits committed Finish/recap
+before reading history. These fixes belong to the tempo PR independently of notes/setup.

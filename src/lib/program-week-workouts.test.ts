@@ -1,3 +1,4 @@
+vi.mock("./workout-editor-data", () => ({ loadPlannedPerformances: async () => [] }));
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Program } from "./program";
 import type { StallHistory } from "./stall-report";

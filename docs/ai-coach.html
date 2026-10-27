@@ -30,6 +30,36 @@
         </p>
       </header>
 
+      <section id="edited-workout-targets" class="space-y-4">
+        <h2 class="font-serif text-2xl">Saved workout edits and per-set targets (#238)</h2>
+        <p>Home, the planner and Coach read the same upcoming occurrence. A saved workout-only
+          plan stays on that occurrence. Future program days resolve their normal set rows from
+          current recorded performance; entered loads are starting seeds, not completed sets.</p>
+        <pre class="mermaid">
+flowchart LR
+  Draft[One local workout draft] --> Save[Atomic owner-scoped Save]
+  Save --> Occurrence[Exact upcoming plan]
+  Save -->|program scope| Normal[Normal-week per-set intent]
+  Normal --> Recovery[Canonical recovery and per-set targets]
+  Occurrence --> Readers[Home / planner / Coach nextWorkout]
+  Recovery --> Week[Coach program-week estimates]
+  Occurrence --> Start[Atomic Start captures session]
+  Start --> Logs[Actual set_log evidence by planned set ID]
+  Logs --> Recovery
+        </pre>
+        <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/tools/next-workout.ts
+...(slot.plannedSets ? { perSetTargets: slot.plannedSets.map(s =&gt; ({
+  setId:s.id, repMin:s.repMin, repMax:s.repMax,
+  rirMin:s.rirMin, rirMax:s.rirMax,
+  weight:s.weight??s.suggestedWeight, targetReps:s.targetReps,
+  source:s.weight!==null?"user":"suggested"
+})) } : {}),</code></pre>
+        <p>Heavy and lighter rows retain distinct identities. Their comparable completed evidence
+          goes through the existing target resolver. A planner read never writes performance.
+          New saves invalidate source revisions so an old Coach confirmation cannot silently
+          undo a replacement; retired slots retain history but stop appearing in future evidence.</p>
+      </section>
+
       <section id="program-week-targets" class="space-y-4">
         <h2 class="font-serif text-2xl">Targets across a program week (#208)</h2>
         <p class="text-slate-700">Ask “What are my targets across this week?” or “What should I

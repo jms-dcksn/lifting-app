@@ -18,9 +18,10 @@ vi.mock("@/app/(app)/session/actions", async (importOriginal) => {
 import { saveWorkoutChoice } from "@/app/(app)/workout/next/actions";
 import { startNextSession, startPlannedSession } from "@/app/(app)/session/actions";
 
+const rpc = vi.fn();
 const insert = vi.fn();
 const from = vi.fn();
-const next = () => ({ key: "current", choices: { first: "a" }, open: null, week: 2,
+const next = () => ({ key: "current", choices: { first: "a" }, open: null, week: 2, completed: 1, sourceRevision: 9, planRevision: 2, editorPlan: {version:1,slots:[]},
   slots: [{ id: "first", exerciseId: "a" }, { id: "second", exerciseId: "template" }],
   day: { id: "day", slots: [{ id: "first" }, { id: "second" }] },
   catalog: {
@@ -33,9 +34,10 @@ const next = () => ({ key: "current", choices: { first: "a" }, open: null, week:
 });
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.client.mockResolvedValue({ auth: { getClaims: async () => ({ data: { claims: { sub: "user" } } }) }, from });
+  mocks.client.mockResolvedValue({ auth: { getClaims: async () => ({ data: { claims: { sub: "user" } } }) }, from, rpc });
   mocks.program.mockResolvedValue({ id: "program", days: [{ id: "day" }] });
   mocks.load.mockResolvedValue(next());
+  rpc.mockResolvedValue({ data: "session", error: null });
   from.mockReturnValue({ insert });
   insert.mockReturnValue({ select: () => ({ single: async () => ({ data: { id: "session" }, error: null }) }) });
 });
@@ -77,18 +79,19 @@ describe("planning and starting boundary", () => {
     await expect(saveWorkoutChoice("current", "first", "b")).rejects.toThrow("changed");
     expect(mocks.set).not.toHaveBeenCalled();
   });
-  it("starts with all choices in the session insert, then clears the draft", async () => {
+  it("starts through the atomic snapshot RPC, then clears the legacy cookie", async () => {
     await expect(startNextSession()).rejects.toThrow("REDIRECT:/session/session");
-    expect(insert).toHaveBeenCalledWith({ user_id: "user", program_id: "program", program_day_id: "day", week_index: 2, exercise_swaps: { first: "a" } });
+    expect(rpc).toHaveBeenCalledWith("start_workout_plan", { p_program:"program",p_day:"day",p_completed:1,p_source:9,p_revision:2,p_plan:next().editorPlan });
+    expect(insert).not.toHaveBeenCalled();
     expect(mocks.del).toHaveBeenCalledOnce();
   });
-  it("stores canonical default identities at creation but leaves unresolved stations unavailable", async () => {
+  it("passes the full resolved plan unchanged to snapshot validation", async () => {
     mocks.load.mockResolvedValue({ ...next(), choices: {}, slots: [{ id: "first", exerciseId: "b" }, { id: "second", exerciseId: "template" }] });
     await expect(startNextSession()).rejects.toThrow("REDIRECT:/session/session");
-    expect(insert.mock.calls[0][0].exercise_swaps).toEqual({ first: "b" });
+    expect(rpc.mock.calls[0][1].p_plan).toEqual(next().editorPlan);
   });
   it("preserves the draft after a failed start", async () => {
-    insert.mockReturnValue({ select: () => ({ single: async () => ({ data: null, error: { message: "offline" } }) }) });
+    rpc.mockResolvedValue({ data:null,error:{message:"offline"} });
     await expect(startNextSession()).rejects.toThrow("offline");
     expect(mocks.del).not.toHaveBeenCalled();
   });

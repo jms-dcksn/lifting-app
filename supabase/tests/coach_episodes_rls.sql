@@ -69,7 +69,7 @@ reset role;
 select ok(not (select rolbypassrls or rolcanlogin or rolsuper from pg_roles where rolname='coach_executor'),'executor has no login/superuser/RLS bypass');
 select ok(bool_and(not has_table_privilege('authenticated',c.oid,'INSERT') and not has_table_privilege('authenticated',c.oid,'UPDATE') and not has_table_privilege('authenticated',c.oid,'DELETE')), 'all derived direct writes denied') from pg_class c where c.oid=any(array['public.coach_episode'::regclass,'public.coach_notice'::regclass,'public.coach_refresh_state'::regclass]);
 select ok(bool_and(c.relrowsecurity),'all Coach tables have RLS') from pg_class c where c.oid=any(array['public.coach_episode'::regclass,'public.coach_notice'::regclass,'public.coach_refresh_state'::regclass,'public.coach_preferences'::regclass]);
-select ok(count(*)=12,'all twelve authoritative tables have statement-before-row invalidation locks') from pg_trigger where tgname='coach_source_lock';
+select ok(count(*)=13,'all thirteen authoritative tables have statement-before-row invalidation locks') from pg_trigger where tgname='coach_source_lock';
 set local role anon;
 select throws_ok($$select * from public.coach_episode$$,'42501',null,'anonymous episode access denied');
 select throws_ok($$select public.clear_coach_history()$$,'42501',null,'anonymous mutation denied');

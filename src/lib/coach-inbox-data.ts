@@ -175,7 +175,7 @@ export async function loadCoachEvidence(
           ]
         : [];
     }),
-    slots: slots.flatMap((s) => {
+    slots: slots.filter(s=>!s.retired_at).flatMap((s) => {
       const day = dayById.get(s.program_day_id);
       return day
         ? [

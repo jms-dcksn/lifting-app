@@ -67,7 +67,7 @@ export function nextWorkout(supabase: Client, userId: string, scope: WorkoutScop
 
 type TargetSlot = { id: string; exerciseId: string; targetSets: number;
     prescription: { repMin: number; repMax: number; targetRir: number; targetSets?: number; phase?: { name: string; description: string | null; setMultiplier: number | null; isDeload?: boolean } | null };
-    targetContext?: StallContext | null; effectiveTarget?: EffectiveWorkoutTarget };
+    plannedSets?: import("@/lib/workout-editor").PlannedSet[]; targetContext?: StallContext | null; effectiveTarget?: EffectiveWorkoutTarget };
 
 function describeSlotTarget(slot: TargetSlot, catalog: Record<string, ExerciseDef>, effectiveTarget: EffectiveWorkoutTarget) {
   return {
@@ -86,6 +86,7 @@ function describeSlotTarget(slot: TargetSlot, catalog: Record<string, ExerciseDe
     effectiveTarget,
     targetExplanation: effectiveTargetExplanation(effectiveTarget),
     targetEngine: "resolveEffectiveWorkoutTarget",
+    ...(slot.plannedSets ? { perSetTargets: slot.plannedSets.map(s => ({setId:s.id,repMin:s.repMin,repMax:s.repMax,rirMin:s.rirMin,rirMax:s.rirMax,weight:s.weight??s.suggestedWeight,targetReps:s.targetReps,source:s.weight!==null?"user":"suggested"})) } : {}),
   };
 }
 

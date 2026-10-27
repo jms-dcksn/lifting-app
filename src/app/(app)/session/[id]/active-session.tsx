@@ -78,9 +78,13 @@ export interface LoggedSet {
   reps: number;
   rir: number | null;
   setIndex: number;
+  plannedSetId?: string | null;
 }
 
 export interface SlotView {
+  plannedSets?: import("@/lib/workout-editor").PlannedSet[];
+  sourceProgramSlotId?: string | null;
+  snapshotExerciseId?: string;
   supersetGroup?: string | null;
   supersetLabel?: string | null;
   programSlotId: string;
@@ -184,7 +188,7 @@ export function ActiveSession({
 
   // Current slot = first one not yet at its target set count (server truth; re-derives
   // after each logged set revalidates). Earlier slots recede, the current one reads active.
-  const currentIndex = slots.findIndex((s) => s.sets.length < s.prescription.targetSets);
+  const currentIndex = slots.findIndex((s) => s.plannedSets ? s.plannedSets.some(row=>!s.sets.some(log=>log.plannedSetId===row.id)) : s.sets.length < s.prescription.targetSets);
 
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-4 py-5">
@@ -381,7 +385,10 @@ function SlotCard({
     ? variantShortLabel(lastUsedDef.brand, lastUsedDef.machineType, lastUsedDef.stationModel) ?? lastUsedDef.name
     : null;
 
-  const p = slot.prescription;
+  const plannedRow = slot.plannedSets?.find(row => !optimisticSets.some(set => set.plannedSetId === row.id));
+  const p = useMemo(() => plannedRow ? { ...slot.prescription, repMin: plannedRow.repMin, repMax: plannedRow.repMax,
+    targetRir: plannedRow.rirMax, targetRirMin: plannedRow.rirMin, targetRirMax: plannedRow.rirMax } : slot.prescription,
+    [plannedRow, slot.prescription]);
   const isBodyweight = equipment === "bodyweight";
   const isMachine = equipment.startsWith("machine") || equipment === "cable";
 
@@ -394,7 +401,9 @@ function SlotCard({
       targetRirMin: p.targetRirMin, targetRirMax: p.targetRirMax, targetSets: p.targetSets } : null,
     isDeload, history: targetHistory, catalog, stats, bodyweight,
   }), [slot.programSlotId, slot.targetContext, exerciseId, p, isDeload, targetHistory, catalog, stats, bodyweight]);
-  const target = effectiveTarget.target;
+  const captured = plannedRow && exerciseId === slot.snapshotExerciseId;
+  const target = captured && (plannedRow.weight??plannedRow.suggestedWeight)!==null ? { weight: plannedRow.weight ?? plannedRow.suggestedWeight ?? 0,
+    targetReps: plannedRow.targetReps, targetRir: plannedRow.rirMax, source: "progression" as const } : effectiveTarget.target;
   const progressionReference = effectiveTarget.reference;
 
   // Before any history exists, the suggested weight follows reps/RIR edits live.
@@ -405,10 +414,10 @@ function SlotCard({
       : undefined;
 
   const lastLogged = optimisticSets.filter(set => set.exerciseId === exerciseId).at(-1);
-  const initialWeight = lastLogged?.weight ?? target?.weight ?? (isMachine ? 0 : isBodyweight ? 0 : 45);
-  const initialReps = lastLogged?.reps ?? target?.targetReps ?? p.repMin;
+  const initialWeight = (captured ? target?.weight : lastLogged?.weight) ?? target?.weight ?? (isMachine ? 0 : isBodyweight ? 0 : 45);
+  const initialReps = (captured ? target?.targetReps : lastLogged?.reps) ?? target?.targetReps ?? p.repMin;
 
-  const done = optimisticSets.length;
+  const done = slot.plannedSets ? slot.plannedSets.filter(row => optimisticSets.some(set => set.plannedSetId === row.id)).length : optimisticSets.length;
   const complete = done >= p.targetSets;
   const tone = !complete && isCurrent ? "active" : "default";
 
@@ -423,13 +432,15 @@ function SlotCard({
     startTransition(async () => {
       applyOptimistic({
         type: "add",
-        set: { id: `temp-${Date.now()}`, exerciseId, equipmentInstanceId: slot.sets.at(-1)?.equipmentInstanceId ?? null, weight, reps, rir, setIndex: optimisticSets.length },
+        set: { id: `temp-${Date.now()}`, exerciseId, equipmentInstanceId: slot.sets.at(-1)?.equipmentInstanceId ?? null, weight, reps, rir, setIndex: optimisticSets.length, plannedSetId: plannedRow?.id },
       });
       try {
         const result = await retryServerAction(
           () => logSet({
             sessionId,
-            programSlotId: slot.programSlotId,
+            programSlotId: slot.sourceProgramSlotId === undefined ? slot.programSlotId : slot.sourceProgramSlotId,
+            plannedSlotId: slot.plannedSets ? slot.programSlotId : undefined,
+            plannedSetId: plannedRow?.id,
             exerciseId,
             weight,
             reps,
@@ -590,6 +601,10 @@ function SlotCard({
         <ProgressDots done={done} target={p.targetSets} />
       </div>
 
+      {slot.plannedSets && <details className="mt-3 text-caption"><summary className="min-h-11 cursor-pointer py-3">Planned sets</summary>
+        <ol className="space-y-2">{slot.plannedSets.map((row,i)=><li key={row.id}>Set {i+1}: {row.repMin}{row.repMax!==row.repMin?`–${row.repMax}`:""} reps · {row.rirMin}{row.rirMax!==row.rirMin?`–${row.rirMax}`:""} RIR · {row.weight??row.suggestedWeight??"—"} lb</li>)}</ol>
+      </details>}
+
       <AchievementPills groups={achievements} exerciseId={exerciseId} />
 
       <TargetLine
@@ -747,6 +762,7 @@ function SlotCard({
       {!isTemplate && editingId === null ? (
         <div className="mt-3">
           <SetEntry
+            key={plannedRow?.id ?? "legacy-entry"}
             suggestionIdentity={exerciseId}
             loadMode={def?.loadMode}
             increment={increment}

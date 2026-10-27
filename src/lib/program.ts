@@ -3,6 +3,8 @@
 // builder preserves ids across edits (see program/actions.ts) — block position is derived
 // from the count of finished sessions of the active program, never stored.
 
+import { plannedSetSchema } from "./workout-editor";
+import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import type { Pattern } from "@/lib/strength/coefficients";
@@ -16,6 +18,7 @@ import {
 type Client = SupabaseClient<Database>;
 
 export interface ProgramSlot {
+  setPrescriptions?: import("./workout-editor").PlannedSet[] | null;
   supersetGroup?: string | null;
   id: string;
   exerciseId: string;
@@ -75,13 +78,14 @@ async function assemble(
   const { data: slots } = dayIds.length
     ? await supabase
         .from("program_slot")
-        .select("id, program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position")
+        .select("id, program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position, retired_at, set_prescriptions")
         .in("program_day_id", dayIds)
         .order("position", { ascending: true })
     : { data: [] };
 
   const slotsByDay = new Map<string, ProgramSlot[]>();
   for (const s of slots ?? []) {
+    if (s.retired_at) continue;
     const list = slotsByDay.get(s.program_day_id) ?? [];
     list.push({
       id: s.id,
@@ -94,6 +98,7 @@ async function assemble(
       restSeconds: s.rest_seconds,
       supersetGroup: s.superset_group,
       plateauPatience: s.plateau_patience,
+      setPrescriptions: s.set_prescriptions ? z.array(plannedSetSchema).min(1).max(30).parse(s.set_prescriptions) : null,
     });
     slotsByDay.set(s.program_day_id, list);
   }
@@ -180,13 +185,13 @@ export async function listProgramSummaries(
 
   const { data: slots } = await supabase
     .from("program_slot")
-    .select("program_day_id")
+    .select("program_day_id, retired_at")
     .in(
       "program_day_id",
       days.map((day) => day.id),
     );
 
-  return buildProgramSummaries(programs, days, slots ?? []);
+  return buildProgramSummaries(programs, days, (slots ?? []).filter(s=>!s.retired_at));
 }
 
 // Exercise ids the user has logged, most-recent-first (for recent-first picker ordering).

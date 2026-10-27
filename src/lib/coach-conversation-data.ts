@@ -45,7 +45,7 @@ export async function loadEpisodeReview(db: Client, userId: string, episodeId: s
       db.from("bodyweight_log").select("weight").eq("user_id", userId).order("logged_on", { ascending: false }).limit(1).maybeSingle(),
     ]);
     if (stats.error || profile.error || weights.error) throw Error("Coach evidence is unavailable.");
-    const slot = slots.find(s => s.id === scope.slotId);
+    const slot = slots.find(s => s.id === scope.slotId && !s.retired_at);
     const day = days.find(d => d.id === slot?.program_day_id);
     const program = programs.find(p => p.id === day?.program_id && p.is_active && p.style === "fluid");
     const open = sessions.filter(s => s.program_id === program?.id && s.program_day_id === day?.id && s.finished_at === null)

@@ -456,7 +456,7 @@
         <div class="box amber">
           <div class="label">Immersive · tab bar hidden</div>
           <h4>Next-workout planner</h4>
-          <p><code>/workout/next</code> — pre-start machine/swap choices, cookie-scoped to this browser.</p>
+          <p><code>/workout/next</code> — one global workout draft, saved to this occurrence or the remaining program day.</p>
         </div>
         <div class="box amber">
           <div class="label">Immersive · tab bar hidden</div>
@@ -574,8 +574,11 @@
 
       <p>
         Home, the planner, and Start share <code>loadNextWorkout</code>. That keeps “what is the
-        next day?” from drifting across screens. Planner choices live in a cookie for this
-        browser; they are not a second program.
+        next day?” from drifting across screens. Full occurrence plans live in owner-scoped
+        <code>workout_plan</code> rows and sync across devices. Atomic Save writes one scope;
+        atomic Start consumes the occurrence and captures its per-set structure on the session.
+        Normal-week intent stays separate from effective recovery rows, and weight seeds
+        advance only from actual comparable logged performance.
       </p>
     </section>
 
@@ -620,9 +623,13 @@
                 </td>
               </tr>
               <tr>
+                <td>Saved occurrence</td>
+                <td><code>workout_plan</code><span class="why">Owner/program/day/occurrence identity, revision, full plan and 30-day retention. Consumed only by successful atomic Start.</span></td>
+              </tr>
+              <tr>
                 <td>Session</td>
                 <td><code>workout_session</code>
-                  <span class="why"><code>finished_at</code> is the completion flag. Also readiness, pain, note, stored week, in-session swaps.</span>
+                  <span class="why"><code>finished_at</code> is the completion flag. Also readiness, pain, note, stored week, in-session swaps and immutable per-set plan snapshots.</span>
                 </td>
               </tr>
               <tr>
@@ -656,12 +663,12 @@
         <tbody>
           <tr>
             <td>Lift / planner / Start</td>
-            <td>Active program, finished-session count, open session, catalog, planner cookie</td>
-            <td>Insert <code>workout_session</code> (atomic). Cookie for pre-start choices.</td>
+            <td>Active program, finished-session count, open snapshot, catalog, saved occurrence plan</td>
+            <td>Atomic plan save and selected-day updates; captured <code>workout_session</code> creation and plan consumption.</td>
           </tr>
           <tr>
             <td>Active workout</td>
-            <td>Session, slots, stats, first-set history, records, Fluid suggestions</td>
+            <td>Captured ordered slots and per-set targets (legacy slot fallback), stats, records, explicit swaps</td>
             <td><code>set_log</code>, stats rebuild, session feedback, swaps, adaptations</td>
           </tr>
           <tr>
@@ -867,7 +874,7 @@
         <li><a href="DECISIONS.md">DECISIONS.md</a> — rationale, including workout records</li>
         <li><a href="UI.md">UI.md</a> — primitives, motion, server/client boundaries</li>
         <li><a href="COACH-REPORT.md">COACH-REPORT.md</a> — weekly facts, proposals, session-scoped consumers</li>
-        <li><a href="WORKOUT-PLANNING.md">WORKOUT-PLANNING.md</a> / <a href="EXERCISE-SWAPS.md">EXERCISE-SWAPS.md</a> — planner cookies and swap persistence</li>
+        <li><a href="WORKOUT-PLANNING.md">WORKOUT-PLANNING.md</a> / <a href="EXERCISE-SWAPS.md">EXERCISE-SWAPS.md</a> — saved full plans, session snapshots and swap persistence</li>
         <li><a href="FEATURES.md">FEATURES.md</a> — shipped behavior inventory</li>
         <li><a href="README.md">docs index</a></li>
       </ul>

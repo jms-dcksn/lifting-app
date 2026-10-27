@@ -280,3 +280,21 @@ storage reads validate the existing format/version and pass parsed evidence to d
 invalid/unsupported data fails closed outside training writes. Shared cursor mechanics
 reject non-advancing IDs while retaining explicit owner-scoped projections in each loader.
 Architectural lint and the indexed-access slice run through the normal CI entry point.
+
+
+## Saved workout editing (#238)
+
+[Workout planning](WORKOUT-PLANNING.md) owns the complete draft and scope contract.
+`workout-editor.ts` validates version-1 plans; `workout-editor-targets.ts` filters exact
+per-set evidence before invoking the canonical target resolver. `loadNextWorkout()` composes
+saved occurrence plans for Home, planner, start and Coach; program-week readers resolve
+future rows against current actual evidence. Read paths create no performance evidence.
+
+Save and Start use validated private operations owned by a non-login, non-bypass executor,
+with public invoker wrappers, owner RLS, source locks, expected revisions and immutable save
+receipts. New session snapshots freeze structure, phase context and individual targets.
+`planned_slot_id`/`planned_set_id` on `set_log` record completion independently of the
+historical program-slot FK and chronological set index. Removed program slots are retired
+so those FKs and adaptation history survive. The full-program builder retains unchanged
+per-set intent and reconciles explicit scalar count/range/effort changes. Logged sets remain
+authoritative; snapshot prescriptions and weight seeds are never completed performance.

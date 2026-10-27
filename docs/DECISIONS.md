@@ -1022,6 +1022,17 @@ workout-only choices and hypothetical future gains never carry into later occurr
 No schema, provider, notification policy or progression formula changes are needed.
 
 
+## Upcoming-workout editor persistence (2026-10-24, #238)
+
+Owner approved [the persistence Decision Card](WORKOUT-EDITOR-DESIGN.md): database-backed
+full occurrence plans, stable per-set normal-week prescriptions and session snapshots.
+Workout-only saves remain occurrence-local. Program saves modify only the chosen day and
+retire removed slots to preserve historical foreign keys/adaptations. Entered loads seed
+future suggestions until comparable logged evidence exists; they do not lock progression.
+Recovery reduces normal rows once and overrides edited normal-week RIR. Heavy/lighter rows
+match separate saved prescription identities. Save/start serialize under the existing owner
+source lock, enforce expected revisions and roll back atomically. Hosted rollout is separate.
+
 ### LangSmith application and environment organization (2026-10-21)
 
 Use one workspace and Application `lifting-app` to group production tracing, development

@@ -7,15 +7,13 @@ bench / rack / platform control), select the replacement, then choose:
 - **Remainder of program:** use the replacement now and for the same slot each time this
   program day recurs. Other slots/days and shared program templates are unaffected.
 
-The upcoming-workout planner (`/workout/next`) shows the same confirmation sheet after Swap
-exercise or Swap machine. **This workout only** writes the browser cookie draft only.
-**Remainder of program** calls `swap_program_slot_exercise`, the planner path for the same
-program-slot and fluid `manual_swap` writes that in-session program scope uses through
-`swap_session_exercise`.
+The upcoming-workout planner (`/workout/next`) uses the global workout editor instead of
+per-swap saves. Picker selections stay in one draft. Choose scope once when saving the
+whole workout; Cancel restores every prior selection. See [planning](WORKOUT-PLANNING.md).
 
 Cancel leaves the selected exercise unchanged. Failed saves show an error and allow retry.
 The confirmation sheet cannot be dismissed while saving. Finished workouts reject swaps.
-Both scopes save before the first set and survive reload. Sets already logged retain their
+Both in-session scopes save before the first set and survive reload. Sets already logged retain their
 original exercise and performance; their exercise name appears below the set when it differs
 from the current selection. Weight recommendations continue to use each exercise's own history.
 
@@ -44,3 +42,8 @@ use their existing home-band reset and also persist the active session's choice.
   both scopes, independent JSON keys, later temporary swaps, unchanged logged sets and other
   days, future-session inheritance, fluid events, invalid scope, invalid slot, finished
   sessions, and cross-user rejection. Execute as postgres; assertions run as authenticated.
+
+New sessions read their structure and per-set prescriptions from `plan_snapshot`; explicit
+in-session swaps overlay only the selected identity and rederive that exercise's target.
+An exercise added only to this workout has a snapshot slot ID and supports workout-only
+in-session swaps. Program additions have a real program slot and support both scopes.

@@ -34,7 +34,7 @@ const targetPerformance = performance.extend({ exerciseId: id, equipmentInstance
 const effectiveTarget = z.object({
   status: z.literal("current_target"),
   target: target.extend({ source: z.enum(["recommendation", "progression"]), confidence: z.enum(["calibrate", "low", "medium", "high"]).optional(), last: lastPerformance.optional() }).nullable(),
-  reason: z.enum(["unavailable", "starting_weight", "recovery", "below_rep_floor", "add_load", "add_rep", "hold_load", "repeated_effort_miss"]),
+  reason: z.enum(["unavailable", "manual_target", "starting_weight", "recovery", "below_rep_floor", "add_load", "add_rep", "hold_load", "repeated_effort_miss"]),
   reference: z.object({ lastSameSlot: performance.nullable(), bestRecent: performance.nullable(), selected: performance.nullable() }),
   evidence: z.array(targetPerformance),
 });

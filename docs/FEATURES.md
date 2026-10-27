@@ -47,8 +47,12 @@ Adaptive plateau engine under §5.
   session's canonical `workoutRecords` (rep, top-weight, e1RM). The card opens that
   workout's recap; **View workout** opens the editable sets. No top-e1RM paragraph.
   This week's full PR list lives on Track. Weight and Coach are not home jobs.
-- **Next workout planner** — `/workout/next` previews effective prescriptions and saves
-  workout-only exercise choices in this browser before Start; [contract](WORKOUT-PLANNING.md).
+- **Complete workout editor** — `/workout/next` uses one global draft for exercise add/replace,
+  remove/Undo, keyboard/touch reorder, supersets, individual set loads/reps/RIR and rest.
+  Save applies to this occurrence or this day for the rest of the program; Cancel restores
+  saved values. Database plans sync across devices; Start captures the exact structure.
+  Normal-week effort and distinct heavy/lighter rows persist while recovery and progression
+  continue. [Contract and verification](WORKOUT-PLANNING.md).
 - **Block progress** — classic programs still show "{completed} of {total} sessions this block".
   Fluid programs show "Session N · Adaptive".
 

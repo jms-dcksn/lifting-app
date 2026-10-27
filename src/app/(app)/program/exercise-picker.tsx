@@ -17,7 +17,7 @@ import {
   stationPickerForm,
   stationResolveInput,
 } from "@/lib/station";
-import { createCustomExercise, resolveVariant } from "../exercise/actions";
+import { createCustomExercise, resolveVariant, type ResolveVariantInput } from "../exercise/actions";
 import { Button } from "@/components/ui/button";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,8 @@ export function ExercisePicker({
   recentIds = [],
   patternFilter,
   resolveStations = false,
+  resolveVariantAction = resolveVariant,
+  allowCustom = true,
   onPick,
   onClose,
 }: {
@@ -43,6 +45,8 @@ export function ExercisePicker({
   recentIds?: string[];
   patternFilter?: Pattern;
   resolveStations?: boolean;
+  resolveVariantAction?: (input: ResolveVariantInput) => Promise<ExerciseDef>;
+  allowCustom?: boolean;
   onPick: (exercise: ExerciseDef) => void;
   onClose: () => void;
 }) {
@@ -53,6 +57,8 @@ export function ExercisePicker({
         recentIds={recentIds}
         patternFilter={patternFilter}
         resolveStations={resolveStations}
+        resolveVariantAction={resolveVariantAction}
+        allowCustom={allowCustom}
         onPick={onPick}
       />
     </Sheet>
@@ -108,25 +114,36 @@ function PickerBody({
   recentIds,
   patternFilter,
   resolveStations,
+  resolveVariantAction,
+  allowCustom,
   onPick,
 }: {
   catalog: ExerciseDef[];
   recentIds: string[];
   patternFilter?: Pattern;
   resolveStations: boolean;
+  resolveVariantAction: (input: ResolveVariantInput) => Promise<ExerciseDef>;
+  allowCustom: boolean;
   onPick: (exercise: ExerciseDef) => void;
 }) {
   const dismiss = useSheetDismiss();
   const [view, setView] = useState<View>({ kind: "list" });
+  const picked = useRef(false);
+  function choose(def:ExerciseDef) {
+    if(picked.current) return;
+    picked.current=true;
+    onPick(def);
+    dismiss();
+  }
 
   if (view.kind === "station") {
     return (
       <StationForm
         template={view.template}
+        resolveVariantAction={resolveVariantAction}
         onBack={() => setView({ kind: "list" })}
         onResolved={(def) => {
-          onPick(def);
-          dismiss();
+          choose(def);
         }}
       />
     );
@@ -136,8 +153,7 @@ function PickerBody({
       <CustomForm
         onBack={() => setView({ kind: "list" })}
         onCreated={(def) => {
-          onPick(def);
-          dismiss();
+          choose(def);
         }}
       />
     );
@@ -152,11 +168,10 @@ function PickerBody({
         if (shouldResolveStation(e, resolveStations)) {
           setView({ kind: "station", template: e });
         } else {
-          onPick(e);
-          dismiss();
+          choose(e);
         }
       }}
-      onAddCustom={() => setView({ kind: "custom" })}
+      onAddCustom={allowCustom ? () => setView({ kind: "custom" }) : undefined}
       dismiss={dismiss}
     />
   );
@@ -174,7 +189,7 @@ function ListView({
   recentIds: string[];
   patternFilter?: Pattern;
   onRowPick: (exercise: ExerciseDef) => void;
-  onAddCustom: () => void;
+  onAddCustom?: () => void;
   dismiss: () => void;
 }) {
   const [query, setQuery] = useState("");
@@ -240,11 +255,11 @@ function ListView({
           <li className="px-4 py-6 text-center text-body text-muted">No matches</li>
         )}
       </ul>
-      <div className="border-t border-border p-3">
+      {onAddCustom && <div className="border-t border-border p-3">
         <Button type="button" variant="secondary" className="w-full" onClick={onAddCustom}>
           Add custom exercise
         </Button>
-      </div>
+      </div>}
     </>
   );
 }
@@ -252,10 +267,12 @@ function ListView({
 // Brand (+ type for machines) step for instantiating a station template.
 function StationForm({
   template,
+  resolveVariantAction = resolveVariant,
   onBack,
   onResolved,
 }: {
   template: ExerciseDef;
+  resolveVariantAction?: (input: ResolveVariantInput) => Promise<ExerciseDef>;
   onBack: () => void;
   onResolved: (def: ExerciseDef) => void;
 }) {
@@ -277,7 +294,7 @@ function StationForm({
     setPending(true);
     setError(null);
     try {
-      const def = await resolveVariant(stationResolveInput(template, {
+      const def = await resolveVariantAction(stationResolveInput(template, {
         brand: brand.trim() || null,
         machineType,
         stationModel,

@@ -1,3 +1,4 @@
+vi.mock("./workout-editor-data", () => ({ loadPlannedPerformances: async () => [] }));
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EXERCISE_BY_ID } from "./strength/coefficients";
 import { buildWorkoutTargetHistory, resolveEffectiveWorkoutTarget } from "./effective-workout-target";
@@ -152,4 +153,17 @@ describe("shared next-workout consumers", () => {
     mocks.program.mockResolvedValueOnce(null);
     expect(await nextWorkout(client(), "user")).toEqual({ source: "nextWorkout", workout: null });
   });
+});
+
+
+it("overlays an explicit active-session swap without carrying the captured exercise's manual load",async()=>{
+  const id="123e4567-e89b-42d3-a456-426614174000";
+  program.days[0].slots[0].id=id;
+  open={id:"open",performed_at:"2026-09-20T12:00:00Z",program_day_id:"day",week_index:1,is_deload:false,
+    exercise_swaps:{[id]:"db-incline-bench"},plan_snapshot:{version:1,slots:[{id,programSlotId:id,exerciseId:"db-bench",pattern:"horizontal_press",restSeconds:90,supersetGroup:null,
+      sets:[{id:"123e4567-e89b-42d3-a456-426614174001",repMin:6,repMax:10,rirMin:2,rirMax:2,repsEdited:true,rirEdited:true,weight:100,suggestedWeight:95,targetReps:6,seedAt:null}]}]}};
+  const next=await loadNextWorkout(client(),"user",program);
+  expect(next.slots[0].exerciseId).toBe("db-incline-bench");
+  expect(next.slots[0].plannedSets?.[0].weight).toBeNull();
+  expect((open.plan_snapshot as {slots:{exerciseId:string;sets:{weight:number}[]}[]}).slots[0]).toMatchObject({exerciseId:"db-bench",sets:[{weight:100}]});
 });

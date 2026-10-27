@@ -1,3 +1,4 @@
+import { parseStoredPlan } from "@/lib/workout-editor";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Pattern } from "@/lib/strength/coefficients";
@@ -30,21 +31,22 @@ export default async function SessionPage({
 
   const { data: session } = await supabase
     .from("workout_session")
-    .select("id, performed_at, week_index, finished_at, program_id, program_day_id, readiness, joint_pain, notes, exercise_swaps, is_deload")
+    .select("id, performed_at, week_index, finished_at, program_id, program_day_id, readiness, joint_pain, notes, exercise_swaps, is_deload, plan_snapshot")
     .eq("id", id)
     .eq("user_id", userId)
     .maybeSingle();
-  if (!session?.program_day_id) notFound();
+  if (!session || (!session.program_day_id && !session.plan_snapshot)) notFound();
+  const capturedPlan = session.plan_snapshot ? parseStoredPlan(session.plan_snapshot) : null;
 
   const [{ data: day }, { data: program }, { data: daySlots }, { data: phaseRows }] = await Promise.all([
-    supabase.from("program_day").select("name").eq("id", session.program_day_id).maybeSingle(),
+    session.program_day_id ? supabase.from("program_day").select("name").eq("id", session.program_day_id).maybeSingle() : Promise.resolve({data:{name:capturedPlan?.dayName??"Workout"}}),
     session.program_id
       ? supabase.from("program").select("weeks, style").eq("id", session.program_id).maybeSingle()
       : Promise.resolve({ data: null }),
     supabase
       .from("program_slot")
       .select("id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position")
-      .eq("program_day_id", session.program_day_id)
+      .eq("program_day_id", session.program_day_id ?? "00000000-0000-0000-0000-000000000000")
       .order("position", { ascending: true }),
     session.program_id
       ? supabase
@@ -70,7 +72,7 @@ export default async function SessionPage({
         .eq("user_id", userId),
       supabase
         .from("set_log")
-        .select("id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, set_index, e1rm")
+        .select("id, program_slot_id, exercise_id, equipment_instance_id, weight, reps, rir, set_index, e1rm, planned_slot_id, planned_set_id")
         .eq("session_id", id)
         .order("set_index", { ascending: true }),
       recentExerciseIds(supabase, userId),
@@ -107,8 +109,9 @@ export default async function SessionPage({
   const setsBySlot = new Map<string, LoggedSet[]>();
   const sessionExercise = new Map<string, string>();
   for (const s of thisSessionSets ?? []) {
-    if (!s.program_slot_id) continue;
-    const list = setsBySlot.get(s.program_slot_id) ?? [];
+    const slotId = s.planned_slot_id ?? s.program_slot_id;
+    if (!slotId) continue;
+    const list = setsBySlot.get(slotId) ?? [];
     list.push({
       id: s.id,
       exerciseId: s.exercise_id,
@@ -117,9 +120,10 @@ export default async function SessionPage({
       reps: s.reps,
       rir: s.rir,
       setIndex: s.set_index,
+      plannedSetId: s.planned_set_id,
     });
-    setsBySlot.set(s.program_slot_id, list);
-    sessionExercise.set(s.program_slot_id, s.exercise_id);
+    setsBySlot.set(slotId, list);
+    sessionExercise.set(slotId, s.exercise_id);
   }
 
   // Fluid programs: fold the per-slot adaptation log so this session shows the *current*
@@ -194,7 +198,7 @@ export default async function SessionPage({
   const sessionWeek = session.week_index ?? 1;
   const activePhase = phaseForWeek(phases, sessionWeek);
 
-  const slots: SlotView[] = (daySlots ?? []).map((slot) => {
+  let slots: SlotView[] = (daySlots ?? []).map((slot) => {
     const folded = foldedBySlot.get(slot.id);
     const effective = resolvePrescription(
       {
@@ -235,6 +239,22 @@ export default async function SessionPage({
     };
   });
 
+  if (session.plan_snapshot) {
+    const snapshot = parseStoredPlan(session.plan_snapshot);
+    slots = snapshot.slots.map(slot => {
+      const selected = typeof sessionSwaps[slot.id] === "string" ? sessionSwaps[slot.id] as string : slot.exerciseId;
+      const first = slot.sets[0];
+      return { programSlotId: slot.id, sourceProgramSlotId: slot.programSlotId,
+        exerciseId: selected, pattern: slot.pattern as Pattern, restSeconds: slot.restSeconds,
+        supersetGroup: slot.supersetGroup, plannedSets: slot.sets,
+        snapshotExerciseId: slot.exerciseId,
+        prescription: { targetSets: slot.sets.length, repMin: first.repMin, repMax: first.repMax,
+          targetRir: first.rirMax, targetRirMin: first.rirMin, targetRirMax: first.rirMax },
+        targetContext: null, sets: setsBySlot.get(slot.id) ?? [], pendingSuggestion: null,
+        lastUsedAlternate: lastUsedBySlot.get(slot.programSlotId ?? slot.id) ?? null };
+    });
+  }
+
   if (isFluid) {
     const suggestions = await loadPendingSuggestions(
       supabase,
@@ -259,10 +279,10 @@ export default async function SessionPage({
   return (
     <ActiveSession
       sessionId={id}
-      dayName={day.name}
+      dayName={capturedPlan?.dayName??day.name}
       week={sessionWeek}
       weeks={program?.weeks ?? 5}
-      phase={activePhase}
+      phase={capturedPlan ? capturedPlan.phase??null : activePhase}
       isDeload={session.is_deload}
       bodyweight={bodyweight}
       defaultRestSeconds={profile?.default_rest_seconds ?? 120}

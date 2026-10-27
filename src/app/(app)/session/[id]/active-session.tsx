@@ -983,7 +983,7 @@ function SetEntry({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-2">
       <div className={`grid ${loadMode === "reps_only" ? "grid-cols-2" : "grid-cols-3"} gap-2`}>
         {loadMode !== "reps_only" && <Stepper
           label={loadMode === "assisted" ? "Assistance (lb)" : "Weight"}
@@ -1046,7 +1046,7 @@ function SetEntry({
           </Button>
         )}
       </div>
-    </div>
+    </fieldset>
   );
 }
 

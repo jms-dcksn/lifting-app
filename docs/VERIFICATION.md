@@ -254,3 +254,7 @@ The #242 CI database job exposed a browser selector that counted the new Tempo l
 as a planned set. Planner set-count assertions now select only numbered Set legends.
 The tempo journey also scopes saved values to set rows and awaits committed Finish/recap
 before reading history. These fixes belong to the tempo PR independently of notes/setup.
+
+Set-entry fields stay disabled for the entire pending save, including optimistic
+advancement to the next planned row. This prevents early next-set input from being
+reset by the committed form replacement; the progress test checks pending/recovery state.

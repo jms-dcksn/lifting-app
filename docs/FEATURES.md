@@ -374,14 +374,16 @@ Default-compound tiles keep the template ids and short names (`bb-bench`,
 `lat-pulldown`, …). Shipped numbers and the review href follow the **latest
 finished family member** (`exerciseFamilyIds`), a brand variant or leftover
 flat row, plus that member's equipment instance, not a blend of PRs. Pins on
-a specific variant stay exact-id. Extra pins and All-lifts rows still use the
+a machine or cable variant stay exact-id. Extra pins and All-lifts rows still use the
 latest finished equipment instance for that exact exercise. Ordinary-pound tiles
 aggregate the movement and variant pins collapse to the template. Cable tiles stay
 family-latest. Stall and Fluid stay per station (Card 4 default).
 Tap opens
 `/history/{id}?equipment=...` (`none` when there is no instance). Pins are
 owner-scoped display preferences (`user_exercise_pin`, cap 8 in the server
-action): unpinning a default hides it; pinning an extra adds a tile.
+action): unpinning a default hides it; pinning an extra adds a tile. Movement pin
+writes use the template id; unpinning removes all saved variant pins represented
+by that tile, so it disappears immediately and stays removed after reload.
 
 Secondary, not equal cards, behind Explore:
 - This week's PRs — full canonical `workoutRecords` list over the last seven local days

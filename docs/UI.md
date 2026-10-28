@@ -31,8 +31,9 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   Slot completion follows saved set counts and effective phase prescriptions; the count
   updates optimistically and reverts on failed writes.
 - `ExerciseVisual` is the only exercise illustration. 16:9 `rounded-control` frame,
-  `object-cover` (never square + contain). `sm` is 36×64 on rows/tiles; `lg` is 64×114
-  on session, planner, and in-session history. Exercise review uses the compact `sm`
+  `object-cover` (never square + contain). `sm` is 36×64 on rows/tiles and the compact
+  planner editor; `lg` is 64×114 on session, read-only planner, and in-session history.
+  Exercise review uses the compact `sm`
   visual beneath its title in the shared page header. Mapped catalog ids show art
   from `/exercises/{id}.jpg`; everything else uses `IconDumbbell` in the same box.
   Map by seeded / template id, not name. See

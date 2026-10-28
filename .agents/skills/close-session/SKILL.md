@@ -1,6 +1,6 @@
 ---
 name: close-session
-description: Refresh owning docs and report verification and remaining work after changing this lifting app, landing a commit, or wrapping up a session. Use when the user says close the session, update last session, keep docs fresh, or record what this session did. Works in fresh local and cloud clones; a local handoff is optional.
+description: Use after a commit or session that changed the repo, or when asked to close the session or refresh docs.
 ---
 
 # Close a session
@@ -28,11 +28,15 @@ a handoff or editing docs merely to record the session.
 Update docs only where this delta makes them wrong or silent about new behavior. `docs/README.md` names the owner; the table in `AGENTS.md` names the task trigger.
 
 - Read the code you are about to describe. Commands come from `package.json`. Paths must exist.
-- Edit the owner. Add a new `AGENTS.md` trigger only when a new task branch appeared. Keep `CLAUDE.md` exactly `@AGENTS.md`.
+- Edit the owner. Surfaces are `docs/` (the owner is named in `docs/README.md`), `AGENTS.md`, `README.md`, and `DEPLOY.md`. Add a new `AGENTS.md` trigger only when a new task branch appeared. Keep `CLAUDE.md` exactly `@AGENTS.md`.
 - Dated plans and files under `docs/superpowers/` are history. Leave them unless this session changed that historical record on purpose.
+- Stale docs are defects. Do not record planned work as shipped. Preserve an intentional "out of scope" or "not a foreign key" statement. Do not add a new doc file when an owner already exists. Do not edit application code in this step.
 - When code and an explicit decision disagree, flag it. Do not quietly rewrite the decision.
 - Record a real decision in `docs/DECISIONS.md` when this session made one that is not already there.
 - Apply the working rules already in `AGENTS.md`, including the AI Coach explainer when that area changed.
+- List every new or edited file under `supabase/migrations/` in the report with its version prefix and apply status. Status is `unapplied` unless the task already records that a human applied that exact version on the hosted project. Do not query the hosted database and do not run `npx supabase db push`.
+
+Docs freshness is this skill. There is no separate docs-freshness-keeper agent.
 
 No doc edit is a valid result; explain why in the final report. Durable decisions,
 changed contracts, and actionable remaining work belong in the owning versioned doc,

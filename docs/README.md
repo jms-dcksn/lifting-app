@@ -1,6 +1,6 @@
 # Documentation map
 
-[AGENTS.md](../AGENTS.md) is the sole agent-instruction entry point; `CLAUDE.md` imports it.
+[AGENTS.md](../AGENTS.md) is the agent-instruction contract. `CLAUDE.md` imports it. `.cursor/rules/core.mdc` only points at it.
 Read only the topic needed for the task. Source and tests establish implemented behavior;
 if they conflict with an explicit decision, flag the conflict before changing that decision.
 

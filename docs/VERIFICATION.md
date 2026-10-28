@@ -210,8 +210,8 @@ Focus review on training policy/numeric interpretation, comparison scope, owners
 migrations and external effects. Check that boundary changes preserve historical logs and
 that verification covers real authorization rather than a more privileged fixture.
 Mechanical internal edits should be supported by the executable checks above. Existing
-security review and merge policies remain in force. No Poteto/Cursor skills are installed;
-a future verification skill should select these commands instead of duplicating them.
+security review and merge policies remain in force. The [verify-change](../.agents/skills/verify-change/SKILL.md)
+skill selects these profiles and commands. Do not copy this table into another doc.
 
 ## Episode conversation/action regression (#141)
 

@@ -69,9 +69,15 @@ test("saved sets survive reload and scoped swaps; a finished pain review opens a
     const saved = (await db.query("select exercise_id,weight,reps from public.set_log where session_id=$1 and user_id=$2", [sessionId, owner])).rows[0];
     expect(saved).toMatchObject({ exercise_id: "db-bench", weight: "40", reps: 8 });
 
-    await page.getByRole("button", { name: "Finish workout", exact: true }).click();
+    // Logged rest ticks every 250ms and can move Finish between pointerdown and click.
+    const pageFinish = page.locator('xpath=//button[normalize-space()="Finish workout" and not(ancestor::dialog)]');
+    const confirmFinish = page.getByRole("dialog").getByRole("button", { name: "Finish workout", exact: true });
+    await expect(async () => {
+      if (await confirmFinish.count() === 0) await pageFinish.click({ timeout: 2_000 });
+      await expect(page.getByRole("button", { name: "significant", exact: true })).toBeVisible({ timeout: 2_000 });
+    }).toPass({ timeout: 15_000 });
     await page.getByRole("button", { name: "significant", exact: true }).click();
-    await page.getByRole("button", { name: "Finish workout", exact: true }).last().click();
+    await confirmFinish.click();
     await expect.poll(async () => (await db.query("select finished_at is not null as done from public.workout_session where id=$1", [sessionId])).rows[0].done).toBe(true);
     await page.goto("/coach/inbox");
     await page.getByRole("link", { name: /Pain review/ }).click();

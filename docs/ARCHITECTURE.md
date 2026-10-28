@@ -298,3 +298,9 @@ historical program-slot FK and chronological set index. Removed program slots ar
 so those FKs and adaptation history survive. The full-program builder retains unchanged
 per-set intent and reconciles explicit scalar count/range/effort changes. Logged sets remain
 authoritative; snapshot prescriptions and weight seeds are never completed performance.
+
+Workout annotations use stable occurrence and exact exercise/equipment identities, outside
+plan/progression intent. The validated workout executor saves exercise notes and optional
+reusable setup under owner RLS; `set_log` captures setup at insertion and owns each set's
+note/tempo. Field comparisons and set revisions protect concurrent edits. See
+[workout details](WORKOUT-DETAILS.md) for reuse, swaps, snapshots and retry behavior.

@@ -21,7 +21,7 @@ Session captures freeze the resolved prescription separately from whether it was
 swaps retain explicit tempo and otherwise resolve the destination default. Logged tempo
 is a snapshot, never recomputed from today's program. Old sets remain unspecified.
 
-## Personal text contract (next slice)
+## Personal text contract
 
 Text is optional plain text, at most 2,000 Unicode characters; empty saves deliberately
 clear it. Workout exercise notes use session + stable occurrence + exact exercise/equipment
@@ -39,3 +39,37 @@ Numeric edits preserve personal details; detail edits preserve numeric data and 
 bodyweight. Conflicts retain the draft for review. Lost-response retries are idempotent;
 retrying a set insert reads the saved row without replacing later edits. Notes don't start
 rest, create sets, finish work, or trigger Coach interpretation.
+
+
+## Storage and edit boundaries
+
+- `workout_exercise_detail`: owner/session/occurrence/exact exercise/equipment, independent
+  setup and exercise note. Direct writes are denied; an invoker wrapper calls the existing
+  non-login/non-bypass workout executor with owner RLS and validated session identities.
+- `exercise_setup`: optional reusable setup for an exact user/exercise/equipment. The editor
+  starts with this workout's saved text; **Use remembered setup** explicitly fills a draft.
+  **Remember for this machine / cable** also updates the reference on Save. Clear affects
+  the reusable reference only when that option is selected.
+- `set_log.note`, `setup_snapshot`, `tempo`: one actual set's observation and historical
+  context. An insert trigger captures applied setup under the existing owner source lock;
+  updates preserve that snapshot. Unapplied remembered setup is never claimed as performed.
+- `set_log.edit_revision`: each update advances the compare-and-save revision. The editor
+  retains its opening revision. Conflicts retain the draft and ask users to Cancel/reopen.
+  Detail-only edits skip numeric/bodyweight/stat/Coach writes, including historical null RIR.
+  Numeric edits leave omitted details intact. Replaying an already-applied edit is a no-op.
+
+Exercise/setup saves compare the selected field's prior text, so concurrent unrelated fields
+remain independent. An identical successful retry is a no-op in meaning. Optional reference
+writes compare their own prior text in the same transaction. Setup/log and other training
+writes share the existing owner lock; snapshots reflect the setup committed before insertion.
+Set-log retries retain one request key per unchanged draft, read the saved row first and
+never replace its details with a stale retry payload.
+
+Finished workouts expose occurrence notes even without sets. Set rows, in-workout history
+and exercise review show recorded setup, set notes and the exercise observation. All text is
+rendered as plain React text. Text and tempo do not enter progression, PR, calibration or
+Coach interpretation rules. Existing whole-session feedback stays separate.
+
+An omitted performed-tempo override uses the captured prescription. Explicitly choosing
+**Mark tempo unspecified** stores null and stays unspecified through retries and history;
+it is never silently replaced with a default.

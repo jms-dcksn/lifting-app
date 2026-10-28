@@ -1,3 +1,4 @@
+import { collectIdPages } from "@/lib/pagination";
 import { tempoSchema } from "@/lib/tempo";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -76,7 +77,7 @@ export default async function HistoryPage({
 
   const { data: rows, error } = await supabase
     .from("set_log")
-    .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, program_slot_id, is_warmup, is_deload, tempo, workout_session!inner(performed_at, finished_at, program_id)")
+    .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, program_slot_id, is_warmup, is_deload, tempo, note, setup_snapshot, planned_slot_id, workout_session!inner(performed_at, finished_at, program_id)")
     .eq("user_id", userId)
     .in("exercise_id", memberIds)
     .eq("is_warmup", false)
@@ -84,9 +85,16 @@ export default async function HistoryPage({
     .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
 
+  const details=rows?.length ? await collectIdPages(async after=>{
+    let query=supabase.from("workout_exercise_detail").select("id,session_id,occurrence_id,exercise_id,equipment_instance_id,note").eq("user_id",userId).in("exercise_id",memberIds).order("id").limit(500);
+    if(after) query=query.gt("id",after);
+    const {data,error}=await query;if(error) throw new Error("Could not load exercise notes. Please reload.");return data??[];
+  }) : [];
   const history = (rows ?? []).map((row) => {
     const workout = sessionJoin(row.workout_session);
     return {
+      note: row.note, setup: row.setup_snapshot,
+      exerciseNote:details.find(d=>d.session_id===row.session_id && d.occurrence_id===(row.planned_slot_id??row.program_slot_id) && d.exercise_id===row.exercise_id && d.equipment_instance_id===row.equipment_instance_id)?.note??null,
       tempo: row.tempo == null ? null : tempoSchema.parse(row.tempo),
       id: row.id,
       sessionId: row.session_id,

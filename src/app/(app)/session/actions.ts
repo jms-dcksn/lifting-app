@@ -1,5 +1,6 @@
 "use server";
 
+import { normalizeWorkoutText, supportsSetup } from "@/lib/workout-details";
 import { resolveTempo, tempoSchema, type Tempo } from "@/lib/tempo";
 import { refreshCoachInbox } from "@/lib/coach-inbox-data";
 import { redirect } from "next/navigation";
@@ -170,7 +171,11 @@ async function upcomingSessionDestination(planKey?: string) {
   return `/session/${sessionId}`;
 }
 
+const SET_RETURN_COLUMNS = "id, exercise_id, weight, reps, rir, set_index, e1rm, tempo, note, setup_snapshot, edit_revision";
+
 export interface LogSetInput {
+  equipmentInstanceId?: string | null;
+  note?: string | null;
   sessionId: string;
   programSlotId: string | null;
   exerciseId: string;
@@ -180,12 +185,24 @@ export interface LogSetInput {
   idempotencyKey?: string;
   plannedSlotId?: string;
   plannedSetId?: string;
-  tempo?: Tempo;
+  tempo?: Tempo | null;
 }
 
 // Compute e1RM, insert the set, refresh the derived stat. Returns the persisted row.
 export async function logSet(input: LogSetInput) {
   const { supabase, userId } = await requireUser();
+  // A retry reads saved details; it never reinterprets changed prescriptions or text.
+  if (input.idempotencyKey) {
+    const {data: saved,error} = await supabase.from("set_log").select(SET_RETURN_COLUMNS)
+      .eq("user_id",userId).eq("session_id",input.sessionId).eq("idempotency_key",input.idempotencyKey).maybeSingle();
+    if(error) throw new Error("Could not check this set. Your draft is still here. Try again.");
+    if(saved) {
+      revalidateSession(input.sessionId);
+      revalidatePath("/history/[exerciseId]","page");
+      return {...saved,recomputeWarning:null};
+    }
+  }
+  const note = normalizeWorkoutText(input.note ?? null);
   const catalog = await getCatalogMap(supabase, userId);
   const def = catalog[input.exerciseId];
   if (!def) throw new Error(`Unknown exercise: ${input.exerciseId}`);
@@ -231,15 +248,21 @@ export async function logSet(input: LogSetInput) {
   if (!session) throw new Error("Session not found");
 
   let equipmentInstanceId: string | null = null;
-  let tempo = resolveTempo(def, input.tempo == null ? null : tempoSchema.parse(input.tempo));
+  let tempo: Tempo | null = input.tempo === null ? null : resolveTempo(def, input.tempo === undefined ? undefined : tempoSchema.parse(input.tempo));
   if (session.plan_snapshot && input.plannedSlotId) {
     const { parseStoredPlan } = await import("@/lib/workout-editor");
     const slot = parseStoredPlan(session.plan_snapshot).slots.find(s=>s.id===input.plannedSlotId);
     if (!slot) throw new Error("Exercise is not in this saved workout.");
     if (slot.exerciseId===input.exerciseId) equipmentInstanceId=slot.equipmentInstanceId??null;
-    if (input.tempo == null) tempo = slot.exerciseId === input.exerciseId ? slot.resolvedTempo ?? resolveTempo(def, slot.tempo) : resolveTempo(def, slot.tempo);
+    if (input.tempo === undefined) tempo = slot.exerciseId === input.exerciseId ? slot.resolvedTempo ?? resolveTempo(def, slot.tempo) : resolveTempo(def, slot.tempo);
   }
 
+  if (input.equipmentInstanceId !== undefined && session.plan_snapshot && input.equipmentInstanceId !== equipmentInstanceId) throw new Error("Equipment changed. Reopen this workout.");
+  if (!session.plan_snapshot && input.equipmentInstanceId) {
+    const {data:equipment}=await supabase.from("equipment_instance").select("id").eq("id",input.equipmentInstanceId).eq("user_id",userId).eq("exercise_id",input.exerciseId).maybeSingle();
+    if(!equipment) throw new Error("Equipment unavailable. Reopen this workout.");
+    equipmentInstanceId=equipment.id;
+  }
   const load = effectiveLoad(def, input.weight, bodyweight);
   const e1rm =
     load != null && load > 0 && input.reps > 0 ? computeE1rm(load, input.reps, input.rir) : null;
@@ -256,6 +279,7 @@ export async function logSet(input: LogSetInput) {
       exercise_id: input.exerciseId,
       set_index: priorThisSession ?? 0,
       tempo,
+      note,
       weight: input.weight,
       reps: input.reps,
       rir: input.rir,
@@ -264,14 +288,14 @@ export async function logSet(input: LogSetInput) {
       is_calibration: !session.is_deload && !!def.needsCalibration && (priorEver ?? 0) === 0,
       idempotency_key: input.idempotencyKey ?? null,
     })
-    .select("id, exercise_id, weight, reps, rir, set_index, e1rm, tempo")
+    .select(SET_RETURN_COLUMNS)
     .single();
 
   // Idempotent insert: on unique constraint violation, return existing row.
   if (error?.code === "23505" && input.idempotencyKey) {
     const { data: existing, error: readError } = await supabase
       .from("set_log")
-      .select("id, exercise_id, weight, reps, rir, set_index, e1rm, tempo")
+      .select(SET_RETURN_COLUMNS)
       .eq("session_id", input.sessionId)
       .eq("idempotency_key", input.idempotencyKey)
       .maybeSingle();
@@ -295,6 +319,9 @@ export async function logSet(input: LogSetInput) {
 }
 
 export interface EditSetInput {
+  detailsOnly?: boolean;
+  note?: string | null;
+  expectedRevision?: number;
   tempo?: Tempo | null;
   setId: string;
   weight: number;
@@ -304,49 +331,75 @@ export interface EditSetInput {
 
 export async function editSet(input: EditSetInput) {
   const { supabase, userId } = await requireUser();
-  if (!validSetNumbers(input) || input.rir == null) throw new Error("Enter a valid weight, whole-number reps, and RIR from 0 to 5.");
-
-  const { data: existing } = await supabase
-    .from("set_log")
-    .select("exercise_id, session_id, weight, reps, rir, e1rm")
-    .eq("user_id", userId)
-    .eq("id", input.setId)
-    .single();
+  if (!input.detailsOnly && (!validSetNumbers(input) || input.rir == null)) throw new Error("Enter a valid weight, whole-number reps, and RIR from 0 to 5.");
+  const patch = {
+    ...(input.tempo === undefined ? {} : {tempo:input.tempo === null ? null : tempoSchema.parse(input.tempo)}),
+    ...(input.note === undefined ? {} : {note:normalizeWorkoutText(input.note)}),
+  };
+  const { data: existing } = await supabase.from("set_log")
+    .select("id, exercise_id, session_id, weight, reps, rir, e1rm, tempo, note, edit_revision")
+    .eq("user_id", userId).eq("id", input.setId).single();
   if (!existing) throw new Error("Set not found");
-
-  const catalog = await getCatalogMap(supabase, userId);
-  const def = catalog[existing.exercise_id];
-  const bodyweight = await getCurrentBodyweight(supabase, userId);
-  if (!def || !validExerciseWeight(def, input.weight)) throw new Error("Invalid exercise or load");
-  // Preserve the bodyweight used by the original saved set, including historical edits.
-  // If it was unknown then, keep e1RM unknown rather than substituting today's weigh-in.
-  const setBodyweight = def.equipment === "bodyweight" ? historicalBodyweight(existing) : bodyweight;
-  const load = effectiveLoad(def, input.weight, setBodyweight);
-  const e1rm =
-    load != null && load > 0 && input.reps > 0 ? computeE1rm(load, input.reps, input.rir) : null;
-
-  const { error } = await supabase
-    .from("set_log")
-    .update({ weight: input.weight, reps: input.reps, rir: input.rir, e1rm,
-      ...(input.tempo === undefined ? {} : {tempo: input.tempo === null ? null : tempoSchema.parse(input.tempo)}) })
-    .eq("id", input.setId)
-    .eq("user_id", userId);
-  if (error) throw new Error(error.message);
-
-  let recomputeWarning: string | null = null;
-  try {
-    await recomputeAndUpsertStat(supabase, userId, existing.exercise_id, bodyweight, catalog);
-  } catch {
-    recomputeWarning = "Set saved, but couldn't update exercise stats. Your progress tracking may be temporarily out of sync.";
+  const numericChanged=!input.detailsOnly && (existing.weight!==input.weight || existing.reps!==input.reps || existing.rir!==input.rir);
+  const detailsChanged=(patch.tempo!==undefined && JSON.stringify(patch.tempo)!==JSON.stringify(existing.tempo))
+    || (patch.note!==undefined && patch.note!==existing.note);
+  // Lost-response replay succeeds without a second write, even after its revision advanced.
+  if(!numericChanged && !detailsChanged) {
+    revalidateSession(existing.session_id);
+    revalidatePath("/history/[exerciseId]","page");
+    return {recomputeWarning:null};
   }
-  await refreshCoachInbox(supabase, userId);
+  if(input.expectedRevision!==undefined && (!Number.isInteger(input.expectedRevision) || input.expectedRevision!==existing.edit_revision)) {
+    throw new Error("This set changed elsewhere. Cancel and reopen to review it. Your draft is still here.");
+  }
+
+  let e1rm=existing.e1rm;
+  let bodyweight:number|null=null;
+  let catalog:Record<string,ExerciseDef>={};
+  if(numericChanged) {
+    catalog=await getCatalogMap(supabase,userId);
+    const def=catalog[existing.exercise_id];
+    bodyweight=await getCurrentBodyweight(supabase,userId);
+    if(!def || !validExerciseWeight(def,input.weight)) throw new Error("Invalid exercise or load");
+    const setBodyweight=def.equipment==="bodyweight"?historicalBodyweight(existing):bodyweight;
+    const load=effectiveLoad(def,input.weight,setBodyweight);
+    e1rm=load!=null && load>0 && input.reps>0?computeE1rm(load,input.reps,input.rir):null;
+  }
+  const { data: saved, error } = await supabase.from("set_log")
+    .update({...patch,...(numericChanged?{weight:input.weight,reps:input.reps,rir:input.rir,e1rm}:{})})
+    .eq("id", input.setId).eq("user_id", userId).eq("edit_revision",existing.edit_revision)
+    .select("id").maybeSingle();
+  if(error) throw new Error(error.message);
+  if(!saved) throw new Error("This set changed elsewhere. Cancel and reopen to review it. Your draft is still here.");
+  let recomputeWarning:string|null=null;
+  if(numericChanged) {
+    try { await recomputeAndUpsertStat(supabase,userId,existing.exercise_id,bodyweight,catalog); }
+    catch { recomputeWarning="Set saved, but couldn't update exercise stats. Your progress tracking may be temporarily out of sync."; }
+    await refreshCoachInbox(supabase,userId);
+    for(const path of ["/analytics","/analytics/month","/analytics/volume","/analytics/coach"]) revalidatePath(path);
+  }
   revalidateSession(existing.session_id);
-  revalidatePath("/analytics");
-  revalidatePath("/analytics/month");
-  revalidatePath("/analytics/volume");
-  revalidatePath("/analytics/coach");
-  revalidatePath("/history/[exerciseId]", "page");
-  return { recomputeWarning };
+  revalidatePath("/history/[exerciseId]","page");
+  return {recomputeWarning};
+}
+
+export async function saveWorkoutExerciseDetail(input: {
+  sessionId:string;slotId:string;exerciseId:string;equipmentInstanceId:string|null;
+  kind:"setup"|"note";text:string|null;expected:string|null;remember:boolean;referenceExpected:string|null;
+}):Promise<void> {
+  const {supabase,userId}=await requireUser();
+  const catalog=await getCatalogMap(supabase,userId);
+  if(!catalog[input.exerciseId]) throw new Error("Exercise unavailable. Your draft is still here.");
+  if(input.kind!=="setup" && input.kind!=="note") throw new Error("Invalid detail");
+  if(input.kind==="setup" && !supportsSetup(catalog[input.exerciseId],catalog)) throw new Error("Choose a specific machine or cable first.");
+  const {error}=await supabase.rpc("save_workout_exercise_detail",{
+    p_session:input.sessionId,p_slot:input.slotId,p_exercise:input.exerciseId,p_equipment:input.equipmentInstanceId,
+    p_kind:input.kind,p_text:normalizeWorkoutText(input.text),p_expected:normalizeWorkoutText(input.expected),
+    p_remember:input.kind==="setup" && input.remember,p_reference_expected:normalizeWorkoutText(input.referenceExpected),
+  });
+  if(error) throw new Error(error.message);
+  revalidateSession(input.sessionId);
+  revalidatePath("/history/[exerciseId]","page");
 }
 
 export async function deleteSet(setId: string) {

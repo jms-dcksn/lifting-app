@@ -47,3 +47,9 @@ New sessions read their structure and per-set prescriptions from `plan_snapshot`
 in-session swaps overlay only the selected identity and rederive that exercise's target.
 An exercise added only to this workout has a snapshot slot ID and supports workout-only
 in-session swaps. Program additions have a real program slot and support both scopes.
+
+Personal setup and exercise notes use occurrence + exact exercise/equipment identity.
+Swapping selects the destination's details and remembered setup; **Earlier exercise details**
+keeps the source association readable/editable. Logged sets retain their own original setup,
+note and tempo even when setup is edited later in the same workout. See
+[workout details](WORKOUT-DETAILS.md).

@@ -134,6 +134,9 @@ Explicit four-phase seconds survive save, copy, station selection and start; an 
 default follows the destination exercise on swaps. Session captures and logged sets freeze
 their own tempo. See [workout details](WORKOUT-DETAILS.md) for notation and compatibility.
 
+Personal setup and observations are recorded during the workout, outside the plan.
+Planner/program edits never update recorded notes, set setup snapshots or performed tempo.
+
 The start compatibility fix additionally requires `20261027173401_allow_unresolved_workout_start.sql`.
 That migration sorts after `20261027010327_exercise_tempo.sql` and replaces the workout
 validator and start function. `20261028140000_reapply_exercise_tempo_seams.sql` puts the

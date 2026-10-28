@@ -122,3 +122,16 @@ and [rest completion notifications](DECISIONS.md#rest-completion-notifications-1
 `TempoFields` supplies four labeled second inputs and the shared phase explanation;
 `TempoLabel` displays the same notation. Active set logging keeps performed tempo under
 **Set details**. Saved sets show their recorded value, or **unspecified** for older sets.
+
+Workout cards keep history/swap/pin actions below the title on phone widths. A separate
+labeled **Setup** / **Exercise note** row distinguishes editable personal text from history,
+station swapping and technique help. Setup appears only for canonical machine/cable
+identities (including custom and assisted stations). Saved/remembered status and two-line
+previews stay compact. **Set details** contains optional performed tempo and the set's own
+note; expanded saved details show **Setup used** and **Set note** as separate fields.
+
+`EditableTextSheet` uses the shared Sheet and IconButton controls, labeled textarea,
+explicit Save/Cancel and unsaved Clear. It retains failed drafts, guards dismissal/Back and
+reload, disables changes while saving, accommodates the visual viewport and safe area, and
+restores focus without scrolling. The Sheet's optional dismissal guard also covers Escape,
+scrim and handle. Back-history installation is deferred to tolerate React Strict Mode replay.

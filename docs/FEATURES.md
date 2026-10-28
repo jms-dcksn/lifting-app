@@ -508,3 +508,11 @@ Inbox reviews show the recommended rep-range change or named exercise replacemen
 with its program scope and one-click Accept. Discuss with Coach starts the contextual first
 reply on the existing episode conversation. Revisiting/reloading is passive; acknowledgement
 continues to record notice review only. No new migration is required.
+
+## Workout tempo and personal details
+
+Programs and upcoming workouts support four-phase tempo prescriptions, with explicit
+overrides and shared exercise defaults. Each logged set preserves performed tempo. Workout
+cards offer optional machine/cable setup and exercise notes; set details offer a separate set
+note. Setup can be explicitly remembered/reused for the exact station. Finished workouts
+and set history retain the context that applied at the time. See [workout details](WORKOUT-DETAILS.md).

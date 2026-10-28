@@ -1,3 +1,4 @@
+import { tempoSchema } from "@/lib/tempo";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getCatalogMap } from "@/lib/catalog";
@@ -75,7 +76,7 @@ export default async function HistoryPage({
 
   const { data: rows, error } = await supabase
     .from("set_log")
-    .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, program_slot_id, is_warmup, is_deload, workout_session!inner(performed_at, finished_at, program_id)")
+    .select("id, user_id, weight, reps, rir, e1rm, session_id, created_at, exercise_id, equipment_instance_id, program_slot_id, is_warmup, is_deload, tempo, workout_session!inner(performed_at, finished_at, program_id)")
     .eq("user_id", userId)
     .in("exercise_id", memberIds)
     .eq("is_warmup", false)
@@ -86,6 +87,7 @@ export default async function HistoryPage({
   const history = (rows ?? []).map((row) => {
     const workout = sessionJoin(row.workout_session);
     return {
+      tempo: row.tempo == null ? null : tempoSchema.parse(row.tempo),
       id: row.id,
       sessionId: row.session_id,
       weight: row.weight,

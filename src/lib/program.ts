@@ -1,3 +1,4 @@
+import { tempoSchema, type Tempo } from "./tempo";
 // Loads a user's program (active or by id) as a nested structure that home, the session
 // screen, and the builder all share. set_log / workout_session reference these ids, so the
 // builder preserves ids across edits (see program/actions.ts) — block position is derived
@@ -18,6 +19,7 @@ import {
 type Client = SupabaseClient<Database>;
 
 export interface ProgramSlot {
+  tempo?: Tempo | null;
   setPrescriptions?: import("./workout-editor").PlannedSet[] | null;
   supersetGroup?: string | null;
   id: string;
@@ -78,7 +80,7 @@ async function assemble(
   const { data: slots } = dayIds.length
     ? await supabase
         .from("program_slot")
-        .select("id, program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position, retired_at, set_prescriptions")
+        .select("id, program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position, retired_at, set_prescriptions, tempo")
         .in("program_day_id", dayIds)
         .order("position", { ascending: true })
     : { data: [] };
@@ -88,6 +90,7 @@ async function assemble(
     if (s.retired_at) continue;
     const list = slotsByDay.get(s.program_day_id) ?? [];
     list.push({
+      tempo: s.tempo == null ? null : tempoSchema.parse(s.tempo),
       id: s.id,
       exerciseId: s.exercise_id,
       pattern: s.pattern as Pattern,

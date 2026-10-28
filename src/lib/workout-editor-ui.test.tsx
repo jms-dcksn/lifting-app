@@ -59,6 +59,7 @@ it("shows a Home start failure beside a retryable saved workout",async()=>{
   expect(host.querySelector('[role="alert"]')?.textContent).toContain("Your plan is still saved");
   expect(button("Start workout").disabled).toBe(false);
   expect(host.textContent).toContain("100 lb · Your target");
+  expect(host.textContent).toContain("Tempo 3-0-1-0");
 });
 it("keeps removal and Undo in one draft; Cancel restores the saved prescription",async()=>{
   await act(async()=>host.querySelector<HTMLButtonElement>('[aria-label="Edit workout"]')!.click());

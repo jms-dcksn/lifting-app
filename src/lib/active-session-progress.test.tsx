@@ -57,7 +57,7 @@ afterEach(async () => { await act(async () => root.unmount()); host.remove(); })
 describe("active workout set progress", () => {
   it("logs rep-only work with zero stored load and no weight control", async () => {
     vi.mocked(logSet).mockResolvedValue({ id: "rollout-set", exercise_id: "ab-wheel-rollout", weight: 0,
-      reps: 6, rir: 2, set_index: 0, e1rm: null, recomputeWarning: null });
+      reps: 6, rir: 2, set_index: 0, e1rm: null, tempo: null, recomputeWarning: null });
     await render(0, 3, EXERCISE_BY_ID["ab-wheel-rollout"]);
     expect(host.querySelector('input[aria-label="Weight"]')).toBeNull();
     expect(host.textContent).toContain("6 reps");
@@ -69,7 +69,7 @@ describe("active workout set progress", () => {
   it("accepts positive assistance in the control and persists the negative convention", async () => {
     const def = { ...EXERCISE_BY_ID["assisted-pullup"], id: "assisted-station", baseExerciseId: "assisted-pullup", stationProfile: undefined };
     vi.mocked(logSet).mockResolvedValue({ id: "assist-set", exercise_id: def.id, weight: -5,
-      reps: 6, rir: 2, set_index: 0, e1rm: 200, recomputeWarning: null });
+      reps: 6, rir: 2, set_index: 0, e1rm: 200, tempo: null, recomputeWarning: null });
     await render(0, 3, def);
     const increase = host.querySelector('button[aria-label="Increase Assistance (lb)"]') as HTMLButtonElement;
     expect(increase).not.toBeNull();
@@ -85,6 +85,7 @@ describe("active workout set progress", () => {
     expect(progress?.textContent).toBe(`Sets ${done}/3`);
     expect(progress?.getAttribute("aria-label")).toBe(`${done} of 3 sets logged`);
     expect(button("Log set").disabled).toBe(false);
+    expect(host.querySelector('input[aria-label="Reps"]')?.matches(":disabled")).toBe(false);
   });
 
   it("marks completion while keeping results editable and extra sets available", async () => {
@@ -95,7 +96,7 @@ describe("active workout set progress", () => {
     expect(button("Delete")).toBeDefined();
     expect(button("Add set").disabled).toBe(false);
     vi.mocked(logSet).mockResolvedValue({ id: "extra", exercise_id: "db-bench", weight: 50,
-      reps: 8, rir: 2, set_index: 3, e1rm: null, recomputeWarning: null });
+      reps: 8, rir: 2, set_index: 3, e1rm: null, tempo: null, recomputeWarning: null });
     await act(async () => button("Add set").click());
     expect(logSet).toHaveBeenCalledWith(expect.objectContaining({
       sessionId: "open", programSlotId: "slot", weight: 50, reps: 8, rir: 2,
@@ -123,6 +124,7 @@ describe("active workout set progress", () => {
     await act(async () => button("Log set").click());
     expect(host.querySelector('[role="status"]')?.textContent).toBe("Done 3/3");
     expect(button("Add set").disabled).toBe(true);
+    expect(host.querySelector('input[aria-label="Reps"]')?.matches(":disabled")).toBe(true);
     await act(async () => rejectWrite(new Error("Save failed")));
     expect(host.querySelector('[role="status"]')?.textContent).toBe("Sets 2/3");
     expect(button("Log set").disabled).toBe(false);

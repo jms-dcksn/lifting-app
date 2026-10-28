@@ -477,6 +477,7 @@ export type Database = {
       }
       program_slot: {
         Row: {
+          tempo: Json | null
           retired_at: string | null
           set_prescriptions: Json | null
           superset_group: string | null
@@ -495,6 +496,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          tempo?: Json | null
           retired_at?: string | null
           set_prescriptions?: Json | null
           superset_group?: string | null
@@ -513,6 +515,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          tempo?: Json | null
           retired_at?: string | null
           set_prescriptions?: Json | null
           superset_group?: string | null
@@ -542,6 +545,7 @@ export type Database = {
       }
       set_log: {
         Row: {
+          tempo: Json | null
           planned_slot_id: string | null
           planned_set_id: string | null
           is_deload: boolean
@@ -562,6 +566,7 @@ export type Database = {
           weight: number
         }
         Insert: {
+          tempo?: Json | null
           planned_slot_id?: string | null
           planned_set_id?: string | null
           is_deload?: boolean
@@ -582,6 +587,7 @@ export type Database = {
           weight: number
         }
         Update: {
+          tempo?: Json | null
           planned_slot_id?: string | null
           planned_set_id?: string | null
           is_deload?: boolean

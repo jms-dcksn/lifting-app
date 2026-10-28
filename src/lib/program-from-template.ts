@@ -26,6 +26,7 @@ export type ProgramTree = {
     id: string;
     name: string;
     slots: Array<{
+      tempo?: import("./tempo").Tempo | null;
       supersetGroup?: string | null;
       id: string;
       exerciseId: string;
@@ -76,6 +77,7 @@ export function buildProgramTreeFromTemplate(
       name: day.name,
       slots: day.slots.map((slot) => ({
         id: crypto.randomUUID(),
+        tempo: slot.tempo ?? null,
         exerciseId: slot.exerciseId,
         pattern: slot.pattern,
         targetSets: slot.targetSets,
@@ -119,6 +121,7 @@ export function buildProgramTreeFromDraft(
       name: day.name,
       slots: day.slots.map((slot) => ({
         id: crypto.randomUUID(),
+        tempo: slot.tempo ?? null,
         exerciseId: slot.exerciseId,
         pattern: slot.pattern,
         targetSets: slot.targetSets,

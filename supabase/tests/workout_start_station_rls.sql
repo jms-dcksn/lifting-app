@@ -43,7 +43,7 @@ do $$ declare src bigint;p jsonb;sess uuid;begin
  select source_revision into src from public.coach_refresh_state where user_id=auth.uid();
  sess:=public.start_workout_plan('b2390000-0000-0000-0000-000000000001','c2390000-0000-0000-0000-000000000001',0,src,0,p);
  update editor_fixture set session_id=sess;
- assert (select plan_snapshot from public.workout_session where id=sess)=p;
+ assert (select plan_snapshot from public.workout_session where id=sess)=jsonb_set(p,'{slots,0,resolvedTempo}','[2,0,1,0]');
  assert (select exercise_swaps->>'d2390000-0000-0000-0000-000000000001' from public.workout_session where id=sess)='bb-bench';
  assert public.start_workout_plan('b2390000-0000-0000-0000-000000000001','c2390000-0000-0000-0000-000000000001',0,src,0,p)=sess;
  assert (select count(*) from public.workout_session where user_id=auth.uid())=1;

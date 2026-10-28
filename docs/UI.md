@@ -118,3 +118,7 @@ Web Audio, a system notification when permitted, and wake lock are best-effort. 
 and lock-screen delivery depend on the browser; iPhone needs the Home Screen app. See
 [rest timer rationale](DECISIONS.md#phase-b-decisions-rest-timer)
 and [rest completion notifications](DECISIONS.md#rest-completion-notifications-104).
+
+`TempoFields` supplies four labeled second inputs and the shared phase explanation;
+`TempoLabel` displays the same notation. Active set logging keeps performed tempo under
+**Set details**. Saved sets show their recorded value, or **unspecified** for older sets.

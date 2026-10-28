@@ -128,7 +128,17 @@ and both scopes against the disposable stack. The PR records actual results and 
 
 The migration must be applied through the existing hosted deployment workflow before
 production can run this code; no hosted migration is authorized by local verification.
+
+Tempo is editable per exercise in both the program builder and upcoming-workout editor.
+Explicit four-phase seconds survive save, copy, station selection and start; an inherited
+default follows the destination exercise on swaps. Session captures and logged sets freeze
+their own tempo. See [workout details](WORKOUT-DETAILS.md) for notation and compatibility.
+
 The start compatibility fix additionally requires `20261027173401_allow_unresolved_workout_start.sql`.
+That migration sorts after `20261027010327_exercise_tempo.sql` and replaces the workout
+validator and start function. `20261028140000_reapply_exercise_tempo_seams.sql` puts the
+tempo checks and start snapshot back onto those replaced definitions. The tempo version
+prefix stays `20261027010327`.
 `workout_start_station_rls.sql` and `e2e/workout-start-station.spec.ts` cover starting an
 untouched program from Home and the planner, pending-equipment logging rejection, and
 equipment selection followed by logging/reload without rewriting the snapshot.

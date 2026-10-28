@@ -1,3 +1,4 @@
+import { tempoSchema, type Tempo } from "./tempo";
 import { z } from "zod";
 import { effectiveSetCount, type EffectivePrescription } from "./periodization";
 import { isLoggableExercise } from "./station";
@@ -17,6 +18,7 @@ export const plannedSetSchema = z.object({
   .refine(s => s.rirMin <= s.rirMax, { path: ["rirMax"], message: "Maximum RIR must be at least minimum RIR." });
 export type PlannedSet = z.infer<typeof plannedSetSchema>;
 const slotSchema = z.object({
+  tempo: tempoSchema.nullable().optional(), resolvedTempo: tempoSchema.optional(),
   id: z.string().uuid(), programSlotId: z.string().uuid().nullable(), exerciseId: z.string().min(1).max(250),
   equipmentInstanceId: z.string().uuid().nullable().optional(),
   pattern: z.string().min(1), restSeconds: z.number().int().min(0).max(1800),
@@ -88,7 +90,7 @@ export function newPlannedSet(id: string, p: Pick<EffectivePrescription, "repMin
     targetReps: target?.targetReps ?? p.repMin, seedAt: null };
 }
 
-export function editorSlot(input: { id: string; exerciseId: string; pattern: Pattern; restSeconds: number;
+export function editorSlot(input: { tempo?: Tempo | null; resolvedTempo?: Tempo; id: string; exerciseId: string; pattern: Pattern; restSeconds: number;
   targetSets?:number;repMin?:number;repMax?:number;targetRir?:number;
   supersetGroup?: string | null; prescription: EffectivePrescription;
   targetContext?: {equipmentInstanceId: string | null} | null;
@@ -97,7 +99,7 @@ export function editorSlot(input: { id: string; exerciseId: string; pattern: Pat
     input.id.slice(0,24)+(i+1).toString(16).padStart(12,"0"),
     {repMin:input.repMin??input.prescription.repMin,repMax:input.repMax??input.prescription.repMax,
       targetRirMin:input.targetRir??input.prescription.targetRirMin,targetRirMax:input.targetRir??input.prescription.targetRirMax},input.effectiveTarget.target));
-  return { id: input.id, programSlotId: input.id, exerciseId: input.exerciseId, pattern: input.pattern,
+  return { tempo: input.tempo ?? null, resolvedTempo: input.resolvedTempo, id: input.id, programSlotId: input.id, exerciseId: input.exerciseId, pattern: input.pattern,
     equipmentInstanceId:input.targetContext?.equipmentInstanceId??null,
     restSeconds: input.restSeconds, supersetGroup: input.supersetGroup ?? null,
     sets: input.plannedSets ?? Array.from({ length: input.prescription.targetSets }, (_, i) => newPlannedSet(

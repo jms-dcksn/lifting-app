@@ -87,9 +87,16 @@ describe("planning and starting boundary", () => {
   });
   it.each([startNextSession, () => startPlannedSession("current")])("passes pending equipment through either start entry without guessing a variant", async (start) => {
     const plan = { version: 1, slots: [{ id: "first", exerciseId: "bb-bench" }, { id: "second", exerciseId: "lat-pulldown" }] };
-    mocks.load.mockResolvedValue({ ...next(), choices: {}, editorPlan: plan });
+    const catalog = { ...next().catalog, "bb-bench": { id: "bb-bench", stationProfile: "bench" } };
+    mocks.load.mockResolvedValue({ ...next(), choices: {}, editorPlan: plan, catalog });
     await expect(start()).rejects.toThrow("REDIRECT:/session/session");
-    expect(rpc.mock.calls[0][1].p_plan).toEqual(plan);
+    expect(rpc.mock.calls[0][1].p_plan).toEqual({
+      ...plan,
+      slots: [
+        { id: "first", exerciseId: "bb-bench", resolvedTempo: [3, 0, 1, 0] },
+        { id: "second", exerciseId: "lat-pulldown", resolvedTempo: [3, 0, 1, 0] },
+      ],
+    });
   });
   it("preserves the draft after a failed start", async () => {
     rpc.mockResolvedValue({ data:null,error:{message:"offline"} });

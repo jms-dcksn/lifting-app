@@ -22,6 +22,8 @@ import type { SessionFeedback } from "@/lib/session-feedback";
 import { Button, type ButtonVariant } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { IconPastSets, IconLastUsed, IconSwap } from "@/components/ui/icons";
+import { TempoFields, TempoLabel } from "@/components/ui/tempo";
+import { resolveTempo, tempoSchema, type Tempo } from "@/lib/tempo";
 import { Sheet } from "@/components/ui/sheet";
 import { ExerciseCardLabel, exerciseCardAriaLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
@@ -71,6 +73,7 @@ function WorkoutRecordsSync({
 }
 
 export interface LoggedSet {
+  tempo?: Tempo | null;
   id: string;
   exerciseId: string;
   equipmentInstanceId: string | null;
@@ -82,6 +85,8 @@ export interface LoggedSet {
 }
 
 export interface SlotView {
+  tempo?: Tempo | null;
+  resolvedTempo?: Tempo;
   plannedSets?: import("@/lib/workout-editor").PlannedSet[];
   sourceProgramSlotId?: string | null;
   snapshotExerciseId?: string;
@@ -421,7 +426,9 @@ function SlotCard({
   const complete = done >= p.targetSets;
   const tone = !complete && isCurrent ? "active" : "default";
 
-  function handleLog(weight: number, reps: number, rir: number) {
+  const prescribedTempo = slot.snapshotExerciseId === exerciseId ? slot.resolvedTempo ?? resolveTempo(def, slot.tempo) : resolveTempo(def, slot.tempo);
+
+  function handleLog(weight: number, reps: number, rir: number, tempo?: Tempo | null) {
     if (isPending) return;
     const idempotencyKey = generateIdempotencyKey();
     setError(null);
@@ -432,7 +439,7 @@ function SlotCard({
     startTransition(async () => {
       applyOptimistic({
         type: "add",
-        set: { id: `temp-${Date.now()}`, exerciseId, equipmentInstanceId: slot.sets.at(-1)?.equipmentInstanceId ?? null, weight, reps, rir, setIndex: optimisticSets.length, plannedSetId: plannedRow?.id },
+        set: { tempo: tempo ?? prescribedTempo, id: `temp-${Date.now()}`, exerciseId, equipmentInstanceId: slot.sets.at(-1)?.equipmentInstanceId ?? null, weight, reps, rir, setIndex: optimisticSets.length, plannedSetId: plannedRow?.id },
       });
       try {
         const result = await retryServerAction(
@@ -445,6 +452,7 @@ function SlotCard({
             weight,
             reps,
             rir,
+            tempo: tempo ?? prescribedTempo,
             idempotencyKey,
           }),
           { onRetry: () => setError("Retrying…") }
@@ -488,14 +496,14 @@ function SlotCard({
     }, 160);
   }
 
-  function handleEdit(id: string, weight: number, reps: number, rir: number) {
+  function handleEdit(id: string, weight: number, reps: number, rir: number, tempo?: Tempo | null) {
     if (isPending) return;
     setError(null);
     setRecomputeWarning(null);
     startTransition(async () => {
       try {
         const result = await retryServerAction(
-          () => editSet({ setId: id, weight, reps, rir }),
+          () => editSet({ setId: id, weight, reps, rir, ...(tempo === undefined ? {} : {tempo}) }),
           { onRetry: () => setError("Retrying…") }
         );
         setError(null);
@@ -601,6 +609,7 @@ function SlotCard({
         <ProgressDots done={done} target={p.targetSets} />
       </div>
 
+      <TempoLabel value={prescribedTempo} />
       {slot.plannedSets && <details className="mt-3 text-caption"><summary className="min-h-11 cursor-pointer py-3">Planned sets</summary>
         <ol className="space-y-2">{slot.plannedSets.map((row,i)=><li key={row.id}>Set {i+1}: {row.repMin}{row.repMax!==row.repMin?`–${row.repMax}`:""} reps · {row.rirMin}{row.rirMax!==row.rirMin?`–${row.rirMax}`:""} RIR · {row.weight??row.suggestedWeight??"—"} lb</li>)}</ol>
       </details>}
@@ -672,9 +681,10 @@ function SlotCard({
                   increment={catalog[s.exerciseId]?.increment ?? increment}
                   defaultRir={p.targetRir}
                   initial={{ weight: s.weight, reps: s.reps, rir: s.rir ?? p.targetRir }}
+                  initialTempo={s.tempo ?? null}
                   label="Save"
                   disabled={isPending}
-                  onSubmit={(w, r, rir) => handleEdit(s.id, w, r, rir)}
+                  onSubmit={(w, r, rir, tempo) => handleEdit(s.id, w, r, rir, tempo)}
                   onCancel={() => setEditingId(null)}
                 />
               </li>
@@ -688,6 +698,7 @@ function SlotCard({
                   <span className="text-faint">{i + 1}.</span>{" "}
                   {formatExerciseSet(catalog[s.exerciseId], s.weight, s.reps)}
                   {s.rir != null ? ` @ ${s.rir}` : ""}
+                  <span className="block text-caption text-muted">Tempo {s.tempo ? s.tempo.join("-") : "unspecified"}</span>
                   {s.exerciseId !== exerciseId && <span className="block text-caption text-muted">{catalog[s.exerciseId]?.name ?? s.exerciseId}</span>}
                 </span>
                 <span className="flex items-center gap-1 text-caption">
@@ -762,12 +773,13 @@ function SlotCard({
       {!isTemplate && editingId === null ? (
         <div className="mt-3">
           <SetEntry
-            key={plannedRow?.id ?? "legacy-entry"}
+            key={`${exerciseId}:${slot.sets.length}`}
             suggestionIdentity={exerciseId}
             loadMode={def?.loadMode}
             increment={increment}
             defaultRir={p.targetRir}
             initial={{ weight: initialWeight, reps: initialReps, rir: p.targetRir }}
+            initialTempo={prescribedTempo}
             label={complete ? "Add set" : "Log set"}
             variant={complete ? "secondary" : "primary"}
             disabled={isPending}
@@ -920,6 +932,7 @@ function SetEntry({
   increment,
   defaultRir,
   initial,
+  initialTempo = null,
   label,
   variant = "primary",
   disabled,
@@ -932,15 +945,22 @@ function SetEntry({
   increment: number;
   defaultRir: number;
   initial: { weight: number; reps: number; rir: number };
+  initialTempo?: Tempo | null;
   label: string;
   variant?: ButtonVariant;
   disabled?: boolean;
   // Recommender-derived weight for given reps/RIR; the weight field follows it live
   // until the user touches weight manually.
   liveWeight?: (reps: number, rir: number) => number | null;
-  onSubmit: (weight: number, reps: number, rir: number) => void;
+  onSubmit: (weight: number, reps: number, rir: number, tempo?: Tempo | null) => void;
   onCancel?: () => void;
 }) {
+  const [tempo, setTempo] = useState<Tempo | null>(initialTempo);
+  const [tempoTouched, setTempoTouched] = useState(false);
+  const tempoKey = JSON.stringify(initialTempo);
+  const [sourceTempo, setSourceTempo] = useState(tempoKey);
+  if (sourceTempo !== tempoKey) { setSourceTempo(tempoKey); if (!tempoTouched) setTempo(initialTempo); }
+  const [detailError, setDetailError] = useState<string | null>(null);
   const [weight, setWeight] = useState(initial.weight);
   const [reps, setReps] = useState(initial.reps);
   const [rir, setRir] = useState(initial.rir ?? defaultRir);
@@ -963,7 +983,7 @@ function SetEntry({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-2">
       <div className={`grid ${loadMode === "reps_only" ? "grid-cols-2" : "grid-cols-3"} gap-2`}>
         {loadMode !== "reps_only" && <Stepper
           label={loadMode === "assisted" ? "Assistance (lb)" : "Weight"}
@@ -1001,13 +1021,21 @@ function SetEntry({
           }}
         />
       </div>
+      <details className="text-caption"><summary className="min-h-11 cursor-pointer py-3">Set details · Tempo {tempo?.join("-") ?? "unspecified"}</summary>
+        <TempoFields value={tempo ?? [2,0,1,0]} onChange={value => {setTempo(value);setTempoTouched(true);setDetailError(null);}} />
+        {tempo && <Button type="button" variant="ghost" onClick={() => {setTempo(null);setTempoTouched(true);}}>Mark tempo unspecified</Button>}
+      </details>
+      {detailError && <p role="alert" className="text-caption text-danger">{detailError}</p>}
       <div className="flex gap-2">
         <Button
           type="button"
           variant={variant}
           size="md"
           className="flex-1"
-          onClick={() => onSubmit(loadMode === "reps_only" ? 0 : weight, reps, rir)}
+          onClick={() => {
+            if (tempo && !tempoSchema.safeParse(tempo).success) { setDetailError("Enter four non-negative whole seconds."); return; }
+            onSubmit(loadMode === "reps_only" ? 0 : weight, reps, rir, tempo);
+          }}
           disabled={disabled}
         >
           {label}
@@ -1018,7 +1046,7 @@ function SetEntry({
           </Button>
         )}
       </div>
-    </div>
+    </fieldset>
   );
 }
 

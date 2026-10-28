@@ -1,9 +1,37 @@
 import { randomUUID } from "node:crypto";
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import pg from "pg";
 import { prerequisite } from "../scripts/verification-plan.mjs";
+
+// Phone width. The 44px action row, 8px column gap, and 4px summary margin
+// sit between the label and the prescription (about 70px). `basis-64` on the
+// column axis made that distance 262px.
+const PHONE_VIEWPORT = { width: 390, height: 844 };
+const HEADER_TO_SUMMARY_GAP = 96;
+
+async function expectCompactExerciseHeader(page: Page, card: Locator) {
+  await page.setViewportSize(PHONE_VIEWPORT);
+  await expect(card).toBeVisible();
+  const measured = await card.evaluate((node) => {
+    const heading = node.querySelector("h2");
+    const summary = [...node.querySelectorAll("span")].find((el) => {
+      const text = el.textContent ?? "";
+      return text.includes("×") && text.includes("RIR");
+    })?.parentElement;
+    const visual = node.querySelector("[data-exercise-visual]");
+    if (!(heading instanceof HTMLElement) || !(summary instanceof HTMLElement) || !(visual instanceof HTMLElement)) return null;
+    return {
+      gap: summary.getBoundingClientRect().top - heading.getBoundingClientRect().bottom,
+      visualHeight: visual.getBoundingClientRect().height,
+    };
+  });
+  expect(measured, "exercise card header and set summary were not measurable").not.toBeNull();
+  if (measured == null) return;
+  expect(measured.gap).toBeLessThanOrEqual(HEADER_TO_SUMMARY_GAP);
+  expect(measured.visualHeight).toBeLessThanOrEqual(80);
+}
 
 test("anonymous users must sign in", async ({ page }) => {
   await page.goto("/coach/inbox");
@@ -47,6 +75,8 @@ test("saved sets survive reload and scoped swaps; a finished pain review opens a
     await page.getByRole("button", { name: "Start next workout", exact: true }).click();
     await expect(page).toHaveURL(/\/session\//);
     const sessionId = new URL(page.url()).pathname.split("/").at(-1)!;
+    const exerciseCard = page.locator("section").filter({ has: page.getByRole("button", { name: /^Swap .+ for another exercise$/ }) });
+    await expectCompactExerciseHeader(page, exerciseCard);
     await page.getByRole("textbox", { name: "Weight", exact: true }).fill("40");
     await page.getByRole("textbox", { name: "Reps", exact: true }).fill("8");
     await page.getByRole("button", { name: "Log set", exact: true }).click();
@@ -79,6 +109,11 @@ test("saved sets survive reload and scoped swaps; a finished pain review opens a
     await page.getByRole("button", { name: "significant", exact: true }).click();
     await confirmFinish.click();
     await expect.poll(async () => (await db.query("select finished_at is not null as done from public.workout_session where id=$1", [sessionId])).rows[0].done).toBe(true);
+    await expect(page).toHaveURL(new RegExp(`/session/${sessionId}/recap$`));
+    await page.getByRole("link", { name: "View workout", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/session/${sessionId}$`));
+    await expect(page.getByRole("link", { name: "View recap", exact: true })).toBeVisible();
+    await expectCompactExerciseHeader(page, exerciseCard);
     await page.goto("/coach/inbox");
     await page.getByRole("link", { name: /Pain review/ }).click();
     await expect(page.getByRole("heading", { name: "Pain review", exact: true })).toBeVisible();

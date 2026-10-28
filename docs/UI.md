@@ -31,8 +31,9 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   Slot completion follows saved set counts and effective phase prescriptions; the count
   updates optimistically and reverts on failed writes.
 - `ExerciseVisual` is the only exercise illustration. 16:9 `rounded-control` frame,
-  `object-cover` (never square + contain). `sm` is 36×64 on rows/tiles; `lg` is 64×114
-  on session, planner, and in-session history. Exercise review uses the compact `sm`
+  `object-cover` (never square + contain). `sm` is 36×64 on rows/tiles and the compact
+  planner editor; `lg` is 64×114 on session, read-only planner, and in-session history.
+  Exercise review uses the compact `sm`
   visual beneath its title in the shared page header. Mapped catalog ids show art
   from `/exercises/{id}.jpg`; everything else uses `IconDumbbell` in the same box.
   Map by seeded / template id, not name. See
@@ -46,6 +47,14 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   the cream-paper art and center zoom described in the historical spec.
   Use the [art generation specification](EXERCISE-ART.md) for reusable prompts, committed
   style references, exercise mechanics, export settings, and thumbnail review.
+- `ExerciseCardLabel` shares the exercise-name → equipment-chip → supporting-details
+  hierarchy across Active, Plan, program cards and the exercise picker. Always show the
+  canonical equipment category (Machine, Cable, Dumbbell, Barbell or Bodyweight), even
+  before station selection. Bench/rack/platform context complements Barbell. Brand/model
+  and machine loading details stay secondary; use “Weight stack” rather than
+  “Selectorized” on cards. Resolve variants through their catalog/base identity, never
+  infer equipment from a name or brand. Labels and adjacent controls wrap at narrow
+  widths; chips are read-only text, not buttons or color-only indicators.
 - Program tiles wrap visible content in their detail `Link`; the Remove control is a
   positioned sibling. An empty overlay link beneath positioned text lets that text
   intercept taps, making the tile appear intermittently unresponsive.

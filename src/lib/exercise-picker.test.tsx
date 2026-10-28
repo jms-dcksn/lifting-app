@@ -59,7 +59,7 @@ function render(resolveStations = true, onPick = vi.fn()) {
 }
 
 function row(name: string) {
-  const button = [...host.querySelectorAll("button")].find((el) => el.textContent?.includes(name));
+  const button = [...host.querySelectorAll("button")].find((el) => (el.getAttribute("aria-label") ?? el.textContent)?.includes(name));
   if (!button) throw new Error(`missing row ${name}`);
   return button;
 }
@@ -83,6 +83,25 @@ function setEquipment(value: string) {
     select.dispatchEvent(new Event("change", { bubbles: true }));
   });
 }
+
+it("distinguishes machine and cable kickbacks in the shared picker before selecting", () => {
+  const machine = { ...EXERCISE_BY_ID["machine-glute-kickback"], id: "machine-instance",
+    baseExerciseId: "machine-glute-kickback", brand: "Life Fitness", machineType: "selectorized" as const };
+  const cable = { ...EXERCISE_BY_ID["cable-glute-kickback"], id: "cable-instance",
+    baseExerciseId: "cable-glute-kickback", brand: "Life Fitness", machineType: "selectorized" as const };
+  const pick = vi.fn();
+  act(() => root.render(<ExercisePicker catalog={[machine, cable]} onPick={pick} onClose={() => {}} />));
+  const rows = [...host.querySelectorAll<HTMLButtonElement>("li button")];
+  const machineRow = rows.find(button => button.getAttribute("aria-label")?.startsWith(machine.name))!;
+  const cableRow = rows.find(button => button.getAttribute("aria-label")?.startsWith(cable.name))!;
+  expect(machineRow.textContent).toContain("Machine");
+  expect(machineRow.textContent).toContain("Weight stack");
+  expect(cableRow.textContent).toContain("Cable");
+  expect(cableRow.textContent).not.toContain("Weight stack");
+  expect(host.textContent).not.toContain("Selectorized");
+  act(() => machineRow.click());
+  expect(pick).toHaveBeenCalledWith(machine);
+});
 
 function setInput(placeholder: string, value: string) {
   const input = host.querySelector<HTMLInputElement>(`input[placeholder="${placeholder}"]`)!;

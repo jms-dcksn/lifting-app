@@ -20,6 +20,8 @@ import {
 import { createCustomExercise, resolveVariant, type ResolveVariantInput } from "../exercise/actions";
 import { Button } from "@/components/ui/button";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
+import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
+import { exerciseCardLabel, exerciseCardLabelText } from "@/lib/exercise-card-label";
 import { Input } from "@/components/ui/input";
 import { Sheet, useSheetDismiss } from "@/components/ui/sheet";
 
@@ -68,26 +70,30 @@ export function ExercisePicker({
 // Direct station picker for same-movement machine / cable / bench swaps.
 export function StationPicker({
   template,
+  resolveVariantAction = resolveVariant,
   onPick,
   onClose,
 }: {
   template: ExerciseDef;
+  resolveVariantAction?: (input: ResolveVariantInput) => Promise<ExerciseDef>;
   onPick: (exercise: ExerciseDef) => void;
   onClose: () => void;
 }) {
   return (
     <Sheet onClose={onClose} className="flex h-[85dvh] flex-col">
-      <StationPickerBody template={template} onPick={onPick} onClose={onClose} />
+      <StationPickerBody template={template} resolveVariantAction={resolveVariantAction} onPick={onPick} onClose={onClose} />
     </Sheet>
   );
 }
 
 function StationPickerBody({
   template,
+  resolveVariantAction,
   onPick,
   onClose,
 }: {
   template: ExerciseDef;
+  resolveVariantAction: (input: ResolveVariantInput) => Promise<ExerciseDef>;
   onPick: (exercise: ExerciseDef) => void;
   onClose: () => void;
 }) {
@@ -95,6 +101,7 @@ function StationPickerBody({
   return (
     <StationForm
       template={template}
+      resolveVariantAction={resolveVariantAction}
       onBack={onClose}
       onResolved={(def) => {
         onPick(def);
@@ -193,6 +200,7 @@ function ListView({
   dismiss: () => void;
 }) {
   const [query, setQuery] = useState("");
+  const byId = useMemo(() => Object.fromEntries(catalog.map(def => [def.id, def])), [catalog]);
   const [showAll, setShowAll] = useState(false);
   const activeFilter = showAll ? undefined : patternFilter;
 
@@ -245,11 +253,11 @@ function ListView({
       <ul className="flex-1 overflow-y-auto overscroll-contain">
         {recent.length > 0 && <SectionHeader>Recent</SectionHeader>}
         {recent.map((e) => (
-          <ExerciseRow key={e.id} exercise={e} onPick={onRowPick} />
+          <ExerciseRow key={e.id} exercise={e} catalog={byId} onPick={onRowPick} />
         ))}
         {recent.length > 0 && rest.length > 0 && <SectionHeader>All exercises</SectionHeader>}
         {rest.map((e) => (
-          <ExerciseRow key={e.id} exercise={e} onPick={onRowPick} />
+          <ExerciseRow key={e.id} exercise={e} catalog={byId} onPick={onRowPick} />
         ))}
         {results.length === 0 && (
           <li className="px-4 py-6 text-center text-body text-muted">No matches</li>
@@ -654,24 +662,28 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
 
 function ExerciseRow({
   exercise: e,
+  catalog,
   onPick,
 }: {
   exercise: ExerciseDef;
+  catalog: Record<string, ExerciseDef>;
   onPick: (exercise: ExerciseDef) => void;
 }) {
+  const lines = exerciseCardLabel(e, catalog);
   return (
     <li>
       <button
         type="button"
         onClick={() => onPick(e)}
+        aria-label={exerciseCardLabelText({ ...lines, name: e.name })}
         className="flex min-h-11 w-full items-center justify-between border-b border-border px-4 py-3 text-left active:bg-surface"
       >
-        <span className="flex min-w-0 items-center gap-3">
+        <span className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
           <ExerciseVisual exerciseId={e.id} baseExerciseId={e.baseExerciseId} />
-          <span className="min-w-0">
-            <span className="block text-body font-medium">{e.name}</span>
+          <span className="min-w-0 flex-1 basis-32">
+            <ExerciseCardLabel as="span" size="body" lines={lines} />
             <span className="block text-caption capitalize text-muted">
-              {e.pattern.replace(/_/g, " ")} · {e.equipment.replace(/_/g, " ")}
+              {e.pattern.replace(/_/g, " ")}
             </span>
           </span>
         </span>

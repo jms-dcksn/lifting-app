@@ -132,7 +132,15 @@ export async function startPlannedSession(planKey: string) {
   return startSession(planKey);
 }
 
-async function startSession(planKey?: string) { redirect(await upcomingSessionDestination(planKey)); }
+async function startSession(planKey?: string) {
+  let destination: string;
+  try { destination = await upcomingSessionDestination(planKey); }
+  catch (error) {
+    console.error("Workout start failed", error);
+    destination = "/workout/next?startError=1";
+  }
+  redirect(destination);
+}
 
 export async function preparePlannedWorkout(planKey:string):Promise<{destination:string}|{error:string}> {
   try { return {destination:await upcomingSessionDestination(planKey)}; }

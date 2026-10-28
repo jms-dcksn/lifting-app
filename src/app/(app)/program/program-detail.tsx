@@ -10,7 +10,6 @@ import { programEditHref, programIndexHref } from "@/lib/program-routes";
 import { supersetLabel } from "@/lib/superset";
 import {
   PATTERN_LABEL,
-  type Equipment,
   type ExerciseDef,
 } from "@/lib/strength/coefficients";
 import { Button } from "@/components/ui/button";
@@ -83,19 +82,19 @@ export function ProgramDetail({
               {day.slots.map((slot, index) => (
                 <li key={slot.id} className="rounded-control bg-surface p-3">
                   {slot.supersetGroup && <p className="mb-2 text-caption font-medium">Superset {supersetLabel(day.slots, index)} · Alternate exercises, then rest after the round</p>}
-                  <div className="flex items-start gap-3 break-words">
+                  <div className="flex flex-wrap items-start gap-3 break-words">
                     <ExerciseVisual
                       exerciseId={slot.exerciseId}
                       baseExerciseId={defs[slot.exerciseId]?.baseExerciseId}
                     />
                     {defs[slot.exerciseId] ? (
-                      <ExerciseCardLabel as="h3" size="body" def={defs[slot.exerciseId]} catalog={defs} />
+                      <ExerciseCardLabel as="h3" size="body" def={defs[slot.exerciseId]} catalog={defs} className="flex-1 basis-32" />
                     ) : (
                       <h3 className="min-w-0 text-body font-medium">{slot.exerciseId}</h3>
                     )}
                   </div>
                   <p className="mt-0.5 text-caption capitalize text-muted">
-                    {slotMeta(defs, slot)}
+                    {PATTERN_LABEL[slot.pattern]}
                   </p>
                   <div className="mt-3 grid grid-cols-3 gap-2">
                     <StaticMetric label="Sets" value={slot.targetSets} />
@@ -172,16 +171,6 @@ function StaticMetric({ label, value }: { label: string; value: React.ReactNode 
       </span>
     </div>
   );
-}
-
-function slotMeta(defs: Record<string, ExerciseDef>, slot: ProgramSlot) {
-  const exercise = defs[slot.exerciseId];
-  const pattern = PATTERN_LABEL[slot.pattern];
-  return exercise ? `${pattern} / ${equipmentLabel(exercise.equipment)}` : pattern;
-}
-
-function equipmentLabel(equipment: Equipment) {
-  return equipment.replace(/_/g, " ");
 }
 
 function repRange(slot: ProgramSlot) {

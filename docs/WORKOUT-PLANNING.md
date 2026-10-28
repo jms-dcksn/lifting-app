@@ -1,12 +1,43 @@
 # Plan and edit the next workout
 
 `/workout/next` uses one **Edit workout** action. Exercise cards stay in place while their
-sets, rep bounds, RIR bounds, loads, rest and superset grouping become labeled controls.
-Add/replace uses the shared station-resolving catalog picker. Move up/down works with
-keyboard or touch; removal supports draft Undo. A temporary empty draft is allowed,
+sets become compact aligned rows. Weight is editable inline; tapping a rep or RIR range
+opens a focused set sheet with separate minimum/maximum fields, suggested-weight reset
+and Remove set. Sheet changes update the workout draft; Done validates that sheet,
+while Escape/dismiss retains draft edits. Global Save reopens and focuses invalid hidden
+range/rest controls. Exercise and equipment changes stay visible; named 44px move/remove
+icons sit in each card header. **More** opens rest/superset options, with bulk set tools
+in a collapsed details section. Exercise and set removal both support Undo.
+Add/change uses the shared station-resolving catalog picker. Move up/down works with
+keyboard or touch. A temporary empty draft is allowed,
 but Save requires an exercise with a working set. Start is replaced by sticky Save/Cancel
 while editing. Local validation focuses the first invalid field; failed writes retain the
-draft. Navigation/reload guards use browser confirmation where supported.
+draft. Cancel asks to discard a changed draft and offers Keep editing. Navigation/reload
+guards use browser confirmation where supported.
+
+While editing, station-backed movements also offer a direct **Change machine/cable/
+platform/rack/bench** action (or **Choose** for unresolved equipment). It opens the
+same-movement station form without browsing exercises. The editor injects its local
+variant resolver into the shared picker: new stations stay in the draft until atomic
+Save, and Cancel discards them. Changing identity clears manual loads and equipment
+instance selection, rederives suggestions, and preserves set IDs, rep/RIR bounds, normal-week
+rows, rest and grouping. Dumbbell/bodyweight movements without station templates omit it.
+
+## Edit-mode design study
+
+[Interactive HTML mockup](plan-editor-mock.html) records the owner's approved design: compact set rows, visible
+exercise/equipment changes and move/remove controls, focused rep/RIR range sheets, and
+secondary rest/superset/bulk tools behind **More**. Its rationale panel links the UX
+research. Usage priorities come from the owner's expected common actions; they have
+not been measured with analytics or usability testing.
+
+The compact layout is implemented in the planner's edit mode using the existing Button,
+IconButton, Input, ExerciseCardLabel and native-dialog Sheet components. Read-only cards
+retain their existing prescription presentation. The reference HTML uses
+sample equipment and suggestions, supports reversible in-memory edits, and has no
+database connection. Save affects only that tab; reload resets it. Prototype superset
+grouping is illustrative; application rules own equipment resolution, validation, recovery
+and superset round rest.
 
 ## Save scopes and persistence
 
@@ -64,6 +95,16 @@ individual planned rows. `set_log.planned_slot_id` and `planned_set_id` distingu
 workout-only exercises and completion even after deleting a logged row. `program_slot_id`
 continues to preserve historical program identity. Extra sets remain separate.
 
+Starting an untouched program may capture known equipment templates (for example barbell
+bench or cable pulldown) before a station is selected. The active exercise card then offers
+Choose bench/cable/machine and hides set entry until a concrete variant is selected. The
+selection overlays the snapshot through the existing session swap; the captured prescription
+and planned set IDs remain stable. Start-only validation still checks owner, exercise catalog,
+structure, numeric values and revisions. Editor saves retain strict station validation.
+Direct API logging into a captured session also rejects unresolved equipment; historical
+set edits retain their existing behavior. Home Start failures reopen the plan with a retry
+message, while plan-page failures stay inline and retain saved changes.
+
 Later program edits cannot rewrite a capture. Explicit in-session swaps overlay the saved
 identity and rederive compatible targets without changing logged rows. Workout-only added
 slots support workout-only in-session swaps. Existing sessions without a snapshot retain
@@ -92,3 +133,12 @@ Tempo is editable per exercise in both the program builder and upcoming-workout 
 Explicit four-phase seconds survive save, copy, station selection and start; an inherited
 default follows the destination exercise on swaps. Session captures and logged sets freeze
 their own tempo. See [workout details](WORKOUT-DETAILS.md) for notation and compatibility.
+
+The start compatibility fix additionally requires `20261027173401_allow_unresolved_workout_start.sql`.
+That migration sorts after `20261027010327_exercise_tempo.sql` and replaces the workout
+validator and start function. `20261028140000_reapply_exercise_tempo_seams.sql` puts the
+tempo checks and start snapshot back onto those replaced definitions. The tempo version
+prefix stays `20261027010327`.
+`workout_start_station_rls.sql` and `e2e/workout-start-station.spec.ts` cover starting an
+untouched program from Home and the planner, pending-equipment logging rejection, and
+equipment selection followed by logging/reload without rewriting the snapshot.

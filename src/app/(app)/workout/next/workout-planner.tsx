@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardLabel } from "@/components/ui/card";
-import { TempoFields, TempoLabel } from "@/components/ui/tempo";
+import { TempoLabel } from "@/components/ui/tempo";
 import { resolveTempo } from "@/lib/tempo";
 import { Input } from "@/components/ui/input";
 import { IconButton } from "@/components/ui/icon-button";
@@ -294,15 +294,14 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
           </div>
           {slot.normalSets && slot.normalSets.length !== slot.sets.length && <p className="mt-3 text-caption">Recovery: {slot.sets.length} of {slot.normalSets.length} normal-week sets</p>}
           {editing && <div className="mt-3 flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" className="flex-1 whitespace-nowrap px-2! text-caption!" {...field(`${path}.exerciseId`)} onClick={() => setPicking(slot.id)}>Change exercise</Button>
-            {stationTemplateFor(def, catalogMap) && <Button type="button" variant="secondary" className="flex-1 whitespace-nowrap px-2! text-caption!" onClick={() => setStationSlotId(slot.id)}>{swapStationLabel(def, catalogMap)?.replace("Swap ", "Change ")}</Button>}
+            <Button type="button" variant="secondary" size="sm" className="min-w-0 flex-1 whitespace-nowrap px-2! text-caption!" {...field(`${path}.exerciseId`)} onClick={() => setPicking(slot.id)}>Change exercise</Button>
+            {stationTemplateFor(def, catalogMap) && <Button type="button" variant="secondary" size="sm" className="min-w-0 flex-1 whitespace-nowrap px-2! text-caption!" onClick={() => setStationSlotId(slot.id)}>{swapStationLabel(def, catalogMap)?.replace("Swap ", "Change ")}</Button>}
           </div>}
-          <div className="mt-3">{editing
-            ? <TempoFields value={resolveTempo(def, slot.tempo)} onChange={tempo => updateSlot(slot.id, s => ({ ...s, tempo }))} />
-            : <TempoLabel value={resolveTempo(def, slot.tempo)} />}</div>
+          {!editing && <div className="mt-3"><TempoLabel value={resolveTempo(def, slot.tempo)} /></div>}
         </div>
         {editing ? <>
           <PlannedSetTable slot={slot} index={index} assisted={def?.loadMode === "assisted"} issues={issues}
+            tempo={resolveTempo(def, slot.tempo)} onTempo={tempo => updateSlot(slot.id, s => ({ ...s, tempo }))}
             onWeight={(setId, value) => updateSet(slot.id, setId, "weight", value)}
             onEdit={(setId, field) => setPanel({ kind: "set", slotId: slot.id, setId, field })} />
           <div className="flex flex-wrap items-center justify-between gap-1 p-2">

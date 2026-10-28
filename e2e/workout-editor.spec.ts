@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { test,expect } from "@playwright/test";
+import { assertTempoLayout, measureTempoLayout } from "./editor-tempo-layout";
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import pg from "pg";
@@ -100,6 +101,7 @@ test("complete editor draft, both scopes, per-set start and historical preservat
     for(const width of [320,390]){
       await page.setViewportSize({width,height:844});
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      assertTempoLayout(await measureTempoLayout(page));
     }
     await page.screenshot({path:'/tmp/editor-mobile.png',fullPage:true});
     await page.emulateMedia({colorScheme:'dark'});
@@ -165,7 +167,7 @@ test("complete editor draft, both scopes, per-set start and historical preservat
     await expect(page.getByText(/10–12 reps · 3–4 RIR/)).toBeVisible();
     await page.getByRole('button',{name:'Edit workout',exact:true}).click();
     await page.getByLabel('Apply changes to').selectOption('program');
-    await expect(page.locator('tbody tr')).toHaveCount(4);
+    await expect(page.locator('[data-set-row]')).toHaveCount(4);
     await page.getByRole('button',{name:'Edit RIR for set 1 of exercise 1',exact:true}).click();
     await expect(field('slots.0.sets.0.rirMax')).toHaveValue('1');
     await page.getByRole('button',{name:'Done',exact:true}).click();

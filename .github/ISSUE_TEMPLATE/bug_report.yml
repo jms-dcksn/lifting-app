@@ -1,0 +1,55 @@
+name: Bug report
+description: Something in the app does not match the expected behavior.
+title: "[Bug]: "
+body:
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed
+      description: What actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+      description: What should have happened.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Repro steps
+      description: Steps a later agent can follow without guessing.
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - production
+        - preview
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshot or log
+      description: Paste a redacted log, or describe the screenshot. Do not include secrets.
+    validations:
+      required: false
+  - type: input
+    id: area
+    attributes:
+      label: Suspected area
+      description: For example workouts, progression, migrations, Coach, or body weight.
+    validations:
+      required: false
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: What must be true when this is fixed. One checkable statement per line.
+    validations:
+      required: true

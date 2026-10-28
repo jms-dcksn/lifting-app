@@ -1,38 +1,39 @@
 ---
 name: tdd
-description: Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions "red-green-refactor", or wants integration tests.
+description: Use when a bug or behavior change has a cheap local test seam. State the seam in the PR. Do not stop to ask.
 ---
 
-# Test-Driven Development
+# TDD
 
-TDD is the red → green loop. This skill is the reference that makes that loop produce tests worth keeping: what a good test is, where tests go, the anti-patterns, and the rules of the loop. Every section applies on every cycle: consult them before and during the loop, not after.
+Adapted from Lauren Tan's pstack (MIT). See ../PSTACK-LICENSE and ../NOTICE.
 
-When exploring the codebase, read `CONTEXT.md` (if it exists) so test names and interface vocabulary match the project's domain language, and respect ADRs in the area you're touching.
+When a change has a clear, cheap test path, make the broken or missing behavior fail before you change production code. The test encodes intended behavior. It fails before the fix and passes after it.
 
-## What a good test is
+Do not force a test when it would be impractical. Skip a new test when it needs a hosted database, production data, a full browser journey, brittle mocks, or a large unrelated fixture. Say that in the PR and use the closest check from `verify-change`.
 
-Tests verify behavior through public interfaces, not implementation details. Code can change entirely; tests shouldn't. A good test reads like a specification: "user can checkout with valid cart" tells you exactly what capability exists, and it survives refactors because it doesn't care about internal structure.
+Never stop to ask which seam to use. Pick the narrowest practical one, name it in the PR, and proceed.
 
-See [tests.md](tests.md) for examples and [mocking.md](mocking.md) for mocking guidelines.
+## Seam in this repo
 
-## Seams: where tests go
+Prefer an existing Vitest file next to the code: `src/lib/**/*.test.ts`. Good cheap seams include progression and target helpers, the migration-gate decision, and other pure strength-engine functions. Co-locate a new test there. Do not invent a second test runner.
 
-A **seam** is the public boundary you test at: the interface where you observe behavior without reaching inside. Tests live at seams, never against internals.
+## Workflow
 
-**Test only at pre-agreed seams.** Before writing any test, write down the seams under test and confirm them with the user. No test is written at an unconfirmed seam. You can't test everything, so agreeing the seams up front is how testing effort lands on the critical paths and complex logic instead of every edge case.
+1. Name the intended behavior, the current behavior, and the smallest reproduction.
+2. Choose the narrowest existing seam that reaches that behavior. If none is practical, stop this skill and say why in the PR.
+3. Write the smallest test that would catch the bug or lock the new behavior. Drive the public function or module contract, not private helpers.
+4. Run that test before the production edit. Confirm it fails for the intended reason. If it passes, or fails for something else, fix the test first.
+5. Make the smallest production change that satisfies the test and keeps nearby contracts.
+6. Re-run the test and confirm it passes.
 
-Ask: "What's the public interface, and which seams should we test?"
+## Guardrails
 
-When the shape of that interface is itself in question (how deep the module is, where the seam belongs, what the interface should expose), call the Skill tool with "codebase-design" for the vocabulary. It is the shared source of the module, interface, depth, seam, adapter, leverage and locality terms, and it is a reference to consult, not a session to run.
+- Do not change a test so it matches a wrong implementation.
+- Do not weaken an assertion unless the required behavior actually changed. Say why in the PR.
+- Keep the test on the bug or the new behavior. Do not expand fixtures for coverage theater.
+- If the bug is flaky, pin the signal (time, seed, order) and name that signal in the PR.
+- If the bug is a wider class, land this focused test first. Add sibling cases only when they fail for the same cause.
 
-## Anti-patterns
+## Report
 
-- **Implementation-coupled**: mocks internal collaborators, tests private methods, or verifies through a side channel (querying the database instead of using the interface). The tell: the test breaks when you refactor but behavior hasn't changed.
-- **Tautological**: the assertion recomputes the expected value the way the code does (`expect(add(a, b)).toBe(a + b)`, a snapshot derived by hand the same way, a constant asserted equal to itself), so it passes by construction and can never disagree with the code. Expected values must come from an independent source of truth: a known-good literal, a worked example, the spec.
-- **Horizontal slicing**: writing all tests first, then all implementation. Bulk tests verify _imagined_ behavior: you test the _shape_ of things rather than user-facing behavior, the tests go insensitive to real changes, and you commit to test structure before understanding the implementation. Work in **vertical slices** instead: one test → one implementation → repeat, each test a **tracer bullet** that responds to what the last cycle taught you.
-
-## Rules of the loop
-
-- **Red before green.** Write the failing test first, then only enough code to pass it. Don't anticipate future tests or add speculative features.
-- **One slice at a time.** One seam, one test, one minimal implementation per cycle.
-- **Refactoring is not part of the loop.** It belongs to the review stage (see the `code-review` skill), not the red → green implementation cycle.
+In the PR, name the seam, the command that failed before the fix, and the command that passed after. If you could not show a failing-before run, say why and name the check you used instead.

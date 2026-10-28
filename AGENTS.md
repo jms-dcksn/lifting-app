@@ -33,6 +33,52 @@ TypeScript strength engine. Workouts require connectivity; there is no offline s
   how the system works. Markdown alone is not enough for the teaching surface. Keep
   diagrams and snippets accurate to the code; update the HTML when behavior changes.
 
+## Hard rules
+- Never merge a PR. Never push to `main`.
+- Never run `npx supabase db push` or any SQL against the hosted database.
+- Never apply labels, open issues, or post issue comments unless the task says so.
+- No emojis in agent-written output.
+- A PR that adds or edits `supabase/migrations/*` must say the human runs `npx supabase db push` after merge. The filename prefix is the version `supabase_migrations.schema_migrations` records (`<digits>_<name>.sql`). The agent does not apply it and does not query the hosted database for status.
+
+## Principles
+- Smallest change that solves the problem. One source of truth, no extra layer.
+- Remove the dead path before adding the new one.
+- Prove the result on the real artifact: run the check, read the value, look at the diff.
+- Fix the first wrong decision. A guard is a fix only when that state is legitimate.
+- When two fixes fail the same check, write down the premise they share and test it before a third.
+- Do reversible work without waiting. Stop for a Decision Card on hard-to-reverse, external, or unvalidated choices.
+- Prefer a smaller polished behavior over a larger rough one. Callers and the next maintainer count as users.
+- Test what a caller can observe. A test that fails only when internals move is pinned to the implementation.
+- Finish one verifiable unit before the next. Put the failing test first, then the fix.
+- Validate at the boundary. Trust internal types. Keep strength and report math pure.
+- Turn a repeated mistake into a check, type, or script. The production migration build gate (PR #188) is the example. Write a doc only for a judgment call.
+
+## Skills
+`.agents/skills/` is the source of truth. If a skill is not already loaded, read the file named here before that work.
+
+| Skill | When to use |
+| --- | --- |
+| [blast-radius](.agents/skills/blast-radius/SKILL.md) | Before shipping a change that might break a caller the diff does not show. |
+| [close-session](.agents/skills/close-session/SKILL.md) | After a commit or session that changed the repo: refresh owning docs and report. |
+| [code-review](.agents/skills/code-review/SKILL.md) | Review a branch or diff for repo standards and for the linked issue. |
+| [codebase-design](.agents/skills/codebase-design/SKILL.md) | Design or deepen a module interface, seam, or test surface. |
+| [correct](.agents/skills/correct/SKILL.md) | A mistake agents repeat: make it fail a check instead of adding another instruction. |
+| [diagnosing-bugs](.agents/skills/diagnosing-bugs/SKILL.md) | Something is broken, throwing, failing, or slow. |
+| [domain-modeling](.agents/skills/domain-modeling/SKILL.md) | Sharpen a domain term or record a decision in the existing docs. |
+| [grilling](.agents/skills/grilling/SKILL.md) | Stress-test a design before building it. |
+| [langsmith-evaluator](.agents/skills/langsmith-evaluator/SKILL.md) | Build or run a LangSmith evaluator. |
+| [langsmith-trace](.agents/skills/langsmith-trace/SKILL.md) | Add LangSmith tracing or query traces. |
+| [resolving-merge-conflicts](.agents/skills/resolving-merge-conflicts/SKILL.md) | A merge or rebase is in progress and conflicted. |
+| [show-me-your-work](.agents/skills/show-me-your-work/SKILL.md) | A long unattended run needs a decision trail a reviewer can check. |
+| [tdd](.agents/skills/tdd/SKILL.md) | A cheap local test can fail before the fix and pass after it. |
+| [to-issue](.agents/skills/to-issue/SKILL.md) | Draft a spec or issue body for a human to file. |
+| [typescript-best-practices](.agents/skills/typescript-best-practices/SKILL.md) | Reading or editing TypeScript. |
+| [verify-change](.agents/skills/verify-change/SKILL.md) | Definition of done for any change. |
+| [writing-for-agents](.agents/skills/writing-for-agents/SKILL.md) | Creating or editing a skill, AGENTS.md, or CLAUDE.md. |
+
+## Definition of done
+Follow [verify-change](.agents/skills/verify-change/SKILL.md). Record commands, results, the browser check, and migration status in the PR body. Do not merge.
+
 ## Verification and continuity
 
 When tightening validation, changing shared writes/RPCs, or moving a user requirement to
@@ -91,6 +137,7 @@ and add a trigger here only when a new task branch appears.
 | Setup, environment variables, migrations, or deployment | [Deployment](DEPLOY.md) |
 | Pull request security review workflow | [Deployment](DEPLOY.md#pull-request-security-review) |
 | Feature scope or selecting planned work | [Features](docs/FEATURES.md) and [build plan](docs/PLAN.md); verify old checklist status against code |
+| Agent skills, hard rules, or the definition of done | This file's Skills, Hard rules, Principles, and Definition of done |
 
 <!-- OPENWIKI:START -->
 

@@ -1,0 +1,8 @@
+pstack-derived material in this directory is adapted from Lauren Tan's pstack skills (MIT License).
+
+Source: https://github.com/cursor/plugins/tree/main/pstack (copied from v0.15.36).
+Copyright (c) 2026 Lauren Tan. Full text: PSTACK-LICENSE.
+
+Adapted here: tdd, blast-radius, correct, show-me-your-work, typescript-best-practices.
+verify-change was written for this repo by following create-verification-skill. That generator is not installed.
+Slash-command, multi-model, and subagent steps were removed so one unattended cloud agent can run them.

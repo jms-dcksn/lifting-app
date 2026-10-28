@@ -61,7 +61,7 @@ export async function toggleExercisePin(exerciseId: string): Promise<
     if (isDefault) {
       const { error } = await supabase.from("user_exercise_pin").upsert({
         user_id: userId,
-        exercise_id: exerciseId,
+        exercise_id: displayKey,
         position: 0,
         updated_at: new Date().toISOString(),
       });
@@ -71,14 +71,16 @@ export async function toggleExercisePin(exerciseId: string): Promise<
         .from("user_exercise_pin")
         .delete()
         .eq("user_id", userId)
-        .eq("exercise_id", exerciseId);
+        .in("exercise_id", pins
+          .filter((pin) => pinDisplayKey(pin.exerciseId, catalog) === displayKey)
+          .map((pin) => pin.exerciseId));
       if (error) return { ok: false, error: "Unable to unpin. Please try again." };
     }
     refreshPinViews();
     return { ok: true, pinned: false };
   }
 
-  const allowed = canPinExercise(pins, defaults, historyIds, exerciseId, catalog);
+  const allowed = canPinExercise(pins, defaults, historyIds, displayKey, catalog);
   if (!allowed.ok) return allowed;
 
   if (isDefault) {
@@ -86,12 +88,12 @@ export async function toggleExercisePin(exerciseId: string): Promise<
       .from("user_exercise_pin")
       .delete()
       .eq("user_id", userId)
-      .eq("exercise_id", exerciseId);
+      .eq("exercise_id", displayKey);
     if (error) return { ok: false, error: "Unable to pin. Please try again." };
   } else {
     const { error } = await supabase.from("user_exercise_pin").insert({
       user_id: userId,
-      exercise_id: exerciseId,
+      exercise_id: displayKey,
       position: nextExtraPosition(pins, defaults, catalog),
     });
     if (error) return { ok: false, error: "Unable to pin. Please try again." };

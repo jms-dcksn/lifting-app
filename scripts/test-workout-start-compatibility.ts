@@ -43,7 +43,8 @@ async function main() {
             const session = (await start()).rows[0].id;
             assert.equal((await start()).rows[0].id, session, `${label}: retry resumes the same session`);
             const captured = (await db.query("select plan_snapshot from public.workout_session where id=$1", [session])).rows[0].plan_snapshot;
-            assert.deepEqual(captured, plan, `${label}: capture preserves unresolved exercise identities and sets`);
+            const frozen = { ...plan, slots: plan.slots.map(slot => ({ ...slot, resolvedTempo: slot.resolvedTempo ?? slot.tempo ?? [2, 0, 1, 0] })) };
+            assert.deepEqual(captured, frozen, `${label}: capture preserves unresolved exercise identities, sets, and frozen tempo`);
             assert.equal(Number((await db.query("select count(*) n from public.set_log where user_id=$1", [owner])).rows[0].n), 0, `${label}: Start invents no performance evidence`);
             await db.query("update public.workout_session set finished_at=now() where id=$1", [session]);
             starts++;

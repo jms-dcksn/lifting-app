@@ -4,32 +4,39 @@ import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, useSheetDismiss } from "@/components/ui/sheet";
+import { TempoCells, TempoRowLabel } from "@/components/ui/tempo";
+import type { Tempo } from "@/lib/tempo";
 import type { EditorIssue, PlannedSet, PlannedSlot } from "@/lib/workout-editor";
 
 export function setRange(min: number, max: number) {
   return min === max ? String(min) : `${min}–${max}`;
 }
 
-export function PlannedSetTable({ slot, index, assisted, issues, onWeight, onEdit }: {
+export function PlannedSetTable({ slot, index, assisted, issues, tempo, onTempo, onWeight, onEdit }: {
   slot: PlannedSlot;
   index: number;
   assisted: boolean;
   issues: EditorIssue[];
+  tempo: Tempo;
+  onTempo: (value: Tempo) => void;
   onWeight: (setId: string, value: number | null) => void;
   onEdit: (setId: string, field: "repMin" | "rirMin") => void;
 }) {
-  return <table className="mt-3 w-full table-fixed border-separate border-spacing-0 text-center tabular-nums">
-    <caption className="sr-only">Exercise {index + 1} working sets{assisted ? "; negative pounds indicate assistance" : ""}</caption>
-    <thead className="text-caption text-muted">
-      <tr>{["Set", assisted ? "Load · lb" : "Weight · lb", "Reps", "RIR"].map((title, i) =>
-        <th key={title} scope="col" className={`border-y border-border bg-surface px-1 py-2 font-normal ${i === 0 ? "w-8" : ""}`}>{title}</th>)}
-      </tr>
-    </thead>
-    <tbody>{slot.sets.map((set, setIndex) => {
+  const titles = ["Set", assisted ? "Load · lb" : "Weight · lb", "Reps", "RIR"];
+  return <div role="table" aria-label={`Exercise ${index + 1} working sets${assisted ? "; negative pounds indicate assistance" : ""}`}
+    className="mt-3 grid w-full min-w-0 grid-cols-[auto_repeat(3,minmax(0,1fr))] text-center tabular-nums">
+    <div role="row" className="col-span-4 grid grid-cols-subgrid text-caption text-muted">
+      {titles.map(title => <div key={title} role="columnheader" className="border-y border-border bg-surface px-1 py-2 font-normal">{title}</div>)}
+    </div>
+    <div role="row" data-tempo-row className="col-span-4 grid grid-cols-subgrid items-center border-b border-border">
+      <TempoRowLabel />
+      <TempoCells inTable value={tempo} onChange={onTempo} />
+    </div>
+    {slot.sets.map((set, setIndex) => {
       const path = `slots.${index}.sets.${setIndex}`;
-      return <tr key={set.id}>
-        <th scope="row" className="border-b border-border px-1 py-1 text-caption font-normal text-muted">{setIndex + 1}</th>
-        <td className="border-b border-border p-1">
+      return <div role="row" data-set-row key={set.id} className="col-span-4 grid grid-cols-subgrid items-center border-b border-border">
+        <div role="rowheader" className="px-1 text-caption font-normal text-muted">{setIndex + 1}</div>
+        <div role="cell" data-set-column="weight" className="min-w-0 p-1">
           <Input type="number" inputMode="decimal" step="any" value={Number.isNaN(set.weight) ? "" : set.weight ?? ""}
             data-field={`${path}.weight`} aria-label={`Exercise ${index + 1} set ${setIndex + 1} ${assisted ? "load (negative lb assistance)" : "weight (lb)"}`}
             aria-invalid={issues.some(issue => issue.path === `${path}.weight`) || undefined}
@@ -38,23 +45,23 @@ export function PlannedSetTable({ slot, index, assisted, issues, onWeight, onEdi
             placeholder={set.suggestedWeight === null ? "Auto" : `${set.suggestedWeight} auto`}
             className="h-11! min-w-0 border-transparent! bg-surface! px-1! text-center text-base placeholder:text-caption placeholder:text-muted! focus:border-border-strong!"
             onChange={event => onWeight(set.id, event.target.validity.badInput ? NaN : event.target.value === "" ? null : Number(event.target.value))} />
-        </td>
+        </div>
         {(["reps", "rir"] as const).map(kind => {
           const min = kind === "reps" ? "repMin" : "rirMin";
           const max = kind === "reps" ? "repMax" : "rirMax";
           const invalid = issues.some(issue => issue.path === `${path}.${min}` || issue.path === `${path}.${max}`);
-          return <td key={kind} className="border-b border-border p-1">
+          return <div role="cell" key={kind} data-set-column={kind} className="min-w-0 p-1">
             <Button type="button" variant="ghost" className="w-full bg-surface px-1! font-medium text-foreground!"
               aria-label={`Edit ${kind === "reps" ? "reps" : "RIR"} for set ${setIndex + 1} of exercise ${index + 1}`}
               aria-description={`${setRange(set[min], set[max])} ${kind === "reps" ? "reps" : "RIR"}`}
               aria-invalid={invalid || undefined} onClick={() => onEdit(set.id, min)}>
               {Number.isFinite(set[min]) && Number.isFinite(set[max]) ? setRange(set[min], set[max]) : "Edit"}
             </Button>
-          </td>;
+          </div>;
         })}
-      </tr>;
-    })}</tbody>
-  </table>;
+      </div>;
+    })}
+  </div>;
 }
 
 export function EditorSheet({ title, context, focusField, issues, onClose, onDone, doneLabel = "Done", secondary, children }: {

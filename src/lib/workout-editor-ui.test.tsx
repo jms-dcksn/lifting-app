@@ -52,6 +52,28 @@ beforeEach(async()=>{
     programName:"Program",dayName:"Upper",week:1,slots:[],plan,recovery:null,stats:[],bodyweight:180,targetHistory:{progressionByExercise:{},effortBySlot:{}},catalog:Object.values(EXERCISE_BY_ID)})));
 });
 afterEach(async()=>{await act(async()=>root.unmount());host.remove();});
+it("edits per-exercise tempo as the first row of the set table",async()=>{
+  await act(async()=>host.querySelector<HTMLButtonElement>('[aria-label="Edit workout"]')!.click());
+  const card=host.querySelector('[aria-label="Exercise 1"]')!;
+  const tempo=card.querySelector("[data-tempo-row]");
+  const setRow=card.querySelector("[data-set-row]");
+  expect(tempo).not.toBeNull();
+  expect(setRow).not.toBeNull();
+  expect(tempo!.compareDocumentPosition(setRow!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(card.querySelector("legend")).toBeNull();
+  for(const name of ["Lower","Bottom pause","Lift","Top pause"]) {
+    expect(tempo!.querySelector(`input[aria-label="${name}"]`)).not.toBeNull();
+  }
+  const lower=tempo!.querySelector<HTMLInputElement>('input[aria-label="Lower"]')!;
+  expect(lower.value).toBe("3");
+  await act(async()=>{
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value")!.set!.call(lower,"4");
+    lower.dispatchEvent(new Event("input",{bubbles:true}));
+  });
+  save.mockResolvedValue({issues:[]});
+  await act(async()=>button("Save changes").click());
+  expect(save.mock.calls[0][0].plan.slots[0].tempo).toEqual([4,0,1,0]);
+});
 it("shows a Home start failure beside a retryable saved workout",async()=>{
   await act(async()=>root.render(createElement(WorkoutPlanner,{key:"retry",planKey:"key",programId:"program",dayId:"day",completed:0,sourceRevision:1,revision:0,
     initialError:"Could not start your workout. Your plan is still saved. Try again.",
@@ -83,7 +105,7 @@ it("retains the whole draft on failed Save and retries the same request",async()
   await act(async()=>button("+ Add set").click());
   await act(async()=>button("Save changes").click());
   expect(host.textContent).toContain("Connection failed");
-  expect(host.querySelectorAll("tbody tr")).toHaveLength(2);
+  expect(host.querySelectorAll("[data-set-row]")).toHaveLength(2);
   await act(async()=>button("Save changes").click());
   expect(save.mock.calls[0][0].requestId).toBe(save.mock.calls[1][0].requestId);
   expect(save.mock.calls[0][0].scope).toBe("workout");
@@ -110,7 +132,7 @@ it("opens preserved normal-week effort and volume when editing a recovery occurr
   await act(async()=>button("Done").click());
   const scope=[...host.querySelectorAll('select')].find(s=>[...s.options].some(o=>o.value==="program"))!;
   await act(async()=>{scope.value="program";scope.dispatchEvent(new Event("change",{bubbles:true}));});
-  expect(host.querySelectorAll('tbody tr')).toHaveLength(4);
+  expect(host.querySelectorAll("[data-set-row]")).toHaveLength(4);
   await editSet(1,"RIR");
   expect((host.querySelector('[data-field="slots.0.sets.0.rirMax"]') as HTMLInputElement).value).toBe("1");
 });
@@ -199,7 +221,7 @@ it("undoes set removal without losing later weight edits",async()=>{
   await act(async()=>button("Remove set").click());
   await setNumber("slots.0.sets.0.weight","75");
   await act(async()=>button("Undo removal").click());
-  expect(host.querySelectorAll("tbody tr")).toHaveLength(2);
+  expect(host.querySelectorAll("[data-set-row]")).toHaveLength(2);
   save.mockResolvedValue({issues:[]});
   await act(async()=>button("Save changes").click());
   const rows=save.mock.calls[0][0].plan.slots[0].sets;

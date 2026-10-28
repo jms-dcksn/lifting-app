@@ -1063,7 +1063,7 @@ function SetEntry({
           className="mt-1 w-full rounded-control border border-border bg-surface p-3 text-body focus-visible:outline-2 focus-visible:outline-foreground"
           aria-invalid={Array.from(note).length>WORKOUT_TEXT_LIMIT || undefined} onChange={event=>{setNote(event.target.value);setDetailError(null);}} />
         <p className="text-caption text-muted">{Array.from(note).length} / {WORKOUT_TEXT_LIMIT} characters</p>
-        <TempoFields value={tempo ?? [2,0,1,0]} onChange={value => {setTempo(value);setTempoTouched(true);setDetailError(null);}} />
+        <TempoFields variant="row" value={tempo ?? [2,0,1,0]} onChange={value => {setTempo(value);setTempoTouched(true);setDetailError(null);}} />
         {tempo && <Button type="button" variant="ghost" onClick={() => {setTempo(null);setTempoTouched(true);}}>Mark tempo unspecified</Button>}
       </details>
       {detailError && <p role="alert" className="text-caption text-danger">{detailError}</p>}

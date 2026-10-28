@@ -26,7 +26,7 @@ test("prescribed and performed tempo survive program, plan, workout and history"
     await page.getByLabel('Bottom pause',{exact:true}).fill('1');
     await page.getByRole('button',{name:'Save changes',exact:true}).click();
     await expect.poll(async()=>(await db.query('select tempo from public.program_slot where id=$1',[slot])).rows[0].tempo).toEqual([2,1,1,0]);
-    await page.goto('/workout/next'); await expect(page.getByText('Tempo 2-1-1-0',{exact:false})).toBeVisible();
+    await page.goto('/workout/next'); await expect(page.getByText('Tempo 2-1-1-0',{exact:false}).filter({visible:true})).toBeVisible();
     await page.getByRole('button',{name:'Start workout',exact:true}).click(); await expect(page).toHaveURL(/\/session\//);
     const session=new URL(page.url()).pathname.split('/').at(-1)!;
     await expect(page.getByText('Tempo 2-1-1-0',{exact:false}).first()).toBeVisible();
@@ -47,8 +47,16 @@ test("prescribed and performed tempo survive program, plan, workout and history"
     await db.query("update public.program_slot set tempo='[1,0,1,0]' where id=$1",[slot]);
     await page.reload(); await expect(page.getByText('Tempo 2-1-1-0',{exact:false}).first()).toBeVisible();
     await page.setViewportSize({width:1280,height:900});
-    await page.getByRole('button',{name:'Finish workout',exact:true}).click();
-    await page.getByRole('dialog').getByRole('button',{name:'Finish workout',exact:true}).click();
+    // Logged rest survives reload and ticks every 250ms. That shift can move Finish
+    // between pointerdown and click, so the confirmation sheet never opens. Retry
+    // until the sheet's own Finish button is on screen.
+    const pageFinish = page.locator('xpath=//button[normalize-space()="Finish workout" and not(ancestor::dialog)]');
+    const confirmFinish = page.getByRole('dialog').getByRole('button',{name:'Finish workout',exact:true});
+    await expect(async () => {
+      if (await confirmFinish.count() === 0) await pageFinish.click({timeout:2_000});
+      await expect(confirmFinish).toBeVisible({timeout:2_000});
+    }).toPass({timeout:15_000});
+    await confirmFinish.click();
     await expect.poll(async()=>(await db.query('select finished_at is not null as done from public.workout_session where id=$1',[session])).rows[0].done).toBe(true);
     await expect(page).toHaveURL(new RegExp(`/session/${session}/recap$`));
     await page.goto(`/session/${session}`); await expect(page.getByRole('listitem').getByText('Tempo 4-1-1-0',{exact:true})).toBeVisible();

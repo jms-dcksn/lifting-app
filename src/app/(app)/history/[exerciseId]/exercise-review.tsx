@@ -82,7 +82,8 @@ export function ExerciseReview(props: ExerciseReviewProps) {
         actions={pin && <PinButton exerciseId={pin.exerciseId} pinned={pin.pinned} name={pin.name} />}
         context={<div className="flex items-center gap-3">
           <ExerciseVisual exerciseId={props.exerciseId ?? pin?.exerciseId} baseExerciseId={props.baseExerciseId} />
-          {(labelLines.secondary || labelLines.tertiary) && <div className="text-caption text-muted">
+          {(labelLines.equipment || labelLines.secondary || labelLines.tertiary) && <div className="min-w-0 break-words text-caption text-muted">
+            {labelLines.equipment && <p>{[labelLines.equipment, labelLines.station].filter(Boolean).join(" · ")}</p>}
             {labelLines.secondary && <p>{labelLines.secondary}</p>}
             {labelLines.tertiary && <p>{labelLines.tertiary}</p>}
           </div>}

@@ -548,10 +548,10 @@ function SlotCard({
   return (
     <Card tone={tone} className={complete ? "bg-surface/60" : undefined}>
       {slot.supersetLabel && <p className="mb-2 text-caption font-medium">Superset {slot.supersetLabel} · Alternate exercises, then rest after the round</p>}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex min-w-0 items-start gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-3">
+        <div className="flex min-w-0 flex-1 basis-64 flex-wrap items-start gap-3">
           <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} size="lg" />
-          <h2 className="min-w-0">
+          <h2 className="min-w-0 flex-1 basis-32">
             <Link
               href={exerciseReviewHref({
                 exerciseId,
@@ -567,7 +567,7 @@ function SlotCard({
             </Link>
           </h2>
         </div>
-        <div className="flex shrink-0 flex-wrap justify-end">
+        <div className="ml-auto flex shrink-0 flex-wrap justify-end">
           {lastUsedDef && !isTemplate && (
             <IconButton
               variant="ghost"

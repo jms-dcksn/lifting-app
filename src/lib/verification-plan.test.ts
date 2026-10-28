@@ -5,6 +5,7 @@ describe("verification selection and prerequisites", () => {
   it("always regenerates types and includes strict checking, tests, lint and build in the base profile", () => {
     expect(verificationPlan([]).map(step => step.script)).toEqual(["typecheck", "lint", "typecheck:indexed", "test:hooks", "test", "build"]);
     expect(verificationPlan(["agent"]).map(step => step.script)).toEqual(["test:agent"]);
+    expect(verificationPlan(["database"]).map(step => step.script)).toEqual(["test:db", "test:db:compatibility", "test:db:concurrency"]);
     expect(() => verificationPlan(["unknown"])).toThrow();
   });
   it("keeps external/paid checks opt-in and blocks missing or remote prerequisites", () => {

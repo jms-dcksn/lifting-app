@@ -1,0 +1,9 @@
+---
+description: Lifting-app agent contract
+alwaysApply: true
+---
+
+Read `AGENTS.md` before changing this repo and follow it.
+`.agents/skills/` is the skill source of truth. If a skill is not already loaded, read the file named in the Skills table.
+Follow the Hard rules: never merge, never push to `main`, never run `npx supabase db push` or hosted SQL, never apply labels or create issues unless the task says so, and do not use emojis.
+Run the `verify-change` skill and record its evidence before declaring done.

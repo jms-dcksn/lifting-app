@@ -1,6 +1,6 @@
 # Documentation map
 
-[AGENTS.md](../AGENTS.md) is the sole agent-instruction entry point; `CLAUDE.md` imports it.
+[AGENTS.md](../AGENTS.md) is the agent-instruction contract. `CLAUDE.md` imports it. `.cursor/rules/core.mdc` only points at it.
 Read only the topic needed for the task. Source and tests establish implemented behavior;
 if they conflict with an explicit decision, flag the conflict before changing that decision.
 
@@ -15,6 +15,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Shared exercise variations, machine models, load modes and catalog migration | [Exercise catalog](EXERCISE-CATALOG.md) |
 | Tempo and workout personal details | [Workout details](WORKOUT-DETAILS.md) |
 | Shared components and UI gotchas | [UI conventions](UI.md) |
+| Approved upcoming-workout editor design (interactive reference, sample data) | [Plan editor mockup](plan-editor-mock.html); [implementation and boundaries](WORKOUT-PLANNING.md#edit-mode-design-study) |
 | Copy density (proposed) | [2026-09-16 spec](superpowers/specs/2026-09-16-visual-copy-density-design.md) |
 | Exercise review (Slices A–F shipped) | [2026-09-19 spec](superpowers/specs/2026-09-19-exercise-review-design.md) |
 | Exercise artwork generation and styling | [Charcoal art specification](EXERCISE-ART.md); [UI conventions](UI.md) |

@@ -549,7 +549,7 @@ function SlotCard({
     <Card tone={tone} className={complete ? "bg-surface/60" : undefined}>
       {slot.supersetLabel && <p className="mb-2 text-caption font-medium">Superset {slot.supersetLabel} · Alternate exercises, then rest after the round</p>}
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-3">
-        <div className="flex min-w-0 flex-1 basis-64 flex-wrap items-start gap-3">
+        <div className="flex min-w-0 flex-wrap items-start gap-3 sm:flex-1 sm:basis-64">
           <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} size="lg" />
           <h2 className="min-w-0 flex-1 basis-32">
             <Link

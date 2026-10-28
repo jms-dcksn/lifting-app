@@ -70,26 +70,30 @@ export function ExercisePicker({
 // Direct station picker for same-movement machine / cable / bench swaps.
 export function StationPicker({
   template,
+  resolveVariantAction = resolveVariant,
   onPick,
   onClose,
 }: {
   template: ExerciseDef;
+  resolveVariantAction?: (input: ResolveVariantInput) => Promise<ExerciseDef>;
   onPick: (exercise: ExerciseDef) => void;
   onClose: () => void;
 }) {
   return (
     <Sheet onClose={onClose} className="flex h-[85dvh] flex-col">
-      <StationPickerBody template={template} onPick={onPick} onClose={onClose} />
+      <StationPickerBody template={template} resolveVariantAction={resolveVariantAction} onPick={onPick} onClose={onClose} />
     </Sheet>
   );
 }
 
 function StationPickerBody({
   template,
+  resolveVariantAction,
   onPick,
   onClose,
 }: {
   template: ExerciseDef;
+  resolveVariantAction: (input: ResolveVariantInput) => Promise<ExerciseDef>;
   onPick: (exercise: ExerciseDef) => void;
   onClose: () => void;
 }) {
@@ -97,6 +101,7 @@ function StationPickerBody({
   return (
     <StationForm
       template={template}
+      resolveVariantAction={resolveVariantAction}
       onBack={onClose}
       onResolved={(def) => {
         onPick(def);

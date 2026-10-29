@@ -1,7 +1,7 @@
 import type { Json } from "./types";
-type ReadTable<T> = { Row: T; Insert: never; Update: never; Relationships: [] };
+type ReadTable<T, R extends {foreignKeyName:string;columns:string[];isOneToOne:boolean;referencedRelation:string;referencedColumns:string[]}[] = []> = { Row: T; Insert: never; Update: never; Relationships: R };
 export type WorkoutEditorTables = {
-  workout_exercise_detail: ReadTable<{id:string;user_id:string;session_id:string;occurrence_id:string;exercise_id:string;equipment_instance_id:string|null;setup:string|null;note:string|null}>;
+  workout_exercise_detail: ReadTable<{id:string;user_id:string;session_id:string;occurrence_id:string;exercise_id:string;equipment_instance_id:string|null;setup:string|null;note:string|null}, [{foreignKeyName:"workout_exercise_detail_session_id_fkey";columns:["session_id"];isOneToOne:false;referencedRelation:"workout_session";referencedColumns:["id"]}]>;
   exercise_setup: ReadTable<{id:string;user_id:string;exercise_id:string;equipment_instance_id:string|null;setup:string|null}>;
   workout_plan: ReadTable<{ user_id: string; program_id: string; program_day_id: string; completed_count: number;
     revision: number; source_revision: number; plan: Json; updated_at: string }>;

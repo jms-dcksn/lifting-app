@@ -135,7 +135,39 @@ test("workout notes, exact setup reuse and historical set context",async({page,c
     await page.goto(`/session/${session}`);await machine.getByText('Earlier exercise details',{exact:true}).click();await expect(machine.getByRole('button',{name:'Exercise note: Recovered network draft',exact:true})).toBeVisible();
     await page.goto(`/history/${machineId}`);await expect(page.getByText('Observed on this set only',{exact:true}).first()).toBeVisible();
     await expect(page.getByText('Seat 4, back pad 2',{exact:true}).first()).toBeVisible();
-    await page.goto('/workout/next');await page.getByRole('button',{name:'Start workout',exact:true}).click();await expect(page).toHaveURL(/\/session\//);
+    // Read A's historical details on the planner before creating B. Cable has zero sets,
+    // and its setup was never remembered. Reading must leave the plan/session untouched.
+    await page.goto('/workout/next');
+    const beforeRead=await db.query('select (select count(*) from public.workout_session where user_id=$1)::int sessions,(select count(*) from public.workout_plan where user_id=$1)::int plans',[owner]);
+    const plannerNotes=page.getByRole('button',{name:/^Previous notes for /});
+    await plannerNotes.nth(0).click();
+    let previous=page.getByRole('dialog',{name:/^Previous notes for /});
+    await expect(previous).toContainText('Recovered network draft');
+    await expect(previous).toContainText('Previous workout setup');
+    await expect(previous).toContainText('Seat 5');
+    await expect(previous).toContainText('Set setup snapshot');
+    await expect(previous).toContainText('Seat 4, back pad 2');
+    await previous.getByRole('button',{name:'Close',exact:true}).click();await expect(previous).toHaveCount(0);
+    await expect(plannerNotes.nth(0)).toBeFocused();
+    await plannerNotes.nth(2).click();previous=page.getByRole('dialog',{name:/^Previous notes for /});
+    await expect(previous).toContainText('Pulley 12, rope attachment');
+    await expect(previous).not.toContainText('Remembered setup');
+    await previous.getByRole('button',{name:'Close',exact:true}).click();await expect(previous).toHaveCount(0);
+    expect((await db.query('select (select count(*) from public.workout_session where user_id=$1)::int sessions,(select count(*) from public.workout_plan where user_id=$1)::int plans',[owner])).rows).toEqual(beforeRead.rows);
+    // An unsaved planner edit survives opening and dismissing previous notes.
+    await page.getByRole('button',{name:'Edit workout',exact:true}).click();
+    await plannerNotes.nth(0).click();previous=page.getByRole('dialog',{name:/^Previous notes for /});
+    await expect(previous).toContainText('Recovered network draft');
+    await previous.getByRole('button',{name:'Close',exact:true}).click();await expect(previous).toHaveCount(0);
+    await page.getByRole('button',{name:'Cancel',exact:true}).click();
+    await page.getByRole('button',{name:'Start workout',exact:true}).click();await expect(page).toHaveURL(/\/session\//);
+    const nextSession=new URL(page.url()).pathname.split('/').at(-1)!;
+    await machine.getByRole('button',{name:/^Previous notes for /}).click();previous=page.getByRole('dialog',{name:/^Previous notes for /});
+    await expect(previous).toContainText('Recovered network draft');
+    await expect(previous).toContainText('Remembered setup · not applied');
+    await previous.getByRole('button',{name:'Close',exact:true}).click();await expect(previous).toHaveCount(0);
+    expect((await db.query('select count(*)::int n from public.set_log where session_id=$1',[nextSession])).rows[0].n).toBe(0);
+
     await expect(machine.getByText('Remembered · not applied',{exact:true})).toBeVisible();
     await expect(machine.getByText('Recovered network draft',{exact:true})).toHaveCount(0);
     await machine.getByRole('button',{name:/^Edit machine or cable setup/}).click();sheet=page.getByRole('dialog',{name:'Machine / cable setup',exact:true});

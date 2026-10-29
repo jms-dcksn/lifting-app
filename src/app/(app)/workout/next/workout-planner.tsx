@@ -1,5 +1,6 @@
 "use client";
 
+import { PreviousNotes } from "@/components/ui/previous-notes";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -316,6 +317,7 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
           </fieldset>)}</div>
           <p className="mt-3 text-caption text-muted">{!isSupersetEnd(current.slots, index) ? "No rest before the next superset exercise" : `Rest ${slot.restSeconds} seconds ${slot.supersetGroup ? "after the round" : "between sets"}`}</p>
         </>}
+        <div className={editing ? "px-3 pb-2" : ""}><PreviousNotes exerciseId={slot.exerciseId} equipmentInstanceId={slot.equipmentInstanceId??null} def={def} catalog={catalogMap}/></div>
       </Card>;
     })}
     {editing && <>

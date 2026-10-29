@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { PreviousNotes } from "@/components/ui/previous-notes";
 import { IconButton } from "@/components/ui/icon-button";
 import { IconSettings, IconNote } from "@/components/ui/icons";
 import { EditableTextSheet } from "@/components/ui/editable-text-sheet";
@@ -33,6 +34,7 @@ export function WorkoutExerciseDetails({sessionId,slotId,exerciseId,equipmentIns
       <DetailAction title="Exercise note" label={`Edit exercise note for ${label}`} saved={!!current?.note} value={current?.note}
         onClick={()=>open("note")}><IconNote /></DetailAction>
     </div>
+    <PreviousNotes exerciseId={exerciseId} equipmentInstanceId={equipmentInstanceId} excludeSessionId={sessionId} def={def} catalog={catalog} equipmentLabel={equipmentInstanceId?equipmentLabels[equipmentInstanceId]:undefined}/>
     {details.some(d=>d.exercise_id!==exerciseId || d.equipment_instance_id!==equipmentInstanceId) && <details className="mt-2 text-caption">
       <summary className="min-h-11 cursor-pointer py-3">Earlier exercise details</summary>
       {details.filter(d=>d.exercise_id!==exerciseId || d.equipment_instance_id!==equipmentInstanceId).map(d=><div key={d.id} className="mt-2 rounded-control bg-surface p-3">

@@ -19,6 +19,9 @@ You are one unattended agent. Do not stop to ask which command to run. Do not me
 4. Run the profiles below. Paste each status.
 5. Follow `code-review` on the diff against the merge-base with `main`. Fix a hard miss before you commit. Put judgment calls in the PR.
 6. Commit on the task branch with Git hooks left on. Do not use `--no-verify`. Push that branch only when the task says to publish the PR. Never push to `main`. Never merge.
+7. After publishing/updating the PR, follow [published PR verification](../../../docs/VERIFICATION.md#published-pr-verification).
+   Run `npm run verify:pr -- <PR number>` or use its documented connected-GitHub fallback.
+   Record the current head SHA, run URL, database and browser outcomes before the final report.
 
 ## Which profile
 
@@ -52,7 +55,7 @@ Authenticated UI needs a browser check, as in `docs/VERIFICATION.md`. The commit
 - With local Supabase running and Chromium installed: `node scripts/browser-local.mjs`. It reads the local CLI public URL and key, uses a disposable database, and starts its own Next server. It does not reuse an unrelated dev server.
 - Otherwise `npm run verify -- browser` only with `E2E_DISPOSABLE=1` and loopback `E2E_DATABASE_URL`, `E2E_SUPABASE_URL`, and `E2E_SUPABASE_KEY`. `E2E_BASE_URL` defaults to `http://127.0.0.1:3100` and that port must be free.
 - Do not point the browser profile at the hosted project. Do not run base type generation at the same time.
-- If local Supabase, Chromium, or those env vars are missing, write `browser: BLOCKED` and the missing piece. A screenshot of a static page is not the check.
+- If local prerequisites are missing, record `browser (local): BLOCKED` with the reason. When PR publication is authorized, continue to the published-PR verification step for CI evidence. Without publication authorization, report that limit.
 - Docs-only changes, and pure `src/lib` changes with no UI, write `browser: not applicable`.
 
 ## Launch, doctor, cleanup

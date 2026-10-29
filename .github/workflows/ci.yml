@@ -4,11 +4,20 @@ on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   app:
     name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -28,6 +37,7 @@ jobs:
   database:
     name: Database RLS tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -60,9 +70,23 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Verify authenticated phone journeys
+        id: browser
         run: node scripts/browser-local.mjs
         env:
           COACH_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+      - name: Record browser verification evidence
+        if: always()
+        env:
+          PR_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          BROWSER_OUTCOME: ${{ steps.browser.outcome || 'not run' }}
+        run: |
+          {
+            echo "### Browser verification"
+            echo "PR head: $PR_HEAD"
+            echo "Tested checkout: $(git rev-parse HEAD)"
+            echo "Authenticated phone journeys: $BROWSER_OUTCOME"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Stop local Supabase stack
         if: always()

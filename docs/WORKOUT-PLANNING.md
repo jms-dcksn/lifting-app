@@ -145,3 +145,13 @@ prefix stays `20261027010327`.
 `workout_start_station_rls.sql` and `e2e/workout-start-station.spec.ts` cover starting an
 untouched program from Home and the planner, pending-equipment logging rejection, and
 equipment selection followed by logging/reload without rewriting the snapshot.
+
+## Previous notes (#255)
+
+Each exercise card offers **Previous notes** in both viewing and editing mode.
+The read-only sheet uses the selected exercise/equipment, including unsaved station
+choices, without saving a plan or starting a session. Closing it preserves the draft
+and restores focus without scrolling. Loading, retry, older-workout pagination and
+identity changes share the [previous-notes contract](WORKOUT-DETAILS.md#previous-notes-255)
+with active workouts. Remembered setup stays separate from dated observations and
+is never applied by browsing.

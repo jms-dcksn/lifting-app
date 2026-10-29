@@ -73,3 +73,21 @@ Coach interpretation rules. Existing whole-session feedback stays separate.
 An omitted performed-tempo override uses the captured prescription. Explicitly choosing
 **Mark tempo unspecified** stores null and stays unspecified through retries and history;
 it is never silently replaced with a default.
+
+## Previous notes (#255)
+
+Exercise cards on Plan workout and active workouts offer **Previous notes** in a
+separate personal-details control. The shared read-only sheet starts with the selected
+exact exercise/equipment (including null equipment and unsaved planner selections).
+It loads only when opened and never creates a session, saves a plan, applies setup, or
+changes current note/set drafts. Active workouts exclude their current session.
+
+The signed-in reader pages finished workouts newest first, with session ID as the
+tie-breaker and **Load older** for earlier pages. It reads occurrence details independently
+of sets, so zero-set observations and unremembered setup remain accessible. Duplicate
+occurrences stay distinct within each workout; occurrence IDs only join set context
+within that session, never across workouts. Remembered setup is a separate, unapplied
+reference; previous workout setup, exercise observations and differing per-set setup
+snapshots have separate labels. Preview text expands in place. Empty/loading states and
+retry retain existing content; identity changes discard stale responses. Closing the
+shared Sheet restores focus without scrolling or discarding the surrounding draft.

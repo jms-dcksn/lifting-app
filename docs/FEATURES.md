@@ -368,10 +368,13 @@ valid. It does not swap in a monthly-history page. Invalid months are ignored.
 
 `/analytics` is Track: a 2-column scoreboard of key compounds (squat, hinge, horizontal
 press, vertical press, horizontal pull, vertical pull). Each tile shows the catalog reference
-lift when it has history (otherwise it stays hidden), current e1RM, signed delta or "held",
-a sparkline, and a `--record` flash when that lift earned a canonical record this week.
-Default-compound tiles keep the template ids and short names (`bb-bench`,
-`lat-pulldown`, …). Shipped numbers and the review href follow the **latest
+lift when it has history (otherwise it stays hidden). The label is `exerciseCardLabel`
+(plain name, equipment chip, one brand/loading line), then current e1RM, a delta chip
+(▲ / ▼, "held", or a dash), and a sparkline or a dashed baseline in a reserved slot.
+A `--record` flash marks a lift that earned a canonical record this week; a positive
+record uses the record color on the delta, and a decrease stays neutral.
+Default-compound tiles keep the template ids (`bb-bench`, `lat-pulldown`, …).
+The record-chip short-name map is not the tile title. Shipped numbers and the review href follow the **latest
 finished family member** (`exerciseFamilyIds`), a brand variant or leftover
 flat row, plus that member's equipment instance, not a blend of PRs. Pins on
 a machine or cable variant stay exact-id. Extra pins and All-lifts rows still use the

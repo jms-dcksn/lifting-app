@@ -57,7 +57,7 @@ describe("Track exercise review links", () => {
       reviewExerciseId: "leg-press",
       equipmentInstanceId: "cybex",
       name: "Leg Press",
-      shortName: "Leg Press",
+      label: { name: "Leg Press", equipment: "Machine" },
       isCompound: false,
       currentE1rm: 250,
       delta: null,
@@ -97,7 +97,7 @@ describe("Track exercise review links", () => {
       reviewExerciseId: "bb-bench__flex-fitness__bench",
       equipmentInstanceId: null,
       name: "Barbell Bench Press",
-      shortName: "Bench",
+      label: { name: "Bench Press", equipment: "Barbell", station: "Bench" },
       isCompound: true,
       currentE1rm: 185,
       delta: -8,
@@ -107,7 +107,7 @@ describe("Track exercise review links", () => {
     act(() => {
       root.render(<BoardGrid lifts={[lift]} pinnedIds={["bb-bench"]} showPin={false} />);
     });
-    expect(host.querySelector('a[href="/history/bb-bench__flex-fitness__bench?equipment=none"]')?.textContent)
-      .toContain("Bench");
+    expect(host.querySelector('a[href="/history/bb-bench__flex-fitness__bench?equipment=none"]')?.getAttribute("aria-label"))
+      .toContain("Bench Press");
   });
 });

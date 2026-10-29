@@ -239,13 +239,13 @@ export function Sparkline({ values }: { values: number[] }) {
   const span = max - min || 1;
   const points = values
     .map((value, i) => {
-      const x = (i / Math.max(values.length - 1, 1)) * 64;
-      const y = 22 - ((value - min) / span) * 18;
+      const x = (i / Math.max(values.length - 1, 1)) * 100;
+      const y = 22 - ((value - min) / span) * 16;
       return `${x},${y}`;
     })
     .join(" ");
   return (
-    <svg className="text-muted" viewBox="0 0 64 24" width="64" height="24" aria-hidden>
+    <svg className="h-[26px] w-full text-muted" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden>
       <polyline
         points={points}
         fill="none"
@@ -253,6 +253,7 @@ export function Sparkline({ values }: { values: number[] }) {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );

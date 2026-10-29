@@ -6,6 +6,9 @@ import {
 } from "@/lib/exercise-card-label";
 import type { ExerciseDef } from "@/lib/strength/coefficients";
 
+export const exerciseEquipmentChipClass =
+  "shrink-0 rounded-full border border-border-strong bg-surface px-2 py-0.5 text-caption font-medium text-foreground";
+
 const NAME_CLASS = {
   display: "text-display",
   heading: "text-heading",
@@ -33,7 +36,7 @@ export function ExerciseCardLabel({
       <span className={cx("block", NAME_CLASS[size])}>{resolved.name}</span>
       {resolved.equipment ? (
         <span className="mt-1 flex flex-wrap items-center gap-1.5 text-caption font-medium">
-          <span className="rounded-full border border-border-strong bg-surface px-2 py-0.5 text-foreground">{resolved.equipment}</span>
+          <span className={exerciseEquipmentChipClass}>{resolved.equipment}</span>
           {resolved.station && <span className="text-muted">{resolved.station}</span>}
         </span>
       ) : null}

@@ -135,8 +135,10 @@ describe("board compounds", () => {
 describe("board copy", () => {
   it("labels a zero delta as held", () => {
     expect(signedDelta(0)).toBe("held");
-    expect(signedDelta(12.4)).toBe("+12");
-    expect(signedDelta(-3.2)).toBe("-3");
+    expect(signedDelta(0.4)).toBe("held");
+    expect(signedDelta(12.4)).toBe("▲ 12");
+    expect(signedDelta(-3.2)).toBe("▼ 3");
+    expect(signedDelta(null)).toBeNull();
   });
 
   it("builds week chips and last-session headlines from canonical groups", () => {
@@ -219,13 +221,37 @@ describe("buildBoardLifts", () => {
     expect(lifts.find((lift) => lift.exerciseId === "bb-bench")).toMatchObject({
       exerciseId: "bb-bench",
       reviewExerciseId: "bb-bench",
-      shortName: "Bench",
       name: "Barbell Bench Press",
+      label: { name: "Bench Press", equipment: "Barbell", station: "Bench" },
       currentE1rm: 185,
       delta: -25,
       e1rmSeries: [280, 300, 205, 210, 193, 185],
       equipmentInstanceId: "pad-flex",
       recentRecord: true,
+    });
+  });
+
+  it("labels a pinned machine from the station, not the stored variant title", () => {
+    const id = "hack-squat__cybex__plate";
+    const catalog = {
+      ...EXERCISE_BY_ID,
+      [id]: linked(EXERCISE_BY_ID["hack-squat"], id, {
+        brand: "Cybex",
+        machineType: "plate_loaded",
+        name: "Hack Squat — Cybex (plate)",
+      }),
+    };
+    const lifts = buildBoardLifts({
+      catalog,
+      pins: [{ exerciseId: id, position: 1 }],
+      summaries: [summary(id, "2026-09-16T12:00:00Z", { currentE1rm: 185, delta: -12, e1rmSeries: [197, 185] })],
+      weekExerciseIds: [],
+    });
+    expect(lifts.find((lift) => lift.exerciseId === id)?.label).toEqual({
+      name: "Hack Squat",
+      equipment: "Machine",
+      secondary: "Cybex",
+      tertiary: "Plate-loaded",
     });
   });
 
@@ -245,6 +271,7 @@ describe("buildBoardLifts", () => {
     });
     expect(lifts.find((lift) => lift.exerciseId === "lat-pulldown")).toMatchObject({
       reviewExerciseId: "lat-pulldown__nautilus__selectorized",
+      label: { name: "Lat Pulldown (Cable)", equipment: "Cable", secondary: "Nautilus" },
       currentE1rm: 140,
       delta: null,
       e1rmSeries: [140],

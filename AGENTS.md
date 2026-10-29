@@ -77,7 +77,10 @@ TypeScript strength engine. Workouts require connectivity; there is no offline s
 | [writing-for-agents](.agents/skills/writing-for-agents/SKILL.md) | Creating or editing a skill, AGENTS.md, or CLAUDE.md. |
 
 ## Definition of done
-Follow [verify-change](.agents/skills/verify-change/SKILL.md). Record commands, results, the browser check, and migration status in the PR body. Do not merge.
+Follow [verify-change](.agents/skills/verify-change/SKILL.md). After publishing or updating a PR,
+follow [published PR verification](docs/VERIFICATION.md#published-pr-verification), including
+when local Docker/browser checks are blocked. Record local and CI evidence for the current
+PR head in its body. Do not merge.
 
 ## Verification and continuity
 

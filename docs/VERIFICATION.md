@@ -127,6 +127,50 @@ The existing production migration gate remains part of the build.
 | `browser` | Real Auth → app action → PostgREST/RLS → DB → rendered UI; prerequisites below |
 | `live` | Existing paid model evals, explicitly selected and with all eval credentials present; never selected by default |
 
+## Published PR verification
+
+`.github/workflows/ci.yml` starts automatically when a PR opens, receives a commit,
+reopens or becomes ready for review. Draft PRs also run checks. The workflow runs base
+verification plus a disposable Supabase database and the committed authenticated browser
+journeys. Publishing a feature branch alone does not start PR CI; open the authorized PR.
+New commits cancel superseded runs for that PR. No hosted database or paid model is used.
+
+After every authorized PR publication/update, run:
+
+```bash
+npm run verify:pr -- <PR number>
+```
+
+The command uses authenticated `gh` and the checkout's repository/HEAD. It waits up to
+20 minutes, polls every 15 seconds, and prints JSON evidence with the head SHA and run URL.
+`--once` inspects without waiting; `--timeout <seconds>` changes the total wait.
+It exits zero only when this PR's latest CI run for local HEAD has successful base and
+database jobs and a successful **Verify authenticated phone journeys** step. Missing runs,
+skipped checks, cancellations and stale heads cannot become a pass. Pending checks time
+out as BLOCKED; completed failures report FAIL. Workflow/job/step names are a contract with
+`scripts/pr-verification.mjs`; update the checker and its tests when renaming them.
+
+If local Docker cannot start, record the local reason once and continue to this CI check.
+After CI passes, report `browser (local): BLOCKED; browser (CI): PASS` with the run URL and
+SHA. A build result alone is insufficient. Inspect failing job logs, fix application/test
+failures, push through hooks, and verify the new head. For an infrastructure failure, report
+FAIL/BLOCKED with the job URL and specific reason. Keep the PR body and final report current.
+
+If `gh` authentication/API access is unavailable but connected GitHub tools work:
+
+1. Read the PR metadata and confirm its head SHA equals the checkout being reported.
+2. Fetch that commit's PR workflow runs; select the latest **CI** run for this PR.
+3. Wait for completion, then fetch its jobs and steps. Require successful base and database
+   jobs and the successful browser step named above. Read failed logs when needed.
+4. Re-read the PR head before reporting; a newer commit requires a new check. Record the
+   SHA, run URL, job/step outcomes and any local limitation in the PR body. If GitHub is
+   inaccessible or no run appears, report CI as BLOCKED with that reason.
+
+The workflow's job summary records the PR head, tested checkout (GitHub's temporary merge
+commit for PR runs) and browser outcome. Existing branch protection is separate: a human
+administrator can require **Lint, typecheck, test, build** and **Database RLS tests** to
+prevent merging without both checks. The agent never merges or changes protection settings.
+
 ## Browser smoke checks
 
 With local Supabase running and Chromium installed (`npx playwright install chromium`),

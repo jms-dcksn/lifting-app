@@ -1,4 +1,5 @@
 import { exerciseFamilyIds, latestFamilyMember } from "./exercise-history";
+import { exerciseCardLabel, type ExerciseCardLabelLines } from "./exercise-card-label";
 import type { ExerciseDef, Pattern } from "./strength/coefficients";
 import { movementId, movementMemberIds, movementTemplate, rollsUp } from "./strength/movement";
 import { recapHeadline, recapLines, recordCounts, type ExerciseRecords } from "./strength/records";
@@ -26,7 +27,7 @@ export interface BoardLift {
   reviewExerciseId: string;
   equipmentInstanceId: string | null;
   name: string;
-  shortName: string;
+  label: ExerciseCardLabelLines;
   isCompound: boolean;
   currentE1rm: number | null;
   delta: number | null;
@@ -209,10 +210,10 @@ function aggregateMovementSummary(
 }
 
 export function signedDelta(delta: number | null) {
-  if (delta == null) return null;
-  if (delta === 0) return "held";
+  if (delta == null || !Number.isFinite(delta)) return null;
   const rounded = Math.round(delta);
-  return rounded > 0 ? `+${rounded}` : `${rounded}`;
+  if (rounded === 0) return "held";
+  return rounded > 0 ? `▲ ${rounded}` : `▼ ${Math.abs(rounded)}`;
 }
 
 export interface WeekRecordChip {
@@ -291,12 +292,15 @@ export function buildBoardLifts({
       ? (template && rollsUp(template) ? exerciseId : (summary?.exerciseId ?? exerciseId))
       : (summary?.exerciseId ?? exerciseId);
     const movementKey = pinDisplayKey(reviewExerciseId, catalog);
+    // Label the review target: the movement template when numbers roll up,
+    // otherwise the station the e1RM belongs to. Rules stay in exerciseCardLabel.
+    const labelDef = catalog[reviewExerciseId] ?? def;
     return {
       exerciseId,
       reviewExerciseId,
       equipmentInstanceId: summary?.equipmentInstanceId ?? null,
       name: def?.name ?? exerciseId,
-      shortName: boardShortName(def ?? { id: exerciseId, name: exerciseId }),
+      label: labelDef ? exerciseCardLabel(labelDef, catalog) : { name: exerciseId },
       isCompound: defaultSet.has(exerciseId),
       currentE1rm: summary?.currentE1rm ?? null,
       delta: summary?.delta ?? null,

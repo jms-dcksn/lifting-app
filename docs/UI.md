@@ -48,7 +48,9 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   Use the [art generation specification](EXERCISE-ART.md) for reusable prompts, committed
   style references, exercise mechanics, export settings, and thumbnail review.
 - `ExerciseCardLabel` shares the exercise-name → equipment-chip → supporting-details
-  hierarchy across Active, Plan, program cards and the exercise picker. Always show the
+  hierarchy across Active, Plan, program cards, the exercise picker, and Track board
+  tiles. Track tiles reserve the name, chip, and brand rows so the e1RM lines up;
+  other surfaces still omit an empty detail line. Always show the
   canonical equipment category (Machine, Cable, Dumbbell, Barbell or Bodyweight), even
   before station selection. Bench/rack/platform context complements Barbell. Brand/model
   and machine loading details stay secondary; use “Weight stack” rather than

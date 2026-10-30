@@ -115,6 +115,9 @@ see the [shared stall contract](MONTHLY-PROGRESS.md#shared-stall-contract).
 
 `program.ts` assembles complete programs and ordered phases. `listProgramSummaries()` uses
 batched program/day/slot queries; `program-summary.ts` sorts active first, then newest.
+Both loaders surface query failures instead of treating unavailable rows as empty programs,
+days, phases, or exercise counts. The program route's error boundary offers a retry;
+successful queries with no rows still represent legitimate empty state.
 The builder preserves day/slot IDs with upsert/delete-missing, maintaining set-history links.
 Saving activates the program; the partial unique index allows at most one active program.
 Clones are inactive drafts. Template creation activates only for an account without programs.

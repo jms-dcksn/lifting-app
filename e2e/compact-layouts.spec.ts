@@ -56,12 +56,14 @@ test("compact builder, read-only targets and out-of-order logging retain real sa
     await checkLayout(page,info,"plan");
     await page.getByRole("button",{name:"Start workout",exact:true}).click();await expect(page).toHaveURL(/\/session\//);
     const session=new URL(page.url()).pathname.split("/").at(-1)!;
-    if (await page.getByRole("button",{name:"Skip",exact:true}).count()) await page.getByRole("button",{name:"Skip",exact:true}).click();
+    await expect(page.getByRole("group",{name:"Readiness from 1 to 5",exact:true})).toBeVisible();
     const firstCard=page.locator("[data-workout-slot]").nth(0),secondCard=page.locator("[data-workout-slot]").nth(1);
     await firstCard.getByRole("textbox",{name:"Weight",exact:true}).fill("60");
     await secondCard.locator("[data-focus-exercise]").click();await expect(secondCard.getByRole("textbox",{name:"Weight",exact:true})).toBeFocused();
     await firstCard.locator("[data-focus-exercise]").click();await expect(firstCard.getByRole("textbox",{name:"Weight",exact:true})).toHaveValue("60");
     await checkLayout(page,info,"active");
+    await page.getByRole("button",{name:"Skip",exact:true}).click();
+    await expect(page.getByRole("group",{name:"Readiness from 1 to 5",exact:true})).toHaveCount(0);
     await firstCard.getByRole("button",{name:"Log set",exact:true}).click();
     await expect.poll(async()=>(await db.query("select count(*)::int n from public.set_log where session_id=$1",[session])).rows[0].n).toBe(1);
     await page.reload();await expect(firstCard.getByText(/60 lb ×/).first()).toBeVisible();

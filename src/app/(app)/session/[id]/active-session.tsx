@@ -745,7 +745,7 @@ function SlotCard({
           <Button
             type="button"
             variant="secondary"
-            size="sm"
+            size="md"
             pending={retryingRecompute}
             onClick={handleRetryRecompute}
           >

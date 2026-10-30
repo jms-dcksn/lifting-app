@@ -84,7 +84,7 @@ function HistoryContent({
             <p className="text-caption text-muted">History</p>
           </div>
         </div>
-        <Button variant="secondary" size="sm" onClick={dismiss}>Close</Button>
+        <Button variant="secondary" size="md" onClick={dismiss}>Close</Button>
       </header>
       <div className="min-h-0 overflow-y-auto overscroll-contain" tabIndex={0} aria-label="Previous sets">
         {error ? (

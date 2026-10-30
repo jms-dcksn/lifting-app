@@ -249,3 +249,31 @@ it("keeps secondary tools in More and validates hidden rest before saving",async
   await act(async()=>button("Save changes").click());
   expect(save.mock.calls[0][0].plan.slots[0].restSeconds).toBe(90);
 });
+
+it("renders distinct read-only targets in a compact semantic table without editable controls",async()=>{
+  const mixed={...plan,slots:[{...plan.slots[0],sets:[plan.slots[0].sets[0],{...plan.slots[0].sets[0],id:randomUUID(),weight:null,suggestedWeight:85,repMin:10,repMax:12,rirMin:2,rirMax:3}]}]};
+  await act(async()=>root.render(createElement(WorkoutPlanner,{planKey:"mixed",programId:"program",dayId:"day",completed:0,sourceRevision:1,revision:0,
+    programName:"Program",dayName:"Upper",week:1,slots:[],plan:mixed,recovery:null,stats:[],bodyweight:180,targetHistory:{progressionByExercise:{},effortBySlot:{}},catalog:Object.values(EXERCISE_BY_ID)})));
+  const table=host.querySelector('table[aria-label="Exercise 1 working sets"]');
+  expect(table).not.toBeNull();
+  const rows=table!.querySelectorAll("tbody tr");
+  expect(rows).toHaveLength(2);
+  expect(rows[0].textContent).toContain("100 lb · Your target");
+  expect(rows[1].textContent).toContain("85 lb · Suggested");
+  expect(rows[1].textContent).toContain("10–12");
+  expect(rows[1].textContent).toContain("2–3");
+  expect(table!.querySelector("input,button")).toBeNull();
+});
+
+it.each([
+  ["ab-wheel-rollout",0,"Reps",false],
+  ["assisted-pullup",-40,"Assistance · lb",true],
+] as const)("summarizes %s without misrepresenting its load",async(exerciseId,weight,heading,hasLoad)=>{
+  const special={...plan,slots:[{...plan.slots[0],exerciseId,sets:[{...plan.slots[0].sets[0],weight}]}]};
+  await act(async()=>root.render(createElement(WorkoutPlanner,{planKey:exerciseId,programId:"program",dayId:"day",completed:0,sourceRevision:1,revision:0,
+    programName:"Program",dayName:"Upper",week:1,slots:[],plan:special,recovery:null,stats:[],bodyweight:180,targetHistory:{progressionByExercise:{},effortBySlot:{}},catalog:Object.values(EXERCISE_BY_ID)})));
+  const table=host.querySelector("table")!;
+  expect(table.textContent).toContain(heading);
+  expect(table.textContent?.includes("lb")).toBe(hasLoad);
+  if(hasLoad){expect(table.querySelector("tbody td")?.textContent).toContain("40 lb");expect(table.textContent).not.toContain("-40");}
+});

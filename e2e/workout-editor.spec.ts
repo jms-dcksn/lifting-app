@@ -124,7 +124,8 @@ test("complete editor draft, both scopes, per-set start and historical preservat
     await expect(page.getByRole('textbox',{name:'Reps',exact:true}).first()).toHaveValue('10');
     await page.reload();await expect(page.getByRole('textbox',{name:'Weight',exact:true}).first()).toHaveValue('60');
     await expect(page.getByRole('button',{name:'Skip',exact:true})).toHaveCount(0);
-    await page.getByRole('button',{name:'Log set',exact:true}).nth(1).click();
+    await page.getByRole('button',{name:/^Log this exercise:/}).click();
+    await page.getByRole('button',{name:'Log set',exact:true}).click();
     await expect.poll(async()=>(await db.query('select count(*)::int n from public.set_log where session_id=$1',[sessionId])).rows[0].n).toBe(2);
     const historical=(await db.query('select * from public.set_log where session_id=$1',[sessionId])).rows;
     // Advance the synthetic fixture's remaining day without creating progression evidence.
@@ -161,10 +162,13 @@ test("complete editor draft, both scopes, per-set start and historical preservat
     await db.query('insert into public.workout_session(user_id,program_id,program_day_id,week_index,finished_at) values($1,$2,$3,2,now())',[owner,program,other]);
     await db.query("insert into public.program_phase(id,user_id,program_id,position,name,week_start,week_end,target_rir_min,target_rir_max,set_multiplier,is_deload) values($1,$2,$3,0,'Recovery',3,3,3,4,0.5,true)",[randomUUID(),owner,program]);
     await page.goto('/workout/next');
-    await expect(page.locator('legend').filter({hasText:/^Set \d/})).toHaveCount(2);
+    await expect(page.locator('[data-readonly-set-row]')).toHaveCount(2);
     await expect(page.getByText('Recovery: 2 of 4 normal-week sets')).toBeVisible();
-    await expect(page.getByText(/5–8 reps · 3–4 RIR/)).toBeVisible();
-    await expect(page.getByText(/10–12 reps · 3–4 RIR/)).toBeVisible();
+    const readOnlyRows=page.locator('[data-readonly-set-row]');
+    await expect(readOnlyRows.nth(0).getByRole('cell').nth(1)).toHaveText('5–8');
+    await expect(readOnlyRows.nth(1).getByRole('cell').nth(1)).toHaveText('10–12');
+    await expect(readOnlyRows.nth(0).getByRole('cell').nth(2)).toHaveText('3–4');
+    await expect(readOnlyRows.nth(1).getByRole('cell').nth(2)).toHaveText('3–4');
     await page.getByRole('button',{name:'Edit workout',exact:true}).click();
     await page.getByLabel('Apply changes to').selectOption('program');
     await expect(page.locator('[data-set-row]')).toHaveCount(4);
@@ -176,7 +180,7 @@ test("complete editor draft, both scopes, per-set start and historical preservat
     await page.getByRole('button',{name:'Save changes',exact:true}).click();
     await expect(page.getByRole('button',{name:'Start workout',exact:true})).toBeVisible();
     await page.reload();
-    await expect(page.locator('legend').filter({hasText:/^Set \d/})).toHaveCount(2);
+    await expect(page.locator('[data-readonly-set-row]')).toHaveCount(2);
     expect((await db.query('select target_sets from public.program_slot where id=$1',[slot])).rows[0].target_sets).toBe(4);
     await page.getByRole('button',{name:'Start workout',exact:true}).click();await expect(page).toHaveURL(/\/session\//);
     const recoveryId=new URL(page.url()).pathname.split('/').at(-1)!;
@@ -185,9 +189,13 @@ test("complete editor draft, both scopes, per-set start and historical preservat
     await db.query('update public.workout_session set finished_at=now() where id=$1',[recoveryId]);
     await db.query('insert into public.workout_session(user_id,program_id,program_day_id,week_index,finished_at) values($1,$2,$3,3,now())',[owner,program,other]);
     await page.goto('/workout/next');
-    await expect(page.locator('legend').filter({hasText:/^Set \d/})).toHaveCount(4);
-    await expect(page.getByText(/5–8 reps · 1 RIR · 115 lb · Suggested/)).toBeVisible();
-    await expect(page.getByText(/10–12 reps · 2 RIR · 65 lb · Suggested/)).toBeVisible();
+    await expect(page.locator('[data-readonly-set-row]')).toHaveCount(4);
+    await expect(readOnlyRows.nth(0).getByRole('cell').nth(0)).toHaveText('115 lb · Suggested');
+    await expect(readOnlyRows.nth(0).getByRole('cell').nth(1)).toHaveText('5–8');
+    await expect(readOnlyRows.nth(0).getByRole('cell').nth(2)).toHaveText('1');
+    await expect(readOnlyRows.nth(1).getByRole('cell').nth(0)).toHaveText('65 lb · Suggested');
+    await expect(readOnlyRows.nth(1).getByRole('cell').nth(1)).toHaveText('10–12');
+    await expect(readOnlyRows.nth(1).getByRole('cell').nth(2)).toHaveText('2');
     await page.screenshot({path:'/tmp/editor-desktop.png',fullPage:true});
     expect(errors).toEqual([]);
   }finally{if(owner)await db.query('delete from auth.users where id=$1',[owner]);await db.end();}

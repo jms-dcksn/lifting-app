@@ -133,10 +133,10 @@ export function RestBar({ timer }: { timer: RestTimer }) {
         <span className="text-heading tabular-nums">{formatRestRemaining(timer.remaining)}</span>
       </span>
       <span className="flex items-center gap-2">
-        <Button type="button" variant="secondary" size="sm" onClick={() => timer.add(30)}>
+        <Button type="button" variant="secondary" size="md" onClick={() => timer.add(30)}>
           +30s
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={timer.skip}>
+        <Button type="button" variant="ghost" size="md" onClick={timer.skip}>
           Skip
         </Button>
       </span>

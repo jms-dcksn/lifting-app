@@ -57,7 +57,7 @@ export function ReadinessPrompt({ sessionId }: { sessionId: string }) {
         <span>1 depleted</span>
         <span>5 ready</span>
       </div>
-      <Button type="button" variant="ghost" size="sm" className="mt-2" onClick={() => setDismissed(true)}>
+      <Button type="button" variant="ghost" size="md" className="mt-2" onClick={() => setDismissed(true)}>
         Skip
       </Button>
       {error && <p className="mt-2 text-caption text-danger">{error}</p>}
@@ -116,7 +116,7 @@ export function SessionFeedbackCard({
           </p>
         </div>
         {onEdit && (
-          <Button type="button" variant="secondary" size="sm" onClick={onEdit}>
+          <Button type="button" variant="secondary" size="md" onClick={onEdit}>
             Edit
           </Button>
         )}

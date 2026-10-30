@@ -15,6 +15,13 @@ while editing. Local validation focuses the first invalid field; failed writes r
 draft. Cancel asks to discard a changed draft and offers Keep editing. Navigation/reload
 guards use browser confirmation where supported.
 
+Read-only cards use the same compact artwork/identity shell and a semantic set table.
+Values remain plain text until Edit. Every row retains its prescribed rep/RIR bounds and
+manual/suggested/missing target provenance, including mixed targets in one exercise.
+Reps-only work omits pounds; assisted work labels positive assistance. Tempo, recovery,
+superset/round-rest context and previous notes remain visible. Start still accepts pending
+equipment; this layout does not move equipment resolution earlier in the flow.
+
 While editing, station-backed movements also offer a direct **Change machine/cable/
 platform/rack/bench** action (or **Choose** for unresolved equipment). It opens the
 same-movement station form without browsing exercises. The editor injects its local
@@ -31,13 +38,19 @@ secondary rest/superset/bulk tools behind **More**. Its rationale panel links th
 research. Usage priorities come from the owner's expected common actions; they have
 not been measured with analytics or usability testing.
 
-The compact layout is implemented in the planner's edit mode using the existing Button,
-IconButton, Input, ExerciseCardLabel and native-dialog Sheet components. Read-only cards
-retain their existing prescription presentation. The reference HTML uses
+The compact layout is implemented in both planner modes using the existing Button,
+IconButton, Input, ExerciseCardLabel and native-dialog Sheet components, plus the shared
+read-only `PlannedSetSummary`. The reference HTML uses
 sample equipment and suggestions, supports reversible in-memory edits, and has no
 database connection. Save affects only that tab; reload resets it. Prototype superset
 grouping is illustrative; application rules own equipment resolution, validation, recovery
 and superset round rest.
+
+The owner also approved the [three-surface study](compact-layouts-mock.html) for #249.
+Its [research](compact-layouts-research.md) records assumptions and illustrative comparisons;
+the [implementation plan](compact-layouts-implementation.md) maps the production changes
+and verification boundaries. The production implementation preserves data contracts rather
+than copying the prototype's memory-only state or training fixtures.
 
 ## Save scopes and persistence
 

@@ -55,6 +55,22 @@ beforeEach(() => {
 afterEach(async () => { await act(async () => root.unmount()); host.remove(); });
 
 describe("active workout set progress", () => {
+  it("keeps the exercise pin in the card header without opening More", async () => {
+    await render(0);
+    const card=host.querySelector('[data-workout-slot]')!;
+    expect(card.querySelector('header button[aria-label^="Pin "]')).not.toBeNull();
+  });
+
+  it("opens cable selection from setup on an unresolved exercise", async () => {
+    HTMLDialogElement.prototype.showModal=vi.fn(function(this:HTMLDialogElement){this.open=true;});
+    HTMLDialogElement.prototype.close=vi.fn(function(this:HTMLDialogElement){this.open=false;});
+    await render(0,3,EXERCISE_BY_ID['lat-pulldown']);
+    const setup=host.querySelector<HTMLButtonElement>('[aria-label^="Choose cable to edit setup"]')!;
+    await act(async()=>setup.click());
+    expect(host.querySelector('dialog')?.open).toBe(true);
+    expect(host.querySelector('dialog')?.textContent).toContain('Use this cable');
+  });
+
   it("logs rep-only work with zero stored load and no weight control", async () => {
     vi.mocked(logSet).mockResolvedValue({ id: "rollout-set", exercise_id: "ab-wheel-rollout", weight: 0,
       reps: 6, rir: 2, set_index: 0, e1rm: null, note: null, setup_snapshot: null, edit_revision: 0, tempo: null, recomputeWarning: null });
@@ -93,7 +109,9 @@ describe("active workout set progress", () => {
     expect(host.querySelector('[role="status"]')?.textContent).toBe("Done 3/3");
     expect(host.querySelector('[role="status"]')?.getAttribute("aria-label")).toBe("3 of 3 sets logged, complete");
     expect(button("Edit")).toBeDefined();
+    await act(async () => button("Edit").click());
     expect(button("Delete")).toBeDefined();
+    await act(async () => button("Cancel").click());
     expect(button("Add set").disabled).toBe(false);
     vi.mocked(logSet).mockResolvedValue({ id: "extra", exercise_id: "db-bench", weight: 50,
       reps: 8, rir: 2, set_index: 3, e1rm: null, note: null, setup_snapshot: null, edit_revision: 0, tempo: null, recomputeWarning: null });
@@ -138,4 +156,26 @@ describe("active workout set progress", () => {
     expect(logSet).toHaveBeenCalledWith(expect.objectContaining({tempo:null}));
   });
 
+});
+
+it("offers out-of-order entry while preserving another exercise's typed draft",async()=>{
+  const first=slot(0),second={...slot(0),programSlotId:"slot-two"};
+  await act(async()=>root.render(createElement(ActiveSession,{
+    sessionId:"open",dayName:"Upper",week:1,weeks:5,phase:null,bodyweight:180,defaultRestSeconds:120,alreadyFinished:false,
+    initialFeedback:{readiness:3,jointPain:null,note:null},stats:[],recentIds:[],slots:[first,second],targetHistory,
+    catalog:EXERCISE_BY_ID,recordsPromise,pinnedIds:[],
+  })));
+  const cards=host.querySelectorAll('[data-workout-slot]');
+  expect(cards).toHaveLength(2);
+  const original=cards[0].querySelector<HTMLInputElement>('input[aria-label="Weight"]')!;
+  await act(async()=>cards[0].querySelector<HTMLButtonElement>('[aria-label="Increase Weight"]')!.click());
+  const typed=cards[0].querySelector<HTMLInputElement>('input[aria-label="Weight"]')!.value;
+  expect(typed).not.toBe(original.value);
+  const select=cards[1].querySelector<HTMLButtonElement>('[data-focus-exercise]')!;
+  expect(select).not.toBeNull();
+  await act(async()=>select.click());
+  expect(cards[0].querySelector('[data-set-entry]')?.hasAttribute('hidden')).toBe(true);
+  expect(cards[1].querySelector('[data-set-entry]')?.hasAttribute('hidden')).toBe(false);
+  await act(async()=>cards[0].querySelector<HTMLButtonElement>('[data-focus-exercise]')!.click());
+  expect(cards[0].querySelector<HTMLInputElement>('input[aria-label="Weight"]')!.value).toBe(typed);
 });

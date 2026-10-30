@@ -302,6 +302,23 @@ Final #206 base verification passed fresh framework types, TypeScript, lint (the
 live test skipped, and the production build. No hosted rollout or paid model evaluation ran.
 
 
+## Compact workout layouts (#249)
+
+`workout-editor-ui.test.tsx` checks plain read-only set rows, mixed provenance, distinct
+bounds and reps-only/assisted loads. `active-session-progress.test.tsx` checks switching
+entry focus without losing another exercise's typed draft; existing pending/failure,
+completion, extra-set, effort and superset timer tests remain in place. `program-builder-ui.test.tsx`
+checks day navigation, complete-program saves, range validation/cancellation, replacement
+without prescription loss, retained failures, cancelled options and inherited-tempo preservation.
+
+`e2e/compact-layouts.spec.ts` runs real Auth → builder save → database → read-only plan →
+captured workout → out-of-order entry → saved result/reload. It checks 320/390px and desktop,
+both color schemes, visible 44px buttons, range cancellation, stored rest and edit/delete
+access, and writes screenshots to the Playwright test output. The older editor, tempo and
+notes journeys retain their data assertions with semantic table selectors and named controls.
+Local rendered-component previews disable server actions and are visual evidence only;
+the PR's authenticated CI browser step is the full-stack evidence when local Docker is blocked.
+
 ## Complete workout editor (#238)
 
 `workout-editor.test.ts` checks the versioned plan boundary, equipment load rules, recovery

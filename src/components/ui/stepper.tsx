@@ -134,7 +134,7 @@ export function Stepper({
         {label}
       </span>
       {input}
-      <div className="grid grid-cols-2 gap-1">
+      <div className="stepper-controls grid grid-cols-2 gap-1">
         <HoldButton dir={-1} label={`Decrease ${label}`} className={btn} onStep={bump}>
           −
         </HoldButton>

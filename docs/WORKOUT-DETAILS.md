@@ -28,8 +28,11 @@ clear it. Workout exercise notes use session + stable occurrence + exact exercis
 identity. Duplicate slots stay independent, including before their first set. A swap selects
 the destination's record; prior observations remain available under their original identity.
 
-Setup references use owner + exact exercise + equipment identity. The UI offers remembered
-setup explicitly, rather than treating it as a newly recorded observation. Saving setup
+Setup references use owner + exact exercise + equipment identity. The UI provides a labeled
+**Machine setup** or **Cable setup** action beside Exercise note.
+Before equipment is selected, the same action opens station selection; it does not save
+settings against an unresolved template. Free-weight exercises do not show a setup action.
+The editor offers remembered setup explicitly, rather than treating it as a newly recorded observation. Saving setup
 records the current occurrence and optionally updates that reusable reference. Each set
 captures the setup that applied when logged. Later setup edits affect subsequent sets;
 earlier sets retain their original snapshot. Exercise/set observations never auto-copy.

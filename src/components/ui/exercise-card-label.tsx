@@ -22,6 +22,7 @@ export function ExerciseCardLabel({
   as: Tag = "div",
   size = "heading",
   className,
+  compact = false,
 }: {
   def?: ExerciseDef;
   catalog?: Record<string, ExerciseDef>;
@@ -29,6 +30,7 @@ export function ExerciseCardLabel({
   as?: "div" | "h1" | "h2" | "h3" | "p" | "span";
   size?: keyof typeof NAME_CLASS;
   className?: string;
+  compact?: boolean;
 }) {
   const resolved = lines ?? (def ? exerciseCardLabel(def, catalog) : { name: "" });
   return (
@@ -38,9 +40,10 @@ export function ExerciseCardLabel({
         <span className="mt-1 flex flex-wrap items-center gap-1.5 text-caption font-medium">
           <span className={exerciseEquipmentChipClass}>{resolved.equipment}</span>
           {resolved.station && <span className="text-muted">{resolved.station}</span>}
+          {compact && (resolved.secondary || resolved.tertiary) && <span className="font-normal text-muted">{[resolved.secondary,resolved.tertiary].filter(Boolean).join(" · ")}</span>}
         </span>
       ) : null}
-      {resolved.secondary || resolved.tertiary ? (
+      {!compact && (resolved.secondary || resolved.tertiary) ? (
         <span className="mt-1 block text-caption font-normal text-muted">
           {[resolved.secondary, resolved.tertiary].filter(Boolean).join(" · ")}
         </span>

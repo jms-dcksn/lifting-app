@@ -10,7 +10,7 @@ import Link from "next/link";
 import { Suspense, use, useCallback, useEffect, useMemo, useOptimistic, useRef, useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
-import { canSwapStation, isLoggableExercise } from "@/lib/station";
+import { canSwapStation, isLoggableExercise, stationTemplateFor } from "@/lib/station";
 import {
   startingWeight,
   type ProgressionPerformance,
@@ -23,19 +23,19 @@ import type { ExerciseStat } from "@/lib/strength/recommend";
 import { rirLabel, type EffectivePrescription, type ProgramPhase } from "@/lib/periodization";
 import type { SessionFeedback } from "@/lib/session-feedback";
 import { Button, type ButtonVariant } from "@/components/ui/button";
-import { IconButton } from "@/components/ui/icon-button";
 import { IconPastSets, IconLastUsed, IconSwap } from "@/components/ui/icons";
 import { TempoFields, TempoLabel } from "@/components/ui/tempo";
 import { resolveTempo, tempoSchema, type Tempo } from "@/lib/tempo";
-import { Sheet } from "@/components/ui/sheet";
+import { Sheet, useSheetDismiss } from "@/components/ui/sheet";
 import { ExerciseCardLabel, exerciseCardAriaLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card, CardLabel } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
 import { formatExerciseSet } from "@/lib/strength/load-mode";
+import { PlannedSetSummary } from "@/components/ui/planned-set-table";
 import { Stepper } from "@/components/ui/stepper";
 import { PinButton } from "../../pins/pin-button";
-import { ExercisePicker } from "../../program/exercise-picker";
+import { ExercisePicker, StationPicker } from "../../program/exercise-picker";
 import { SwapStationButton } from "../../program/swap-station-button";
 import { RestBar, useSessionRestTimer } from "./rest-timer";
 import { ExerciseHistory } from "./exercise-history";
@@ -167,6 +167,7 @@ export function ActiveSession({
   const [feedback, setFeedback] = useState(initialFeedback);
   const [feedbackSheet, setFeedbackSheet] = useState<"finish" | "edit" | null>(null);
   const [finishing, startFinish] = useTransition();
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const phasePrescription = slots[0]?.prescription;
   const hasLoggedSets = slots.some((slot) => slot.sets.length > 0);
@@ -205,17 +206,31 @@ export function ActiveSession({
   // after each logged set revalidates). Earlier slots recede, the current one reads active.
   const currentIndex = slots.findIndex((s) => s.plannedSets ? s.plannedSets.some(row=>!s.sets.some(log=>log.plannedSetId===row.id)) : s.sets.length < s.prescription.targetSets);
 
+  const focusedSlotId = slots.some(slot => slot.programSlotId === selectedSlotId)
+    ? selectedSlotId : slots[currentIndex >= 0 ? currentIndex : slots.length - 1]?.programSlotId;
+  const loggedCount = slots.reduce((count, slot) => count + slot.sets.length, 0);
+  const plannedCount = slots.reduce((count, slot) => count + (slot.plannedSets?.length ?? slot.prescription.targetSets), 0);
+
   return (
     <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-4 py-5">
       <Suspense fallback={null}>
         <WorkoutRecordsSync recordsPromise={recordsPromise} onRecords={onRecords} />
       </Suspense>
-      <header>
-        <h1 className="text-display">{dayName}</h1>
+      <header className="sticky top-0 z-20 -mx-4 border-b border-border bg-background/95 px-4 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur">
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="min-w-0 text-display">{dayName}</h1>
+          {!alreadyFinished && <Button type="button" variant="secondary" pending={finishing} onClick={() => {
+            setSummaryError(null); setFeedbackSheet("finish");
+          }}>Finish workout</Button>}
+        </div>
         <p className="text-body text-muted">
           {alreadyFinished ? `Finished · Week ${week} of ${weeks}` : `Week ${week} of ${weeks}`}
           {bodyweight ? ` · BW ${bodyweight} lb` : ""}
         </p>
+        <p className="mt-3 text-caption text-muted">{loggedCount} / {plannedCount} sets logged · {slots.length} exercises</p>
+        <div className="mt-2 h-0.5 overflow-hidden rounded-full bg-border" aria-hidden>
+          <div className="h-full bg-foreground" style={{width:`${plannedCount ? Math.min(100, loggedCount / plannedCount * 100) : 0}%`}} />
+        </div>
       </header>
 
       {isDeload && (
@@ -255,6 +270,8 @@ export function ActiveSession({
           isDeload={isDeload}
           achievements={recordsForSlot(achievements, slot.programSlotId)}
           isCurrent={i === currentIndex}
+          expanded={alreadyFinished || slot.programSlotId === focusedSlotId}
+          onFocus={() => setSelectedSlotId(slot.programSlotId)}
           alreadyFinished={alreadyFinished}
           stats={stats}
           bodyweight={bodyweight}
@@ -270,20 +287,10 @@ export function ActiveSession({
         <FinishedWorkoutNav sessionId={sessionId} />
       ) : (
         <div className="sticky bottom-0 -mx-4 mt-2 flex flex-col gap-2 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
-          <RestBar timer={rest} />
+          {rest.remaining != null ? <RestBar timer={rest} /> : <div className="flex items-center justify-between px-1 py-2">
+            <span className="text-caption text-muted">Rest timer</span><span className="text-heading">Ready</span>
+          </div>}
           {summaryError && <p role="alert" className="text-caption text-danger">{summaryError}</p>}
-          <Button
-            type="button"
-            size="lg"
-            className="w-full"
-            onClick={() => {
-              setSummaryError(null);
-              setFeedbackSheet("finish");
-            }}
-            pending={finishing}
-          >
-            Finish workout
-          </Button>
         </div>
       )}
 
@@ -310,6 +317,8 @@ function SlotCard({
   targetHistory,
   isDeload,
   isCurrent,
+  expanded,
+  onFocus,
   stats,
   bodyweight,
   recentIds,
@@ -325,6 +334,8 @@ function SlotCard({
   targetHistory: WorkoutTargetHistory;
   isDeload: boolean;
   isCurrent: boolean;
+  expanded: boolean;
+  onFocus: () => void;
   stats: ExerciseStat[];
   bodyweight: number | null;
   recentIds: string[];
@@ -343,6 +354,7 @@ function SlotCard({
   );
   const [isPending, startTransition] = useTransition();
   const editingSet = useRef<LoggedSet|null>(null);
+  const entryRef = useRef<HTMLDivElement>(null);
   const logRequest = useRef<{content:string;id:string}|null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   // Rows fading out before their delete commits, and the last failed-write message.
@@ -359,6 +371,7 @@ function SlotCard({
     setExerciseId(slot.exerciseId);
   }
   const [swapping, setSwapping] = useState(false);
+  const [choosingSetupStation, setChoosingSetupStation] = useState(false);
   const [pickedSwap, setPickedSwap] = useState<ExerciseDef | null>(null);
   const [savingSwap, startSwap] = useTransition();
   const [swapError, setSwapError] = useState<string | null>(null);
@@ -381,6 +394,7 @@ function SlotCard({
     });
   }
   const [showHistory, setShowHistory] = useState(false);
+  const [showTools, setShowTools] = useState(false);
   // All plateau choices use the shared, revalidated Coach confirmation flow.
   const [dismissed, setDismissed] = useState(false);
   const suggestion = slot.pendingSuggestion;
@@ -393,6 +407,8 @@ function SlotCard({
   // A station template isn't loggable — it must resolve to a brand / brand+type variant.
   const isTemplate = !!def && !isLoggableExercise(def);
   const showStationSwap = canSwapStation(def, catalog);
+  const stationTemplate = stationTemplateFor(def, catalog);
+  const setupNeedsStation = isTemplate && (stationTemplate?.stationProfile === "machine" || stationTemplate?.stationProfile === "cable");
 
   // Quick swap to the alternate last used for this slot. The button names the alternate by its
   // brand/type (never a sliced display name) so two variants of one movement stay distinct; the
@@ -546,12 +562,13 @@ function SlotCard({
   }
 
   return (
-    <Card tone={tone} className={complete ? "bg-surface/60" : undefined}>
-      {slot.supersetLabel && <p className="mb-2 text-caption font-medium">Superset {slot.supersetLabel} · Alternate exercises, then rest after the round</p>}
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-3">
-        <div className="flex min-w-0 flex-wrap items-start gap-3 sm:flex-1 sm:basis-64">
-          <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} size="lg" />
-          <h2 className="min-w-0 flex-1 basis-32">
+    <Card aria-label={name} data-workout-slot={slot.programSlotId} tone={expanded ? "active" : tone} className={complete ? "bg-surface/60" : undefined}>
+      <header className="flex min-w-0 items-start gap-3">
+        <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} size="sm" />
+        <div className="min-w-0 flex-1">
+          {!alreadyFinished && expanded && <p className="mb-1 text-caption font-medium text-muted">{complete ? "Exercise complete" : "Current exercise"}</p>}
+          {slot.supersetLabel && <p className="mb-1 text-caption font-medium">Superset {slot.supersetLabel} · Alternate exercises, then rest after the round</p>}
+          <h2 className="min-w-0">
             <Link
               href={exerciseReviewHref({
                 exerciseId,
@@ -560,52 +577,38 @@ function SlotCard({
               className="block underline-offset-2 hover:underline"
             >
               {def ? (
-                <ExerciseCardLabel as="span" size="heading" def={def} catalog={catalog} />
+                <ExerciseCardLabel as="span" size="heading" compact def={def} catalog={catalog} />
               ) : (
                 <span className="text-heading">{name}</span>
               )}
             </Link>
           </h2>
         </div>
-        <div className="ml-auto flex shrink-0 flex-wrap justify-end">
-          {lastUsedDef && !isTemplate && (
-            <IconButton
-              variant="ghost"
-              onClick={() => {
-                setSwapError(null);
-                setPickedSwap(lastUsedDef);
-              }}
-              disabled={alreadyFinished || savingSwap}
-              aria-label={`Quick swap to ${lastUsedDef.name}`}
-              title={lastUsedLabel ?? lastUsedDef.name}
-            >
-              <IconLastUsed />
-            </IconButton>
-          )}
-          <IconButton
-            variant="ghost"
-            onClick={() => setSwapping(true)}
-            disabled={alreadyFinished || savingSwap}
-            aria-label={`Swap ${name} for another exercise`}
-          >
-            <IconSwap />
-          </IconButton>
-          <IconButton
-            variant="ghost"
-            onClick={() => setShowHistory(true)}
-            aria-label={`View history for ${name}`}
-          >
-            <IconPastSets />
-          </IconButton>
-          {!isTemplate && (
-            <PinButton
-              exerciseId={exerciseId}
-              pinned={pinnedIds.includes(exerciseId)}
-              name={name}
-            />
-          )}
-        </div>
+        {!isTemplate && <PinButton key={exerciseId} exerciseId={exerciseId} pinned={pinnedIds.includes(exerciseId)} name={name} />}
+      </header>
+      <div role="group" aria-label={`Actions for ${name}`} className="mt-2 flex flex-wrap items-center gap-1">
+        <Button type="button" variant="ghost" className="gap-1.5 px-2! text-caption!" aria-label={`View history for ${name}`} onClick={() => setShowHistory(true)}>
+          <IconPastSets size={18} /> History
+        </Button>
+        <Button type="button" variant="ghost" className="gap-1.5 px-2! text-caption!" aria-label={`Swap ${name} for another exercise`}
+          disabled={alreadyFinished || savingSwap} onClick={() => setSwapping(true)}><IconSwap size={18} /> Swap</Button>
+        <Button type="button" variant="ghost" className="px-2! text-caption!" aria-label={`More tools for ${name}`} onClick={() => setShowTools(true)}>More ⋯</Button>
       </div>
+      {showTools && <Sheet ariaLabel={`Tools for ${name}`} onClose={() => setShowTools(false)}>
+        <div className="flex flex-col gap-3 px-4 pb-6">
+          <h2 className="text-heading">Exercise tools</h2><p className="text-caption text-muted">{name}</p>
+          {lastUsedDef && !isTemplate && <Button type="button" variant="secondary" disabled={alreadyFinished || savingSwap}
+            aria-label={`Quick swap to ${lastUsedDef.name}`} onClick={() => {setShowTools(false);setSwapError(null);setPickedSwap(lastUsedDef);}}>
+            <IconLastUsed /> {lastUsedLabel}
+          </Button>}
+          {showStationSwap && !isTemplate && <SwapStationButton exerciseId={exerciseId} catalog={catalog} size="md"
+            disabled={alreadyFinished || savingSwap} onPick={picked => {setShowTools(false);setSwapError(null);setPickedSwap(picked);}} />}
+          {slot.plannedSets && <details className="text-caption"><summary className="min-h-11 cursor-pointer py-3">Planned sets</summary>
+            <PlannedSetSummary sets={slot.plannedSets} label={`Planned sets for ${name}`} loadMode={def?.loadMode} addedLoad={isBodyweight && !def?.loadMode} />
+          </details>}
+          <CloseTools />
+        </div>
+      </Sheet>}
       {showHistory && (
         <ExerciseHistory
           key={`history:${exerciseId}`}
@@ -627,14 +630,14 @@ function SlotCard({
       </div>
 
       <TempoLabel value={prescribedTempo} />
-      <WorkoutExerciseDetails key={exerciseId} sessionId={sessionId} slotId={slot.programSlotId} exerciseId={exerciseId}
-        equipmentInstanceId={slot.equipmentInstanceId??null} catalog={catalog} details={slot.details??[]} remembered={slot.remembered??[]} equipmentLabels={slot.equipmentLabels??{}} />
-      {slot.plannedSets && <details className="mt-3 text-caption"><summary className="min-h-11 cursor-pointer py-3">Planned sets</summary>
-        <ol className="space-y-2">{slot.plannedSets.map((row,i)=><li key={row.id}>Set {i+1}: {row.repMin}{row.repMax!==row.repMin?`–${row.repMax}`:""} reps · {row.rirMin}{row.rirMax!==row.rirMin?`–${row.rirMax}`:""} RIR · {row.weight??row.suggestedWeight??"—"} lb</li>)}</ol>
-      </details>}
 
       <AchievementPills groups={achievements} exerciseId={exerciseId} />
 
+      <WorkoutExerciseDetails compact key={exerciseId} sessionId={sessionId} slotId={slot.programSlotId} exerciseId={exerciseId}
+        onChooseSetup={setupNeedsStation && !alreadyFinished && !savingSwap ? () => setChoosingSetupStation(true) : undefined}
+        equipmentInstanceId={slot.equipmentInstanceId??null} catalog={catalog} details={slot.details??[]} remembered={slot.remembered??[]} equipmentLabels={slot.equipmentLabels??{}} />
+
+      <div hidden={!expanded && !alreadyFinished}>
       <TargetLine
         target={target}
         reference={progressionReference}
@@ -643,6 +646,8 @@ function SlotCard({
         loadMode={def?.loadMode}
         done={done}
       />
+
+      </div>
 
       {showSuggestion && suggestion && (
         <div className="mt-3 rounded-card border border-border-strong p-3">
@@ -666,6 +671,10 @@ function SlotCard({
         />
       )}
 
+      {choosingSetupStation && stationTemplate && <StationPicker template={stationTemplate}
+        onPick={picked => {setChoosingSetupStation(false);setSwapError(null);setPickedSwap(picked);}}
+        onClose={() => setChoosingSetupStation(false)} />}
+
       {pickedSwap && !swapping && (
         <Sheet ariaLabel="Apply exercise swap" dismissible={!savingSwap} onClose={() => setPickedSwap(null)}>
           <div className="flex flex-col gap-3 px-4 pb-6 pt-2">
@@ -673,7 +682,7 @@ function SlotCard({
               <ExerciseVisual exerciseId={pickedSwap.id} baseExerciseId={pickedSwap.baseExerciseId} />
               <div className="min-w-0">
                 <p className="text-caption text-muted">Use for…</p>
-                <ExerciseCardLabel as="h2" size="heading" def={pickedSwap} catalog={catalog} />
+                <ExerciseCardLabel as="h2" size="heading" compact def={pickedSwap} catalog={catalog} />
               </div>
             </div>
             <p className="text-caption text-muted">Logged sets stay.</p>
@@ -707,16 +716,17 @@ function SlotCard({
                   disabled={isPending}
                   onSubmit={(w, r, rir, tempo, note, numericEdited) => handleEdit(s.id, w, r, rir, tempo, note, numericEdited)}
                   onCancel={() => setEditingId(null)}
+                  onDelete={() => { setEditingId(null); handleDelete(s.id); }}
                 />
               </li>
             ) : (
               <li
                 key={s.id}
                 data-exiting={exitingIds.includes(s.id) || undefined}
-                className="flex animate-row-in items-center justify-between rounded-control bg-surface px-3 py-1 text-body"
+                className="flex animate-row-in items-center justify-between gap-2 rounded-control bg-surface px-3 py-1 text-body"
               >
                 <div className="min-w-0 flex-1 tabular-nums">
-                  <span className="text-faint">{i + 1}.</span>{" "}
+                  <span className="text-muted">{i + 1}. <span className="sr-only">Logged</span>✓</span>{" "}
                   {formatExerciseSet(catalog[s.exerciseId], s.weight, s.reps)}
                   {s.rir != null ? ` @ ${s.rir}` : ""}
                   <SavedSetDetails tempo={s.tempo} note={s.note} setup={s.setup} />
@@ -725,20 +735,14 @@ function SlotCard({
                 <span className="flex shrink-0 items-center gap-1 text-caption">
                   <button
                     type="button"
-                    onClick={() => {editingSet.current=s;setEditingId(s.id);}}
+                    aria-label={`Edit set ${i + 1} for ${name}`}
+                    onClick={() => {onFocus();editingSet.current=s;setEditingId(s.id);}}
                     disabled={s.id.startsWith("temp-")}
-                    className="min-h-11 px-2 py-2 text-muted disabled:opacity-40"
+                    className="min-h-11 min-w-11 px-2 py-2 text-muted disabled:opacity-40"
                   >
                     Edit
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(s.id)}
-                    disabled={s.id.startsWith("temp-")}
-                    className="min-h-11 px-2 py-2 text-danger disabled:opacity-40"
-                  >
-                    Delete
-                  </button>
+
                 </span>
               </li>
             ),
@@ -754,7 +758,7 @@ function SlotCard({
           <Button
             type="button"
             variant="secondary"
-            size="sm"
+            size="md"
             pending={retryingRecompute}
             onClick={handleRetryRecompute}
           >
@@ -763,7 +767,7 @@ function SlotCard({
         </div>
       )}
 
-      {showStationSwap && isTemplate ? (
+      {showStationSwap && isTemplate && !setupNeedsStation ? (
         <div className="mt-3">
           <SwapStationButton
             exerciseId={exerciseId}
@@ -777,22 +781,18 @@ function SlotCard({
             }}
           />
         </div>
-      ) : showStationSwap && !isTemplate ? (
-        <div className="mt-3">
-          <SwapStationButton
-            exerciseId={exerciseId}
-            catalog={catalog}
-            disabled={alreadyFinished || savingSwap}
-            onPick={(picked) => {
-              setSwapError(null);
-              setPickedSwap(picked);
-            }}
-          />
-        </div>
       ) : null}
 
+      {!alreadyFinished && !expanded && !isTemplate && <Button type="button" variant="secondary" className="mt-3 w-full"
+        data-focus-exercise aria-label={`${complete ? "Add set for" : "Log this exercise:"} ${name}`} aria-expanded={false} onClick={() => {
+          onFocus(); requestAnimationFrame(() => entryRef.current?.querySelector<HTMLInputElement>("input")?.focus());
+        }}>{complete ? "Add set" : "Log this exercise"}</Button>}
       {!alreadyFinished && !isTemplate && editingId === null ? (
-        <div className="mt-3">
+        <div className="mt-3" ref={entryRef} data-set-entry hidden={!expanded}>
+          {!complete && <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-caption">
+            <strong>Next · Set {plannedRow ? (slot.plannedSets?.indexOf(plannedRow) ?? done) + 1 : done + 1} of {p.targetSets}</strong>
+            <span className="text-muted">Target {p.repMin}–{p.repMax} reps · {rirLabel(p)} RIR</span>
+          </div>}
           <SetEntry
             key={`${exerciseId}:${slot.sets.length}`}
             suggestionIdentity={exerciseId}
@@ -962,6 +962,7 @@ function SetEntry({
   liveWeight,
   onSubmit,
   onCancel,
+  onDelete,
 }: {
   suggestionIdentity?: string;
   loadMode?: ExerciseDef["loadMode"];
@@ -979,6 +980,7 @@ function SetEntry({
   liveWeight?: (reps: number, rir: number) => number | null;
   onSubmit: (weight: number, reps: number, rir: number, tempo?: Tempo | null, note?: string | null, numericEdited?:boolean) => void;
   onCancel?: () => void;
+  onDelete?: () => void;
 }) {
   const noteId=useId();
   const [note,setNote]=useState(initialNote??"");
@@ -1018,8 +1020,8 @@ function SetEntry({
   }
 
   return (
-    <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-2">
-      <div className={`grid ${loadMode === "reps_only" ? "grid-cols-2" : "grid-cols-3"} gap-2`}>
+    <fieldset disabled={disabled} className="set-entry flex min-w-0 flex-col gap-2">
+      <div className={`set-entry-fields grid ${loadMode === "reps_only" ? "grid-cols-2" : "grid-cols-3"} gap-2`}>
         {loadMode !== "reps_only" && <Stepper
           label={loadMode === "assisted" ? "Assistance (lb)" : "Weight"}
           value={loadMode === "assisted" ? Math.abs(weight) : weight}
@@ -1067,7 +1069,8 @@ function SetEntry({
         {tempo && <Button type="button" variant="ghost" onClick={() => {setTempo(null);setTempoTouched(true);}}>Mark tempo unspecified</Button>}
       </details>
       {detailError && <p role="alert" className="text-caption text-danger">{detailError}</p>}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
+        {onDelete && <Button type="button" variant="destructive" disabled={disabled} onClick={onDelete}>Delete</Button>}
         <Button
           type="button"
           variant={variant}
@@ -1121,4 +1124,9 @@ function useScreenWakeLock(enabled: boolean) {
       lock?.release().catch(() => {});
     };
   }, [enabled]);
+}
+
+function CloseTools() {
+  const dismiss = useSheetDismiss();
+  return <Button type="button" variant="secondary" onClick={dismiss}>Done</Button>;
 }

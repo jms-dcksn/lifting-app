@@ -32,7 +32,7 @@ export function TagInput({
             type="button"
             aria-label={`Remove ${tag}`}
             onClick={() => onChange(value.filter((t) => t !== tag))}
-            className="text-muted active:text-foreground"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-control text-muted active:text-foreground"
           >
             ✕
           </button>
@@ -53,7 +53,8 @@ export function TagInput({
         placeholder={value.length ? "Add tag" : "Add tags (e.g. hypertrophy)"}
         enterKeyHint="done"
         autoComplete="off"
-        className="h-8 min-w-24 flex-1 bg-transparent px-1 text-body outline-none"
+        aria-label="Program tags"
+        className="h-11 min-w-24 flex-1 bg-transparent px-1 text-body outline-none"
       />
     </div>
   );

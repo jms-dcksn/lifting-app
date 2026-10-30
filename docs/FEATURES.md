@@ -53,12 +53,19 @@ Adaptive plateau engine under §5.
   saved values. Database plans sync across devices; Start captures the exact structure.
   Normal-week effort and distinct heavy/lighter rows persist while recovery and progression
   continue. [Contract and verification](WORKOUT-PLANNING.md).
+- **Compact workout plan** — plain aligned set rows retain every target and its provenance,
+  with smaller artwork and equipment context. Editing and Start keep their existing scope
+  and equipment rules. [Approved study and implementation](compact-layouts-implementation.md).
 - **Block progress** — classic programs still show "{completed} of {total} sessions this block".
   Fluid programs show "Session N · Adaptive".
 
 ## 3. Programs (`/program`)
 
 ### Program grid and detail
+- **Compact create/edit builder** — named day navigation, one capped column and visible
+  Change/reorder/sets/reps/RIR. Range and secondary options sheets use explicit Apply/Cancel.
+  Program settings retains metadata, style, weeks and all phases. Replacement preserves
+  prescriptions; optional station selection does not make templates invalid.
 - **Ogus October 26 template** — six-week Classic Upper/Lower block (two more days pending),
   two sets per exercise; week 1 at 2 RIR, weeks 2–5 at 1 RIR, week 6 one set at 4 RIR.
   Lower pairs straight-leg adductor and optional external rotation as superset C1/C2.

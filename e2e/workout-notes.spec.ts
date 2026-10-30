@@ -98,17 +98,17 @@ test("workout notes, exact setup reuse and historical set context",async({page,c
     sheet=page.getByRole('dialog',{name:'Machine / cable setup',exact:true});
     await sheet.getByRole('textbox').fill('Seat 5');await sheet.getByRole('checkbox').check();await sheet.getByRole('button',{name:'Save',exact:true}).click();await expect(sheet).toHaveCount(0);
     expect(await page.evaluate(id=>sessionStorage.getItem(`lifting-rest-timer:${id}`),session)).toBe(rest);
-    await machine.getByRole('button',{name:'Edit',exact:true}).click();
+    await machine.getByRole('button',{name:/^Edit set \d+ for /}).click();
     await machine.getByRole('textbox',{name:'Reps',exact:true}).fill('9');await machine.getByRole('button',{name:'Save',exact:true}).click();
     await expect.poll(async()=>(await db.query('select reps,note,tempo,setup_snapshot from public.set_log where id=$1',[saved.id])).rows[0]).toMatchObject({reps:9,note:'Left shoulder discomfort',tempo:[4,0,1,0],setup_snapshot:'Seat 4, back pad 2'});
-    await expect(machine.getByRole('button',{name:'Edit',exact:true})).toBeVisible();
+    await expect(machine.getByRole('button',{name:/^Edit set \d+ for /})).toBeVisible();
     await page.reload();await expect(machine.getByText('Seat 5',{exact:true})).toBeVisible();
     await expect(machine.getByText('Left shoulder discomfort',{exact:true}).first()).toBeVisible();
-    await machine.getByRole('button',{name:'Edit',exact:true}).click();await machine.locator('summary').filter({hasText:'Set details'}).click();
+    await machine.getByRole('button',{name:/^Edit set \d+ for /}).click();await machine.locator('summary').filter({hasText:'Set details'}).click();
     await machine.getByLabel('Note for this set (optional)',{exact:true}).fill('Observed on this set only');
     await machine.getByRole('button',{name:'Save',exact:true}).click();
     await expect.poll(async()=>(await db.query('select note,reps from public.set_log where id=$1',[saved.id])).rows[0]).toEqual({note:'Observed on this set only',reps:9});
-    await expect(machine.getByRole('button',{name:'Edit',exact:true})).toBeVisible();
+    await expect(machine.getByRole('button',{name:/^Edit set \d+ for /})).toBeVisible();
     await expect(machine.getByText('Recovered network draft',{exact:true})).toBeVisible();
     // Swapping keeps the source observation available, without applying it to the destination.
     await machine.getByRole('button',{name:/^Swap .* for another exercise$/}).click();

@@ -13,11 +13,13 @@ import { InfoButton } from "@/components/ui/info-button";
 import { Input } from "@/components/ui/input";
 import { Stepper } from "@/components/ui/stepper";
 import { withViewTransition } from "@/components/ui/view-transition";
-import { TempoFields } from "@/components/ui/tempo";
-import { resolveTempo } from "@/lib/tempo";
+import { PageHeader } from "@/components/ui/page-header";
+import { ProgramRepRangeSheet, ProgramSlotOptionsSheet } from "./program-builder-sheets";
+import { resolveTempo, formatTempo } from "@/lib/tempo";
 import { saveProgram, type SaveDayInput, type SavePhaseInput, type SaveSlotInput } from "./actions";
 import { ExercisePicker } from "./exercise-picker";
 import { TagInput } from "./tag-input";
+import { SwapStationButton } from "./swap-station-button";
 
 const uid = () => crypto.randomUUID();
 
@@ -34,7 +36,7 @@ type Draft = Program;
 export function ProgramBuilder({
   initial,
   recentIds,
-  catalog,
+  catalog: initialCatalog,
   afterSaveHref = "/",
   cancelHref,
 }: {
@@ -45,8 +47,13 @@ export function ProgramBuilder({
   cancelHref?: string;
 }) {
   const router = useRouter();
+  const [catalog, setCatalog] = useState(initialCatalog);
   const byId = useMemo(() => Object.fromEntries(catalog.map((d) => [d.id, d])), [catalog]);
-  const [draft, setDraft] = useState<Draft>(initial ?? blankProgram());
+  const [draft, setDraft] = useState<Draft>(() => initial ?? blankProgram());
+  const [selectedDayId, setSelectedDayId] = useState<string | null>(initial?.days[0]?.id ?? null);
+  const [changingSlotId, setChangingSlotId] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [panel, setPanel] = useState<{kind:"range" | "options"; dayId:string; slotId:string} | null>(null);
   const [pickerDayId, setPickerDayId] = useState<string | null>(null);
   const [saving, startSave] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -56,8 +63,10 @@ export function ProgramBuilder({
   }
 
   function addDay() {
+    const id = uid();
+    setSelectedDayId(id);
     update((d) => {
-      d.days.push({ id: uid(), name: `Day ${d.days.length + 1}`, slots: [] });
+      d.days.push({ id, name: `Day ${d.days.length + 1}`, slots: [] });
       return d;
     });
   }
@@ -186,6 +195,7 @@ export function ProgramBuilder({
       draft.weeks,
     );
     if (draft.style === "classic" && phaseErrors.length) {
+      setSettingsOpen(true);
       setError(phaseErrors[0]);
       return;
     }
@@ -240,23 +250,33 @@ export function ProgramBuilder({
   }
 
   const saveLabel = initial?.isActive ? "Save changes" : "Save & make active";
-  const firstFluidSlotId =
-    draft.style === "fluid"
-      ? draft.days.flatMap((day) => day.slots).at(0)?.id ?? null
-      : null;
+  const selectedDay = draft.days.find(day => day.id === selectedDayId) ?? draft.days[0];
+  const panelSlot = panel ? draft.days.find(day => day.id === panel.dayId)?.slots.find(slot => slot.id === panel.slotId) : null;
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-4 py-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
+    <div className="mx-auto flex w-full max-w-page flex-1 flex-col gap-4 px-4 pb-[calc(7rem+env(safe-area-inset-bottom))]">
+      <PageHeader title={initial ? "Edit program" : "Build your program"} context={<p className="text-caption text-muted">{initial ? "Program draft" : "New program"}</p>} />
+      <fieldset disabled={saving} className="contents">
       <div className="flex w-full max-w-page flex-col gap-3">
+        <label className="flex flex-col gap-1 text-caption text-muted">Program name
         <Input
+          aria-label="Program name"
           value={draft.name}
           onChange={(e) => update((d) => ({ ...d, name: e.target.value }))}
           placeholder="Program name"
           enterKeyHint="done"
           autoComplete="off"
-          className="text-lg font-semibold"
+          className="text-heading! text-foreground"
         />
+        </label>
+        <details open={settingsOpen} onToggle={event => setSettingsOpen(event.currentTarget.open)} className="rounded-card border border-border px-3">
+        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-caption">
+          <span className="text-muted">{draft.style === "classic" ? `Classic · ${draft.weeks} weeks` : "Adaptive"} · {draft.days.length} days</span>
+          <span>Program settings ⋯</span>
+        </summary>
+        <div className="flex flex-col gap-3 pb-3">
         <textarea
+          aria-label="Program description"
           value={draft.description ?? ""}
           onChange={(e) => update((d) => ({ ...d, description: e.target.value || null }))}
           placeholder="Description (optional)"
@@ -271,7 +291,7 @@ export function ProgramBuilder({
             <Button
               type="button"
               variant={draft.style === "classic" ? "primary" : "secondary"}
-              size="sm"
+              size="md"
               onClick={() => update((d) => ({ ...d, style: "classic" }))}
             >
               Classic
@@ -279,7 +299,7 @@ export function ProgramBuilder({
             <Button
               type="button"
               variant={draft.style === "fluid" ? "primary" : "secondary"}
-              size="sm"
+              size="md"
               onClick={() => update((d) => ({ ...d, style: "fluid" }))}
             >
               Adaptive
@@ -293,7 +313,7 @@ export function ProgramBuilder({
         </div>
 
         {draft.style === "classic" && (
-          <div className="flex items-center gap-3 text-body">
+          <div className="flex flex-wrap items-center gap-3 text-body">
             <span className="text-muted">Repeat for</span>
             <Stepper
               label="Weeks"
@@ -319,7 +339,7 @@ export function ProgramBuilder({
                 </InfoButton>
               </div>
               {draft.phases.length < MAX_PHASES && (
-                <Button type="button" variant="secondary" size="sm" onClick={addPhase}>
+                <Button type="button" variant="secondary" size="md" onClick={addPhase}>
                   Add phase
                 </Button>
               )}
@@ -358,7 +378,7 @@ export function ProgramBuilder({
                     onChange={(event) => updatePhase(phase.id, {
                       setMultiplier: event.target.value === "" ? null : Number(event.target.value),
                     })}
-                    className="h-9 rounded-control border border-border-strong bg-background px-2 text-sm font-semibold"
+                    className="min-h-11 rounded-control border border-border-strong bg-background px-2 text-sm font-semibold"
                   >
                     <option value="">Normal</option>
                     <option value="0.75">75%</option>
@@ -387,14 +407,23 @@ export function ProgramBuilder({
             )}
           </section>
         )}
+        </div></details>
       </div>
 
-      {/* Days: vertical stack on phones, horizontal scroller when width allows. */}
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-4 sm:overflow-x-auto sm:pb-3">
-        {draft.days.map((day, di) => (
+      <div role="group" aria-label="Training day" className="flex flex-wrap gap-2">
+        {draft.days.map((day, i) => <Button key={day.id} type="button" size="md"
+          variant={day.id === selectedDay?.id ? "primary" : "secondary"}
+          aria-label={`Day ${i + 1} · ${day.name}`} aria-pressed={day.id === selectedDay?.id}
+          onClick={() => setSelectedDayId(day.id)}>Day {i + 1}</Button>)}
+        {draft.days.length < MAX_DAYS && <Button type="button" variant="secondary" size="md" onClick={addDay}>+ Add day</Button>}
+      </div>
+      {draft.days.length === 0 && <Card><p className="text-body">Add a training day to begin.</p></Card>}
+
+      <div className="flex min-w-0 flex-col gap-4">
+        {draft.days.map((day, di) => day.id === selectedDay?.id ? (
           <Card
             key={day.id}
-            className="sm:w-80 sm:shrink-0"
+            className="border-0! p-0!"
             style={{ viewTransitionName: `vt-${day.id}` }}
           >
             <div className="flex items-center gap-1">
@@ -416,94 +445,49 @@ export function ProgramBuilder({
 
             <ul className="mt-3 flex flex-col gap-2">
               {day.slots.map((slot, si) => (
-                <li
-                  key={slot.id}
-                  style={{ viewTransitionName: `vt-${slot.id}` }}
-                  className="rounded-control bg-surface p-3"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <span className="flex min-w-0 flex-1 basis-64 flex-wrap items-start gap-3">
-                      <ExerciseVisual
-                        exerciseId={slot.exerciseId}
-                        baseExerciseId={byId[slot.exerciseId]?.baseExerciseId}
-                      />
-                      {byId[slot.exerciseId] ? (
-                        <ExerciseCardLabel
-                          as="span"
-                          size="body"
-                          def={byId[slot.exerciseId]}
-                          catalog={byId}
-                          className="flex-1 basis-32"
-                        />
-                      ) : (
-                        <span className="min-w-0 truncate text-body font-medium">{slot.exerciseId}</span>
-                      )}
-                    </span>
-                    <span className="ml-auto flex shrink-0 items-center gap-1">
-                      <ReorderButtons
-                        what={exerciseName(byId, slot.exerciseId)}
-                        onUp={() => moveSlot(day.id, si, -1)}
-                        onDown={() => moveSlot(day.id, si, 1)}
-                      />
-                      <RemoveButton
-                        what={exerciseName(byId, slot.exerciseId)}
-                        onClick={() => removeSlot(day.id, slot.id)}
-                      />
-                    </span>
+                <li key={slot.id} data-program-slot={slot.id} style={{viewTransitionName:`vt-${slot.id}`}} className="overflow-hidden rounded-card border border-border">
+                  <div className="flex items-start gap-3 px-3 pt-3">
+                    <ExerciseVisual exerciseId={slot.exerciseId} baseExerciseId={byId[slot.exerciseId]?.baseExerciseId} size="sm" />
+                    <div className="min-w-0 flex-1">{byId[slot.exerciseId]
+                      ? <ExerciseCardLabel as="h3" size="heading" compact def={byId[slot.exerciseId]} catalog={byId} />
+                      : <h3 className="break-words text-heading">{slot.exerciseId}</h3>}
+                    </div>
                   </div>
-                  <div className="mt-2 grid grid-cols-4 gap-2">
+                  <div className="mt-2 flex items-center justify-between gap-1 border-b border-border px-2 pb-1">
+                    <Button type="button" variant="ghost" size="md" className="text-caption!"
+                      aria-label={`Change exercise for ${exerciseName(byId,slot.exerciseId)}`} onClick={() => {
+                        setChangingSlotId(slot.id); setPickerDayId(day.id);
+                      }}>Change exercise</Button>
+                    <ReorderButtons what={exerciseName(byId,slot.exerciseId)}
+                      onUp={() => moveSlot(day.id,si,-1)} onDown={() => moveSlot(day.id,si,1)}
+                      disableUp={si === 0} disableDown={si === day.slots.length - 1} />
+                  </div>
+                  <div className="px-3">
+                    <SwapStationButton exerciseId={slot.exerciseId} catalog={byId} size="md" className="mt-2 min-h-11 text-caption!" onPick={def => {
+                      setCatalog(current => current.some(exercise => exercise.id === def.id) ? current : [...current,def]);
+                      updateSlot(day.id,slot.id,{exerciseId:def.id,pattern:def.pattern});
+                    }} />
+                  </div>
+                  <div className="grid grid-cols-[1fr_1.4fr_1fr] gap-2 px-3 py-3">
                     <NumField label="Sets" value={slot.targetSets} min={1} max={10}
-                      onChange={(v) => updateSlot(day.id, slot.id, { targetSets: v })} />
-                    <NumField label="Rep min" value={slot.repMin} min={1} max={30}
-                      onChange={(v) => updateSlot(day.id, slot.id, { repMin: v })} />
-                    <NumField label="Rep max" value={slot.repMax} min={1} max={30}
-                      onChange={(v) => updateSlot(day.id, slot.id, { repMax: v })} />
+                      onChange={value => updateSlot(day.id,slot.id,{targetSets:value})} />
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <span className="text-center text-caption text-muted">Rep range</span>
+                      <Button type="button" variant="secondary" className="min-w-0 px-1! tabular-nums"
+                        aria-label={`Edit rep range for ${exerciseName(byId,slot.exerciseId)}`}
+                        onClick={() => setPanel({kind:"range",dayId:day.id,slotId:slot.id})}>
+                        {slot.repMin === slot.repMax ? slot.repMin : `${slot.repMin}–${slot.repMax}`}
+                      </Button>
+                    </div>
                     <NumField label="RIR" value={slot.targetRir} min={0} max={5}
-                      onChange={(v) => updateSlot(day.id, slot.id, { targetRir: v })} />
+                      onChange={value => updateSlot(day.id,slot.id,{targetRir:value})} />
                   </div>
-                  <TempoFields value={resolveTempo(byId[slot.exerciseId], slot.tempo)} onChange={tempo => updateSlot(day.id, slot.id, { tempo })} />
-                  <RestField
-                    value={slot.restSeconds}
-                    onChange={(v) => updateSlot(day.id, slot.id, { restSeconds: v })}
-                  />
-                  <label className="mt-2 flex items-center justify-between gap-2 text-caption text-muted">
-                    Superset group
-                    <Input
-                      aria-label={`Superset group for ${exerciseName(byId, slot.exerciseId)}`}
-                      value={slot.supersetGroup ?? ""}
-                      placeholder="None (e.g. C)"
-                      maxLength={16}
-                      className="w-32"
-                      onChange={(e) => updateSlot(day.id, slot.id, { supersetGroup: e.target.value.trim() || null })}
-                    />
-                  </label>
-                  {draft.style === "fluid" && (
-                    <label className="mt-2 flex items-center justify-between gap-2 text-caption text-muted">
-                      <span className="flex items-center gap-1 uppercase tracking-wide">
-                        Patience
-                        {slot.id === firstFluidSlotId && (
-                          <InfoButton title="Patience">
-                            How many stalled sessions before a suggestion. Auto follows the movement.
-                          </InfoButton>
-                        )}
-                      </span>
-                      <select
-                        value={slot.plateauPatience ?? ""}
-                        onChange={(e) =>
-                          updateSlot(day.id, slot.id, {
-                            plateauPatience: e.target.value === "" ? null : Number(e.target.value),
-                          })
-                        }
-                        className="h-9 rounded-control border border-border-strong bg-transparent px-2 text-sm font-semibold"
-                      >
-                        <option value="">Auto</option>
-                        <option value="2">Low (2)</option>
-                        <option value="3">Normal (3)</option>
-                        <option value="4">High (4)</option>
-                        <option value="5">Very high (5)</option>
-                      </select>
-                    </label>
-                  )}
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 border-t border-border px-3 text-caption text-muted">
+                    <span>{slot.restSeconds !== null ? `${slot.restSeconds}s` : "Default"} {slot.supersetGroup ? `round rest · Superset ${slot.supersetGroup}` : "rest"} · {formatTempo(resolveTempo(byId[slot.exerciseId],slot.tempo))}</span>
+                    <Button type="button" variant="ghost" size="md" className="px-0! text-caption!"
+                      aria-label={`More options for ${exerciseName(byId,slot.exerciseId)}`}
+                      onClick={() => setPanel({kind:"options",dayId:day.id,slotId:slot.id})}>More ⋯</Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -516,20 +500,13 @@ export function ProgramBuilder({
               + Add exercise
             </button>
           </Card>
-        ))}
+        ) : null)}
 
-        {draft.days.length < MAX_DAYS && (
-          <button
-            type="button"
-            onClick={addDay}
-            className="h-11 w-full rounded-control border border-dashed border-border-strong text-body font-medium text-foreground active:bg-surface sm:h-auto sm:min-h-32 sm:w-64 sm:shrink-0 sm:self-stretch sm:rounded-card"
-          >
-            + Add day
-          </button>
-        )}
+
       </div>
 
-      {error && <p className="text-body text-danger">{error}</p>}
+      {error && <p role="alert" className="text-body text-danger">{error}</p>}
+      </fieldset>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 px-4 py-3 backdrop-blur [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="mx-auto w-full max-w-page">
@@ -559,12 +536,23 @@ export function ProgramBuilder({
         </div>
       </div>
 
+      {panel && panelSlot && (panel.kind === "range"
+        ? <ProgramRepRangeSheet key={panel.slotId} name={exerciseName(byId,panelSlot.exerciseId)} slot={panelSlot}
+            onApply={patch => updateSlot(panel.dayId,panel.slotId,patch)} onClose={() => setPanel(null)} />
+        : <ProgramSlotOptionsSheet key={panel.slotId} name={exerciseName(byId,panelSlot.exerciseId)} slot={panelSlot}
+            def={byId[panelSlot.exerciseId]} adaptive={draft.style === "fluid"}
+            onApply={patch => updateSlot(panel.dayId,panel.slotId,patch)}
+            onRemove={() => {removeSlot(panel.dayId,panel.slotId);setPanel(null);}} onClose={() => setPanel(null)} />)}
       {pickerDayId && (
         <ExercisePicker
           catalog={catalog}
           recentIds={recentIds}
-          onPick={(ex) => addSlot(pickerDayId, ex)}
-          onClose={() => setPickerDayId(null)}
+          onPick={(ex) => {
+            setCatalog(current => current.some(def => def.id === ex.id) ? current : [...current,ex]);
+            if (changingSlotId) updateSlot(pickerDayId,changingSlotId,{exerciseId:ex.id,pattern:ex.pattern});
+            else addSlot(pickerDayId,ex);
+          }}
+          onClose={() => {setPickerDayId(null);setChangingSlotId(null);}}
         />
       )}
     </div>
@@ -581,19 +569,23 @@ function ReorderButtons({
   what,
   onUp,
   onDown,
+  disableUp = false,
+  disableDown = false,
 }: {
   what: string;
   onUp: () => void;
   onDown: () => void;
+  disableUp?: boolean;
+  disableDown?: boolean;
 }) {
   const cls =
-    "flex h-10 w-9 items-center justify-center text-muted active:bg-surface rounded-control";
+    "flex h-11 w-11 shrink-0 items-center justify-center text-muted active:bg-surface rounded-control disabled:opacity-30";
   return (
     <span className="flex">
-      <button type="button" aria-label={`Move ${what} up`} onClick={onUp} className={cls}>
+      <button type="button" aria-label={`Move ${what} up`} disabled={disableUp} onClick={onUp} className={cls}>
         ↑
       </button>
-      <button type="button" aria-label={`Move ${what} down`} onClick={onDown} className={cls}>
+      <button type="button" aria-label={`Move ${what} down`} disabled={disableDown} onClick={onDown} className={cls}>
         ↓
       </button>
     </span>
@@ -606,39 +598,10 @@ function RemoveButton({ what, onClick }: { what: string; onClick: () => void }) 
       type="button"
       aria-label={`Remove ${what}`}
       onClick={onClick}
-      className="flex h-10 w-9 items-center justify-center rounded-control text-body text-danger active:bg-surface"
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-body text-danger active:bg-surface"
     >
       ✕
     </button>
-  );
-}
-
-// Optional per-slot rest override. Empty = use the user's default rest (stored as null).
-function RestField({
-  value,
-  onChange,
-}: {
-  value: number | null;
-  onChange: (v: number | null) => void;
-}) {
-  return (
-    <label className="mt-2 flex items-center justify-between gap-2 text-caption text-muted">
-      <span className="uppercase tracking-wide">Rest (s)</span>
-      <input
-        type="number"
-        inputMode="numeric"
-        value={value ?? ""}
-        placeholder="default"
-        onChange={(e) => {
-          const raw = e.target.value.trim();
-          if (raw === "") return onChange(null);
-          const n = Number(raw);
-          onChange(Number.isFinite(n) && n > 0 ? Math.min(600, Math.round(n)) : null);
-        }}
-        onFocus={(e) => e.currentTarget.select()}
-        className="h-9 w-24 rounded-control border border-border-strong bg-transparent text-center text-sm font-semibold tabular-nums"
-      />
-    </label>
   );
 }
 
@@ -657,7 +620,7 @@ function NumField({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-center text-[10px] uppercase tracking-wide text-muted">{label}</span>
+      <span className="text-center text-caption text-muted">{label}</span>
       <input
         type="number"
         inputMode="numeric"

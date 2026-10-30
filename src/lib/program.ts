@@ -63,7 +63,7 @@ async function assemble(
     style: string;
   },
 ): Promise<Program> {
-  const [{ data: days }, { data: phases }] = await Promise.all([
+  const [{ data: days, error: daysError }, { data: phases, error: phasesError }] = await Promise.all([
     supabase
       .from("program_day")
       .select("id, name, position")
@@ -75,15 +75,18 @@ async function assemble(
       .eq("program_id", row.id)
       .order("position", { ascending: true }),
   ]);
+  if (daysError) throw daysError;
+  if (phasesError) throw phasesError;
 
   const dayIds = (days ?? []).map((d) => d.id);
-  const { data: slots } = dayIds.length
+  const { data: slots, error: slotsError } = dayIds.length
     ? await supabase
         .from("program_slot")
         .select("id, program_day_id, exercise_id, pattern, target_sets, rep_min, rep_max, target_rir, rest_seconds, plateau_patience, superset_group, position, retired_at, set_prescriptions, tempo")
         .in("program_day_id", dayIds)
         .order("position", { ascending: true })
-    : { data: [] };
+    : { data: [], error: null };
+  if (slotsError) throw slotsError;
 
   const slotsByDay = new Map<string, ProgramSlot[]>();
   for (const s of slots ?? []) {
@@ -138,12 +141,13 @@ export async function getActiveProgram(
   supabase: Client,
   userId: string,
 ): Promise<Program | null> {
-  const { data: row } = await supabase
+  const { data: row, error } = await supabase
     .from("program")
     .select("id, name, description, tags, weeks, is_active, style")
     .eq("user_id", userId)
     .eq("is_active", true)
     .maybeSingle();
+  if (error) throw error;
   if (!row) return null;
   return assemble(supabase, row);
 }
@@ -153,12 +157,13 @@ export async function getProgram(
   userId: string,
   id: string,
 ): Promise<Program | null> {
-  const { data: row } = await supabase
+  const { data: row, error } = await supabase
     .from("program")
     .select("id, name, description, tags, weeks, is_active, style")
     .eq("user_id", userId)
     .eq("id", id)
     .maybeSingle();
+  if (error) throw error;
   if (!row) return null;
   return assemble(supabase, row);
 }
@@ -169,30 +174,33 @@ export async function listProgramSummaries(
   supabase: Client,
   userId: string,
 ): Promise<ProgramSummary[]> {
-  const { data: programs } = await supabase
+  const { data: programs, error: programsError } = await supabase
     .from("program")
     .select("id, name, tags, weeks, is_active, style, created_at")
     .eq("user_id", userId);
+  if (programsError) throw programsError;
 
   if (!programs?.length) return [];
 
-  const { data: days } = await supabase
+  const { data: days, error: daysError } = await supabase
     .from("program_day")
     .select("id, program_id")
     .in(
       "program_id",
       programs.map((program) => program.id),
     );
+  if (daysError) throw daysError;
 
   if (!days?.length) return buildProgramSummaries(programs, [], []);
 
-  const { data: slots } = await supabase
+  const { data: slots, error: slotsError } = await supabase
     .from("program_slot")
     .select("program_day_id, retired_at")
     .in(
       "program_day_id",
       days.map((day) => day.id),
     );
+  if (slotsError) throw slotsError;
 
   return buildProgramSummaries(programs, days, (slots ?? []).filter(s=>!s.retired_at));
 }

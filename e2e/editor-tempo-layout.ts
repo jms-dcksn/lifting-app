@@ -75,6 +75,7 @@ export function assertTempoLayout(measured: TempoLayout) {
   expect(measured.tempoRowHeight!).toBeLessThanOrEqual(measured.setRowHeight! + ROW_HEIGHT_TOLERANCE_PX);
   expect(measured.fontSize!).toBeGreaterThanOrEqual(16);
   expect(measured.cellHeight!).toBeGreaterThanOrEqual(44);
-  expect(measured.changeButtonHeight!).toBeLessThanOrEqual(40);
+  expect(measured.changeButtonHeight!).toBeGreaterThanOrEqual(44);
+  expect(measured.changeButtonHeight!).toBeLessThanOrEqual(48);
   expect(measured.scrollOverflow).toBeLessThanOrEqual(0);
 }

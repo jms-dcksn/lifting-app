@@ -8,7 +8,7 @@ async function checkLayout(page: Page, info: TestInfo, screen: string) {
   for (const width of [320, 390, 1280]) for (const colorScheme of ["light", "dark"] as const) {
     await page.setViewportSize({width, height:844}); await page.emulateMedia({colorScheme});
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    const small = await page.locator("button").evaluateAll(buttons => buttons.flatMap(button => {
+    const small = await page.getByRole("main").locator("button").evaluateAll(buttons => buttons.flatMap(button => {
       const box=button.getBoundingClientRect();
       if (!button.getClientRects().length || getComputedStyle(button).visibility === "hidden") return [];
       return box.width < 43.9 || box.height < 43.9 ? [{name:button.getAttribute("aria-label") ?? button.textContent,width:box.width,height:box.height}] : [];

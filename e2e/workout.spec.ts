@@ -84,6 +84,36 @@ test("saved sets survive reload and scoped swaps; a finished pain review opens a
     await page.reload();
     await expect(page.getByText(/40 lb × 8/).first()).toBeVisible();
 
+    // Keep history pending through a rest-timer update, then load, close and reopen.
+    // History and workout details must retain distinct sibling identities.
+    let releaseHistory!: () => void;
+    const historyGate = new Promise<void>(resolve => { releaseHistory = resolve; });
+    const sessionRoute = `**/session/${sessionId}`;
+    const history = page.getByRole("dialog", { name: /history$/ });
+    await page.route(sessionRoute, async route => {
+      if (route.request().method() === "POST") await historyGate;
+      await route.continue();
+    });
+    try {
+      const rest = page.getByText("Rest", { exact: true }).locator("..");
+      const before = await rest.textContent();
+      await page.getByRole("button", { name: /^View history for/ }).click();
+      await expect(history.getByRole("status")).toHaveText("Loading history…");
+      await expect.poll(() => rest.textContent()).not.toBe(before);
+      await expect(page.locator("dialog[open]")).toHaveCount(1);
+    } finally {
+      releaseHistory();
+    }
+    await expect(history.getByText("No previous sets.")).toBeVisible();
+    await history.getByRole("button", { name: "Close", exact: true }).click();
+    await expect(page.locator("dialog")).toHaveCount(0);
+    await page.unroute(sessionRoute);
+    await page.getByRole("button", { name: /^View history for/ }).click();
+    await expect(history.getByText("No previous sets.")).toBeVisible();
+    await expect(page.locator("dialog[open]")).toHaveCount(1);
+    await history.getByRole("button", { name: "Close", exact: true }).click();
+    await expect(page.locator("dialog")).toHaveCount(0);
+
     await page.getByRole("button", { name: /^Swap .* for another exercise$/ }).click();
     await page.getByPlaceholder("Search exercises…").fill("Dumbbell Incline Bench");
     await page.getByRole("button", { name: /Incline Bench/ }).click();

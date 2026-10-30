@@ -608,7 +608,7 @@ function SlotCard({
       </div>
       {showHistory && (
         <ExerciseHistory
-          key={exerciseId}
+          key={`history:${exerciseId}`}
           exerciseId={exerciseId}
           sessionId={sessionId}
           name={name}

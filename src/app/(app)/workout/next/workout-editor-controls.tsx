@@ -2,15 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { setRange } from "@/components/ui/planned-set-table";
 import { Input } from "@/components/ui/input";
 import { Sheet, useSheetDismiss } from "@/components/ui/sheet";
 import { TempoCells, TempoRowLabel } from "@/components/ui/tempo";
 import type { Tempo } from "@/lib/tempo";
 import type { EditorIssue, PlannedSet, PlannedSlot } from "@/lib/workout-editor";
-
-export function setRange(min: number, max: number) {
-  return min === max ? String(min) : `${min}–${max}`;
-}
 
 export function PlannedSetTable({ slot, index, assisted, issues, tempo, onTempo, onWeight, onEdit }: {
   slot: PlannedSlot;

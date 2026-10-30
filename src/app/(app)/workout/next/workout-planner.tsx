@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { IconButton } from "@/components/ui/icon-button";
 import { IconTrash } from "@/components/ui/icons";
 import { EditorSheet, PlannedSetTable, type EditorPanel } from "./workout-editor-controls";
+import { PlannedSetSummary } from "@/components/ui/planned-set-table";
 import { PageHeader } from "@/components/ui/page-header";
 import { ExerciseCardLabel } from "@/components/ui/exercise-card-label";
 import { ExerciseVisual } from "@/components/ui/exercise-visual";
@@ -270,9 +271,9 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
       const def = catalogMap[slot.exerciseId];
       const path = `slots.${index}`;
       const restSlot=slot.supersetGroup?current.slots.filter(s=>s.supersetGroup===slot.supersetGroup).at(-1)!:slot;
-      return <Card key={slot.id} className={editing ? "p-0!" : undefined} aria-label={`Exercise ${index + 1}`}>
-        <div className={editing ? "px-3 pt-1" : ""}>
-          <div className="flex min-h-11 items-center justify-between gap-2">
+      return <Card key={slot.id} className="overflow-hidden p-0!" aria-label={`Exercise ${index + 1}`}>
+        <div className={editing ? "px-3 pt-1" : "px-3 pt-3"}>
+          <div className={`flex items-center justify-between gap-2 ${editing ? "min-h-11" : "mb-2"}`}>
             <CardLabel>Exercise {index + 1}</CardLabel>
             {editing && <div className="flex shrink-0">
               <IconButton variant="ghost" aria-label={`Move exercise ${index + 1} up`} disabled={index === 0} onClick={() => reorder(index, -1)}>
@@ -288,15 +289,15 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
             </div>}
           </div>
           <div className="mt-1 flex items-center gap-3">
-            <ExerciseVisual exerciseId={slot.exerciseId} baseExerciseId={def?.baseExerciseId} size={editing ? "sm" : "lg"} />
-            <div className="min-w-0 flex-1">{def ? <ExerciseCardLabel as="h3" size="heading" def={def} catalog={catalogMap} /> : <h3>{slot.exerciseId}</h3>}
+            <ExerciseVisual exerciseId={slot.exerciseId} baseExerciseId={def?.baseExerciseId} size="sm" />
+            <div className="min-w-0 flex-1">{def ? <ExerciseCardLabel as="h3" size="heading" compact def={def} catalog={catalogMap} /> : <h3>{slot.exerciseId}</h3>}
               {slot.supersetGroup && <p className="text-caption text-muted">Superset {supersetLabel(current.slots, index)}</p>}
             </div>
           </div>
           {slot.normalSets && slot.normalSets.length !== slot.sets.length && <p className="mt-3 text-caption">Recovery: {slot.sets.length} of {slot.normalSets.length} normal-week sets</p>}
           {editing && <div className="mt-3 flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" size="sm" className="min-w-0 flex-1 whitespace-nowrap px-2! text-caption!" {...field(`${path}.exerciseId`)} onClick={() => setPicking(slot.id)}>Change exercise</Button>
-            {stationTemplateFor(def, catalogMap) && <Button type="button" variant="secondary" size="sm" className="min-w-0 flex-1 whitespace-nowrap px-2! text-caption!" onClick={() => setStationSlotId(slot.id)}>{swapStationLabel(def, catalogMap)?.replace("Swap ", "Change ")}</Button>}
+            <Button type="button" variant="secondary" size="md" className="min-w-0 flex-1 whitespace-nowrap px-2! text-caption!" {...field(`${path}.exerciseId`)} onClick={() => setPicking(slot.id)}>Change exercise</Button>
+            {stationTemplateFor(def, catalogMap) && <Button type="button" variant="secondary" size="md" className="min-w-0 flex-1 whitespace-nowrap px-2! text-caption!" onClick={() => setStationSlotId(slot.id)}>{swapStationLabel(def, catalogMap)?.replace("Swap ", "Change ")}</Button>}
           </div>}
           {!editing && <div className="mt-3"><TempoLabel value={resolveTempo(def, slot.tempo)} /></div>}
         </div>
@@ -311,13 +312,10 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
               onClick={() => setPanel({ kind: "options", slotId: slot.id })}>{restSlot.restSeconds}s {slot.supersetGroup ? "round rest" : "rest"} · More ⋯</Button>
           </div>
         </> : <>
-          <div className="mt-4 flex flex-col gap-3">{slot.sets.map((set, si) => <fieldset key={set.id} className="min-w-0 rounded-control border border-border p-3">
-            <legend className="px-1 text-caption">Set {si + 1}</legend>
-            <p className="text-body tabular-nums">{set.repMin}{set.repMax !== set.repMin ? `–${set.repMax}` : ""} reps · {set.rirMin}{set.rirMax !== set.rirMin ? `–${set.rirMax}` : ""} RIR · {set.weight !== null ? `${set.weight} lb · Your target` : set.suggestedWeight !== null ? `${set.suggestedWeight} lb · Suggested` : "Weight not set"}</p>
-          </fieldset>)}</div>
-          <p className="mt-3 text-caption text-muted">{!isSupersetEnd(current.slots, index) ? "No rest before the next superset exercise" : `Rest ${slot.restSeconds} seconds ${slot.supersetGroup ? "after the round" : "between sets"}`}</p>
+          <PlannedSetSummary sets={slot.sets} label={`Exercise ${index + 1} working sets`} loadMode={def?.loadMode} addedLoad={def?.equipment === "bodyweight" && !def.loadMode} />
+          <p className="border-t border-border px-3 py-2 text-caption text-muted">{!isSupersetEnd(current.slots, index) ? "No rest before the next superset exercise" : `${restSlot.restSeconds}s ${slot.supersetGroup ? "rest after the round" : "rest between sets"}`}</p>
         </>}
-        <div className={editing ? "px-3 pb-2" : ""}><PreviousNotes exerciseId={slot.exerciseId} equipmentInstanceId={slot.equipmentInstanceId??null} def={def} catalog={catalogMap}/></div>
+        <div className="px-3 pb-2"><PreviousNotes exerciseId={slot.exerciseId} equipmentInstanceId={slot.equipmentInstanceId??null} def={def} catalog={catalogMap}/></div>
       </Card>;
     })}
     {editing && <>

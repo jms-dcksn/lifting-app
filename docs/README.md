@@ -16,7 +16,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Tempo and workout personal details | [Workout details](WORKOUT-DETAILS.md) |
 | Shared components and UI gotchas | [UI conventions](UI.md) |
 | Approved upcoming-workout editor design (interactive reference, sample data) | [Plan editor mockup](plan-editor-mock.html); [implementation and boundaries](WORKOUT-PLANNING.md#edit-mode-design-study) |
-| Proposed compact plan, active workout, and builder layouts (#249; design review only) | [Interactive mockups](compact-layouts-mock.html); [research, comparisons, and follow-ups](compact-layouts-research.md) |
+| Approved compact plan, active workout, and builder layouts (#249) | [Interactive mockups](compact-layouts-mock.html); [research and comparisons](compact-layouts-research.md); [implementation plan](compact-layouts-implementation.md) |
 | Copy density (proposed) | [2026-09-16 spec](superpowers/specs/2026-09-16-visual-copy-density-design.md) |
 | Exercise review (Slices A–F shipped) | [2026-09-19 spec](superpowers/specs/2026-09-19-exercise-review-design.md) |
 | Exercise artwork generation and styling | [Charcoal art specification](EXERCISE-ART.md); [UI conventions](UI.md) |

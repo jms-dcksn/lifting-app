@@ -236,3 +236,9 @@ body:has(dialog.sheet[open]) {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* A narrow set entry keeps both stepper buttons at least 44px. */
+.set-entry { container: set-entry / inline-size; }
+@container set-entry (max-width: 18rem) {
+  .stepper-controls { grid-template-columns: minmax(0, 1fr); }
+}

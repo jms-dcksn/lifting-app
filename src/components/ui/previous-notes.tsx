@@ -10,13 +10,13 @@ import { IconButton } from "./icon-button";
 import { IconNote } from "./icons";
 import { ExerciseCardLabel } from "./exercise-card-label";
 
-export function PreviousNotes({exerciseId,equipmentInstanceId,excludeSessionId,def,catalog,equipmentLabel}: Omit<NotesSelection,"cursor"> & {
-  def?:ExerciseDef;catalog:Record<string,ExerciseDef>;equipmentLabel?:string;
+export function PreviousNotes({exerciseId,equipmentInstanceId,excludeSessionId,def,catalog,equipmentLabel,inline=false}: Omit<NotesSelection,"cursor"> & {
+  def?:ExerciseDef;catalog:Record<string,ExerciseDef>;equipmentLabel?:string;inline?:boolean;
 }) {
   const [open,setOpen] = useState(false);
   const name=def?.name??exerciseId;
-  return <div className="mt-2">
-    <IconButton variant="ghost" className="h-auto min-h-11 w-full justify-start gap-2 text-left" aria-label={`Previous notes for ${name}`} onClick={()=>setOpen(true)}>
+  return <div className={inline ? "min-w-0" : "mt-2"}>
+    <IconButton variant="ghost" className={`h-auto min-h-11 justify-start gap-2 text-left ${inline ? "w-auto" : "w-full"}`} aria-label={`Previous notes for ${name}`} onClick={()=>setOpen(true)}>
       <IconNote/><span className="text-caption">Previous notes</span>
     </IconButton>
     {open && <Sheet ariaLabel={`Previous notes for ${name}`} onClose={()=>setOpen(false)}>

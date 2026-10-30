@@ -22,8 +22,11 @@ test("prescribed and performed tempo survive program, plan, workout and history"
     await db.query("insert into public.program_day(id,user_id,program_id,name,position) values($1,$2,$3,'Upper',0)",[day,owner,program]);
     await db.query("insert into public.program_slot(id,user_id,program_day_id,position,exercise_id,pattern,target_sets,rep_min,rep_max,target_rir) values($1,$2,$3,0,'db-bench','horizontal_press',3,5,8,2)",[slot,owner,day]);
     await page.goto(`/program/${program}?mode=edit`);
+    await page.getByRole('button',{name:/^More options for /}).click();
     await page.getByLabel('Lower',{exact:true}).fill('2');
     await page.getByLabel('Bottom pause',{exact:true}).fill('1');
+    await page.getByRole('button',{name:'Apply options',exact:true}).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.getByRole('button',{name:'Save changes',exact:true}).click();
     await expect.poll(async()=>(await db.query('select tempo from public.program_slot where id=$1',[slot])).rows[0].tempo).toEqual([2,1,1,0]);
     await page.goto('/workout/next'); await expect(page.getByText('Tempo 2-1-1-0',{exact:false}).filter({visible:true})).toBeVisible();
@@ -40,7 +43,7 @@ test("prescribed and performed tempo survive program, plan, workout and history"
     await page.locator('summary').filter({hasText:'Set details'}).click();
     await expect(page.getByLabel('Lower',{exact:true})).toHaveValue('2');
     await page.reload(); await expect(page.getByRole('listitem').getByText('Tempo 4-1-1-0',{exact:true})).toBeVisible();
-    await page.getByRole('button',{name:'Edit',exact:true}).click();
+    await page.getByRole('button',{name:/^Edit set \d+ for /}).click();
     await page.getByRole('textbox',{name:'Reps',exact:true}).fill('7');
     await page.getByRole('button',{name:'Save',exact:true}).click();
     await expect.poll(async()=>(await db.query('select reps,tempo from public.set_log where session_id=$1',[session])).rows[0]).toMatchObject({reps:7,tempo:[4,1,1,0]});

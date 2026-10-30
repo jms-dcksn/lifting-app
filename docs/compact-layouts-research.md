@@ -1,6 +1,6 @@
 # Compact layouts: design investigation for issue 249
 
-Design proposal, October 29, 2026. Review against [issue 249](https://github.com/jms-dcksn/lifting-app/issues/249), checkout `d3e8c46`, the [approved editor mock](plan-editor-mock.html), [planning contract](WORKOUT-PLANNING.md), and [UI conventions](UI.md). Nothing here changes application behavior or persistence.
+Design proposal, October 29, 2026. Review against [issue 249](https://github.com/jms-dcksn/lifting-app/issues/249), checkout `d3e8c46`, the [approved editor mock](plan-editor-mock.html), [planning contract](WORKOUT-PLANNING.md), and [UI conventions](UI.md). The owner approved this direction and requested implementation. This document retains the original design evidence; [implementation and verification](compact-layouts-implementation.md) and [UI conventions](UI.md) describe the resulting production behavior.
 
 Open the [interactive three-screen study](compact-layouts-mock.html). Theme, scenario, and layout controls live above the screens. Changes are sample data in memory and reset on reload. Each screen can also open independently with `?screen=plan`, `?screen=active`, or `?screen=builder`; add `&theme=light` and `&state=recovery` as needed. The production column remains capped at 512px.
 
@@ -106,6 +106,8 @@ No claim of faster logging, fewer errors, better adherence, or preferred aesthet
 These are proposed follow-ups, not new GitHub issues, implementation approvals, or shipped decisions.
 
 ## Verification and handoff
+
+These results describe the original design-only phase. The [implementation plan](compact-layouts-implementation.md) and its PR record the subsequent application changes and current verification.
 
 The standalone HTML was exercised in real headless Chromium with the repository's installed Playwright, using only local fixture data. No authenticated application, Supabase, paid model, or external write was used. Screenshot and machine-readable evidence is under `/workspace/artifacts/issue-249/` in this workspace.
 

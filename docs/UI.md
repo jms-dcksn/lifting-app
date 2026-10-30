@@ -23,7 +23,8 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   list with a backward arrow. Keep the exercise-specific `View history for …` accessible label.
 - `Stepper` provides large touch targets, press-and-hold repeat, and keyboard activation.
   Keep ref access in events/effects rather than render. `Input` resets native date appearance
-  and constrains sizing for narrow Safari layouts.
+  and constrains sizing for narrow Safari layouts. A named `set-entry` container stacks
+  the column stepper buttons below 18rem of available width, preserving 44px targets.
 - `Card` tones distinguish current/completed work through border/opacity. Active workout
   slots instead use a soft surface background for completion so results and record pills
   retain contrast, plus a secondary `Add set` action. Their compact count and 12px checked
@@ -32,7 +33,7 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   updates optimistically and reverts on failed writes.
 - `ExerciseVisual` is the only exercise illustration. 16:9 `rounded-control` frame,
   `object-cover` (never square + contain). `sm` is 36×64 on rows/tiles and the compact
-  planner editor; `lg` is 64×114 on session, read-only planner, and in-session history.
+  planner, active workout, and program builder; `lg` is 64×114 on in-session history.
   Exercise review uses the compact `sm`
   visual beneath its title in the shared page header. Mapped catalog ids show art
   from `/exercises/{id}.jpg`; everything else uses `IconDumbbell` in the same box.
@@ -56,7 +57,27 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   and machine loading details stay secondary; use “Weight stack” rather than
   “Selectorized” on cards. Resolve variants through their catalog/base identity, never
   infer equipment from a name or brand. Labels and adjacent controls wrap at narrow
-  widths; chips are read-only text, not buttons or color-only indicators.
+  widths; chips are read-only text, not buttons or color-only indicators. Its `compact`
+  variant places the secondary identity beside the chip/context in the same wrapping row;
+  it retains every identity field. Track tiles retain their default reserved rows.
+- `PlannedSetSummary` is the shared semantic read-only table for the planner and active
+  workout's More → Planned sets. Every set keeps its own bounds and Suggested / Your target /
+  Weight not set provenance. Reps-only work has no pound column; assistance is positive
+  and labeled, and ordinary bodyweight work labels pounds as added load.
+- Active workouts keep exercise order stable and default entry focus to the first incomplete
+  exercise. **Log this exercise** switches entry focus and moves keyboard focus into it.
+  Other entries stay mounted but hidden, preserving typed numeric/tempo/note drafts. History,
+  Swap, errors, results and compact setup/note/previous-note actions remain discoverable.
+  **More** owns pins, last-used equipment, resolved station swaps and the planned-set table.
+  Saved-set Edit has a named 44px control; Delete lives in the edit form. Finish lives in
+  the sticky workout header and retains the feedback confirmation. The bottom rest area
+  shows Ready or the shared countdown; its provider/timestamp persistence is unchanged.
+- Program create/edit uses one capped column, named day buttons (`aria-pressed`), visible
+  Change/reorder and Sets / Rep range / RIR. Program settings retains description, tags,
+  progression style, weeks and phases behind a summary. Range and More options use local
+  sheet drafts: Apply updates the program draft, Cancel/Escape discard the sheet's changes.
+  More retains rest, tempo, superset, Adaptive patience and removal. Equipment choice is
+  optional; saving a program still accepts unresolved station templates.
 - Program tiles wrap visible content in their detail `Link`; the Remove control is a
   positioned sibling. An empty overlay link beneath positioned text lets that text
   intercept taps, making the tile appear intermittently unresponsive.

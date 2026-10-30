@@ -14,6 +14,10 @@ async function checkLayout(page: Page, info: TestInfo, screen: string) {
       return box.width < 43.9 || box.height < 43.9 ? [{name:button.getAttribute("aria-label") ?? button.textContent,width:box.width,height:box.height}] : [];
     }));
     expect(small, `${screen} ${width}px ${colorScheme}: buttons must be 44px`).toEqual([]);
+    for (const fields of await page.locator('.set-entry-fields:visible').all()) {
+      const tops=await fields.locator(':scope > div > input').evaluateAll(inputs=>inputs.map(input=>input.getBoundingClientRect().top));
+      expect(Math.max(...tops)-Math.min(...tops)).toBeLessThanOrEqual(1);
+    }
     if (width === 390) await page.screenshot({path:info.outputPath(`${screen}-${colorScheme}.png`),fullPage:true});
   }
   await page.setViewportSize({width:390,height:844});
@@ -58,6 +62,9 @@ test("compact builder, read-only targets and out-of-order logging retain real sa
     const session=new URL(page.url()).pathname.split("/").at(-1)!;
     await expect(page.getByRole("group",{name:"Readiness from 1 to 5",exact:true})).toBeVisible();
     const firstCard=page.locator("[data-workout-slot]").nth(0),secondCard=page.locator("[data-workout-slot]").nth(1);
+    const pin=firstCard.locator('header button[aria-label^="Pin "],header button[aria-label^="Unpin "]');
+    const wasPinned=await pin.getAttribute('aria-pressed');
+    await pin.click();await expect(pin).toHaveAttribute('aria-pressed',wasPinned==='true'?'false':'true');
     await firstCard.getByRole("textbox",{name:"Weight",exact:true}).fill("60");
     await secondCard.locator("[data-focus-exercise]").click();await expect(secondCard.getByRole("textbox",{name:"Weight",exact:true})).toBeFocused();
     await firstCard.locator("[data-focus-exercise]").click();await expect(firstCard.getByRole("textbox",{name:"Weight",exact:true})).toHaveValue("60");
@@ -67,6 +74,7 @@ test("compact builder, read-only targets and out-of-order logging retain real sa
     await firstCard.getByRole("button",{name:"Log set",exact:true}).click();
     await expect.poll(async()=>(await db.query("select count(*)::int n from public.set_log where session_id=$1",[session])).rows[0].n).toBe(1);
     await page.reload();await expect(firstCard.getByText(/60 lb ×/).first()).toBeVisible();
+    await expect(firstCard.locator('header button[aria-pressed]')).toHaveAttribute('aria-pressed',wasPinned==='true'?'false':'true');
     await firstCard.getByRole("button",{name:/^Edit set 1 for /}).click();await expect(firstCard.getByRole("button",{name:"Delete",exact:true})).toBeVisible();
     await firstCard.getByRole("button",{name:"Cancel",exact:true}).click();
     expect((await db.query("select weight from public.set_log where session_id=$1",[session])).rows[0].weight).toBe("60");

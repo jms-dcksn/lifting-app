@@ -55,6 +55,22 @@ beforeEach(() => {
 afterEach(async () => { await act(async () => root.unmount()); host.remove(); });
 
 describe("active workout set progress", () => {
+  it("keeps the exercise pin in the card header without opening More", async () => {
+    await render(0);
+    const card=host.querySelector('[data-workout-slot]')!;
+    expect(card.querySelector('header button[aria-label^="Pin "]')).not.toBeNull();
+  });
+
+  it("opens cable selection from setup on an unresolved exercise", async () => {
+    HTMLDialogElement.prototype.showModal=vi.fn(function(this:HTMLDialogElement){this.open=true;});
+    HTMLDialogElement.prototype.close=vi.fn(function(this:HTMLDialogElement){this.open=false;});
+    await render(0,3,EXERCISE_BY_ID['lat-pulldown']);
+    const setup=host.querySelector<HTMLButtonElement>('[aria-label^="Choose cable to edit setup"]')!;
+    await act(async()=>setup.click());
+    expect(host.querySelector('dialog')?.open).toBe(true);
+    expect(host.querySelector('dialog')?.textContent).toContain('Use this cable');
+  });
+
   it("logs rep-only work with zero stored load and no weight control", async () => {
     vi.mocked(logSet).mockResolvedValue({ id: "rollout-set", exercise_id: "ab-wheel-rollout", weight: 0,
       reps: 6, rir: 2, set_index: 0, e1rm: null, note: null, setup_snapshot: null, edit_revision: 0, tempo: null, recomputeWarning: null });

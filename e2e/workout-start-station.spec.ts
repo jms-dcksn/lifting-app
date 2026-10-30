@@ -36,7 +36,7 @@ for (const entry of ["home", "planner"] as const) {
       await expect(page).toHaveURL(/\/session\//);
       const session = new URL(page.url()).pathname.split("/").at(-1)!;
       await expect(page.getByRole("button", { name: "Log set", exact: true })).toHaveCount(0);
-      await expect(page.getByRole("button", { name: "Choose cable for Lat Pulldown (Cable)", exact: true })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Choose cable to edit setup for Lat Pulldown (Cable)", exact: true })).toBeVisible();
       await page.getByRole("button", { name: "Choose bench for Barbell Bench Press", exact: true }).click();
       await page.getByRole("combobox", { name: "Brand", exact: true }).selectOption("Life Fitness");
       await page.getByRole("button", { name: "Use this bench", exact: true }).click();
@@ -48,7 +48,18 @@ for (const entry of ["home", "planner"] as const) {
       const logged = (await db.query("select exercise_id,planned_set_id from public.set_log where session_id=$1", [session])).rows[0];
       expect(logged.exercise_id).not.toBe("bb-bench");
       expect(logged.planned_set_id).toBeTruthy();
+      const cableCard=page.locator('[data-workout-slot]').nth(1);
+      await cableCard.getByRole('button',{name:/^Choose cable to edit setup/}).click();
+      await page.getByRole('combobox',{name:'Brand',exact:true}).selectOption('Life Fitness');
+      await page.getByRole('button',{name:'Use this cable',exact:true}).click();
+      await page.getByRole('button',{name:'This workout only',exact:true}).click();
+      await cableCard.getByRole('button',{name:/^Edit machine or cable setup/}).click();
+      const setup=page.getByRole('dialog',{name:'Machine / cable setup',exact:true});
+      await setup.getByRole('textbox',{name:'Setup for this workout',exact:true}).fill('Pulley 12, neutral handles');
+      await setup.getByRole('button',{name:'Save',exact:true}).click();
+      await expect.poll(async()=>(await db.query('select setup from public.workout_exercise_detail where session_id=$1',[session])).rows[0]?.setup).toBe('Pulley 12, neutral handles');
       await page.reload();
+      await expect(cableCard.getByText('Pulley 12, neutral handles',{exact:true})).toBeVisible();
       await expect(page.getByRole("button", { name: "Log set", exact: true })).toHaveCount(1);
       expect((await db.query("select count(*)::integer n from public.workout_session where user_id=$1", [owner])).rows[0].n).toBe(1);
       expect(errors).toEqual([]);

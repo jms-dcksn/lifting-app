@@ -25,6 +25,8 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   Keep ref access in events/effects rather than render. `Input` resets native date appearance
   and constrains sizing for narrow Safari layouts. A named `set-entry` container stacks
   the column stepper buttons below 18rem of available width, preserving 44px targets.
+  Set entry shares label/value/control tracks through CSS subgrid, so wrapped Assistance
+  labels cannot shift the weight, reps and RIR values onto different baselines.
 - `Card` tones distinguish current/completed work through border/opacity. Active workout
   slots instead use a soft surface background for completion so results and record pills
   retain contrast, plus a secondary `Add set` action. Their compact count and 12px checked
@@ -68,7 +70,9 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   exercise. **Log this exercise** switches entry focus and moves keyboard focus into it.
   Other entries stay mounted but hidden, preserving typed numeric/tempo/note drafts. History,
   Swap, errors, results and compact setup/note/previous-note actions remain discoverable.
-  **More** owns pins, last-used equipment, resolved station swaps and the planned-set table.
+  The exercise pin stays in the card header's top-right corner. History, Swap and More
+  share a light text-action row with 44px touch targets. **More** owns last-used equipment,
+  resolved station swaps and the planned-set table.
   Saved-set Edit has a named 44px control; Delete lives in the edit form. Finish lives in
   the sticky workout header and retains the feedback confirmation. The bottom rest area
   shows Ready or the shared countdown; its provider/timestamp persistence is unchanged.
@@ -146,10 +150,12 @@ and [rest completion notifications](DECISIONS.md#rest-completion-notifications-1
 `TempoLabel` displays the same notation. Active set logging keeps performed tempo under
 **Set details**. Saved sets show their recorded value, or **unspecified** for older sets.
 
-Workout cards keep history/swap/pin actions below the title on phone widths. A separate
-labeled **Setup** / **Exercise note** row distinguishes editable personal text from history,
+Workout cards keep History/Swap/More below the title and the pin at the top right. A separate
+labeled **Machine setup** / **Cable setup** and **Exercise note** grid above set entry distinguishes editable personal text from history,
 station swapping and technique help. Setup appears only for canonical machine/cable
-identities (including custom and assisted stations). Saved/remembered status and two-line
+identities (including custom and assisted stations). Unresolved machine/cable exercises keep
+setup visible with **Choose machine/cable first**, opening station selection before setup
+can be saved. Saved/remembered status and two-line
 previews stay compact. **Set details** contains optional performed tempo and the set's own
 note; expanded saved details show **Setup used** and **Set note** as separate fields.
 

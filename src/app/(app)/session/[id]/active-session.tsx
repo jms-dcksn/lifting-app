@@ -10,7 +10,7 @@ import Link from "next/link";
 import { Suspense, use, useCallback, useEffect, useMemo, useOptimistic, useRef, useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { ExerciseDef, Pattern } from "@/lib/strength/coefficients";
-import { canSwapStation, isLoggableExercise } from "@/lib/station";
+import { canSwapStation, isLoggableExercise, stationTemplateFor } from "@/lib/station";
 import {
   startingWeight,
   type ProgressionPerformance,
@@ -35,7 +35,7 @@ import { formatExerciseSet } from "@/lib/strength/load-mode";
 import { PlannedSetSummary } from "@/components/ui/planned-set-table";
 import { Stepper } from "@/components/ui/stepper";
 import { PinButton } from "../../pins/pin-button";
-import { ExercisePicker } from "../../program/exercise-picker";
+import { ExercisePicker, StationPicker } from "../../program/exercise-picker";
 import { SwapStationButton } from "../../program/swap-station-button";
 import { RestBar, useSessionRestTimer } from "./rest-timer";
 import { ExerciseHistory } from "./exercise-history";
@@ -371,6 +371,7 @@ function SlotCard({
     setExerciseId(slot.exerciseId);
   }
   const [swapping, setSwapping] = useState(false);
+  const [choosingSetupStation, setChoosingSetupStation] = useState(false);
   const [pickedSwap, setPickedSwap] = useState<ExerciseDef | null>(null);
   const [savingSwap, startSwap] = useTransition();
   const [swapError, setSwapError] = useState<string | null>(null);
@@ -406,6 +407,8 @@ function SlotCard({
   // A station template isn't loggable — it must resolve to a brand / brand+type variant.
   const isTemplate = !!def && !isLoggableExercise(def);
   const showStationSwap = canSwapStation(def, catalog);
+  const stationTemplate = stationTemplateFor(def, catalog);
+  const setupNeedsStation = isTemplate && (stationTemplate?.stationProfile === "machine" || stationTemplate?.stationProfile === "cable");
 
   // Quick swap to the alternate last used for this slot. The button names the alternate by its
   // brand/type (never a sliced display name) so two variants of one movement stay distinct; the
@@ -559,12 +562,13 @@ function SlotCard({
   }
 
   return (
-    <Card aria-label={name} data-workout-slot={slot.programSlotId} tone={expanded ? "active" : tone} className={`p-3! ${complete ? "bg-surface/60" : ""}`}>
-      {!alreadyFinished && expanded && <p className="mb-2 text-caption font-medium text-muted">{complete ? "Exercise complete" : "Current exercise"}</p>}
-      {slot.supersetLabel && <p className="mb-2 text-caption font-medium">Superset {slot.supersetLabel} · Alternate exercises, then rest after the round</p>}
-      <div className="flex min-w-0 items-start gap-3">
+    <Card aria-label={name} data-workout-slot={slot.programSlotId} tone={expanded ? "active" : tone} className={complete ? "bg-surface/60" : undefined}>
+      <header className="flex min-w-0 items-start gap-3">
         <ExerciseVisual exerciseId={exerciseId} baseExerciseId={def?.baseExerciseId} size="sm" />
-        <h2 className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1">
+          {!alreadyFinished && expanded && <p className="mb-1 text-caption font-medium text-muted">{complete ? "Exercise complete" : "Current exercise"}</p>}
+          {slot.supersetLabel && <p className="mb-1 text-caption font-medium">Superset {slot.supersetLabel} · Alternate exercises, then rest after the round</p>}
+          <h2 className="min-w-0">
             <Link
               href={exerciseReviewHref({
                 exerciseId,
@@ -578,15 +582,17 @@ function SlotCard({
                 <span className="text-heading">{name}</span>
               )}
             </Link>
-        </h2>
-      </div>
-      <div className="mt-2 flex flex-wrap items-center gap-1">
-        <Button type="button" variant="secondary" className="gap-2 text-caption!" aria-label={`View history for ${name}`} onClick={() => setShowHistory(true)}>
-          <IconPastSets /> History
+          </h2>
+        </div>
+        {!isTemplate && <PinButton key={exerciseId} exerciseId={exerciseId} pinned={pinnedIds.includes(exerciseId)} name={name} />}
+      </header>
+      <div role="group" aria-label={`Actions for ${name}`} className="mt-2 flex flex-wrap items-center gap-1">
+        <Button type="button" variant="ghost" className="gap-1.5 px-2! text-caption!" aria-label={`View history for ${name}`} onClick={() => setShowHistory(true)}>
+          <IconPastSets size={18} /> History
         </Button>
-        <Button type="button" variant="ghost" className="gap-2 text-caption!" aria-label={`Swap ${name} for another exercise`}
-          disabled={alreadyFinished || savingSwap} onClick={() => setSwapping(true)}><IconSwap /> Swap</Button>
-        <Button type="button" variant="ghost" className="text-caption!" aria-label={`More tools for ${name}`} onClick={() => setShowTools(true)}>More ⋯</Button>
+        <Button type="button" variant="ghost" className="gap-1.5 px-2! text-caption!" aria-label={`Swap ${name} for another exercise`}
+          disabled={alreadyFinished || savingSwap} onClick={() => setSwapping(true)}><IconSwap size={18} /> Swap</Button>
+        <Button type="button" variant="ghost" className="px-2! text-caption!" aria-label={`More tools for ${name}`} onClick={() => setShowTools(true)}>More ⋯</Button>
       </div>
       {showTools && <Sheet ariaLabel={`Tools for ${name}`} onClose={() => setShowTools(false)}>
         <div className="flex flex-col gap-3 px-4 pb-6">
@@ -595,7 +601,6 @@ function SlotCard({
             aria-label={`Quick swap to ${lastUsedDef.name}`} onClick={() => {setShowTools(false);setSwapError(null);setPickedSwap(lastUsedDef);}}>
             <IconLastUsed /> {lastUsedLabel}
           </Button>}
-          {!isTemplate && <PinButton exerciseId={exerciseId} pinned={pinnedIds.includes(exerciseId)} name={name} />}
           {showStationSwap && !isTemplate && <SwapStationButton exerciseId={exerciseId} catalog={catalog} size="md"
             disabled={alreadyFinished || savingSwap} onPick={picked => {setShowTools(false);setSwapError(null);setPickedSwap(picked);}} />}
           {slot.plannedSets && <details className="text-caption"><summary className="min-h-11 cursor-pointer py-3">Planned sets</summary>
@@ -627,6 +632,10 @@ function SlotCard({
       <TempoLabel value={prescribedTempo} />
 
       <AchievementPills groups={achievements} exerciseId={exerciseId} />
+
+      <WorkoutExerciseDetails compact key={exerciseId} sessionId={sessionId} slotId={slot.programSlotId} exerciseId={exerciseId}
+        onChooseSetup={setupNeedsStation && !alreadyFinished && !savingSwap ? () => setChoosingSetupStation(true) : undefined}
+        equipmentInstanceId={slot.equipmentInstanceId??null} catalog={catalog} details={slot.details??[]} remembered={slot.remembered??[]} equipmentLabels={slot.equipmentLabels??{}} />
 
       <div hidden={!expanded && !alreadyFinished}>
       <TargetLine
@@ -661,6 +670,10 @@ function SlotCard({
           onClose={() => setSwapping(false)}
         />
       )}
+
+      {choosingSetupStation && stationTemplate && <StationPicker template={stationTemplate}
+        onPick={picked => {setChoosingSetupStation(false);setSwapError(null);setPickedSwap(picked);}}
+        onClose={() => setChoosingSetupStation(false)} />}
 
       {pickedSwap && !swapping && (
         <Sheet ariaLabel="Apply exercise swap" dismissible={!savingSwap} onClose={() => setPickedSwap(null)}>
@@ -710,7 +723,7 @@ function SlotCard({
               <li
                 key={s.id}
                 data-exiting={exitingIds.includes(s.id) || undefined}
-                className="flex animate-row-in items-start justify-between gap-2 rounded-control bg-surface px-3 py-1 text-body"
+                className="flex animate-row-in items-center justify-between gap-2 rounded-control bg-surface px-3 py-1 text-body"
               >
                 <div className="min-w-0 flex-1 tabular-nums">
                   <span className="text-muted">{i + 1}. <span className="sr-only">Logged</span>✓</span>{" "}
@@ -754,7 +767,7 @@ function SlotCard({
         </div>
       )}
 
-      {showStationSwap && isTemplate ? (
+      {showStationSwap && isTemplate && !setupNeedsStation ? (
         <div className="mt-3">
           <SwapStationButton
             exerciseId={exerciseId}
@@ -796,10 +809,6 @@ function SlotCard({
           />
         </div>
       ) : null}
-      <WorkoutExerciseDetails compact key={exerciseId} sessionId={sessionId} slotId={slot.programSlotId} exerciseId={exerciseId}
-        equipmentInstanceId={slot.equipmentInstanceId??null} catalog={catalog} details={slot.details??[]} remembered={slot.remembered??[]} equipmentLabels={slot.equipmentLabels??{}} />
-
-
     </Card>
   );
 }
@@ -1012,7 +1021,7 @@ function SetEntry({
 
   return (
     <fieldset disabled={disabled} className="set-entry flex min-w-0 flex-col gap-2">
-      <div className={`grid ${loadMode === "reps_only" ? "grid-cols-2" : "grid-cols-3"} gap-2`}>
+      <div className={`set-entry-fields grid ${loadMode === "reps_only" ? "grid-cols-2" : "grid-cols-3"} gap-2`}>
         {loadMode !== "reps_only" && <Stepper
           label={loadMode === "assisted" ? "Assistance (lb)" : "Weight"}
           value={loadMode === "assisted" ? Math.abs(weight) : weight}

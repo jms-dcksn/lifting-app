@@ -72,7 +72,8 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   Swap, errors, results and compact setup/note/previous-note actions remain discoverable.
   The exercise pin stays in the card header's top-right corner. History, Swap and More
   share a light text-action row with 44px touch targets. **More** owns last-used equipment,
-  resolved station swaps and the planned-set table.
+  resolved station swaps and the planned-set table. Unresolved stations keep a visible
+  **Choose machine/cable/bench/rack/platform** button in place of set entry until selected.
   Saved-set Edit has a named 44px control; Delete lives in the edit form. Finish lives in
   the sticky workout header and retains the feedback confirmation. The bottom rest area
   shows Ready or the shared countdown; its provider/timestamp persistence is unchanged.

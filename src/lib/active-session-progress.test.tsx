@@ -71,6 +71,27 @@ describe("active workout set progress", () => {
     expect(host.querySelector('dialog')?.textContent).toContain('Use this cable');
   });
 
+  it.each(["hack-squat", "lat-pulldown", "bb-bench"])("offers direct station selection for %s after the previous exercise completes", async exerciseId => {
+    HTMLDialogElement.prototype.showModal=vi.fn(function(this:HTMLDialogElement){this.open=true;});
+    HTMLDialogElement.prototype.close=vi.fn(function(this:HTMLDialogElement){this.open=false;});
+    const def=EXERCISE_BY_ID[exerciseId];
+    const previous=slot(3), next={...slot(0),programSlotId:"next-slot",exerciseId:def.id,pattern:def.pattern};
+    await act(async()=>root.render(createElement(ActiveSession,{
+      sessionId:"open",dayName:"Upper",week:1,weeks:5,phase:null,bodyweight:180,defaultRestSeconds:120,alreadyFinished:false,
+      initialFeedback:{readiness:3,jointPain:null,note:null},stats:[],recentIds:[],slots:[previous,next],targetHistory,
+      catalog:EXERCISE_BY_ID,recordsPromise,pinnedIds:[],
+    })));
+    const card=host.querySelector('[data-workout-slot="next-slot"]')!;
+    expect(card.textContent).toContain("Current exercise");
+    expect(card.querySelector('[data-set-entry]')).toBeNull();
+    const choose=card.querySelector<HTMLButtonElement>(`[aria-label="Choose ${def.stationProfile} for ${def.name}"]`);
+    expect(choose).not.toBeNull();
+    expect(choose!.disabled).toBe(false);
+    await act(async()=>choose!.click());
+    expect(host.querySelector('dialog')?.open).toBe(true);
+    expect(host.querySelector('dialog')?.textContent).toContain(`Use this ${def.stationProfile}`);
+  });
+
   it("logs rep-only work with zero stored load and no weight control", async () => {
     vi.mocked(logSet).mockResolvedValue({ id: "rollout-set", exercise_id: "ab-wheel-rollout", weight: 0,
       reps: 6, rir: 2, set_index: 0, e1rm: null, note: null, setup_snapshot: null, edit_revision: 0, tempo: null, recomputeWarning: null });

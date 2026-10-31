@@ -29,7 +29,7 @@ for (const entry of ["home", "planner"] as const) {
       await context.addCookies(cookies.map(cookie => ({ ...cookie, url: baseURL! })));
       await db.query("insert into public.program(id,user_id,name,weeks,is_active) values($1,$2,'Legacy equipment',5,true)", [program, owner]);
       await db.query("insert into public.program_day(id,user_id,program_id,name,position) values($1,$2,$3,'Upper',0)", [day, owner, program]);
-      await db.query("insert into public.program_slot(id,user_id,program_day_id,position,exercise_id,pattern,target_sets,rep_min,rep_max,target_rir) values($1,$2,$3,0,'bb-bench','horizontal_press',3,5,8,2),($4,$2,$3,1,'lat-pulldown','vertical_pull',3,8,12,2)", [bench, owner, day, cable]);
+      await db.query("insert into public.program_slot(id,user_id,program_day_id,position,exercise_id,pattern,target_sets,rep_min,rep_max,target_rir) values($1,$2,$3,0,'bb-bench','horizontal_press',1,5,8,2),($4,$2,$3,1,'lat-pulldown','vertical_pull',3,8,12,2)", [bench, owner, day, cable]);
 
       await page.goto(entry === "home" ? "/" : "/workout/next");
       await page.getByRole("button", { name: entry === "home" ? "Start next workout" : "Start workout", exact: true }).click();
@@ -49,7 +49,7 @@ for (const entry of ["home", "planner"] as const) {
       expect(logged.exercise_id).not.toBe("bb-bench");
       expect(logged.planned_set_id).toBeTruthy();
       const cableCard=page.locator('[data-workout-slot]').nth(1);
-      await cableCard.getByRole('button',{name:/^Choose cable to edit setup/}).click();
+      await cableCard.getByRole('button',{name:'Choose cable for Lat Pulldown (Cable)',exact:true}).click();
       await page.getByRole('combobox',{name:'Brand',exact:true}).selectOption('Life Fitness');
       await page.getByRole('button',{name:'Use this cable',exact:true}).click();
       await page.getByRole('button',{name:'This workout only',exact:true}).click();
@@ -57,9 +57,19 @@ for (const entry of ["home", "planner"] as const) {
       const setup=page.getByRole('dialog',{name:'Machine / cable setup',exact:true});
       await setup.getByRole('textbox',{name:'Setup for this workout',exact:true}).fill('Pulley 12, neutral handles');
       await setup.getByRole('button',{name:'Save',exact:true}).click();
+      await expect(setup).toHaveCount(0);
       await expect.poll(async()=>(await db.query('select setup from public.workout_exercise_detail where session_id=$1',[session])).rows[0]?.setup).toBe('Pulley 12, neutral handles');
+      await expect(cableCard.getByText('Current exercise',{exact:true})).toBeVisible();
+      await cableCard.getByRole('textbox',{name:'Weight',exact:true}).fill('70');
+      await expect(cableCard.getByRole('textbox',{name:'Weight',exact:true})).toHaveValue('70');
+      await cableCard.getByRole('button',{name:'Log set',exact:true}).click();
+      await expect.poll(async()=>(await db.query('select count(*)::integer n from public.set_log where session_id=$1',[session])).rows[0].n).toBe(2);
+      const cableLog=(await db.query('select exercise_id from public.set_log where session_id=$1 and program_slot_id=$2',[session,cable])).rows[0];
+      expect(cableLog.exercise_id).not.toBe('lat-pulldown');
       await page.reload();
-      await expect(cableCard.getByText('Pulley 12, neutral handles',{exact:true})).toBeVisible();
+      const savedSetup=cableCard.getByRole('button',{name:/^Read cable setup:/});
+      await expect(savedSetup).toBeVisible();
+      await expect(savedSetup).toHaveText('Pulley 12, neutral handles');
       await expect(page.getByRole("button", { name: "Log set", exact: true })).toHaveCount(1);
       expect((await db.query("select count(*)::integer n from public.workout_session where user_id=$1", [owner])).rows[0].n).toBe(1);
       expect(errors).toEqual([]);

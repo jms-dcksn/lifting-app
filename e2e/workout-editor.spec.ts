@@ -212,7 +212,9 @@ test("complete editor draft, both scopes, per-set start and historical preservat
     await page.screenshot({path:'/tmp/editor-desktop.png',fullPage:true});
     await historyButton().click();
     await expect(page.getByRole('dialog')).toHaveCount(1);
-    await expect(page.getByRole('dialog').getByText('100',{exact:true})).toBeVisible();
+    // The earlier 100 lb set belongs to the workout-only incline swap.
+    await expect(page.getByRole('dialog').getByText('110',{exact:true})).toBeVisible();
+    await expect(page.getByRole('dialog').getByText('100',{exact:true})).toHaveCount(0);
     await page.getByRole('button',{name:'Close',exact:true}).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.getByRole('button',{name:'Start workout',exact:true}).click();

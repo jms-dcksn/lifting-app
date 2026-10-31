@@ -59,6 +59,7 @@ for (const entry of ["home", "planner"] as const) {
       await setup.getByRole('button',{name:'Save',exact:true}).click();
       await expect.poll(async()=>(await db.query('select setup from public.workout_exercise_detail where session_id=$1',[session])).rows[0]?.setup).toBe('Pulley 12, neutral handles');
       await expect(cableCard.getByText('Current exercise',{exact:true})).toBeVisible();
+      await cableCard.getByRole('textbox',{name:'Weight',exact:true}).fill('70');
       await cableCard.getByRole('button',{name:'Log set',exact:true}).click();
       await expect.poll(async()=>(await db.query('select count(*)::integer n from public.set_log where session_id=$1',[session])).rows[0].n).toBe(2);
       const cableLog=(await db.query('select exercise_id from public.set_log where session_id=$1 and program_slot_id=$2',[session,cable])).rows[0];

@@ -44,7 +44,7 @@ function revalidateSession(sessionId: string) {
   revalidatePath(`/session/${sessionId}/recap`);
 }
 
-export async function getExerciseHistory(exerciseId: string, sessionId: string) {
+export async function getExerciseHistory(exerciseId: string, sessionId?: string) {
   const { supabase, userId } = await requireUser();
   const catalog = await getCatalogMap(supabase, userId);
   if (!catalog[exerciseId]) throw new Error("Exercise not found. Please reopen history.");

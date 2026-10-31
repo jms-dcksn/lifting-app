@@ -3,7 +3,7 @@ import { resolveExactWorkoutTarget, type TargetPerformance, type WorkoutTargetHi
 import type { ExerciseDef } from "./strength/coefficients";
 import type { ExerciseStat } from "./strength/recommend";
 import type { StallContext } from "./stall-report";
-import type { PlannedSet } from "./workout-editor";
+import type { PlannedSet, PlannedSlot, WorkoutEditorPlan } from "./workout-editor";
 
 export type PlannedPerformance = TargetPerformance & { plannedSetId: string; repMin: number; repMax: number; rirMin: number; rirMax: number; phaseId?: string | null };
 export function plannedSetTarget(input: {
@@ -28,8 +28,37 @@ export function plannedSetTarget(input: {
 }
 
 
+export function plannedSetSessionTarget(row: PlannedSet): import("./strength/progression").SessionTarget | null {
+  const weight = row.weight ?? row.suggestedWeight;
+  return weight === null ? null : { weight, targetReps: row.targetReps, targetRir: row.rirMax, source: "progression" };
+}
+
 export function plannedCardTarget(base: import("./effective-workout-target").EffectiveWorkoutTarget, row: PlannedSet) {
   const weight=row.weight??row.suggestedWeight;
   return { ...base, reason: row.weight!==null ? "manual_target" as const : base.reason,
     target:weight===null?null:{...base.target,weight,targetReps:row.targetReps,targetRir:row.rirMax,source:base.target?.source??"recommendation" as const} };
+}
+
+// Reuse freshly resolved source rows, never the cached suggestions in a saved draft.
+// Changed contexts use per-set evidence, keeping heavy/back-off rows independent.
+export function refreshWorkoutPlanTargets(plan: WorkoutEditorPlan, input: {
+  sources: PlannedSlot[]; history: PlannedPerformance[]; catalog: Record<string, ExerciseDef>;
+  stats: ExerciseStat[]; bodyweight: number | null; isDeload: boolean; normalWeek?: boolean;
+}): WorkoutEditorPlan {
+  return { ...plan, slots: plan.slots.map(slot => {
+    const source = input.sources.find(s => s.id === slot.id && s.exerciseId === slot.exerciseId
+      && (s.equipmentInstanceId ?? null) === (slot.equipmentInstanceId ?? null));
+    const resolve = (row: PlannedSet, normal: boolean): PlannedSet => {
+      const original = (normal ? source?.normalSets ?? source?.sets : source?.sets)?.find(s => s.id === row.id
+        && s.repMin === row.repMin && s.repMax === row.repMax && s.rirMin === row.rirMin && s.rirMax === row.rirMax
+        && (s.contextAt ?? null) === (row.contextAt ?? null) && s.seedAt === row.seedAt);
+      const resolved = original ?? plannedSetTarget({ slotId: slot.id, exerciseId: slot.exerciseId,
+        equipmentInstanceId: slot.equipmentInstanceId, set: row, history: input.history,
+        catalog: input.catalog, stats: input.stats, bodyweight: input.bodyweight, isDeload: !normal && input.isDeload });
+      return { ...row, suggestedWeight: resolved.suggestedWeight,
+        targetReps: row.weight !== null ? row.targetReps : resolved.targetReps };
+    };
+    return { ...slot, sets: slot.sets.map(row => resolve(row, !!input.normalWeek)),
+      normalSets: slot.normalSets?.map(row => resolve(row, true)) };
+  }) };
 }

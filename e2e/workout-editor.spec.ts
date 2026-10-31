@@ -25,6 +25,14 @@ test("complete editor draft, both scopes, per-set start and historical preservat
     await db.query("insert into public.program_day(id,user_id,program_id,name,position) values($1,$2,$3,'Upper',0),($4,$2,$3,'Other',1)",[day,owner,program,other]);
     await db.query("insert into public.program_slot(id,user_id,program_day_id,position,exercise_id,pattern,target_sets,rep_min,rep_max,target_rir) values($1,$2,$3,0,'db-bench','horizontal_press',3,5,8,2),($4,$2,$5,0,'db-row','horizontal_pull',3,8,12,2)",[slot,owner,day,otherSlot,other]);
     await page.goto('/workout/next');
+    const historyButton = () => page.getByRole('button',{name:/^View history for/}).first();
+    await historyButton().click();
+    await expect(page.getByRole('dialog')).toHaveCount(1);
+    await expect(page.getByText('No previous sets.',{exact:true})).toBeVisible();
+    await page.getByRole('button',{name:'Close',exact:true}).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(historyButton()).toBeFocused();
+    expect((await db.query('select count(*)::int n from public.workout_session where user_id=$1',[owner])).rows[0].n).toBe(0);
     await page.getByRole('button',{name:'Edit workout',exact:true}).click();
     const field=(path:string)=>page.locator(`[data-field="${path}"]`).last();
     const editSet=async(index:number,values:Record<string,string>,exercise=0)=>{
@@ -40,6 +48,11 @@ test("complete editor draft, both scopes, per-set start and historical preservat
       await expect(page.getByRole('dialog')).toHaveCount(0);
     };
     await editSet(0,{weight:'100',rirMin:'1',rirMax:'1'});
+    await historyButton().click();
+    await expect(page.getByRole('dialog')).toHaveCount(1);
+    await page.getByRole('button',{name:'Close',exact:true}).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(field('slots.0.sets.0.weight')).toHaveValue('100');
     for(const index of [1,2]){
       await editSet(index,{repMin:'10',repMax:'12',weight:'60'});
     }
@@ -65,7 +78,7 @@ test("complete editor draft, both scopes, per-set start and historical preservat
     // Cancel is global and must not persist even a replacement/catalog choice.
     await page.getByRole('button',{name:'Cancel',exact:true}).click();
     await page.getByRole('button',{name:'Discard changes',exact:true}).click();
-    await expect(page.getByText('100 lb · Your target')).toHaveCount(0);
+    await expect(page.getByText('100 lb × 5 repsYour target')).toHaveCount(0);
     expect((await db.query('select count(*)::int n from public.workout_plan where user_id=$1',[owner])).rows[0].n).toBe(0);
     await page.getByRole('button',{name:'Edit workout',exact:true}).click();
     await page.getByRole('button',{name:'Change exercise',exact:true}).click();
@@ -109,7 +122,7 @@ test("complete editor draft, both scopes, per-set start and historical preservat
     await page.emulateMedia({colorScheme:'light'});
     await page.getByRole('button',{name:'Save changes',exact:true}).click();
     await expect(page.getByRole('button',{name:'Start workout',exact:true})).toBeVisible();
-    await page.reload();await expect(page.getByText('100 lb · Your target',{exact:false})).toBeVisible();
+    await page.reload();await expect(page.getByText('100 lb × 5 repsYour target',{exact:false})).toBeVisible();
     expect((await db.query('select target_sets,exercise_id from public.program_slot where id=$1',[slot])).rows[0]).toMatchObject({target_sets:3,exercise_id:'db-bench'});
     await page.goto('/');await page.getByRole('button',{name:'Start next workout',exact:true}).click();
     await expect(page).toHaveURL(/\/session\//);
@@ -190,13 +203,24 @@ test("complete editor draft, both scopes, per-set start and historical preservat
     await db.query('insert into public.workout_session(user_id,program_id,program_day_id,week_index,finished_at) values($1,$2,$3,3,now())',[owner,program,other]);
     await page.goto('/workout/next');
     await expect(page.locator('[data-readonly-set-row]')).toHaveCount(4);
-    await expect(readOnlyRows.nth(0).getByRole('cell').nth(0)).toHaveText('115 lb · Suggested');
+    await expect(readOnlyRows.nth(0).getByRole('cell').nth(0)).toHaveText('115 lb × 5 reps');
     await expect(readOnlyRows.nth(0).getByRole('cell').nth(1)).toHaveText('5–8');
     await expect(readOnlyRows.nth(0).getByRole('cell').nth(2)).toHaveText('1');
-    await expect(readOnlyRows.nth(1).getByRole('cell').nth(0)).toHaveText('65 lb · Suggested');
+    await expect(readOnlyRows.nth(1).getByRole('cell').nth(0)).toHaveText('65 lb × 10 reps');
     await expect(readOnlyRows.nth(1).getByRole('cell').nth(1)).toHaveText('10–12');
     await expect(readOnlyRows.nth(1).getByRole('cell').nth(2)).toHaveText('2');
     await page.screenshot({path:'/tmp/editor-desktop.png',fullPage:true});
+    await historyButton().click();
+    await expect(page.getByRole('dialog')).toHaveCount(1);
+    // The earlier 100 lb set belongs to the workout-only incline swap.
+    await expect(page.getByRole('dialog').getByText('110',{exact:true})).toBeVisible();
+    await expect(page.getByRole('dialog').getByText('100',{exact:true})).toHaveCount(0);
+    await page.getByRole('button',{name:'Close',exact:true}).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.getByRole('button',{name:'Start workout',exact:true}).click();
+    await expect(page).toHaveURL(/\/session\//);
+    await expect(page.getByRole('textbox',{name:'Weight',exact:true})).toHaveValue('115');
+    await expect(page.getByRole('textbox',{name:'Reps',exact:true})).toHaveValue('5');
     expect(errors).toEqual([]);
   }finally{if(owner)await db.query('delete from auth.users where id=$1',[owner]);await db.end();}
 });

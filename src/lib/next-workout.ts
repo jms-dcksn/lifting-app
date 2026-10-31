@@ -1,6 +1,6 @@
 import { resolveTempo } from "./tempo";
 import { editorSlot, parseStoredPlan, recoverySets, type PlannedSet } from "./workout-editor";
-import { plannedCardTarget, plannedSetTarget, type PlannedPerformance } from "./workout-editor-targets";
+import { refreshWorkoutPlanTargets, plannedCardTarget, plannedSetTarget, type PlannedPerformance } from "./workout-editor-targets";
 import { loadPlannedPerformances } from "./workout-editor-data";
 import { exactExerciseIdentity } from "@/lib/strength/identity";
 import { cookies } from "next/headers";
@@ -121,9 +121,10 @@ export async function loadNextWorkout(
   const saved = open.data ? null : await supabase.from("workout_plan").select("plan,revision,updated_at")
     .eq("user_id", userId).eq("program_id", program.id).eq("program_day_id", day.id).eq("completed_count", completed).maybeSingle();
   if (saved?.error) throw new Error(saved.error.message);
+  const targetSources = slots.map(editorSlot);
   const storedPlan = open.data?.plan_snapshot ?? saved?.data?.plan;
   const parsedPlan=storedPlan ? parseStoredPlan(storedPlan) : null;
-  const editorPlan = parsedPlan ? open.data ? {...parsedPlan,slots:parsedPlan.slots.map(slot=>{
+  let editorPlan = parsedPlan ? open.data ? {...parsedPlan,slots:parsedPlan.slots.map(slot=>{
     const selected=choices[slot.id]??slot.exerciseId;
     if(selected===slot.exerciseId) return slot;
     return {...slot,exerciseId:selected,equipmentInstanceId:null,sets:slot.sets.map(row=>{
@@ -135,6 +136,10 @@ export async function loadNextWorkout(
   })} : {...parsedPlan,slots:parsedPlan.slots.map(s=>({...s,
     programSlotId:s.programSlotId && day.slots.some(b=>b.id===s.programSlotId)?s.programSlotId:null}))}
     : { version: 1 as const, dayName:day.name,phase:slots[0]?.prescription.phase??null, slots: slots.map(editorSlot) };
+  if (!open.data && storedPlan) editorPlan = refreshWorkoutPlanTargets(editorPlan, {
+    sources: targetSources, history: plannedHistory, catalog, stats, bodyweight,
+    isDeload: isDeload(slots[0]?.prescription.phase ?? null),
+  });
   if (storedPlan) slots = editorPlan.slots.map(s => {
     const base = slots.find(b => b.id === s.id);
     const first = s.sets[0];
@@ -154,6 +159,6 @@ export async function loadNextWorkout(
     };
   });
   return { key, choices, completed, week, day, slots, catalog, open: open.data, targetHistory, stats, bodyweight,
-    defaultRestSeconds, plannedHistory, editorPlan, sourceRevision, planRevision: saved?.data?.revision ?? 0,
+    defaultRestSeconds, plannedHistory, targetSources, editorPlan, sourceRevision, planRevision: saved?.data?.revision ?? 0,
     savedExpired: !!saved?.data && Date.parse(saved.data.updated_at) < Date.now() - 30 * 86400000 };
 }

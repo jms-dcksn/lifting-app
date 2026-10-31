@@ -94,3 +94,7 @@ reference; previous workout setup, exercise observations and differing per-set s
 snapshots have separate labels. Preview text expands in place. Empty/loading states and
 retry retain existing content; identity changes discard stale responses. Closing the
 shared Sheet restores focus without scrolling or discarding the surrounding draft.
+
+The plan editor's Tempo fieldset is separate from its set table and column headers.
+Read-only plan cards also show exercise tempo outside the set list; moving the control
+does not change inherited defaults, overrides or captured/performed tempo.

@@ -16,10 +16,12 @@ export default async function NextWorkoutPage({ searchParams }: {
   const next = await loadNextWorkout(supabase, userId, program);
   if (next.open) redirect(`/session/${next.open.id}`);
   const params = await searchParams;
+  const setIds = new Set(next.editorPlan.slots.flatMap(slot => [...slot.sets, ...(slot.normalSets ?? [])].map(set => set.id)));
+  const plannedHistory = next.plannedHistory.filter(row => setIds.has(row.plannedSetId));
   return <WorkoutPlanner key={next.key} planKey={next.key} programName={program.name}
     initialError={params.startError === "1" ? "Could not start your workout. Your plan is still saved. Try again." : undefined}
     programId={program.id} dayId={next.day.id} completed={next.completed} sourceRevision={next.sourceRevision}
-    stats={next.stats} bodyweight={next.bodyweight} targetHistory={next.targetHistory}
+    targetSources={next.targetSources} plannedHistory={plannedHistory} stats={next.stats} bodyweight={next.bodyweight}
     revision={next.planRevision} plan={next.editorPlan} recovery={next.slots[0]?.prescription.phase ?? null}
-    dayName={next.day.name} week={next.week} slots={next.slots} catalog={Object.values(next.catalog)} />;
+    dayName={next.day.name} week={next.week} catalog={Object.values(next.catalog)} />;
 }

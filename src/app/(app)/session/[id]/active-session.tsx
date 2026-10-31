@@ -32,6 +32,7 @@ import { ExerciseVisual } from "@/components/ui/exercise-visual";
 import { Card, CardLabel } from "@/components/ui/card";
 import { InfoButton } from "@/components/ui/info-button";
 import { formatExerciseSet } from "@/lib/strength/load-mode";
+import { plannedSetSessionTarget } from "@/lib/workout-editor-targets";
 import { PlannedSetSummary } from "@/components/ui/planned-set-table";
 import { Stepper } from "@/components/ui/stepper";
 import { PinButton } from "../../pins/pin-button";
@@ -435,8 +436,7 @@ function SlotCard({
     isDeload, history: targetHistory, catalog, stats, bodyweight,
   }), [slot.programSlotId, slot.targetContext, exerciseId, p, isDeload, targetHistory, catalog, stats, bodyweight]);
   const captured = plannedRow && exerciseId === slot.snapshotExerciseId;
-  const target = captured && (plannedRow.weight??plannedRow.suggestedWeight)!==null ? { weight: plannedRow.weight ?? plannedRow.suggestedWeight ?? 0,
-    targetReps: plannedRow.targetReps, targetRir: plannedRow.rirMax, source: "progression" as const } : effectiveTarget.target;
+  const target = captured ? plannedSetSessionTarget(plannedRow) : effectiveTarget.target;
   const progressionReference = effectiveTarget.reference;
 
   // Before any history exists, the suggested weight follows reps/RIR edits live.

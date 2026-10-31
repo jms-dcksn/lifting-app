@@ -19,7 +19,7 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   language) with `iconButtonClasses` for links. Calling helpers exported by a `"use client"`
   module from a Server Component can fail at runtime; a passing build alone does not prove
   the route works.
-- Lift history buttons in the active workout and finish recap use `IconPastSets`: a set
+- Lift history buttons in the planner, active workout and finish recap use `IconPastSets`: a set
   list with a backward arrow. Keep the exercise-specific `View history for …` accessible label.
 - `Stepper` provides large touch targets, press-and-hold repeat, and keyboard activation.
   Keep ref access in events/effects rather than render. `Input` resets native date appearance
@@ -63,8 +63,8 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   variant places the secondary identity beside the chip/context in the same wrapping row;
   it retains every identity field. Track tiles retain their default reserved rows.
 - `PlannedSetSummary` is the shared semantic read-only table for the planner and active
-  workout's More → Planned sets. Every set keeps its own bounds and Suggested / Your target /
-  Weight not set provenance. Reps-only work has no pound column; assistance is positive
+  workout's More → Planned sets. Every set keeps its own rep/RIR bounds and an Upcoming target with load and target reps.
+  Manual loads retain Your target; missing targets and pending equipment are explicit. Reps-only work has no pound column; assistance is positive
   and labeled, and ordinary bodyweight work labels pounds as added load.
 - Active workouts keep exercise order stable and default entry focus to the first incomplete
   exercise. **Log this exercise** switches entry focus and moves keyboard focus into it.

@@ -67,7 +67,9 @@ for (const entry of ["home", "planner"] as const) {
       const cableLog=(await db.query('select exercise_id from public.set_log where session_id=$1 and program_slot_id=$2',[session,cable])).rows[0];
       expect(cableLog.exercise_id).not.toBe('lat-pulldown');
       await page.reload();
-      await expect(cableCard.getByText('Pulley 12, neutral handles',{exact:true})).toBeVisible();
+      const savedSetup=cableCard.getByRole('button',{name:/^Read cable setup:/});
+      await expect(savedSetup).toBeVisible();
+      await expect(savedSetup).toHaveText('Pulley 12, neutral handles');
       await expect(page.getByRole("button", { name: "Log set", exact: true })).toHaveCount(1);
       expect((await db.query("select count(*)::integer n from public.workout_session where user_id=$1", [owner])).rows[0].n).toBe(1);
       expect(errors).toEqual([]);

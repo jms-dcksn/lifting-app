@@ -767,7 +767,7 @@ function SlotCard({
         </div>
       )}
 
-      {showStationSwap && isTemplate && !setupNeedsStation ? (
+      {showStationSwap && isTemplate ? (
         <div className="mt-3">
           <SwapStationButton
             exerciseId={exerciseId}

@@ -12,6 +12,7 @@ vi.mock("@/app/(app)/session/[id]/rest-timer", () => ({
   RestBar: () => null, useSessionRestTimer: () => ({ start: vi.fn(), skip: vi.fn(), remaining: null }),
 }));
 vi.mock("@/app/(app)/session/actions", () => ({ getExerciseHistory: load }));
+import { ExerciseHistory } from "@/app/(app)/session/[id]/exercise-history";
 import { ActiveSession } from "@/app/(app)/session/[id]/active-session";
 
 let root: Root;
@@ -61,4 +62,16 @@ it("keeps one history dialog as workout records finish streaming", async () => {
   await act(async () => finishHistory([]));
   expect(host.querySelectorAll("dialog[open]")).toHaveLength(1);
   expect(host.textContent).not.toContain("Loading history…");
+});
+
+it("loads plan history without a session and retries a failed read", async () => {
+  load.mockRejectedValueOnce(new Error("offline")).mockResolvedValueOnce([]);
+  await act(async () => root.render(createElement(ExerciseHistory, {exerciseId: "db-bench", name: "Bench Press",
+    def: EXERCISE_BY_ID["db-bench"], catalog: EXERCISE_BY_ID, isBodyweight: false, onClose: vi.fn()})));
+  expect(load).toHaveBeenCalledWith("db-bench", undefined);
+  expect(host.querySelector('[role="alert"]')?.textContent).toContain("load history");
+  await act(async () => [...host.querySelectorAll("button")].find(button => button.textContent === "Try again")!.click());
+  expect(load).toHaveBeenCalledTimes(2);
+  expect(host.textContent).toContain("No previous sets.");
+  expect(host.querySelectorAll("dialog[open]")).toHaveLength(1);
 });

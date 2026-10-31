@@ -20,7 +20,7 @@ vi.mock("@/components/ui/sheet",async()=>{
 vi.mock("next/navigation",()=>({useRouter:()=>({refresh:vi.fn()})}));
 vi.mock("@/components/ui/page-header",()=>({PageHeader:({title,actions}: {title:string;actions:React.ReactNode})=>createElement("header",null,title,actions)}));
 vi.mock("@/app/(app)/workout/next/actions",()=>({saveWorkoutDraft:save}));
-vi.mock("@/app/(app)/session/actions",()=>({preparePlannedWorkout:vi.fn()}));
+vi.mock("@/app/(app)/session/actions",()=>({preparePlannedWorkout:vi.fn(),getExerciseHistory:vi.fn(async()=>[])}));
 import { WorkoutPlanner } from "@/app/(app)/workout/next/workout-planner";
 let root:Root;let host:HTMLDivElement;let plan:WorkoutEditorPlan;
 function button(text:string) {return [...host.querySelectorAll("button")].find(b=>b.textContent===text || b.getAttribute("aria-label")===text)!;}
@@ -52,15 +52,17 @@ beforeEach(async()=>{
     programName:"Program",dayName:"Upper",week:1,slots:[],plan,recovery:null,stats:[],bodyweight:180,targetHistory:{progressionByExercise:{},effortBySlot:{}},catalog:Object.values(EXERCISE_BY_ID)})));
 });
 afterEach(async()=>{await act(async()=>root.unmount());host.remove();});
-it("edits per-exercise tempo as the first row of the set table",async()=>{
+it("edits per-exercise tempo outside the set table",async()=>{
   await act(async()=>host.querySelector<HTMLButtonElement>('[aria-label="Edit workout"]')!.click());
   const card=host.querySelector('[aria-label="Exercise 1"]')!;
-  const tempo=card.querySelector("[data-tempo-row]");
+  const tempo=card.querySelector("fieldset");
   const setRow=card.querySelector("[data-set-row]");
   expect(tempo).not.toBeNull();
   expect(setRow).not.toBeNull();
   expect(tempo!.compareDocumentPosition(setRow!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  expect(card.querySelector("legend")).toBeNull();
+  expect(tempo!.querySelector("legend")?.textContent).toContain("Tempo");
+  expect(tempo!.closest('[role="table"]')).toBeNull();
+  expect(card.querySelector('[role="table"] [role="row"] + [role="row"]')?.hasAttribute("data-set-row")).toBe(true);
   for(const name of ["Lower","Bottom pause","Lift","Top pause"]) {
     expect(tempo!.querySelector(`input[aria-label="${name}"]`)).not.toBeNull();
   }
@@ -80,7 +82,7 @@ it("shows a Home start failure beside a retryable saved workout",async()=>{
     programName:"Program",dayName:"Upper",week:1,slots:[],plan,recovery:null,stats:[],bodyweight:180,targetHistory:{progressionByExercise:{},effortBySlot:{}},catalog:Object.values(EXERCISE_BY_ID)})));
   expect(host.querySelector('[role="alert"]')?.textContent).toContain("Your plan is still saved");
   expect(button("Start workout").disabled).toBe(false);
-  expect(host.textContent).toContain("100 lb · Your target");
+  expect(host.textContent).toContain("100 lb × 5 repsYour target");
   expect(host.textContent).toContain("Tempo 3-0-1-0");
 });
 it("keeps removal and Undo in one draft; Cancel restores the saved prescription",async()=>{
@@ -92,11 +94,11 @@ it("keeps removal and Undo in one draft; Cancel restores the saved prescription"
   await act(async()=>button("Undo removal").click());
   expect((host.querySelector('[data-field="slots.0.sets.0.weight"]') as HTMLInputElement).value).toBe("100");
   await editSet();
-  await act(async()=>button("Use suggested weight").click());
+  await act(async()=>button("Use recommended target").click());
   await act(async()=>button("Done").click());
   expect((host.querySelector('[data-field="slots.0.sets.0.weight"]') as HTMLInputElement).value).toBe("");
   await discard();
-  expect(host.textContent).toContain("100 lb · Your target");
+  expect(host.textContent).toContain("100 lb × 5 repsYour target");
   expect(save).not.toHaveBeenCalled();
 });
 it("retains the whole draft on failed Save and retries the same request",async()=>{
@@ -183,7 +185,7 @@ it("offers Choose for unresolved equipment and Cancel discards a new station",as
   await discard();
   expect(save).not.toHaveBeenCalled();
   expect(resolveStation).not.toHaveBeenCalled();
-  expect(host.textContent).toContain("100 lb · Your target");
+  expect(host.textContent).toContain("Choose equipment");
   await act(async()=>host.querySelector<HTMLButtonElement>('[aria-label="Edit workout"]')!.click());
   expect(button("Choose machine")).toBeDefined();
 });
@@ -251,15 +253,15 @@ it("keeps secondary tools in More and validates hidden rest before saving",async
 });
 
 it("renders distinct read-only targets in a compact semantic table without editable controls",async()=>{
-  const mixed={...plan,slots:[{...plan.slots[0],sets:[plan.slots[0].sets[0],{...plan.slots[0].sets[0],id:randomUUID(),weight:null,suggestedWeight:85,repMin:10,repMax:12,rirMin:2,rirMax:3}]}]};
+  const mixed={...plan,slots:[{...plan.slots[0],sets:[plan.slots[0].sets[0],{...plan.slots[0].sets[0],id:randomUUID(),weight:null,suggestedWeight:85,targetReps:10,repMin:10,repMax:12,rirMin:2,rirMax:3}]}]};
   await act(async()=>root.render(createElement(WorkoutPlanner,{planKey:"mixed",programId:"program",dayId:"day",completed:0,sourceRevision:1,revision:0,
     programName:"Program",dayName:"Upper",week:1,slots:[],plan:mixed,recovery:null,stats:[],bodyweight:180,targetHistory:{progressionByExercise:{},effortBySlot:{}},catalog:Object.values(EXERCISE_BY_ID)})));
   const table=host.querySelector('table[aria-label="Exercise 1 working sets"]');
   expect(table).not.toBeNull();
   const rows=table!.querySelectorAll("tbody tr");
   expect(rows).toHaveLength(2);
-  expect(rows[0].textContent).toContain("100 lb · Your target");
-  expect(rows[1].textContent).toContain("85 lb · Suggested");
+  expect(rows[0].textContent).toContain("100 lb × 5 repsYour target");
+  expect(rows[1].textContent).toContain("85 lb × 10 reps");
   expect(rows[1].textContent).toContain("10–12");
   expect(rows[1].textContent).toContain("2–3");
   expect(table!.querySelector("input,button")).toBeNull();
@@ -269,11 +271,28 @@ it.each([
   ["ab-wheel-rollout",0,"Reps",false],
   ["assisted-pullup",-40,"Assistance · lb",true],
 ] as const)("summarizes %s without misrepresenting its load",async(exerciseId,weight,heading,hasLoad)=>{
+  const def = exerciseId === "assisted-pullup" ? {...EXERCISE_BY_ID[exerciseId], stationProfile: "none" as const, machineTemplate: false} : EXERCISE_BY_ID[exerciseId];
   const special={...plan,slots:[{...plan.slots[0],exerciseId,sets:[{...plan.slots[0].sets[0],weight}]}]};
   await act(async()=>root.render(createElement(WorkoutPlanner,{planKey:exerciseId,programId:"program",dayId:"day",completed:0,sourceRevision:1,revision:0,
-    programName:"Program",dayName:"Upper",week:1,slots:[],plan:special,recovery:null,stats:[],bodyweight:180,targetHistory:{progressionByExercise:{},effortBySlot:{}},catalog:Object.values(EXERCISE_BY_ID)})));
+    programName:"Program",dayName:"Upper",week:1,slots:[],plan:special,recovery:null,stats:[],bodyweight:180,targetHistory:{progressionByExercise:{},effortBySlot:{}},catalog:[...Object.values(EXERCISE_BY_ID).filter(d=>d.id!==exerciseId),def]})));
   const table=host.querySelector("table")!;
   expect(table.textContent).toContain(heading);
   expect(table.textContent?.includes("lb")).toBe(hasLoad);
   if(hasLoad){expect(table.querySelector("tbody td")?.textContent).toContain("40 lb");expect(table.textContent).not.toContain("-40");}
+});
+
+it("opens history from view and edit mode without losing the draft", async () => {
+  const history = () => host.querySelector<HTMLButtonElement>('button[aria-label^="View history for"]')!;
+  expect(history()).not.toBeNull();
+  await act(async () => history().click());
+  expect(host.querySelectorAll('dialog')).toHaveLength(1);
+  expect(host.textContent).toContain("No previous sets.");
+  await act(async () => button("Close").click());
+  await act(async () => button("Edit workout").click());
+  await setNumber("slots.0.sets.0.weight", "110");
+  await act(async () => history().click());
+  expect(host.querySelectorAll('dialog')).toHaveLength(1);
+  await act(async () => button("Close").click());
+  expect(host.querySelector<HTMLInputElement>('[data-field="slots.0.sets.0.weight"]')!.value).toBe("110");
+  expect(save).not.toHaveBeenCalled();
 });

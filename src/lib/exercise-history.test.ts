@@ -100,6 +100,12 @@ describe("history query", () => {
     expect(query.order.mock.calls).toEqual([["created_at", { ascending: false }], ["id", { ascending: false }]]);
     expect(query.limit).toHaveBeenCalledWith(10);
   });
+  it("can browse before starting a workout without a fake session exclusion", async () => {
+    const { db, query } = client({ data: [], error: null });
+    expect(await loadExerciseHistory(db, "user", [base.id])).toEqual([]);
+    expect(query.neq).not.toHaveBeenCalled();
+    expect(query.eq).toHaveBeenCalledWith("user_id", "user");
+  });
   it("distinguishes failed reads from empty history", async () => {
     const failure = client({ data: null, error: { message: "offline" } });
     await expect(loadExerciseHistory(failure.db, "user", [base.id], "active")).rejects.toThrow("Unable to load");

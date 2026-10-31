@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { normalizeGroups, newPlannedSet, parseStoredPlan, recoverySets, validateEditorPlan, type WorkoutEditorPlan } from "./workout-editor";
 import { resolvePrescription } from "./periodization";
 import { EXERCISE_BY_ID } from "./strength/coefficients";
-import { plannedSetTarget } from "./workout-editor-targets";
+import { plannedSetTarget, plannedSetSessionTarget, refreshWorkoutPlanTargets } from "./workout-editor-targets";
 import { draftStation } from "./workout-editor-station";
 const p = resolvePrescription({ targetSets: 3,repMin:5,repMax:8,targetRir:2 },1,[]);
 const row = () => newPlannedSet(randomUUID(),p,{ weight:100,targetReps:5 });
@@ -61,4 +61,29 @@ describe("full workout editor contract",()=>{
     expect(def.baseExerciseId).toBe(template.id);expect(def.machineType).toBe("selectorized");
     expect(def.stationProfile).toBe("none");
   });
+});
+
+it("refreshes changed row contexts and manual resets using per-set targets without mutating source rows", () => {
+  const source = plan();
+  const set = source.slots[0].sets[0];
+  set.suggestedWeight = 999;
+  const draft = structuredClone(source);
+  draft.slots[0].sets[0] = {...set, weight: null, repMin: 10, repMax: 12, contextAt: "2026-10-31T00:00:00.000Z"};
+  const stats = [{exerciseId: "db-bench", currentE1rm: 100, personalCoefficient: null, confidenceN: 4}];
+  const input = {sources: source.slots, history: [], catalog: EXERCISE_BY_ID, stats, bodyweight: 180, isDeload: false};
+  const refreshed = refreshWorkoutPlanTargets(draft, input);
+  const expected = plannedSetTarget({slotId: draft.slots[0].id, exerciseId: "db-bench",
+    set: draft.slots[0].sets[0], history: [], catalog: EXERCISE_BY_ID, stats, bodyweight: 180, isDeload: false});
+  expect(refreshed.slots[0].sets[0]).toMatchObject({suggestedWeight: expected.suggestedWeight, targetReps: expected.targetReps});
+  expect(refreshed.slots[0].sets[0].suggestedWeight).not.toBe(999);
+  expect(refreshed.slots[0].sets[1].weight).toBe(60);
+  expect(source.slots[0].sets[0].suggestedWeight).toBe(999);
+  expect(refreshWorkoutPlanTargets(refreshed, input)).toEqual(refreshed);
+  expect(plannedSetSessionTarget(refreshed.slots[0].sets[0])).toMatchObject({weight: expected.suggestedWeight, targetReps: expected.targetReps});
+});
+
+it("keeps captured unavailable targets unavailable instead of borrowing another row's progression", () => {
+  const set = {...row(), weight: null, suggestedWeight: null};
+  expect(plannedSetSessionTarget(set)).toBeNull();
+  expect(plannedSetSessionTarget({...set, weight: 0})).toMatchObject({weight: 0});
 });

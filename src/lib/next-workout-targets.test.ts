@@ -22,6 +22,7 @@ let program: Program;
 let history: StallHistory;
 let open: Record<string, unknown> | null;
 let statError: boolean;
+let savedPlan: unknown;
 let logged: unknown[];
 let adaptations: unknown[];
 const calls: Array<{ table: string; operation: string; args: unknown[] }> = [];
@@ -36,7 +37,7 @@ function client() {
       return query;
     };
     const result = () => ({ data: table === "workout_session" ? open : table === "profile" ? { default_rest_seconds: 120 }
-      : table === "movement_adaptation" ? adaptations : table === "set_log" ? logged : [],
+      : table === "workout_plan" ? savedPlan : table === "movement_adaptation" ? adaptations : table === "set_log" ? logged : [],
       count: head ? 2 : undefined, error: table === "user_exercise_stat" && statError ? { message: "stats unavailable" } : null });
     query.maybeSingle = async () => result();
     query.then = (resolve: (result: unknown) => void) => resolve(result());
@@ -46,7 +47,7 @@ function client() {
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(now);
-  calls.length = 0; open = null; statError = false; logged = []; adaptations = [];
+  calls.length = 0; savedPlan = null; open = null; statError = false; logged = []; adaptations = [];
   program = { id: "program", name: "Training", description: null, tags: [], weeks: 5, isActive: true,
     style: "classic", phases: [], days: [{ id: "day", name: "Upper", slots: [{ id: "slot", exerciseId: "bb-bench",
       pattern: "horizontal_press", targetSets: 2, repMin: 6, repMax: 10, targetRir: 2, restSeconds: null, plateauPatience: null }] }] };
@@ -166,4 +167,23 @@ it("overlays an explicit active-session swap without carrying the captured exerc
   expect(next.slots[0].exerciseId).toBe("db-incline-bench");
   expect(next.slots[0].plannedSets?.[0].weight).toBeNull();
   expect((open.plan_snapshot as {slots:{exerciseId:string;sets:{weight:number}[]}[]}).slots[0]).toMatchObject({exerciseId:"db-bench",sets:[{weight:100}]});
+});
+
+it("refreshes stale saved automatic targets before preview and capture, preserving manual targets", async () => {
+  program.days[0].slots[0].id = "123e4567-e89b-42d3-a456-426614174000";
+  // Use the same slot in the historic evidence so repeated-effort resolution applies.
+  history.slots[0].id = program.days[0].slots[0].id;
+  history.sets.forEach(set => set.program_slot_id = history.slots[0].id);
+  const fresh = await loadNextWorkout(client(), "user", program);
+  const plan = structuredClone(fresh.editorPlan);
+  plan.slots[0].sets[0].suggestedWeight = 500;
+  plan.slots[0].sets[0].targetReps = 10;
+  plan.slots[0].sets[1].weight = 120;
+  savedPlan = { plan, revision: 1, updated_at: now.toISOString() };
+  const refreshed = await loadNextWorkout(client(), "user", program);
+  expect(refreshed.editorPlan.slots[0].sets[0]).toMatchObject({ weight: null,
+    suggestedWeight: fresh.editorPlan.slots[0].sets[0].suggestedWeight,
+    targetReps: fresh.editorPlan.slots[0].sets[0].targetReps });
+  expect(refreshed.editorPlan.slots[0].sets[1].weight).toBe(120);
+  expect(plan.slots[0].sets[0].suggestedWeight).toBe(500);
 });

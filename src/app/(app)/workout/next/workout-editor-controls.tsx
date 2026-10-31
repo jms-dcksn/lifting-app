@@ -5,44 +5,38 @@ import { Button } from "@/components/ui/button";
 import { setRange } from "@/components/ui/planned-set-table";
 import { Input } from "@/components/ui/input";
 import { Sheet, useSheetDismiss } from "@/components/ui/sheet";
-import { TempoCells, TempoRowLabel } from "@/components/ui/tempo";
-import type { Tempo } from "@/lib/tempo";
 import type { EditorIssue, PlannedSet, PlannedSlot } from "@/lib/workout-editor";
 
-export function PlannedSetTable({ slot, index, assisted, issues, tempo, onTempo, onWeight, onEdit }: {
+export function PlannedSetTable({ slot, index, assisted, repsOnly = false, issues, onWeight, onEdit }: {
   slot: PlannedSlot;
   index: number;
   assisted: boolean;
+  repsOnly?: boolean;
   issues: EditorIssue[];
-  tempo: Tempo;
-  onTempo: (value: Tempo) => void;
   onWeight: (setId: string, value: number | null) => void;
   onEdit: (setId: string, field: "repMin" | "rirMin") => void;
 }) {
-  const titles = ["Set", assisted ? "Load · lb" : "Weight · lb", "Reps", "RIR"];
+  const titles = ["Set", ...(repsOnly ? [] : [assisted ? "Assistance · lb" : "Target · lb"]), "Reps", "RIR"];
+  const span = repsOnly ? "col-span-3" : "col-span-4";
   return <div role="table" aria-label={`Exercise ${index + 1} working sets${assisted ? "; negative pounds indicate assistance" : ""}`}
-    className="mt-3 grid w-full min-w-0 grid-cols-[auto_repeat(3,minmax(0,1fr))] text-center tabular-nums">
-    <div role="row" className="col-span-4 grid grid-cols-subgrid text-caption text-muted">
+    className={`mt-3 grid w-full min-w-0 ${repsOnly ? "grid-cols-[auto_repeat(2,minmax(0,1fr))]" : "grid-cols-[auto_repeat(3,minmax(0,1fr))]"} text-center tabular-nums`}>
+    <div role="row" className={`${span} grid grid-cols-subgrid text-caption text-muted`}>
       {titles.map(title => <div key={title} role="columnheader" className="border-y border-border bg-surface px-1 py-2 font-normal">{title}</div>)}
-    </div>
-    <div role="row" data-tempo-row className="col-span-4 grid grid-cols-subgrid items-center border-b border-border">
-      <TempoRowLabel />
-      <TempoCells inTable value={tempo} onChange={onTempo} />
     </div>
     {slot.sets.map((set, setIndex) => {
       const path = `slots.${index}.sets.${setIndex}`;
-      return <div role="row" data-set-row key={set.id} className="col-span-4 grid grid-cols-subgrid items-center border-b border-border">
+      return <div role="row" data-set-row key={set.id} className={`${span} grid grid-cols-subgrid items-center border-b border-border`}>
         <div role="rowheader" className="px-1 text-caption font-normal text-muted">{setIndex + 1}</div>
-        <div role="cell" data-set-column="weight" className="min-w-0 p-1">
+        {!repsOnly && <div role="cell" data-set-column="weight" className="min-w-0 p-1">
           <Input type="number" inputMode="decimal" step="any" value={Number.isNaN(set.weight) ? "" : set.weight ?? ""}
             data-field={`${path}.weight`} aria-label={`Exercise ${index + 1} set ${setIndex + 1} ${assisted ? "load (negative lb assistance)" : "weight (lb)"}`}
             aria-invalid={issues.some(issue => issue.path === `${path}.weight`) || undefined}
             aria-describedby={issues.some(issue => issue.path === `${path}.weight`) ? "editor-errors" : undefined}
-            aria-description={set.suggestedWeight === null ? "Leave blank for suggested weight when available." : `Leave blank to use the suggested ${set.suggestedWeight} lb.`}
-            placeholder={set.suggestedWeight === null ? "Auto" : `${set.suggestedWeight} auto`}
+            aria-description={set.suggestedWeight === null ? "Leave blank for the upcoming target when available." : `Leave blank to use the upcoming target of ${set.suggestedWeight} lb.`}
+            placeholder={set.suggestedWeight === null ? "Auto" : `${assisted ? Math.abs(set.suggestedWeight) : set.suggestedWeight} target`}
             className="h-11! min-w-0 border-transparent! bg-surface! px-1! text-center text-base placeholder:text-caption placeholder:text-muted! focus:border-border-strong!"
             onChange={event => onWeight(set.id, event.target.validity.badInput ? NaN : event.target.value === "" ? null : Number(event.target.value))} />
-        </div>
+        </div>}
         {(["reps", "rir"] as const).map(kind => {
           const min = kind === "reps" ? "repMin" : "rirMin";
           const max = kind === "reps" ? "repMax" : "rirMax";

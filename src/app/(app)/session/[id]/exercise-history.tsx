@@ -20,7 +20,7 @@ export function ExerciseHistory({
   onClose,
 }: {
   exerciseId: string;
-  sessionId: string;
+  sessionId?: string;
   name: string;
   def?: ExerciseDef;
   catalog?: Record<string, ExerciseDef>;
@@ -28,7 +28,7 @@ export function ExerciseHistory({
   onClose: () => void;
 }) {
   return (
-    <Sheet onClose={onClose} ariaLabel={`${name} history`}>
+    <Sheet key={`${exerciseId}:${sessionId ?? "plan"}`} onClose={onClose} ariaLabel={`${name} history`}>
       <HistoryContent
         exerciseId={exerciseId}
         sessionId={sessionId}
@@ -50,7 +50,7 @@ function HistoryContent({
   isBodyweight,
 }: {
   exerciseId: string;
-  sessionId: string;
+  sessionId?: string;
   name: string;
   def?: ExerciseDef;
   catalog?: Record<string, ExerciseDef>;

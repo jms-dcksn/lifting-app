@@ -30,13 +30,14 @@ export async function loadExerciseHistory(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   exerciseIds: string[],
-  sessionId: string,
+  sessionId?: string,
 ) {
-  const { data, error } = await supabase.from("set_log")
+  let query = supabase.from("set_log")
     .select("id, exercise_id, weight, reps, rir, is_warmup, is_deload, created_at, tempo, note, setup_snapshot, session_id, planned_slot_id, program_slot_id, equipment_instance_id")
     .eq("user_id", userId)
-    .in("exercise_id", exerciseIds)
-    .neq("session_id", sessionId)
+    .in("exercise_id", exerciseIds);
+  if (sessionId) query = query.neq("session_id", sessionId);
+  const { data, error } = await query
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
     .limit(10);

@@ -2,7 +2,7 @@
 
 `/workout/next` uses one **Edit workout** action. Exercise cards stay in place while their
 sets become compact aligned rows. Weight is editable inline; tapping a rep or RIR range
-opens a focused set sheet with separate minimum/maximum fields, suggested-weight reset
+opens a focused set sheet with separate minimum/maximum fields, recommended-target reset
 and Remove set. Sheet changes update the workout draft; Done validates that sheet,
 while Escape/dismiss retains draft edits. Global Save reopens and focuses invalid hidden
 range/rest controls. Exercise and equipment changes stay visible; named 44px move/remove
@@ -17,7 +17,9 @@ guards use browser confirmation where supported.
 
 Read-only cards use the same compact artwork/identity shell and a semantic set table.
 Values remain plain text until Edit. Every row retains its prescribed rep/RIR bounds and
-manual/suggested/missing target provenance, including mixed targets in one exercise.
+an Upcoming target (load/assistance and target reps), including mixed targets in one
+exercise. Manual values retain Your target; unavailable targets and pending equipment
+are explicit.
 Reps-only work omits pounds; assisted work labels positive assistance. Tempo, recovery,
 superset/round-rest context and previous notes remain visible. Start still accepts pending
 equipment; this layout does not move equipment resolution earlier in the flow.
@@ -95,7 +97,7 @@ not share the old card-wide first-set reference. Context edits start a new compa
 The canonical `resolveExactWorkoutTarget` calculation still owns suggestions and repeated
 effort adjustments. Legacy uniform slots retain their existing first-working-set behavior.
 
-**Use suggested weight** clears only that row's weight adjustment. Its apply-to-all control
+**Use recommended target** clears only that row's weight adjustment. Its apply-to-all control
 explicitly names all sets in the exercise. It does not reset reps, RIR, rest, order, grouping,
 or exercise identity, and remains a draft change until Save.
 
@@ -142,6 +144,8 @@ and both scopes against the disposable stack. The PR records actual results and 
 The migration must be applied through the existing hosted deployment workflow before
 production can run this code; no hosted migration is authorized by local verification.
 
+The upcoming-workout editor places a labeled Tempo fieldset outside the set table,
+above its column headers. The read-only card also keeps Tempo outside the set list.
 Tempo is editable per exercise in both the program builder and upcoming-workout editor.
 Explicit four-phase seconds survive save, copy, station selection and start; an inherited
 default follows the destination exercise on swaps. Session captures and logged sets freeze
@@ -168,3 +172,26 @@ and restores focus without scrolling. Loading, retry, older-workout pagination a
 identity changes share the [previous-notes contract](WORKOUT-DETAILS.md#previous-notes-255)
 with active workouts. Remembered setup stays separate from dated observations and
 is never applied by browsing.
+
+## Plan history and upcoming targets (#260)
+
+Each plan card has History in viewing and editing modes, using the same family-scoped
+history sheet as active workouts. Browsing needs no session ID and creates no session.
+One selected slot owns the sheet; closing restores focus without scrolling or losing the
+draft. New, unsaved stations browse their template family until they have a persisted ID.
+Previous notes remains a separate action.
+
+Saved automatic suggestions are refreshed from current canonical targets before preview
+and Start. Unchanged source rows retain the existing legacy/per-set resolution and effort
+context; changed identities, prescriptions and comparison windows use per-set target
+resolution. The editor uses the same refresh helper as the server. Suggestions are derived
+values, not performance evidence; manual upcoming loads stay exact and reset explicitly.
+Normal-week targets remain separate while editing program scope during recovery.
+
+The upcoming target shows both load and target reps alongside prescribed rep/RIR ranges.
+Reps-only work shows target reps without pounds; assisted work shows positive assistance;
+ordinary bodyweight work labels added load. Pending equipment shows Choose equipment.
+Active workouts use the captured row target, including an unavailable result, rather than
+substituting a different legacy target. Later exercise swaps still use their existing
+recalculation path. A new input/history revision before Start can legitimately change the
+automatic target; an existing session capture remains immutable.

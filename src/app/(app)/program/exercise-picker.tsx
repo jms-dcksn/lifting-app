@@ -40,6 +40,7 @@ export function ExercisePicker({
   resolveStations = false,
   resolveVariantAction = resolveVariant,
   allowCustom = true,
+  onCustomCreated,
   onPick,
   onClose,
 }: {
@@ -49,6 +50,7 @@ export function ExercisePicker({
   resolveStations?: boolean;
   resolveVariantAction?: (input: ResolveVariantInput) => Promise<ExerciseDef>;
   allowCustom?: boolean;
+  onCustomCreated?: () => void;
   onPick: (exercise: ExerciseDef) => void;
   onClose: () => void;
 }) {
@@ -61,6 +63,7 @@ export function ExercisePicker({
         resolveStations={resolveStations}
         resolveVariantAction={resolveVariantAction}
         allowCustom={allowCustom}
+        onCustomCreated={onCustomCreated}
         onPick={onPick}
       />
     </Sheet>
@@ -123,6 +126,7 @@ function PickerBody({
   resolveStations,
   resolveVariantAction,
   allowCustom,
+  onCustomCreated,
   onPick,
 }: {
   catalog: ExerciseDef[];
@@ -131,6 +135,7 @@ function PickerBody({
   resolveStations: boolean;
   resolveVariantAction: (input: ResolveVariantInput) => Promise<ExerciseDef>;
   allowCustom: boolean;
+  onCustomCreated?: () => void;
   onPick: (exercise: ExerciseDef) => void;
 }) {
   const dismiss = useSheetDismiss();
@@ -161,6 +166,7 @@ function PickerBody({
         initialPattern={patternFilter}
         onBack={() => setView({ kind: "list" })}
         onCreated={(def) => {
+          onCustomCreated?.();
           choose(def);
         }}
       />

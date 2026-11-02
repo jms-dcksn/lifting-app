@@ -42,11 +42,11 @@ do $$ declare src bigint;p jsonb;begin
  begin
   perform public.save_workout_plan('b2380000-0000-0000-0000-000000000001','c2380000-0000-0000-0000-000000000001',0,src,0,'program',p,gen_random_uuid());
   raise exception 'Stale plan accepted';
- exception when serialization_failure then null;end;
+ exception when sqlstate 'PT409' then null;end;
  begin
   perform public.save_workout_plan('b2380000-0000-0000-0000-000000000001','c2380000-0000-0000-0000-000000000001',0,src-1,1,'workout',p,gen_random_uuid());
   raise exception 'Stale source accepted';
- exception when serialization_failure then null;end;
+ exception when sqlstate 'PT409' then null;end;
 end $$;
 select pass('stale plan and source revisions reject rather than overwrite');
 select set_config('request.jwt.claim.sub','a2380000-0000-0000-0000-000000000002',true);

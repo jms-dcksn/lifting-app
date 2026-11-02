@@ -65,7 +65,15 @@ Both pickers offer **Add custom exercise** through the shared creation form. The
 starts with the replaced slot's pattern and remains editable. Creating saves the personal
 exercise to the catalog immediately; selecting it changes only the workout draft until Save.
 Cancel restores the saved workout but keeps the newly created catalog exercise. Station
-selections for existing templates remain deferred until Save.
+selections for existing templates remain deferred until Save. A successful personal exercise
+insert advances the source revision exactly once through `coach_source_revision`. The planner
+acknowledges that one write in its expected revision, including after Cancel, without adopting
+unrelated concurrent writes. A new server plan resets the expected revision only outside an
+active draft. Saves still reject concurrent source or plan changes.
+
+Revision conflicts from the occurrence/save/start RPCs return `PT409` (HTTP 409).
+They are permanent application conflicts, not PostgreSQL serialization failures (`40001`);
+PostgREST must return them to the user rather than retrying a stale request until timeout.
 
 ## Save scopes and persistence
 

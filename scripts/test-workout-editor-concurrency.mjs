@@ -22,7 +22,7 @@ try{
  const src=await source();
  const races=await Promise.allSettled([save(src,randomUUID()),save(src,randomUUID(),{...plan,slots:[{...plan.slots[0],restSeconds:180}]})]);
  if(races.filter(r=>r.status==='fulfilled').length!==1) throw Error('Concurrent saves did not produce exactly one winner.');
- if(races.find(r=>r.status==='rejected')?.reason.code!=='40001') throw Error('Concurrent loser did not receive an actionable conflict.');
+ if(races.find(r=>r.status==='rejected')?.reason.code!=='PT409') throw Error('Concurrent loser did not receive an actionable conflict.');
  console.log('PASS concurrent saves preserve one winner and reject stale edits');
  const nextSrc=await source();
  const start=()=>owned('select public.start_workout_plan($1,$2,0,$3,1,$4) id',[program,day,nextSrc,plan]);

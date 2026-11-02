@@ -323,7 +323,7 @@ it("suggests the current pattern and searches across all patterns, restoring sug
   await act(async()=>button("Change exercise").click());
   expect(button("horizontal pull")?.getAttribute("aria-pressed")).toBe("true");
 });
-it("creates and selects a custom exercise in the plan draft without saving the workout",async()=>{
+it.each(["workout", "program"])("creates a custom exercise and saves with its acknowledged source revision (%s)",async(scope)=>{
   const exercise={...EXERCISE_BY_ID["db-bench"],id:"custom-press",name:"Garage Press"};
   createCustom.mockResolvedValue({exercise});
   await act(async()=>button("Edit workout").click());
@@ -344,8 +344,15 @@ it("creates and selects a custom exercise in the plan draft without saving the w
   expect(host.querySelector('[aria-label="Exercise 1"]')!.textContent).toContain("Garage Press");
   expect(save).not.toHaveBeenCalled();
   save.mockResolvedValue({issues:[]});
+  await act(async()=>{
+    const select=host.querySelector<HTMLSelectElement>('select[aria-label="Apply changes to"]')!;
+    select.value=scope;
+    select.dispatchEvent(new Event("change",{bubbles:true}));
+  });
   await act(async()=>button("Save changes").click());
+  expect(save.mock.calls[0][0].scope).toBe(scope);
   expect(save.mock.calls[0][0].plan.slots[0].exerciseId).toBe("custom-press");
+  expect(save.mock.calls[0][0].sourceRevision).toBe(2);
 });
 it("shows all patterns when adding an exercise",async()=>{
   await act(async()=>button("Edit workout").click());

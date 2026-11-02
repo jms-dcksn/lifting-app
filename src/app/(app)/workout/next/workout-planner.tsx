@@ -41,6 +41,7 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
   const catalogMap = Object.fromEntries(catalog.map(d => [d.id, d]));
   const [draft, setDraft] = useState<WorkoutEditorPlan | null>(null);
   const [saved, setSaved] = useState(plan);
+  const [expectedSourceRevision, setExpectedSourceRevision] = useState(sourceRevision);
   const [picking, setPicking] = useState<string | "add" | null>(null);
   const [historySlotId, setHistorySlotId] = useState<string | null>(null);
   const [stationSlotId, setStationSlotId] = useState<string | null>(null);
@@ -80,7 +81,7 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
   const [sourcePlan, setSourcePlan] = useState(plan);
   if (sourcePlan !== plan) {
     setSourcePlan(plan);
-    if (!draft) { setSaved(plan); setCatalog(initialCatalog); }
+    if (!draft) { setSaved(plan); setCatalog(initialCatalog); setExpectedSourceRevision(sourceRevision); }
   }
   useEffect(() => {
     if (!dirty) return;
@@ -245,12 +246,12 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
     if (!draft || pending) return;
     const found = validateEditorPlan(draft, catalogMap);
     if (found.length) { focusIssue(found); return; }
-    const content = JSON.stringify({ draft, scope, sourceRevision, revision });
+    const content = JSON.stringify({ draft, scope, sourceRevision: expectedSourceRevision, revision });
     if (request.current?.content !== content) request.current = { content, id: crypto.randomUUID() };
     setError(null);
     startSaving(async () => {
       try {
-        const result = await saveWorkoutDraft({ key: planKey, programId, dayId, completed, sourceRevision,
+        const result = await saveWorkoutDraft({ key: planKey, programId, dayId, completed, sourceRevision: expectedSourceRevision,
           revision, scope, plan: draft, requestId: request.current!.id });
         if (result.issues.length) { focusIssue(result.issues); return; }
         setSaved(draft); setDraft(null); setRemoved([]); setPanel(null); request.current = null;
@@ -422,6 +423,11 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
     </EditorSheet>}
     {picking && <ExercisePicker catalog={catalog} resolveStations
       patternFilter={pickingPattern}
+      onCustomCreated={() => {
+        // One successful exercise INSERT advances coach_source_revision once. Count
+        // only our own write; concurrent changes must still fail the revision check.
+        setExpectedSourceRevision(value => value + 1);
+      }}
       resolveVariantAction={resolveDraftVariant}
       onPick={def=>{
         setCatalog(c=>c.some(d=>d.id===def.id)?c:[...c,def]);

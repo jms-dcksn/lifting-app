@@ -44,7 +44,7 @@ test("create a custom exercise, save and reload Plan, and reject stale saves pro
     await page.getByRole("button", { name: "Save changes", exact: true }).click();
     await expect(page.getByText("Workout changes saved.", { exact: true })).toBeVisible();
     await page.reload();
-    await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: `${name} Dumbbell`, exact: true })).toBeVisible();
     const saved = (await db.query("select * from public.workout_plan where user_id=$1", [owner])).rows[0];
     expect(saved.plan.slots[0].exerciseId).toBe(custom);
     const conflict = await client.rpc("save_workout_plan", {

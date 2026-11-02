@@ -54,6 +54,19 @@ the [implementation plan](compact-layouts-implementation.md) maps the production
 and verification boundaries. The production implementation preserves data contracts rather
 than copying the prototype's memory-only state or training fixtures.
 
+## Choosing exercises
+
+**Change exercise** initially lists the selected slot's movement pattern, including
+personal exercises with that pattern. Search spans the full catalog regardless of the
+suggested pattern; clearing search restores the browsing filter. **All patterns** lets
+users browse outside that pattern without a query. **Add exercise** starts with all patterns.
+
+Both pickers offer **Add custom exercise** through the shared creation form. The pattern
+starts with the replaced slot's pattern and remains editable. Creating saves the personal
+exercise to the catalog immediately; selecting it changes only the workout draft until Save.
+Cancel restores the saved workout but keeps the newly created catalog exercise. Station
+selections for existing templates remain deferred until Save.
+
 ## Save scopes and persistence
 
 One scope selector applies to the whole draft, defaulting to **This workout only**.

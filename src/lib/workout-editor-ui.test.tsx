@@ -8,7 +8,8 @@ import { newPlannedSet, type WorkoutEditorPlan } from "./workout-editor";
 import { draftStation } from "./workout-editor-station";
 const save=vi.hoisted(()=>vi.fn());
 const resolveStation=vi.hoisted(()=>vi.fn());
-vi.mock("@/app/(app)/exercise/actions",()=>({resolveVariant:resolveStation,createCustomExercise:vi.fn()}));
+const createCustom=vi.hoisted(()=>vi.fn());
+vi.mock("@/app/(app)/exercise/actions",()=>({resolveVariant:resolveStation,createCustomExercise:createCustom}));
 vi.mock("@/components/ui/sheet",async()=>{
   const {createContext,useContext,createElement}=await import("react");
   const Dismiss=createContext(()=>{});
@@ -295,4 +296,60 @@ it("opens history from view and edit mode without losing the draft", async () =>
   await act(async () => button("Close").click());
   expect(host.querySelector<HTMLInputElement>('[data-field="slots.0.sets.0.weight"]')!.value).toBe("110");
   expect(save).not.toHaveBeenCalled();
+});
+
+function exerciseOption(name:string) {
+  return [...host.querySelectorAll<HTMLButtonElement>("ul button")].find(row=>row.getAttribute("aria-label")?.includes(name));
+}
+async function searchExercises(value:string) {
+  const input=host.querySelector<HTMLInputElement>('input[placeholder="Search exercises…"]')!;
+  await act(async()=>{
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value")!.set!.call(input,value);
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+  });
+}
+it("suggests the current pattern and searches across all patterns, restoring suggestions when cleared",async()=>{
+  await act(async()=>button("Edit workout").click());
+  await act(async()=>button("Change exercise").click());
+  expect(button("horizontal press")?.getAttribute("aria-pressed")).toBe("true");
+  expect(exerciseOption("Barbell Row")).toBeUndefined();
+  await searchExercises("barbell row");
+  expect(exerciseOption("Barbell Row")).toBeDefined();
+  await searchExercises("");
+  expect(exerciseOption("Barbell Row")).toBeUndefined();
+  await act(async()=>button("All patterns").click());
+  expect(exerciseOption("Barbell Row")).toBeDefined();
+  await act(async()=>exerciseOption("Barbell Row")!.click());
+  await act(async()=>button("Change exercise").click());
+  expect(button("horizontal pull")?.getAttribute("aria-pressed")).toBe("true");
+});
+it("creates and selects a custom exercise in the plan draft without saving the workout",async()=>{
+  const exercise={...EXERCISE_BY_ID["db-bench"],id:"custom-press",name:"Garage Press"};
+  createCustom.mockResolvedValue({exercise});
+  await act(async()=>button("Edit workout").click());
+  await act(async()=>button("Change exercise").click());
+  expect(button("Add custom exercise")).toBeDefined();
+  await act(async()=>button("Add custom exercise").click());
+  expect(host.querySelector<HTMLSelectElement>('select[aria-label="Pattern"]')!.value).toBe("horizontal_press");
+  const input=host.querySelector<HTMLInputElement>('input[placeholder="e.g. Machine Calf Extension"]')!;
+  await act(async()=>{
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value")!.set!.call(input,"Garage Press");
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+    const equipment=host.querySelector<HTMLSelectElement>('select[aria-label="Equipment"]')!;
+    equipment.value="dumbbell";
+    equipment.dispatchEvent(new Event("change",{bubbles:true}));
+  });
+  await act(async()=>button("Create exercise").click());
+  expect(createCustom).toHaveBeenCalledWith(expect.objectContaining({name:"Garage Press",pattern:"horizontal_press",equipment:"dumbbell"}));
+  expect(host.querySelector('[aria-label="Exercise 1"]')!.textContent).toContain("Garage Press");
+  expect(save).not.toHaveBeenCalled();
+  save.mockResolvedValue({issues:[]});
+  await act(async()=>button("Save changes").click());
+  expect(save.mock.calls[0][0].plan.slots[0].exerciseId).toBe("custom-press");
+});
+it("shows all patterns when adding an exercise",async()=>{
+  await act(async()=>button("Edit workout").click());
+  await act(async()=>button("Add exercise").click());
+  expect(exerciseOption("Barbell Row")).toBeDefined();
+  expect(button("Add custom exercise")).toBeDefined();
 });

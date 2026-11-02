@@ -71,6 +71,8 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
     panel?.kind === "options" && (issue.path === panelRestPath || issue.path === "slots"));
   const historySlot = current.slots.find(slot => slot.id === historySlotId);
   const historyDef = historySlot ? catalogMap[historySlot.exerciseId] : undefined;
+  const pickingSlot = current.slots.find(slot => slot.id === picking);
+  const pickingPattern = pickingSlot ? catalogMap[pickingSlot.exerciseId]?.pattern : undefined;
   const stationSlot = current.slots.find(slot => slot.id === stationSlotId);
   const stationTemplate = stationSlot ? stationTemplateFor(catalogMap[stationSlot.exerciseId], catalogMap) : null;
 
@@ -418,7 +420,8 @@ export function WorkoutPlanner({ planKey, programId, dayId, completed, sourceRev
       <p className="text-body">Your saved workout will be restored.</p>
       <Button type="button" variant="secondary" onClick={() => setPanel(null)}>Keep editing</Button>
     </EditorSheet>}
-    {picking && <ExercisePicker catalog={catalog} resolveStations allowCustom={false}
+    {picking && <ExercisePicker catalog={catalog} resolveStations
+      patternFilter={pickingPattern}
       resolveVariantAction={resolveDraftVariant}
       onPick={def=>{
         setCatalog(c=>c.some(d=>d.id===def.id)?c:[...c,def]);

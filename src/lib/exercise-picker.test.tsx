@@ -289,3 +289,12 @@ describe("ExercisePicker station forms", () => {
     expect(onPick).toHaveBeenCalledWith(variant);
   });
 });
+
+it("starts rear-delt custom exercises with the suggested pattern and lets the user change it", () => {
+  act(() => root.render(<ExercisePicker catalog={catalog} patternFilter="rear_delt" onPick={vi.fn()} onClose={() => {}} />));
+  openCustomForm();
+  const pattern=host.querySelector<HTMLSelectElement>('select[aria-label="Pattern"]')!;
+  expect(pattern.value).toBe("rear_delt");
+  act(() => { pattern.value="horizontal_pull"; pattern.dispatchEvent(new Event("change", {bubbles:true})); });
+  expect(pattern.value).toBe("horizontal_pull");
+});

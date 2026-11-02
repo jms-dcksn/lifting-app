@@ -158,6 +158,7 @@ function PickerBody({
   if (view.kind === "custom") {
     return (
       <CustomForm
+        initialPattern={patternFilter}
         onBack={() => setView({ kind: "list" })}
         onCreated={(def) => {
           choose(def);
@@ -202,7 +203,8 @@ function ListView({
   const [query, setQuery] = useState("");
   const byId = useMemo(() => Object.fromEntries(catalog.map(def => [def.id, def])), [catalog]);
   const [showAll, setShowAll] = useState(false);
-  const activeFilter = showAll ? undefined : patternFilter;
+  const searching = query.trim() !== "";
+  const activeFilter = showAll || searching ? undefined : patternFilter;
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -240,7 +242,7 @@ function ListView({
           Cancel
         </button>
       </div>
-      {patternFilter && (
+      {patternFilter && !searching && (
         <div className="flex gap-2 border-b border-border px-4 py-2">
           <Chip selected={!showAll} onClick={() => setShowAll(false)}>
             {patternFilter.replace(/_/g, " ")}
@@ -342,15 +344,17 @@ function StationForm({
 }
 
 function CustomForm({
+  initialPattern = "horizontal_press",
   onBack,
   onCreated,
 }: {
   onBack: () => void;
   onCreated: (def: ExerciseDef) => void;
+  initialPattern?: Pattern;
 }) {
   const [name, setName] = useState("");
   const [equipment, setEquipment] = useState<Equipment | "">("");
-  const [pattern, setPattern] = useState<Pattern>("horizontal_press");
+  const [pattern, setPattern] = useState<Pattern>(initialPattern);
   const [brand, setBrand] = useState("");
   const [machineType, setMachineType] = useState<MachineType>("selectorized");
   const [stationModel, setStationModel] = useState("");

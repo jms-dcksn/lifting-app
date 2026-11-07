@@ -89,16 +89,17 @@ createSummarizationMiddleware({ backend, model, trigger: { type: "tokens", value
           context but may increase database size. The probe reduced a 4,020-character
           tool payload to a 1,610-character model result while retaining the complete file.</p>
         <p><strong>Readiness gaps:</strong> native pins silently skip missing skills;
-          summarization advertises a StateBackend history file absent from output; the
-          candidate needs a different LangSmith version. Required-skill validation,
-          recoverable summaries, assembled prompts, fenced writes, real Postgres restart,
+          the candidate needs a different LangSmith version. The original summary-file finding
+          was a legacy configuration failure: direct <code>new StateBackend()</code> persists
+          the history, verified by read-back through a fresh agent. Required-skill validation,
+          assembled prompts, fenced writes, real Postgres restart,
           owner isolation and compiled skill packaging must pass before serving migration.</p>
         <p>Delivery: integration readiness → checkpoints/projection → shared skills (#177
           supplies program behavior; #233 owns proposals) → bounded files/context → optional
           user memory. The same main Coach owns the conversation throughout.</p>
         <p>Full report, limits, approval-pending Decision Card and measurable exits:
           <a class="underline" href="AI-COACH.md#runtime-foundations-plan-247">AI-COACH.md</a>.
-          The eleven passing probes include explicit tests of limitations; they establish
+          The eleven passing probes include an explicit test of the missing-pin limitation; they establish
           no real database, live-provider or production-readiness claim.</p>
       </section>
 

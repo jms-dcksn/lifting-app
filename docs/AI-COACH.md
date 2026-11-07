@@ -554,8 +554,8 @@ without forced/legacy peers (uninstalled optional tracing/UI peers are not requi
 This establishes an installable candidate, **not approval to downgrade production
 tracing**. Full app/evaluation compatibility with that version remains a gate.
 
-Eleven deterministic capability probes passed. Two intentionally assert observed
-limitations so a dependency update forces the report to be reconsidered.
+Eleven deterministic capability probes passed. One intentionally asserts the missing-pin
+limitation so a dependency update forces the report to be reconsidered.
 
 | Capability | Observed evidence | Remaining limit |
 | --- | --- | --- |
@@ -565,16 +565,20 @@ limitations so a dependency update forces the report to be reconsidered.
 | Native state/messages | Shared MemorySaver, fresh agent construction, stable message IDs/custom metadata, tool IDs and files round-trip; repeated input ID merges | Not process restart, database persistence, turn idempotency or authorization; a retry can still rerun tools |
 | Skills | Metadata without full body; `read_file` loads body; native pin inserts instructions and resets `pinnedSkills` | Missing pin is silently skipped; validate required manifest/version before invocation |
 | Files | Middleware denies `/skills/**` writes; 4,020-char tool output becomes a 1,610-char model result, with a full 4,020-char file readable by a fresh agent | Synthetic skill is in state for the probe only; deployed bundled skills must be separate/read-only |
-| Summarization | Explicit message trigger causes an extra model call; summary and recent question reach model | Advertised `/conversation_history/…` file is absent from StateBackend output; native offload ignores returned `filesUpdate` in this path |
+| Summarization | Explicit trigger causes an extra model call; summary/recent question reach model; history persists and a fresh agent reads it through `read_file` | Requires direct `new StateBackend()`, not the deprecated runtime-injected factory; real process/database durability remains unverified |
 | Budgets/errors | Eight allowed filesystem tool calls; ninth receives limit response; tool failure emits actual error; checkpoint outage fails before model fetch | No total-token/time/summary limit in serving code yet; client disconnect is not server cancellation |
 | Postgres interfaces | Both saver and Store exports load; inspected transactions/schema/setup/delete methods | No connections or SQL executed; Docker unavailable |
 
-The summary-file result is a **blocking capability gap**, not success at recoverable
-summarization. Keep its probe visible. Resolve it with a compatible upstream version
-or a narrowly tested integration that persists the returned updates; do not build a
-second summarizer. If full-harness assembly cannot meet the contract, use the exported
-Deep Agents middleware with `createAgent()` and document the resulting stack. That
-fallback alone does not fix the same middleware's StateBackend offload gap.
+Correction after follow-up verification: the original spike used the deprecated
+`(runtime) => new StateBackend(runtime)` factory. That form returns file updates for
+the caller to apply, and this summarization path drops them. Direct `new StateBackend()`
+sends file updates into graph state itself. The same pinned packages now pass a stronger
+regression: summarized history exists in checkpointed files and a fresh agent reads the
+original earlier question through `read_file`. No FilesystemBackend, external file store
+or library patch is required for this fix. The initial report overstated a legacy-mode
+integration failure as a general blocker. Keep the regression on intended behavior.
+If other full-harness requirements fail, exported middleware with `createAgent()` remains
+the documented fallback; do not build another summarizer.
 
 String `systemPrompt` is a prefix in this Deep Agents version, followed by its harness
 base/profile guidance and middleware prompts. The fixture proves the Coach prompt is
@@ -595,7 +599,8 @@ tool disclosure from skill metadata may bypass domain authorization.
 - **Risk:** this candidate changes the tracing dependency, defaults add capabilities,
   checkpoint files consume database space, and infrastructure SQL does not inherit
   session RLS. Replays can repeat domain effects unless their own receipts reject them.
-  Native skill failure and summarized-file recovery are not sufficient today.
+  Native required-skill failure is not sufficient today; summary-file recovery now passes
+  with the direct StateBackend configuration.
 - **Decision needed before implementation:** approve the final pinned stack after app
   regressions, private-schema credential/access design, additive schema and turn-recovery
   contract, retention limits and rollout/rollback plan. This document authorizes none
@@ -734,7 +739,7 @@ Proposed initial ceilings (reviewable defaults, **not measured provider limits**
 | Model calls | 10 total, including at most one summarization; no nested execution |
 | Tokens | 24,000 cumulative input + 4,000 cumulative output tokens per turn; reserve before each call using estimation, account actual usage, stop on exhaustion |
 | Tools | Existing eight total calls, including filesystem/skill reads; no separate unmetered skill budget |
-| Context | Summarize at approximately 6,000 tokens, retain four recent messages; hard preflight includes system instructions and tool schemas; resolve history-file blocker first |
+| Context | Summarize at approximately 6,000 tokens, retain four recent messages; hard preflight includes system instructions and tool schemas; use direct StateBackend |
 | Tool offload | Start above 2,000 estimated tokens; bounded read-back at most 200 lines / 8 KiB, search at most 20 matches |
 | Working files | 128 KiB/file, 32 files, 1 MiB live files/thread; reject excess without silently deleting proposal evidence |
 | Checkpoint growth | Measure total physical tables/indexes/pending writes over 100 representative turns; gate at 20 MiB/thread and define pruning before raising it |
@@ -763,7 +768,7 @@ These are proposed follow-ups, not newly filed issues or implementation approval
 
 | Slice | Bounded work | Exit before next slice |
 | --- | --- | --- |
-| A — integration readiness | Resolve summary-file/prompt/defaults and LangSmith version gaps; run existing Coach fixtures against selected stack; prove fenced saver integration and local Postgres connection behavior | No incompatible peers; app tests/types/build pass; no delegation; abort/time/token limits; real local process restart and least-privilege access tests; reviewed Decision Card |
+| A — integration readiness | Use direct StateBackend; resolve prompt/defaults and LangSmith version gaps; run existing Coach fixtures against selected stack; prove fenced saver integration and local Postgres connection behavior | No incompatible peers; app tests/types/build pass; no delegation; abort/time/token limits; real local process restart and least-privilege access tests; reviewed Decision Card |
 | B — durable execution | Add reviewed additive schema, admission/fencing, bootstrap-once, native serialization and projection recovery; server-only rollout switch | Old/new/episode threads survive killed/restarted processes; parallel/retry sends don't duplicate input/effects; checkpoint-success/projection-failure repairs without a model call; cross-owner read/list/resume/delete fails; deletion and outages pass |
 | C — reusable skills | Bundle manifest/read-only backend; native discovery/pinning; version restoration via authoritative workflow references | Compiled Next function contains SKILL.md/references; discovery/nonactivation, pin reset, missing/changed skill, trim/reopen/resume and forbidden writes pass; #177 then delivers actual program behavior |
 | D — working files/context | Enable quotas, recoverable offloading/summaries and cleanup, using B/C | Oversized result → stable file reference → bounded read after process restart; cross-thread/user isolation; quota and 100-turn physical-size benchmark; summaries never advertise missing history |

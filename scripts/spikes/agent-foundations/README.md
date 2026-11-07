@@ -21,12 +21,13 @@ checkpoint recovery, native serialization, skill discovery/read/pin semantics, d
 skill writes, offloading, summarization, tool budgets, errors and persistence outages.
 The synthetic owner-bound tool proves transport, not real Supabase authorization.
 
-Two passing probes deliberately document **limitations**, not readiness:
+One passing probe deliberately documents a limitation: missing pinned skills are silently
+skipped. An upgrade changing that behavior should trigger a report update.
 
-- Missing pinned skills are silently skipped by native middleware.
-- Summarization advertises a history file that is absent from StateBackend output.
-
-An upgrade changing either behavior should fail its probe and trigger a report update.
+Use `new StateBackend()` directly. The deprecated runtime-injected factory loses summary
+history updates in this version. The regression now requires history to persist and be
+readable through a fresh agent using the same in-memory checkpointer. No disk backend
+is needed; real process/database durability remains unverified.
 The report, proposed architecture, Decision Card and delivery gates live in
 [AI-COACH.md](../../../docs/AI-COACH.md#runtime-foundations-plan-247).
 No Postgres restart, real owner isolation, hosted pooling, Next function packaging or

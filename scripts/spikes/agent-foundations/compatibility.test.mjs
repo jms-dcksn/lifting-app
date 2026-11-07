@@ -23,7 +23,7 @@ process.env.LANGSMITH_TRACING = "false";
 process.env.LANGCHAIN_TRACING_V2 = "false";
 globalThis.fetch = async () => { throw new Error("Network disabled in the compatibility spike"); };
 const config = { configurable: { thread_id: threadId }, metadata: { thread_id: threadId }, recursionLimit: 40 };
-const backend = (runtime) => new StateBackend(runtime);
+const backend = new StateBackend();
 const stamp = "2026-11-07T00:00:00.000Z";
 const skillPath = "/skills/fixture/SKILL.md";
 const skillBody = "---\nname: fixture\ndescription: Synthetic compatibility workflow.\n---\nFIXTURE_INSTRUCTIONS_ONLY_ON_LOAD";
@@ -195,20 +195,24 @@ test("Postgres saver and separate Store exports exist without opening connection
   assert.equal(pkg.dependencies.deepagents, "1.16.0");
 });
 
-test("explicit summarization retains recent context but its advertised StateBackend history is missing", async (context) => {
+test("summarized history persists and is readable through a fresh agent", async () => {
+  const saver = new MemorySaver();
   const { model, requests } = fixtureModel(["Synthetic summary of earlier context.", "Current answer."]);
   const messages = Array.from({ length: 4 }, (_, index) => [
     new HumanMessage({ id: `human-${index}`, content: `Earlier question ${index}` }),
     new AIMessage({ id: `answer-${index}`, content: `Earlier answer ${index}` }),
   ]).flat();
   messages.push(new HumanMessage("Current question"));
-  const output = await harness(model, { summary: { trigger: { type: "messages", value: 6 }, keep: { type: "messages", value: 2 } } }).invoke({ messages }, config);
+  const output = await harness(model, { checkpointer: saver, summary: { trigger: { type: "messages", value: 6 }, keep: { type: "messages", value: 2 } } }).invoke({ messages }, config);
   assert.equal(requests.length, 2, "summary is an additional model call");
-  assert.ok(!Object.keys(output.files).some((path) => path.startsWith("/conversation_history/")));
+  const path = Object.keys(output.files).find((path) => path.startsWith("/conversation_history/"));
+  assert.ok(path, "advertised summarized history must exist in checkpointed files");
   assert.ok(JSON.stringify(requests[1].body.messages).includes("/conversation_history/"));
   assert.ok(JSON.stringify(requests[1].body.messages).includes("Synthetic summary"));
   assert.ok(JSON.stringify(requests[1].body.messages).includes("Current question"));
-  context.diagnostic("Native summarization advertises a history file but does not merge StateBackend filesUpdate; not migration-ready for recoverable summarized history.");
+  const next = fixtureModel([call("read_file", { file_path: path, offset: 0, limit: 200 }, "history-read"), "Recovered history."]);
+  await harness(next.model, { checkpointer: saver }).invoke({ messages: [new HumanMessage("Read earlier history")] }, config);
+  assert.ok(next.requests[1].body.messages.some((message) => message.role === "tool" && JSON.stringify(message.content).includes("Earlier question 0")), JSON.stringify(next.requests[1].body.messages.filter((message) => message.role === "tool")));
 });
 
 test("tool budget includes filesystem reads and prevents a ninth execution", async () => {

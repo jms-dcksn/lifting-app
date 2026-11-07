@@ -1107,9 +1107,10 @@ owns proposal lifecycle/receipts; no specialist writer or automatic delegation.
 User memory requires a separate Store and product slice and does not block #177.
 
 The isolated exact dependency set installs without forced peers and has eleven
-deterministic capability probes. It requires a different LangSmith version, silently
-skips missing pins, and does not persist the history file advertised by native
-summarization with StateBackend. These are recorded readiness gaps. Fenced persistence,
+deterministic capability probes. It requires a different LangSmith version and silently
+skips missing pins. Follow-up verification corrected the original summary-file finding:
+using direct `new StateBackend()` rather than the deprecated runtime-injected factory
+persists summarized history and lets a fresh agent read it. No disk backend is required. Fenced persistence,
 real database/process restart, least-privilege isolation and deployment packaging also
 remain implementation gates. No schema, credential provisioning, runtime/provider
 migration, production rollout or paid evaluation is approved by this planning record.

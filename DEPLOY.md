@@ -198,6 +198,17 @@ named `CURSOR_API_KEY`. Do not commit it.
   has no pinned Node engine, `.nvmrc`, or `vercel.json`; CI uses Node 22 for Supabase's native
   WebSocket support. Verify the selected deployment runtime at release.
 
+### Planned Coach runtime persistence (#247)
+
+Serving chat still uses the existing transcript tables; no checkpoint/Store migration
+or new credential is introduced here. The proposed private-schema role, Node pool,
+human-applied DDL and rollout/rollback gates are in
+[AI Coach foundations](docs/AI-COACH.md#runtime-foundations-plan-247).
+Do not run library `setup()` or automatic Store table creation in a request. Future
+schema work must use versioned migrations and the existing human deployment procedure.
+Checkpoint-backed threads must remain read-only during an incompatible runtime rollback;
+falling back to transcript-only execution can lose files and replay domain effects.
+
 ### Deload progression migration
 
 Apply `20261010171247_deload_progression.sql` before deploying the deload-aware app.

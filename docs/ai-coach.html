@@ -30,6 +30,78 @@
         </p>
       </header>
 
+      <section id="runtime-foundations" class="space-y-4 rounded-lg border border-slate-300 p-5">
+        <h2 class="font-serif text-2xl">Runtime foundations (#247): planned, not serving</h2>
+        <p>The current Coach rebuilds a fresh agent from bounded chat history on every send.
+          The proposed Deep Agents harness would retain graph state and working files through
+          native checkpoints. This planning change does not migrate the app or database.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:16px 0">
+          <div style="border:1px solid #78716c;padding:16px;border-radius:8px">
+            <h3 style="font-weight:600;margin-bottom:12px">Serving today</h3>
+            <div>Owned thread + full agent_message history</div>
+            <div style="padding:8px 0">↓ last-N context, tool-result trimming</div>
+            <div>Fresh createAgent → Gateway → user-session tools</div>
+            <div style="padding:8px 0">↓ after successful execution</div>
+            <div>Append replies → visible history</div>
+          </div>
+          <div style="border:1px solid #78716c;padding:16px;border-radius:8px">
+            <h3 style="font-weight:600;margin-bottom:12px">Proposed after approval and verification</h3>
+            <div>Authenticate → owned turn admission + fencing</div>
+            <div style="padding:8px 0">↓ stable new input; bootstrap old history once</div>
+            <div>Main Coach ↔ native checkpoints + thread files</div>
+            <div style="padding:8px 0">↓ repairable projection by stable message ID</div>
+            <div>Existing history rows + preserved episode seed IDs</div>
+          </div>
+        </div>
+        <p>Checkpoints would own execution state. Domain tables still own training facts,
+          proposal revisions and confirmed-action receipts. A restored checkpoint cannot
+          grant permission or make a confirmed action safe to repeat. Domain tools keep
+          the signed-in user's Supabase client; private persistence credentials stay server-only.</p>
+        <h3 class="font-mono text-sm">Current source: src/lib/agent/run.ts</h3>
+        <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>const agent = createAgent({
+  model,
+  tools: input.tools,
+  systemPrompt,
+  middleware: [
+    toolCallLimitMiddleware({
+      runLimit: TOOL_CALL_BUDGET,
+      exitBehavior: "continue",
+    }),
+  ],
+});</code></pre>
+        <h3 class="font-mono text-sm">Executable spike: scripts/spikes/agent-foundations/compatibility.test.mjs</h3>
+        <p>The spike uses the real adapter with synthetic responses, no network, and an
+          isolated lockfile. These are actual configuration excerpts from its harness:</p>
+        <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>createMiddleware({ name: "subAgentMiddleware" }),
+createFilesystemMiddleware({ backend, tools: ["read_file", "ls", "glob", "grep", "write_file"],
+  toolTokenLimitBeforeEvict: 200, grepMaxCount: 20,
+  permissions: [{ operations: ["write"], paths: ["/skills/**"], mode: "deny" }] }),
+createSummarizationMiddleware({ backend, model, trigger: { type: "tokens", value: 6000 }, keep: { type: "messages", value: 4 }, trimTokensToSummarize: 6000, ...summary }),</code></pre>
+        <p>Setting <code>subagents: []</code> alone still adds a general-purpose agent in
+          the tested version. The replacement removes its delegation tool; the fixture
+          asserts that neither <code>task</code> nor <code>execute</code> is offered.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin:16px 0">
+          <div style="flex:1;min-width:200px;border:1px solid #78716c;padding:12px"><strong>/skills/</strong><br>Trusted read-only bundle → native discovery/read/pin</div>
+          <div style="flex:1;min-width:200px;border:1px solid #78716c;padding:12px"><strong>Working files</strong><br>StateBackend → graph state → PostgresSaver</div>
+          <div style="flex:1;min-width:200px;border:1px solid #78716c;padding:12px"><strong>Future /memories/</strong><br>StoreBackend → user-namespaced persistent Store</div>
+        </div>
+        <p>A checkpointer does not provision a Store. Files in checkpoints reduce model
+          context but may increase database size. The probe reduced a 4,020-character
+          tool payload to a 1,610-character model result while retaining the complete file.</p>
+        <p><strong>Readiness gaps:</strong> native pins silently skip missing skills;
+          summarization advertises a StateBackend history file absent from output; the
+          candidate needs a different LangSmith version. Required-skill validation,
+          recoverable summaries, assembled prompts, fenced writes, real Postgres restart,
+          owner isolation and compiled skill packaging must pass before serving migration.</p>
+        <p>Delivery: integration readiness → checkpoints/projection → shared skills (#177
+          supplies program behavior; #233 owns proposals) → bounded files/context → optional
+          user memory. The same main Coach owns the conversation throughout.</p>
+        <p>Full report, limits, approval-pending Decision Card and measurable exits:
+          <a class="underline" href="AI-COACH.md#runtime-foundations-plan-247">AI-COACH.md</a>.
+          The eleven passing probes include explicit tests of limitations; they establish
+          no real database, live-provider or production-readiness claim.</p>
+      </section>
+
       <section id="edited-workout-targets" class="space-y-4">
         <h2 class="font-serif text-2xl">Saved workout edits and per-set targets (#238)</h2>
         <p>Home, the planner and Coach read the same upcoming occurrence. A saved workout-only

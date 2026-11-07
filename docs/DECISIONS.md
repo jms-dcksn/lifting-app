@@ -761,8 +761,9 @@ Replacing `/analytics/coach` would throw away the tested contract shared by the 
 
 **Stay in this TypeScript app.** Every tool worth calling is already a TS loader or action
 (`loadCoachUi`, `getActiveProgram`, `loadNextWorkout`, `sessionTarget()`, `saveProgram`,
-`startNextSession`). A Python sidecar would re-expose that surface. Deep Agents waits
-until Slice 5; LangChain TypeScript is enough for the loop.
+`startNextSession`). A Python sidecar would re-expose that surface. LangChain TypeScript
+serves the current loop. The original Deep Agents Slice 5 deferral is superseded for
+planning by [runtime foundations (#247)](#ai-coach-runtime-foundations-planning-2026-11-07).
 
 **User session + RLS.** The agent is an in-app user. Domain tools wrap existing
 loaders so period data, slot identity, and owner scope cannot drift. Conversation memory
@@ -839,10 +840,11 @@ writes.
 
 **LangSmith groups by `metadata.thread_id`.** `runAgentTurn` passes the thread id as run
 metadata, which reaches the chain, model, and tool callbacks. That is how LangSmith
-threads a conversation's traces. There is no LangGraph checkpointer and no
-`configurable.thread_id`. A checkpointer would be a second transcript store beside
-`agent_message`, and the model window already comes from Postgres through
-`selectModelMessages`.
+threads a conversation's traces. There is currently no LangGraph checkpointer and no
+`configurable.thread_id`; the model window comes from Postgres through
+`selectModelMessages`. The original rejection of a second transcript store is reconciled
+by [#247's proposed execution-state/projection ownership](#ai-coach-runtime-foundations-planning-2026-11-07),
+not by enabling an independently authoritative second transcript.
 
 **Ownership is a composite key, not a second policy.** RLS checks each row's own
 `user_id`, which cannot see whose thread `thread_id` names. `agent_message (thread_id,
@@ -1087,3 +1089,27 @@ Session captures and each actual set preserve their own values; old logs stay un
 No PR/progression/calibration eligibility or comparison scope changes. See
 [workout details](WORKOUT-DETAILS.md) for the storage and interaction contract. For #201's later program-design checks, numeric four-phase prescriptions are now representable;
 AI discovery and advanced sequencing such as intra-set tempo changes remain separate.
+
+## AI Coach runtime foundations planning (2026-11-07)
+
+#247 supersedes the blanket Deep Agents/Slice 5 deferral and the assumption that a
+checkpointer must be a competing transcript authority. Current serving behavior is
+unchanged: `createAgent()`, no native checkpoints, full UI history in Postgres and
+bounded per-turn reconstruction. The proposed contract and approval-pending Decision
+Card are in [AI-COACH.md](AI-COACH.md#runtime-foundations-plan-247).
+
+Prefer the full TypeScript Deep Agents harness after compatibility gates, with native
+checkpoints owning graph state and `agent_message` a deliberate UI projection.
+`agent_thread` and episode seed identities survive. Domain tools retain the user's
+Supabase client; infrastructure credentials do not grant domain-tool authority.
+The main Coach owns conversation/program creation. #177 supplies its skill and #233
+owns proposal lifecycle/receipts; no specialist writer or automatic delegation.
+User memory requires a separate Store and product slice and does not block #177.
+
+The isolated exact dependency set installs without forced peers and has eleven
+deterministic capability probes. It requires a different LangSmith version, silently
+skips missing pins, and does not persist the history file advertised by native
+summarization with StateBackend. These are recorded readiness gaps. Fenced persistence,
+real database/process restart, least-privilege isolation and deployment packaging also
+remain implementation gates. No schema, credential provisioning, runtime/provider
+migration, production rollout or paid evaluation is approved by this planning record.

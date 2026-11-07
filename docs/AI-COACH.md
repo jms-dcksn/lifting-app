@@ -28,6 +28,11 @@ Slice 2 (gallery intake to inactive draft) shipped; later slices remain planned.
 [AI Coach threads](DECISIONS.md#ai-coach-threads-2026-09-27). The teaching surface
 is [ai-coach.html](ai-coach.html) — update that HTML whenever agent behavior changes.
 
+**Runtime foundations (#247, planning):** [compatibility report, Decision Card and
+delivery sequence](#runtime-foundations-plan-247) replace the blanket Slice 5 deferral.
+The serving runtime remains `createAgent()` without native checkpoints. No schema,
+runtime rollout, provider change or user-memory writes are authorized by this plan.
+
 Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/coach`,
 `/api/agent/chat`) so they do not collide with Track Coach.
 
@@ -38,12 +43,12 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 | Job vs Coach | Keep the engine/report. AI Coach is the entry point; report details stay accessible as optional read-only evidence. Routine acceptance is retired. |
 | Build order | Shipped Slices 0–2 precede the exception plan A–F. Independent read tools can proceed separately. Sophistication follows dogfood and its own decisions. |
 | Runtime | TypeScript in this Next.js app. No Python service. |
-| Library | LangChain TypeScript for the agent loop and ecosystem. Tools and prompts are plain TS so the loop can change. Deep Agents is out until Slice 5. |
+| Library | LangChain TypeScript currently serves chat. #247 plans Deep Agents foundations for #177/#233 before custom program creation; rollout requires the Decision Card and compatibility gates below. |
 | Writes | Slice 0 was read-only. Slice 2 drafts inactive programs via `draftProgramFromIntake`. Confirm-chip `startNextSession` shipped in Slice 1. Live mutations wait for Slice 4. |
 | Surface | Persistent entry + `Sheet` on Lift / Track / Program / You. Full screen at `/coach?thread=`. Both carry chat history and New chat. No fifth tab. Hidden wherever `hideAppChrome` is true. |
 | Jev | Skip in Slice 0. Slice 2 uses it to classify program constraints, not to emit a program. |
 | Models | Vercel AI Gateway, server-only. LangSmith is the trace sink. |
-| Data | Logged-in user client + RLS. Domain tools wrap existing loaders. No elevated database client, generic SQL tool, or embeddings over `set_log`. |
+| Data | Logged-in user client + RLS for domain tools. No elevated domain client, generic SQL tool, or embeddings over `set_log`. #247 proposes separate server-only infrastructure access; it is not implemented. |
 | Authority | Engine owns numbers and prescriptions. Agent owns language, intake, drafts, and navigation. |
 | Privacy | Period observations stay out unless a later, separate opt-in. Same default as Coach. |
 | Context | Full transcript per thread in Postgres. Each model turn gets system prompt + that thread's last N messages. No summarization, compaction, or distilled user-memory in Slice 0. |
@@ -508,10 +513,316 @@ abandoned confirm leaves data unchanged.
 
 ### Slice 5 — Sophistication
 
-After baseline and the exception journey are dogfooded. Candidates: Deep Agents / a program-design subagent,
-web search with a research-vs-prescribe split, onboarding that starts in the agent,
-in-session whispers, rolling summaries / context compaction, distilled user memory
-beyond last-N. Each is its own Decision Card; none is implied by shipping 0–4.
+The blanket Deep Agents deferral is superseded by #247's staged foundations below.
+#177 uses a program-creation skill in the main Coach, not a program-design subagent.
+#198 owns scoped research tools; #177/#233 own their program integration. Onboarding,
+in-session presence and user memory remain separate product slices. Shipping earlier
+capabilities does not authorize them or a provider/model change.
+
+## Runtime foundations plan (#247)
+
+Planning report dated 2026-11-07, against app baseline `52b0efa`. This section is a
+proposal, not a description of serving behavior. #247 is the architecture parent;
+future bounded implementation work consumes its exits. No new issues were opened.
+
+### Compatibility report
+
+The reproducible experiment is [scripts/spikes/agent-foundations](../scripts/spikes/agent-foundations/README.md).
+Its exact manifest/lockfile are isolated: root `package.json`, root lockfile and serving
+code are unchanged. Use the three commands in its README to install, inspect peers
+and run the probes. Native `.ts` imports require Node 22.18+; observed Node was 24.15.0.
+
+| Package | App lockfile baseline | Isolated compatible candidate |
+| --- | --- | --- |
+| `deepagents` | absent | `1.16.0` |
+| `langchain` | `1.5.11` | `1.5.11` |
+| `@langchain/core` | `1.2.12` | `1.2.14` |
+| `@langchain/openai` | `1.5.13` | `1.6.2` |
+| `@langchain/anthropic` | absent | `1.5.12` (required peer, unused adapter) |
+| `@langchain/langgraph` | `1.4.16` (transitive) | `1.4.16` |
+| `@langchain/langgraph-sdk` | transitive | `1.11.1` |
+| `@langchain/langgraph-checkpoint` | `1.1.5` (transitive) | `1.2.2` |
+| `@langchain/langgraph-checkpoint-postgres` | absent | `1.1.2` (saver and separate `/store` export) |
+| `langsmith` | `0.10.4` | `0.9.0` |
+| `zod` | `4.6.5` | `4.6.5` |
+
+Registry inspection found Deep Agents `1.16.3` requires LangChain `^1.6.2`, core
+`^1.3.4`, OpenAI `^1.6.3`, LangGraph `^1.6.1` and LangSmith `<0.10.0`.
+It is not a drop-in upgrade. The tested `1.16.0` also requires LangSmith `<0.10.0`;
+the candidate deliberately uses `0.9.0`. Installation and `npm ls --all` succeeded
+without forced/legacy peers (uninstalled optional tracing/UI peers are not required).
+This establishes an installable candidate, **not approval to downgrade production
+tracing**. Full app/evaluation compatibility with that version remains a gate.
+
+Eleven deterministic capability probes passed. Two intentionally assert observed
+limitations so a dependency update forces the report to be reconsidered.
+
+| Capability | Observed evidence | Remaining limit |
+| --- | --- | --- |
+| Existing Gateway adapter and prompt | Real ChatOpenAI with app model/default URL and actual system instructions; injected Chat Completions SSE; answer text preserved | No live provider request; model compliance, latency and cost unmeasured |
+| Tools/streaming/tracing | v3 actual start/finish/error IDs; chain/model/tool callbacks receive `metadata.thread_id`; synthetic owner-bound tool result reaches model | No LangSmith upload or real domain authorization; preserve actual Supabase client in implementation |
+| Delegation disabled | Same-name replacement of `subAgentMiddleware` removes `task`; no `execute` or `write_todos` offered | `subagents: []` alone adds a general-purpose agent; assert absence for every configured model/profile |
+| Native state/messages | Shared MemorySaver, fresh agent construction, stable message IDs/custom metadata, tool IDs and files round-trip; repeated input ID merges | Not process restart, database persistence, turn idempotency or authorization; a retry can still rerun tools |
+| Skills | Metadata without full body; `read_file` loads body; native pin inserts instructions and resets `pinnedSkills` | Missing pin is silently skipped; validate required manifest/version before invocation |
+| Files | Middleware denies `/skills/**` writes; 4,020-char tool output becomes a 1,610-char model result, with a full 4,020-char file readable by a fresh agent | Synthetic skill is in state for the probe only; deployed bundled skills must be separate/read-only |
+| Summarization | Explicit message trigger causes an extra model call; summary and recent question reach model | Advertised `/conversation_history/…` file is absent from StateBackend output; native offload ignores returned `filesUpdate` in this path |
+| Budgets/errors | Eight allowed filesystem tool calls; ninth receives limit response; tool failure emits actual error; checkpoint outage fails before model fetch | No total-token/time/summary limit in serving code yet; client disconnect is not server cancellation |
+| Postgres interfaces | Both saver and Store exports load; inspected transactions/schema/setup/delete methods | No connections or SQL executed; Docker unavailable |
+
+The summary-file result is a **blocking capability gap**, not success at recoverable
+summarization. Keep its probe visible. Resolve it with a compatible upstream version
+or a narrowly tested integration that persists the returned updates; do not build a
+second summarizer. If full-harness assembly cannot meet the contract, use the exported
+Deep Agents middleware with `createAgent()` and document the resulting stack. That
+fallback alone does not fix the same middleware's StateBackend offload gap.
+
+String `systemPrompt` is a prefix in this Deep Agents version, followed by its harness
+base/profile guidance and middleware prompts. The fixture proves the Coach prompt is
+present, not that generic guidance is harmless. Review the complete assembled prompt,
+remove irrelevant coding/delegation guidance using supported configuration, and run
+the existing Coach regressions before selecting the serving stack. No automatic
+tool disclosure from skill metadata may bypass domain authorization.
+
+### Decision Card — proposed migration, approval pending
+
+- **Recommendation:** keep TypeScript/Next.js and the existing Gateway model/adapter.
+  Prefer the full Deep Agents harness after the blockers above pass. Use native
+  PostgresSaver for execution state, retain existing conversation identities/history
+  as a projection, bundle trusted read-only skills, and defer the Store/user-memory slice.
+- **Reason:** #177 needs reusable on-demand instructions and #233 needs recoverable
+  work. Native middleware/checkpoints avoid a second loader, transcript authority or
+  generic workflow engine. Same database is preferred if pooling/access tests pass.
+- **Risk:** this candidate changes the tracing dependency, defaults add capabilities,
+  checkpoint files consume database space, and infrastructure SQL does not inherit
+  session RLS. Replays can repeat domain effects unless their own receipts reject them.
+  Native skill failure and summarized-file recovery are not sufficient today.
+- **Decision needed before implementation:** approve the final pinned stack after app
+  regressions, private-schema credential/access design, additive schema and turn-recovery
+  contract, retention limits and rollout/rollback plan. This document authorizes none
+  of the schema/credential provisioning, hosted SQL, paid evaluation or serving changes.
+  If compatibility requires a provider/framework change, return a new Decision Card.
+
+### State and tool ownership contract
+
+| State | Authoritative owner | Reader/writer rule |
+| --- | --- | --- |
+| Conversation identity/title/history list | Existing `agent_thread` | Preserve IDs, owner composite key and episode links; opening chat remains read-only |
+| Accepted input and retry identity | Proposed owner/thread-scoped turn admission record | One stable client request ID and payload hash; durable pending input before execution; same ID/different payload rejects |
+| Graph messages, pending execution, middleware state, scratch files | Native checkpoints | Owned thread and allowed runtime version required; new invocations submit only newly admitted input |
+| Visible chat rows | Existing `agent_message`, deliberate projection after cutover | Preserve all old IDs/episode seed FKs; generated rows keyed by stable native identity; never reconstruct new graph state from an incomplete projection |
+| Proposal/workflow/revision/baseline/confirmation receipts | #233 domain persistence | Typed, owner-validated transitions; graph state references identity/revision rather than holding a competing authoritative artifact |
+| Program instructions/references | Trusted deployment manifest and read-only skill backend | Version/content hash; model/user/retrieved content cannot register skills or write this route |
+| Current training facts/calculations | Existing domain tables/tools and pure helpers | Request user's Supabase client + RLS; historical tool results are not fresh evidence |
+| Future cross-chat preferences | Separate persistent Store, later slice | Server-derived user namespace; neither facts nor permissions nor active workflow state |
+
+Keep orchestration at the existing `chat-handler.ts` → `thread.ts` / `run.ts` seam.
+One server-only module admits an owned turn, invokes the selected runtime and projects
+committed output. Do not expose raw checkpoint/store objects, arbitrary
+`configurable` values, namespaces, checkpoint IDs or database credentials to model tools
+or browser inputs. Keep public SSE ordering and both Coach surfaces compatible; extend
+the protocol only for explicit pending/recovery states with shared UI handling.
+
+**Input, bootstrap and projection:**
+
+1. Authenticate and validate the owned `agent_thread` before graph access. Atomically
+   admit a turn (request ID/hash), save its pending user row once, and claim execution.
+   An owned episode Discuss reuses its exact existing seed; it does not insert a new user row.
+2. Lazily bootstrap an old thread once under that execution claim. Assign stable native
+   IDs from existing row identities; one legacy tool-result row may need stable part
+   suffixes. Preserve original UI IDs and seed relationships. Record bootstrap version
+   and high-water mark atomically with initialization before accepting incremental input.
+   Repeating bootstrap after a crash must replace the same IDs, never append duplicates.
+3. Import all legitimate historical messages, including unanswered user turns. Record
+   incomplete tool calls as interrupted/unavailable, not as successful execution; importing
+   history never runs historical tools. Use native serialization for subsequent state;
+   the current lossy `toLangChainMessages()` conversion is bootstrap-only after cutover.
+4. Submit the newly admitted user input once, with its stable ID. Reusing a message ID
+   prevents a second graph message but does **not** prove the turn or effects ran once.
+   Native pin/summary/internal messages remain internal, not fake user bubbles.
+5. Persist checkpoints, then upsert UI rows using native IDs plus deterministic part IDs
+   and mark projection progress. On checkpoint success/projection failure, GET/retry repairs
+   the projection without invoking the model. Return `done` only after projection succeeds.
+   Keep the turn visibly recoverable on failure; don't silently stream a second answer.
+   UI history cannot depend solely on the latest compacted state: project newly committed
+   messages before pruning their durable checkpoints, and recover unprojected turns first.
+
+**Concurrency, interruption and side effects:** one active execution per owned thread
+across both surfaces/tabs/processes; competing distinct sends return a retryable conflict
+without a second accepted message. Duplicate request IDs return existing status/output.
+Use a durable claim with an epoch/fencing token; expiry alone must not allow a stale worker
+to keep writing. Every checkpoint write must check the current epoch in the **same database
+transaction** as its write. Stock PostgresSaver has transactions but no application fencing
+contract: a local proof of an adapter compatible with its connection/transaction behavior
+is an exit gate, not an assumed capability. Do not hold a database transaction over model
+execution or use session advisory locks through a transaction pooler. If this cannot be
+implemented narrowly, revisit the execution strategy before schema approval.
+
+Record accepted/running/interrupted/failed/completed status and last durable progress.
+Disconnect signals an abort and waits for in-flight persistence cleanup; abrupt function
+termination leaves interrupted work. Reopen shows status and an explicit retry/resume path;
+it does not start paid generation through GET. Before resuming, reclaim with fencing,
+revalidate owner/runtime/workflow revision and refresh domain facts. Do not offer graph
+time travel to the UI. Graph replay never restores approval: confirmed domain actions use
+their existing exact-revision receipts/idempotency and fresh authorization. Preserve current
+training confirmations even when a tool response/checkpoint is lost.
+
+### Connection and authorization design
+
+Propose a private, non-Data-API schema for checkpoints and, later, a separate private
+Store schema. Use a dedicated server-only runtime database role with only required DML,
+no DDL, no general domain-table access and no client grants. Do not use
+`SUPABASE_SECRET_KEY`, the database owner or `service_role` for domain tools. This is a
+new infrastructure credential, requiring review/provisioning before rollout.
+
+The saver has no `user_id` predicate or automatic session claims. Owner validation must
+cover every get/list/put/pending-write/resume/delete operation, including reconciliation
+and maintenance; guessing a thread UUID or setting trace metadata grants no access.
+Keep a durable owner binding tied to `agent_thread` and account identity, enforced by
+the scoped infrastructure module. Use row policies tied to the chosen transaction context
+where feasible as defense in depth, and prove they work with the non-owner runtime role.
+Do not claim a stock saver plus `auth.uid()` policy works on a raw pool connection.
+
+Prefer a small module-scoped `pg.Pool` in the Node route and Supabase's transaction pooler,
+with TLS verification and finite connection/query/idle timeouts. Starting candidate:
+maximum two connections per warm function; validate aggregate concurrency against the
+actual project limit before release. Inspected saver queries are parameterized without
+named prepared statements, and write transactions retain one checked-out connection.
+These source facts make transaction pooling plausible, not verified. Test transaction
+pooler behavior, fencing, cold starts and concurrent load before selecting production
+connection settings. No hosted connection string or project limits were inspected.
+
+`PostgresSaver.setup()` creates a schema/tables and its own migration ledger. PostgresStore
+is separate, also has `setup()`, and defaults `ensureTables` to true. Never run either
+setup in a request. Translate/review the pinned library DDL in a versioned additive
+app migration, reconcile its private ledger in that migration, and configure Store with
+`ensureTables: false` when introduced. Disable automatic DDL and TTL background loops;
+maintenance is explicit. The human applies app migrations after merge under [DEPLOY](../DEPLOY.md).
+No migrations or SQL are part of #247's planning change.
+
+### Skill, file and context contract
+
+- `/skills/`: versioned application bundle outside graph state. Use CompositeBackend
+  routing to a genuinely read-only backend (mutation methods reject, not just model
+  tool permissions). No local shell, execute tool, arbitrary host paths or uploaded skills.
+  The synthetic state skill in the probe is not the deployment design.
+- `/workspace/`, `/tool_results/`, `/conversation_history/`: thread-isolated StateBackend.
+  Checkpointing supplies durability; ordinary Vercel disk does not. Automatic middleware
+  writes must obey the same count/byte quotas as model writes. Read-only skill tool
+  permissions do not automatically constrain backend-internal writes.
+- `/memories/`: no writable route initially. Future StoreBackend uses a distinct persistent
+  LangGraph Store with a namespace derived from authenticated identity, not tool arguments.
+  A Store is not provisioned by a saver, and a storage bucket is not a StoreBackend.
+- Native discovery advertises concise metadata; instructions/references load on demand.
+  #177 provides the actual program-creation skill. #233 workflow identity determines when
+  required instructions must be restored. Loaded instructions do not start a workflow.
+  Active/reopened work and explicit resume validate manifest/hash, then request native
+  pinning if the correct instructions are absent. Pins are consumed/reset, not persistent
+  lifecycle flags. Deduplicate with native skill/message metadata, not duplicate snapshots.
+- On deployment, invalidate checkpointed `skillsMetadata` when the deployment manifest
+  changes. Compare workflow skill/reference versions before reuse; compatible updates
+  repin once, incompatible versions require an explicit migration/review. Missing required
+  skill fails before model execution; ordinary non-workflow chat can proceed independently.
+- Model-context selection is distinct from full durable history. Refresh authoritative
+  workflow references outside summaries. Summaries and offloaded data are untrusted context,
+  cannot grant authority, and must preserve exact IDs/constraints by reference to #233.
+
+Proposed initial ceilings (reviewable defaults, **not measured provider limits**):
+
+| Resource | Starting ceiling / response |
+| --- | --- |
+| Total turn time | 60 seconds, including tools/summary/retries; abort before platform timeout |
+| Model calls | 10 total, including at most one summarization; no nested execution |
+| Tokens | 24,000 cumulative input + 4,000 cumulative output tokens per turn; reserve before each call using estimation, account actual usage, stop on exhaustion |
+| Tools | Existing eight total calls, including filesystem/skill reads; no separate unmetered skill budget |
+| Context | Summarize at approximately 6,000 tokens, retain four recent messages; hard preflight includes system instructions and tool schemas; resolve history-file blocker first |
+| Tool offload | Start above 2,000 estimated tokens; bounded read-back at most 200 lines / 8 KiB, search at most 20 matches |
+| Working files | 128 KiB/file, 32 files, 1 MiB live files/thread; reject excess without silently deleting proposal evidence |
+| Checkpoint growth | Measure total physical tables/indexes/pending writes over 100 representative turns; gate at 20 MiB/thread and define pruning before raising it |
+| Retention | Retain latest resumable state while thread exists; propose 30 days of completed intermediate checkpoints after projection repair; never expire active workflow/proposal state implicitly |
+
+The probe's deliberately tiny 200-token offload threshold is not the proposed serving
+threshold. Its byte/character result is not a token/cost benchmark. Offloading saves model
+context, not necessarily storage: files and native messages may both remain in checkpoints.
+No physical storage benchmark is available. Summary calls must use the same configured
+model and budget, with no default provider fallback. The current app's 24,000-character
+soft budget is not a token limit; don't report it as one.
+
+**Deletion:** mark thread/account closing and fence/abort active execution before cleanup.
+Authorize cleanup through the owning identity, remove checkpoint blobs/writes/state via
+native deletion plus verified remaining-row checks, remove future user Store namespaces
+on account deletion, then clear thread/history/episode links through their existing
+contracts. Private library tables do not automatically cascade from `agent_thread`.
+Persist cleanup progress/tombstones so retries cannot resurrect state. Backup retention
+and LangSmith trace deletion follow their separate provider policies; don't promise that
+removing application rows erases backups/traces. Working-file recovery references must
+not outlive their source without an explicit expired/unavailable result.
+
+### Staged delivery and measurable exits
+
+These are proposed follow-ups, not newly filed issues or implementation approval.
+
+| Slice | Bounded work | Exit before next slice |
+| --- | --- | --- |
+| A — integration readiness | Resolve summary-file/prompt/defaults and LangSmith version gaps; run existing Coach fixtures against selected stack; prove fenced saver integration and local Postgres connection behavior | No incompatible peers; app tests/types/build pass; no delegation; abort/time/token limits; real local process restart and least-privilege access tests; reviewed Decision Card |
+| B — durable execution | Add reviewed additive schema, admission/fencing, bootstrap-once, native serialization and projection recovery; server-only rollout switch | Old/new/episode threads survive killed/restarted processes; parallel/retry sends don't duplicate input/effects; checkpoint-success/projection-failure repairs without a model call; cross-owner read/list/resume/delete fails; deletion and outages pass |
+| C — reusable skills | Bundle manifest/read-only backend; native discovery/pinning; version restoration via authoritative workflow references | Compiled Next function contains SKILL.md/references; discovery/nonactivation, pin reset, missing/changed skill, trim/reopen/resume and forbidden writes pass; #177 then delivers actual program behavior |
+| D — working files/context | Enable quotas, recoverable offloading/summaries and cleanup, using B/C | Oversized result → stable file reference → bounded read after process restart; cross-thread/user isolation; quota and 100-turn physical-size benchmark; summaries never advertise missing history |
+| E — user memory, separate | Review schema/product controls, introduce persistent Store/StoreBackend | Explicit preference written in one owned chat reads in another after restart; correction/conflict/retrieval/edit/delete/account cleanup and cross-owner rejection pass |
+
+Slice E does not block #177. Before enabling it, define explicit user-requested write
+triggers only, source message/time and version provenance, confirmed replacement of
+conflicting preferences, deterministic retrieval and user inspection/edit/delete controls.
+No automatic extraction, embeddings, vector index or background memory worker. Preference
+retention lasts until explicit correction/deletion under a reviewed account policy; active
+proposal state and canonical training facts never move into memory.
+
+**Rollout/rollback:** feature switch off by default; record runtime/state version per
+thread and test old-version reads with new code before promotion. Start with disposable
+local data and authenticated browser checks in both surfaces, then separately approved
+Preview and production enablement. No shadow paid dual execution. Bootstrap old threads
+lazily; never destructively rewrite their history. Older deployments must not write new
+checkpoint versions. Rollback stops new admissions, fences/drains in-flight runs, repairs
+projections and leaves checkpoint-backed threads read-only until a compatible runtime
+returns. Untouched legacy threads may continue through the legacy path. Do not fall back
+to transcript-only generation on a checkpointed thread: it loses files/workflow continuity
+and can replay effects. Schema rollback is additive/forward repair, not destructive drops.
+
+### Verification and remaining gates
+
+- Planning evidence: isolated `npm ci`, `npm ls --all`, eleven deterministic probes;
+  source review against current prompt/policy, streaming, thread/projection and episode
+  contracts. Global fixture network is disabled; no actual model/database/trace request.
+- `npm run verify -- base agent`: PASS on 2026-11-07. Typecheck, lint, strict indexed
+  types, nine hook tests, 1,394 app tests, production build and 219 agent tests passed;
+  two gated live tests skipped. Lint retains the existing `board.ts` unused-variable
+  warning. Root dependencies and serving source were unchanged. Local reference checks
+  passed for 130 links and the new foundation anchors; HTML code excerpts matched source.
+- Static HTML section rendered and visually inspected in headless Chrome at 1,100px and
+  390px. This is explainer QA, not an authenticated Coach journey or full-page mobile audit.
+- Local database/process restart, non-bypass-role isolation, pooling/load/storage benchmarks
+  and authenticated browser journeys remain **unverified**. Docker is unavailable in this
+  environment. MemorySaver tests do not substitute for them.
+- Application behavior has not changed. Future runtime/tool slices use `base` + `agent`,
+  add database/browser verification as defined in [VERIFICATION](VERIFICATION.md), and
+  obtain separate authorization for live evals. Update this contract and
+  [the HTML explainer](ai-coach.html#runtime-foundations) with every landed slice.
+- #177's earlier writer-subagent assumption is superseded by its current skill contract;
+  #233 owns lifecycle/revision receipts. Neither issue builds a second loader or grants
+  training writes through skill text. #201 checks and #198 research remain their owners.
+
+Sources checked 2026-11-07: the pinned package source/peer manifests in the isolated
+lockfile; [Deep Agents customization](https://docs.langchain.com/oss/javascript/deepagents/customization),
+[backends](https://docs.langchain.com/oss/javascript/deepagents/backends),
+[LangGraph persistence](https://docs.langchain.com/oss/javascript/langgraph/persistence),
+[Supabase connections](https://supabase.com/docs/guides/database/connecting-to-postgres),
+and [Gateway Chat Completions](https://vercel.com/docs/ai-gateway/sdks-and-apis/openai-chat-completions).
+Pinned source/fixtures determine this version's behavior where moving docs differ.
+Next skill packaging guidance comes from installed Next 16.2.6 docs at
+`node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/output.md`:
+use route-specific `outputFileTracingIncludes` and inspect the actual function artifact.
+Supabase's changelog was reviewed: CLI v3 is not adopted here, the HTTP CBC deprecation
+does not affect Postgres/pooler connections, and no listed extension-specific Postgres
+minor change establishes saver compatibility. No hosted database/version audit ran.
 
 ## Exercise review matching and history
 

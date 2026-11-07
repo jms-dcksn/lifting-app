@@ -1,0 +1,33 @@
+# Coach foundations compatibility spike (#247)
+
+Isolated dependency experiment; the Next.js app does not import this package.
+Requires Node 22.18+ (native TypeScript stripping for the app's pure prompt/policy imports).
+Tested with Node 24.15.0. Anthropic is installed to satisfy Deep Agents' peer contract;
+the fixture explicitly uses ChatOpenAI and never calls Anthropic or another provider.
+
+```sh
+npm --prefix scripts/spikes/agent-foundations ci --ignore-scripts --no-audit --no-fund
+npm --prefix scripts/spikes/agent-foundations ls --all
+npm --prefix scripts/spikes/agent-foundations test
+```
+
+The exact manifest and lockfile are independent of the app's dependency tree. No forced
+peers, environment-file loading, database connections, paid calls or trace uploads.
+Global network fetch is disabled; provider-shaped SSE is injected through ChatOpenAI's
+fetch option. Local callback assertions verify trace metadata transport only.
+
+Eleven capability probes cover adapter/stream/tool behavior, fresh-agent in-memory
+checkpoint recovery, native serialization, skill discovery/read/pin semantics, denied
+skill writes, offloading, summarization, tool budgets, errors and persistence outages.
+The synthetic owner-bound tool proves transport, not real Supabase authorization.
+
+Two passing probes deliberately document **limitations**, not readiness:
+
+- Missing pinned skills are silently skipped by native middleware.
+- Summarization advertises a history file that is absent from StateBackend output.
+
+An upgrade changing either behavior should fail its probe and trigger a report update.
+The report, proposed architecture, Decision Card and delivery gates live in
+[AI-COACH.md](../../../docs/AI-COACH.md#runtime-foundations-plan-247).
+No Postgres restart, real owner isolation, hosted pooling, Next function packaging or
+live provider behavior is established by these tests.

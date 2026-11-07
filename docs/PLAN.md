@@ -92,8 +92,13 @@ original build sequence and historical checks.
 
 - [x] Slice 0 — grounded read-only chat (`#137`): schema, Gateway + LangSmith, four read
       tools, last-N context, Sheet + `/coach`, evals, [ai-coach.html](ai-coach.html).
-- [ ] Slices 1–5 in [AI-COACH.md](AI-COACH.md) order. Do not start Slice 2 writes or
-      Slice 5 Deep Agents until the earlier slice’s done criteria pass.
+- [x] Slice 1 — screen context and confirmed navigation; Slice 2 — gallery intake to
+      inactive draft. Current contracts live in [AI-COACH.md](AI-COACH.md).
+- [ ] #247 — [runtime foundations plan](AI-COACH.md#runtime-foundations-plan-247):
+      compatibility probes and proposed checkpoint/skills delivery replace the blanket
+      Slice 5 gate. Resolve the documented blockers and approve the Decision Card before
+      migration. Main Coach owns #177 custom design and #233 proposal workflows;
+      no program-writer subagent. User memory is a separate later slice.
 
 ## Original estimate
 

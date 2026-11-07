@@ -17,8 +17,9 @@ Kanban workstreams (intended GitHub Projects **Status** columns):
 2. **Feedback ≠ Now.** Capture friend/user notes under **Feedback**; promote to **Now** only when it unblocks the wedge or is a clear P0 for the first user.
 3. **Dogfood stays personal.** James's usage notes live in **Dogfood**; promote selectively so personal polish does not crowd out friend-critical work.
 4. **Later is a parking lot.** Native iOS and in-session agent presence remain parked.
-   #247 plans the shared Deep Agents/checkpoint/skills foundations for #177/#233;
-   it supersedes the blanket Slice 5 deferral, not production approval. #198 owns
+   #247's shared Deep Agents/checkpoint/skills foundations for #177/#233 are approved
+   for staged implementation; Slice A is built locally, with serving cutover still gated.
+   This supersedes the blanket Slice 5 deferral. #198 owns
    scoped research. User memory remains a separate later slice. See the
    [foundation plan and Decision Card](docs/AI-COACH.md#runtime-foundations-plan-247).
 5. **Prefer issues over silent scope creep.** New ideas get an issue labeled with the intended status; debate happens on the issue, not by quietly expanding **Now**.

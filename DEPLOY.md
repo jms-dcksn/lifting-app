@@ -200,8 +200,10 @@ named `CURSOR_API_KEY`. Do not commit it.
 
 ### Planned Coach runtime persistence (#247)
 
-Serving chat still uses the existing transcript tables; no checkpoint/Store migration
-or new credential is introduced here. The proposed private-schema role, Node pool,
+Serving chat still uses the existing transcript tables. Slice A selects the pinned
+dependency set and adds a prepared server-only harness plus disposable PostgreSQL proofs;
+the chat route does not select that harness yet. No checkpoint/Store migration or hosted
+credential is introduced here. The proposed private-schema role, Node pool,
 human-applied DDL and rollout/rollback gates are in
 [AI Coach foundations](docs/AI-COACH.md#runtime-foundations-plan-247).
 Do not run library `setup()` or automatic Store table creation in a request. Future

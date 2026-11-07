@@ -1095,7 +1095,7 @@ AI discovery and advanced sequencing such as intra-set tempo changes remain sepa
 #247 supersedes the blanket Deep Agents/Slice 5 deferral and the assumption that a
 checkpointer must be a competing transcript authority. Current serving behavior is
 unchanged: `createAgent()`, no native checkpoints, full UI history in Postgres and
-bounded per-turn reconstruction. The proposed contract and approval-pending Decision
+bounded per-turn reconstruction. The proposed contract and staged Decision
 Card are in [AI-COACH.md](AI-COACH.md#runtime-foundations-plan-247).
 
 Prefer the full TypeScript Deep Agents harness after compatibility gates, with native
@@ -1110,7 +1110,15 @@ The isolated exact dependency set installs without forced peers and has eleven
 deterministic capability probes. It requires a different LangSmith version and silently
 skips missing pins. Follow-up verification corrected the original summary-file finding:
 using direct `new StateBackend()` rather than the deprecated runtime-injected factory
-persists summarized history and lets a fresh agent read it. No disk backend is required. Fenced persistence,
-real database/process restart, least-privilege isolation and deployment packaging also
-remain implementation gates. No schema, credential provisioning, runtime/provider
-migration, production rollout or paid evaluation is approved by this planning record.
+persists summarized history and lets a fresh agent read it. No disk backend is required.
+
+The user subsequently approved the plan and requested Slice A in this chat. Root
+dependencies now use that compatible pinned set, including LangSmith 0.9.0. The
+server-only prepared harness uses the existing Gateway, removes delegation and shell
+tools, and shares time/model/summary/token budgets across main and summary requests.
+The serving route still selects the original runtime. Actual domain tools and captured
+LangSmith SDK trace transport pass offline regressions. A disposable native PostgreSQL
+cluster proves database/process restart and owner/epoch isolation with the pinned saver.
+Its transaction-scoped pool is a readiness prototype; Slice B must implement authenticated
+admission, typed production access and projection recovery before serving cutover.
+No hosted schema/credential provisioning, production rollout or paid evaluation occurred.

@@ -28,10 +28,12 @@ Slice 2 (gallery intake to inactive draft) shipped; later slices remain planned.
 [AI Coach threads](DECISIONS.md#ai-coach-threads-2026-09-27). The teaching surface
 is [ai-coach.html](ai-coach.html) — update that HTML whenever agent behavior changes.
 
-**Runtime foundations (#247, planning):** [compatibility report, Decision Card and
+**Runtime foundations (#247, Slice A built locally):** [compatibility report, Decision Card and
 delivery sequence](#runtime-foundations-plan-247) replace the blanket Slice 5 deferral.
-The serving runtime remains `createAgent()` without native checkpoints. No schema,
-runtime rollout, provider change or user-memory writes are authorized by this plan.
+The user approved the staged plan on 2026-11-07. A prepared server-only Deep Agents
+harness, bounded transport and disposable PostgreSQL proof are implemented. The serving
+route remains `createAgent()` without native checkpoints. No hosted schema change,
+runtime rollout, provider change or user-memory writes have occurred.
 
 Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/coach`,
 `/api/agent/chat`) so they do not collide with Track Coach.
@@ -521,15 +523,17 @@ capabilities does not authorize them or a provider/model change.
 
 ## Runtime foundations plan (#247)
 
-Planning report dated 2026-11-07, against app baseline `52b0efa`. This section is a
-proposal, not a description of serving behavior. #247 is the architecture parent;
-future bounded implementation work consumes its exits. No new issues were opened.
+Planning baseline dated 2026-11-07, against app `52b0efa`; approved for staged implementation
+in this chat. [Slice A](#slice-a-integration-readiness-implemented-locally) is built locally.
+Proposed later contracts below are not serving behavior. #247 remains the architecture
+parent; no follow-up issues were opened.
 
 ### Compatibility report
 
 The reproducible experiment is [scripts/spikes/agent-foundations](../scripts/spikes/agent-foundations/README.md).
-Its exact manifest/lockfile are isolated: root `package.json`, root lockfile and serving
-code are unchanged. Use the three commands in its README to install, inspect peers
+Its exact manifest/lockfile preserve the original isolated planning experiment. At that
+stage root dependencies and serving code were unchanged; Slice A now selects the candidate
+in the root lockfile. Use the three commands in its README to install, inspect peers
 and run the probes. Native `.ts` imports require Node 22.18+; observed Node was 24.15.0.
 
 | Package | App lockfile baseline | Isolated compatible candidate |
@@ -551,11 +555,14 @@ Registry inspection found Deep Agents `1.16.3` requires LangChain `^1.6.2`, core
 It is not a drop-in upgrade. The tested `1.16.0` also requires LangSmith `<0.10.0`;
 the candidate deliberately uses `0.9.0`. Installation and `npm ls --all` succeeded
 without forced/legacy peers (uninstalled optional tracing/UI peers are not required).
-This establishes an installable candidate, **not approval to downgrade production
-tracing**. Full app/evaluation compatibility with that version remains a gate.
+Slice A selected this exact set after root app/evaluation regressions and real SDK trace
+transport fixtures passed. Production deployment and live tracing/evaluation remain
+unperformed; the offline tests do not establish live provider behavior.
 
 Eleven deterministic capability probes passed. One intentionally asserts the missing-pin
 limitation so a dependency update forces the report to be reconsidered.
+The table records the original isolated experiment; Slice A below supersedes several
+remaining limits with root-app and real local database evidence.
 
 | Capability | Observed evidence | Remaining limit |
 | --- | --- | --- |
@@ -587,7 +594,11 @@ remove irrelevant coding/delegation guidance using supported configuration, and 
 the existing Coach regressions before selecting the serving stack. No automatic
 tool disclosure from skill metadata may bypass domain authorization.
 
-### Decision Card — proposed migration, approval pending
+### Decision Card — staged plan approved; serving cutover remains gated
+
+The user approved this plan and requested the first build slice on 2026-11-07. That
+approval covers the reversible Slice A implementation and local proofs described below.
+Hosted provisioning, production enablement and paid calls remain separate operations.
 
 - **Recommendation:** keep TypeScript/Next.js and the existing Gateway model/adapter.
   Prefer the full Deep Agents harness after the blockers above pass. Use native
@@ -601,11 +612,100 @@ tool disclosure from skill metadata may bypass domain authorization.
   session RLS. Replays can repeat domain effects unless their own receipts reject them.
   Native required-skill failure is not sufficient today; summary-file recovery now passes
   with the direct StateBackend configuration.
-- **Decision needed before implementation:** approve the final pinned stack after app
-  regressions, private-schema credential/access design, additive schema and turn-recovery
-  contract, retention limits and rollout/rollback plan. This document authorizes none
-  of the schema/credential provisioning, hosted SQL, paid evaluation or serving changes.
+- **Delivery gate:** Slice A has selected the pinned stack after app regressions. Before
+  serving cutover, implement and verify private-schema access, additive schema,
+  admission/recovery/projection, retention and rollout/rollback through Slice B and later
+  scoped work. Approval is not evidence that these serving contracts already exist.
   If compatibility requires a provider/framework change, return a new Decision Card.
+
+### Slice A integration readiness (implemented locally)
+
+`src/lib/agent/harness.ts` prepares the full Deep Agents harness with the existing Gateway
+model and caller-supplied, user-session domain tools. It is server-only. There is no
+route flag or browser parameter to enable it: `chat-handler.ts` still calls the original
+`runAgentTurn()`. Root dependencies now match the candidate versions in the table above.
+The original isolated spike remains a reproducible historical capability report.
+
+The assembled prompt is checked with the actual app instructions and registered tools.
+For this pinned stack/default Gateway model, there is no extra general-purpose/coding
+prompt to remove. The supported same-name replacement of `subAgentMiddleware` removes
+delegation entirely. Filesystem tools are read/search-only in this slice. Scratch writes,
+skill discovery/versioning, file quotas and cross-chat memory are not enabled yet.
+
+`turn-budget.ts` shares a single transport and abort signal across main model and native
+summary calls. It admits at most ten provider requests, including at most one summary,
+with a 60-second deadline, 24,000 estimated/reconciled input tokens and 4,000 output tokens.
+It includes tool schemas in input estimation, sets each request's maximum output to the
+remaining reservation, reconciles actual provider usage and disables automatic retries.
+Streaming bytes pass through unchanged. Missing usage or interrupted/failed requests retain
+their full reservations: another request may be refused rather than silently unmetered.
+Input admission is an estimate, not an exact provider tokenizer or dollar-spend guarantee;
+an observed overrun stops further calls. The existing eight-call native tool limit covers
+filesystem reads too. These limits belong to the **prepared harness**, not serving chat yet.
+
+Native summarization uses a versioned application summary prompt that preserves identities,
+constraints and unresolved questions without granting authority. Its marker and single-user
+request shape distinguish internal summaries for budgeting; ordinary main calls include the
+system instructions. This is fixed runtime metadata, not a topic classifier or a new
+summarizer. The same native middleware and direct `new StateBackend()` persist its files.
+
+Nine new tests cover real registered e1RM/confirm-only tools, actual v3 tool events/answer
+streaming, absence of delegation/shell/file-write tools and unwanted prompt guidance,
+LangSmith 0.9's actual tracer/Client through captured HTTP, checkpointed summary files,
+shared model/summary/input/output limits, split SSE frames, missing usage, overrun and
+cancellation/deadline propagation. Existing Coach and evaluation regressions run on the
+selected root dependencies. A stopped graph cannot undo an already committed domain action;
+Slice B still needs durable interruption status and receipt-based recovery.
+
+**Real PostgreSQL readiness proof:** `npm run test:agent:persistence` creates its own
+temporary loopback cluster, random local credentials and private fixture schema. It does
+not accept a target database URL. It requires a locally installed `embedded-postgres`
+module supplied by path; the binary package is test tooling under `/tmp`, not an app
+dependency. Reproduce without Docker:
+
+```sh
+npm --prefix /tmp/coach-postgres-tools install --save-exact embedded-postgres@18.6.0-beta.19 --no-audit --no-fund
+AGENT_TEST_PG_MODULE=/tmp/coach-postgres-tools/node_modules/embedded-postgres/dist/index.js npm run test:agent:persistence
+```
+
+The pinned package needs its lifecycle scripts to set up native binaries. The runner never
+creates an OS user or installs a service, binds only `127.0.0.1`, and stops/removes its
+cluster in cleanup. A sandbox may require permission to allocate shared memory. The
+tested server version is recorded by the command; this is not the hosted Supabase version.
+
+`scripts/agent-persistence-pool.mjs` is a narrow readiness prototype for the pinned saver's
+promise-only pool usage, not a production/general-purpose `pg.Pool` adapter. Before each
+read or native write transaction it sets transaction-local scope, locks the owned execution
+binding with `FOR SHARE`, and checks its epoch. The lock is held until the same native
+checkpoint transaction commits/rolls back. A competing epoch change must wait; later stale
+checkpoint writes, pending writes and deletion fail. RLS restricts checkpoint tables to the
+bound thread. The credential is a trusted server credential: transaction settings are not
+independent proof of browser identity. Slice B must derive them from authenticated identity.
+
+The local proof uses two owners with actual stored state and a non-owner, non-superuser,
+non-bypass-RLS runtime role. It covers cross-owner reads/listing, forbidden checkpoint and
+pending writes, deletion isolation, forbidden schema creation, stale epochs, native cleanup,
+a real database stop/start, and separate Node write/read processes using the actual prepared
+harness. Fixture DDL and library `setup()` run only on this disposable cluster. No app
+migration, hosted SQL or credential provisioning is introduced by Slice A.
+
+**Exit evidence:** root `npm ls --all`, the nine new tests, existing `base` + `agent`
+profiles, and the disposable PostgreSQL proof pass. The original eleven isolated probes
+also remain available. Supabase transaction pooling/TLS/aggregate connection load, real
+account/thread deletion, production role provisioning and authenticated UI cutover remain
+Slice B/release gates. This proof does not move training-action or proposal authority into
+checkpoints and does not implement Slice B's admission/bootstrap/projection lifecycle.
+
+Verification on 2026-11-07: `npm run verify -- base agent` passed typecheck, lint,
+strict indexed-access checks, nine hook tests, 1,403 app tests, production build and
+228 agent tests (two gated live tests skipped). Lint retains the existing `board.ts`
+unused-variable warning. `npm run test:agent:persistence` passed on PostgreSQL 18.6;
+this is separate from the unselected Supabase `database` profile. All eleven original
+isolated probes passed. The updated HTML section was visually checked at 1,100px and
+390px with no section-level overflow; 133 local references/anchors and new source
+excerpts checked. No authenticated hosted/browser journey, CI, live eval or deployment
+ran. Migration: none. The new `server-only@0.0.1` marker also lets the standalone Node
+worker load the prepared module under the `react-server` condition.
 
 ### State and tool ownership contract
 
@@ -702,7 +802,8 @@ setup in a request. Translate/review the pinned library DDL in a versioned addit
 app migration, reconcile its private ledger in that migration, and configure Store with
 `ensureTables: false` when introduced. Disable automatic DDL and TTL background loops;
 maintenance is explicit. The human applies app migrations after merge under [DEPLOY](../DEPLOY.md).
-No migrations or SQL are part of #247's planning change.
+No app migrations or hosted SQL are part of the planning change or Slice A; its fixture
+DDL is confined to the disposable local proof.
 
 ### Skill, file and context contract
 
@@ -764,11 +865,12 @@ not outlive their source without an explicit expired/unavailable result.
 
 ### Staged delivery and measurable exits
 
-These are proposed follow-ups, not newly filed issues or implementation approval.
+The staged plan is approved. Slice A is built locally; later slices remain unimplemented.
+These are bounded work units, not newly filed issues or a claim of deployed behavior.
 
 | Slice | Bounded work | Exit before next slice |
 | --- | --- | --- |
-| A — integration readiness | Use direct StateBackend; resolve prompt/defaults and LangSmith version gaps; run existing Coach fixtures against selected stack; prove fenced saver integration and local Postgres connection behavior | No incompatible peers; app tests/types/build pass; no delegation; abort/time/token limits; real local process restart and least-privilege access tests; reviewed Decision Card |
+| A — integration readiness (built locally) | Selected exact stack; prepared server-only harness, bounded Gateway transport and local fenced saver proof | Local exits pass; see implementation/evidence above. Production pooler/credential provisioning remains a release gate |
 | B — durable execution | Add reviewed additive schema, admission/fencing, bootstrap-once, native serialization and projection recovery; server-only rollout switch | Old/new/episode threads survive killed/restarted processes; parallel/retry sends don't duplicate input/effects; checkpoint-success/projection-failure repairs without a model call; cross-owner read/list/resume/delete fails; deletion and outages pass |
 | C — reusable skills | Bundle manifest/read-only backend; native discovery/pinning; version restoration via authoritative workflow references | Compiled Next function contains SKILL.md/references; discovery/nonactivation, pin reset, missing/changed skill, trim/reopen/resume and forbidden writes pass; #177 then delivers actual program behavior |
 | D — working files/context | Enable quotas, recoverable offloading/summaries and cleanup, using B/C | Oversized result → stable file reference → bounded read after process restart; cross-thread/user isolation; quota and 100-turn physical-size benchmark; summaries never advertise missing history |
@@ -804,10 +906,11 @@ and can replay effects. Schema rollback is additive/forward repair, not destruct
   passed for 130 links and the new foundation anchors; HTML code excerpts matched source.
 - Static HTML section rendered and visually inspected in headless Chrome at 1,100px and
   390px. This is explainer QA, not an authenticated Coach journey or full-page mobile audit.
-- Local database/process restart, non-bypass-role isolation, pooling/load/storage benchmarks
-  and authenticated browser journeys remain **unverified**. Docker is unavailable in this
-  environment. MemorySaver tests do not substitute for them.
-- Application behavior has not changed. Future runtime/tool slices use `base` + `agent`,
+- Slice A subsequently proves real local PostgreSQL/process restart and non-bypass-role
+  isolation using a disposable native binary cluster despite Docker being unavailable.
+  Hosted pooling/load/storage benchmarks and authenticated cutover journeys remain unverified.
+- Serving chat behavior has not changed; the prepared module and root dependencies have.
+  Future runtime/tool slices use `base` + `agent`,
   add database/browser verification as defined in [VERIFICATION](VERIFICATION.md), and
   obtain separate authorization for live evals. Update this contract and
   [the HTML explainer](ai-coach.html#runtime-foundations) with every landed slice.

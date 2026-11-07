@@ -31,10 +31,38 @@
       </header>
 
       <section id="runtime-foundations" class="space-y-4 rounded-lg border border-slate-300 p-5">
-        <h2 class="font-serif text-2xl">Runtime foundations (#247): planned, not serving</h2>
+        <h2 class="font-serif text-2xl">Runtime foundations (#247): Slice A prepared, not serving</h2>
         <p>The current Coach rebuilds a fresh agent from bounded chat history on every send.
-          The proposed Deep Agents harness would retain graph state and working files through
-          native checkpoints. This planning change does not migrate the app or database.</p>
+          The staged plan is approved. Slice A adds the prepared Deep Agents harness and real
+          local persistence proofs. The chat route still uses the original runtime; hosted
+          persistence and serving cutover belong to Slice B.</p>
+        <div style="border:1px solid #78716c;padding:16px;border-radius:8px;margin:16px 0">
+          <h3 style="font-weight:600">Built in Slice A</h3>
+          <p>Caller supplies user-session tools → server-only prepared harness → shared
+            bounded Gateway transport → main model and native summarizer. A separate
+            disposable PostgreSQL proof checks owner + execution epoch in the same
+            transaction as checkpoint writes. Nothing here grants training-action approval.</p>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/harness.ts
+const budget = createTurnBudget(input);
+const model = new ChatOpenAI({
+  model: agentModelId(), apiKey, temperature: 0, maxRetries: 0, streamUsage: true,
+  configuration: { baseURL: AI_GATEWAY_BASE_URL, fetch: budget.fetch },
+});
+const backend = new StateBackend();</code></pre>
+          <p>The single transport counts main and summary calls: ten total model requests,
+            at most one summary, a 60-second deadline, 24,000 estimated/reconciled input
+            tokens and 4,000 output tokens. Input includes tool schemas; output is reserved
+            before requests and reconciled from usage. Missing usage retains the whole
+            reservation. These limits are prepared code, not the serving chat policy yet.</p>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// scripts/agent-persistence-pool.mjs
+const result = await client.query("SELECT epoch FROM coach_checkpoint_test.thread_binding WHERE thread_id=$1 FOR SHARE", [thread]);
+if (result.rows[0]?.epoch !== epoch) throw Error("Owned execution claim is unavailable or stale");</code></pre>
+          <p>That row lock prevents a competing claim change while a native checkpoint
+            transaction commits. A stale worker's next write fails. The prototype is test
+            code, not a production pool adapter. The proof restarts real PostgreSQL and
+            reads through a fresh Node process using a non-bypass role. Two owners have
+            real stored state for cross-owner read/list/write/delete checks.</p>
+        </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:16px 0">
           <div style="border:1px solid #78716c;padding:16px;border-radius:8px">
             <h3 style="font-weight:600;margin-bottom:12px">Serving today</h3>
@@ -92,12 +120,14 @@ createSummarizationMiddleware({ backend, model, trigger: { type: "tokens", value
           the candidate needs a different LangSmith version. The original summary-file finding
           was a legacy configuration failure: direct <code>new StateBackend()</code> persists
           the history, verified by read-back through a fresh agent. Required-skill validation,
-          assembled prompts, fenced writes, real Postgres restart,
-          owner isolation and compiled skill packaging must pass before serving migration.</p>
+          compiled skill packaging and the durable serving lifecycle still precede cutover.
+          Slice A now proves assembled prompts, fenced writes, real local PostgreSQL restart,
+          owner isolation and captured SDK trace transport. Hosted pooler/load behavior
+          and production provisioning remain unverified.</p>
         <p>Delivery: integration readiness → checkpoints/projection → shared skills (#177
           supplies program behavior; #233 owns proposals) → bounded files/context → optional
           user memory. The same main Coach owns the conversation throughout.</p>
-        <p>Full report, limits, approval-pending Decision Card and measurable exits:
+        <p>Full report, limits, approved staged Decision Card and measurable exits:
           <a class="underline" href="AI-COACH.md#runtime-foundations-plan-247">AI-COACH.md</a>.
           The eleven passing probes include an explicit test of the missing-pin limitation; they establish
           no real database, live-provider or production-readiness claim.</p>

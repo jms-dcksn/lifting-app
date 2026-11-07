@@ -248,6 +248,15 @@ modules and their fixture helpers to the strict slice. Keep consumer compatibili
 until each batch lands green. Global indexed-access enforcement follows those batches.
 Do not widen exercise comparison scopes while changing types.
 
+## Coach checkpoint readiness (#247)
+
+`npm run test:agent:persistence` is a separate disposable local PostgreSQL proof for
+the prepared runtime. It owns its cluster and accepts no target database URL. Native
+binary setup, source paths, isolation/fencing coverage and limits are documented in
+[AI Coach Slice A](AI-COACH.md#slice-a-integration-readiness-implemented-locally).
+It supplements `base` + `agent`; it is not the Supabase `database` profile or evidence
+of hosted pooling, applied migrations or authenticated browser behavior.
+
 ## Human review
 
 Focus review on training policy/numeric interpretation, comparison scope, ownership/RLS,

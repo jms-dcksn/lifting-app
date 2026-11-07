@@ -95,9 +95,10 @@ original build sequence and historical checks.
 - [x] Slice 1 — screen context and confirmed navigation; Slice 2 — gallery intake to
       inactive draft. Current contracts live in [AI-COACH.md](AI-COACH.md).
 - [ ] #247 — [runtime foundations plan](AI-COACH.md#runtime-foundations-plan-247):
-      compatibility probes and proposed checkpoint/skills delivery replace the blanket
-      Slice 5 gate. Resolve the documented blockers and approve the Decision Card before
-      migration. Main Coach owns #177 custom design and #233 proposal workflows;
+      approved for staged implementation. Slice A is built locally: selected dependencies,
+      prepared bounded harness and real PostgreSQL restart/isolation/fencing proof.
+      Serving chat remains on the existing runtime; Slice B owns durable cutover.
+      Main Coach owns #177 custom design and #233 proposal workflows;
       no program-writer subagent. User memory is a separate later slice.
 
 ## Original estimate

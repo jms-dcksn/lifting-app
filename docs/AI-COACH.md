@@ -662,6 +662,21 @@ request shape distinguish internal summaries for budgeting; ordinary main calls 
 system instructions. This is fixed runtime metadata, not a topic classifier or a new
 summarizer. The same native middleware and direct `new StateBackend()` persist its files.
 
+**Summarization follow-up (2026-11-08):** the 6,000-token trigger, four-message keep and
+6,000-token summarizer-input cap are provisional proof settings, not calibrated production
+choices. Before enablement, measure fixed system/tool-schema overhead and representative
+tool-heavy coaching conversations. Select trigger, retained context and summarizer-input
+cap together with the 24,000-token shared input budget and one-summary-per-execution limit.
+The trigger includes system/tool overhead; the trim cap limits history sent to the
+summarizer, not its output length. An aggressive trigger can exhaust the summary allowance.
+Do not raise the threshold independently of the shared budget. These values remain unchanged.
+
+The application summary prompt now uses native `{conversation}` interpolation. The previous
+`{messages}` placeholder was passed literally and omitted the history from the summary
+request. The harness regression failed on missing historical text before the fix and now
+inspects the actual provider request for included history and absence of either placeholder.
+Synthetic replies prove correct input transport, not real-model summary quality.
+
 Nine new tests cover real registered e1RM/confirm-only tools, actual v3 tool events/answer
 streaming, absence of delegation/shell/file-write tools and unwanted prompt guidance,
 LangSmith 0.9's actual tracer/Client through captured HTTP, checkpointed summary files,

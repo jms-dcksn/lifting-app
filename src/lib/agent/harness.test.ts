@@ -106,6 +106,10 @@ describe("prepared Coach harness (not selected by the chat route)", () => {
     const output = await prepared.agent.invoke({ messages: history }, config);
     expect(prepared.usage().calls).toBe(2);
     expect(prepared.usage().summaries).toBe(1);
+    const summaryInput = JSON.stringify(first.requests[0]?.messages);
+    expect(summaryInput).toContain("Earlier question 19:");
+    expect(summaryInput).not.toContain("{messages}");
+    expect(summaryInput).not.toContain("{conversation}");
     const path = Object.keys(output.files ?? {}).find(path => path.startsWith("/conversation_history/"));
     expect(path).toBeDefined();
     if (!path) throw Error("Missing history path");

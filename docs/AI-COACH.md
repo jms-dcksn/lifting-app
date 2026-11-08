@@ -707,6 +707,66 @@ excerpts checked. No authenticated hosted/browser journey, CI, live eval or depl
 ran. Migration: none. The new `server-only@0.0.1` marker also lets the standalone Node
 worker load the prepared module under the `react-server` condition.
 
+### Slice B schema review (draft, not serving)
+
+The owner requested Slice B on 2026-11-08. Its first deliverable is the concrete
+[schema draft](../scripts/spikes/agent-foundations/slice-b-schema.sql), outside
+`supabase/migrations/` pending the schema decision required by `AGENTS.md`.
+This is not an applied migration or a completed durable runtime. The chat route,
+browser protocol and domain tools remain unchanged.
+
+| Proposed object | Purpose |
+| --- | --- |
+| `coach_runtime.thread` | Bind the existing conversation and owner to a runtime version, execution epoch and bootstrap checkpoint/version |
+| `coach_runtime.turn` | Owner/request identity and payload hash, exact input message, status/lease, committed versus projected checkpoint IDs |
+| Native `checkpoints`, `checkpoint_blobs`, `checkpoint_writes` | Pinned PostgresSaver state, with cascading thread references |
+| Native `checkpoint_migrations` | Reviewed library versions 0–5; unavailable to runtime role |
+| `agent_message_identity_owner_key` | Composite unique key lets a turn reference only an input belonging to its own thread and owner |
+| `coach_agent_runtime` | Dedicated NOLOGIN, non-bypass role until separately provisioned; private state and owner-scoped conversation DML, no training/auth table access |
+
+**Decision Card — schema:** recommend this additive layout. It preserves existing
+thread/message IDs and episode links while separating execution records from UI rows.
+One unresolved turn per thread must be recovered before another distinct send; completed
+turns require matching committed/projected checkpoint IDs. The input foreign key is
+deferred so account/thread deletion can cascade through messages and runtime records
+without depending on trigger ordering. Native state rows cascade from the binding.
+
+**Risk:** schema/credential provisioning is harder to reverse than local code. RLS uses
+server-authenticated transaction context, not browser-supplied identity and not raw
+`auth.uid()` on a pool connection. The runtime credential is trusted to set that context;
+RLS is not independent proof of browser identity. Production must use transaction-local
+settings and the fenced adapter, not this test's per-connection fixture settings.
+
+**Decision needed:** approve the concrete schema before promoting it to an application
+migration and implementing admission/projection against it. No hosted SQL or credentials
+have been used. After a future migration is reviewed/merged, a human applies it under
+[DEPLOY](../DEPLOY.md); request handlers must never call native `setup()`.
+
+The existing `npm run test:agent:persistence` now also executes the draft in its own
+disposable PostgreSQL cluster using the repository's original conversation migrations.
+The proof exercises native saver writes/reads/list/delete, real cross-owner state,
+non-bypass privileges, duplicate/unresolved turn constraints, foreign input rejection,
+bootstrap/completion consistency and account cleanup with populated native tables.
+It found a real deletion-order failure before the deferred input-FK fix.
+This is schema evidence, not admission concurrency, UI recovery or production pooling proof.
+
+Local verification for this draft: `npm run verify -- base agent` passed (1,403 app
+tests, 228 agent tests; two gated live tests skipped in each applicable run). Lint
+retains the existing `board.ts` unused `_catalog` warning. The disposable PostgreSQL
+18.6 proof passed with real blobs and pending writes present before account deletion.
+The HTML schema section was inspected at 390px with no section overflow. Serving code
+and domain tools match the Slice A commit; the pre-existing harness comment is preserved.
+No authenticated app journey, CI, deployment, paid call or hosted operation ran.
+Migration: none; SQL remains a review draft outside the migrations directory.
+
+**Recovery design to finish before cutover:** `draftProgramFromIntake` currently generates
+a fresh random program ID and persists through `save_program`; replay could duplicate a
+program after an unknown outcome. Graph checkpoints alone do not solve this. B must
+add a caller-observable regression and stable domain write identity/receipt handling
+before enabling interrupted write-tool recovery. Never blindly resume an uncertain write.
+The already approved #233 workflow receipt design remains authoritative; this draft
+does not introduce competing proposal or training-action state.
+
 ### State and tool ownership contract
 
 | State | Authoritative owner | Reader/writer rule |
@@ -865,7 +925,8 @@ not outlive their source without an explicit expired/unavailable result.
 
 ### Staged delivery and measurable exits
 
-The staged plan is approved. Slice A is built locally; later slices remain unimplemented.
+The staged plan is approved. Slice A is built locally; B has a locally testable schema
+draft awaiting its concrete schema decision. B's runtime and Slices C–E remain unimplemented.
 These are bounded work units, not newly filed issues or a claim of deployed behavior.
 
 | Slice | Bounded work | Exit before next slice |

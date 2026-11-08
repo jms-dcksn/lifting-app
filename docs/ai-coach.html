@@ -63,6 +63,32 @@ if (result.rows[0]?.epoch !== epoch) throw Error("Owned execution claim is unava
             reads through a fresh Node process using a non-bypass role. Two owners have
             real stored state for cross-owner read/list/write/delete checks.</p>
         </div>
+        <div id="slice-b-schema" style="border:1px solid #78716c;padding:16px;border-radius:8px;margin:16px 0">
+          <h3 style="font-weight:600">Slice B started: schema draft for review</h3>
+          <p>The draft adds execution records without replacing existing chat identities.
+            It has been exercised only in disposable local PostgreSQL. It is not an
+            application migration, and the serving route still uses the old runtime.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin:16px 0">
+            <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Existing owned conversation<br>↓ cascading owner binding<br><strong>Runtime version + execution epoch</strong></div>
+            <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Request + exact input<br>↓ one unresolved turn<br><strong>Status + checkpoint/projection progress</strong></div>
+            <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Native messages + files<br>↓ native saver tables<br><strong>Owner-scoped checkpoints</strong></div>
+          </div>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>-- scripts/spikes/agent-foundations/slice-b-schema.sql (draft)
+create unique index coach_one_unresolved_turn on coach_runtime.turn(conversation_id)
+  where status &lt;&gt; 'completed';</code></pre>
+          <p>This constraint rejects a second unresolved send; the admission transaction
+            and retry logic still need implementation. Completion also requires matching
+            saved and projected checkpoint IDs. The dedicated role cannot access training
+            tables or run native schema setup.</p>
+          <p>The schema proof caught an account-deletion ordering bug. Deferring the
+            turn-to-input foreign key allows related rows to cascade before the constraint
+            is checked. Tests populate all three native state tables before deleting an
+            owner and verify that another owner's checkpoint survives.</p>
+          <p><strong>Remaining recovery problem:</strong> the draft-program tool currently
+            chooses a random program ID. An interrupted write must be reconciled with a
+            stable domain identity/receipt before retry; replaying a graph is not enough.</p>
+          <p><a class="underline" href="AI-COACH.md#slice-b-schema-review-draft-not-serving">Concrete schema Decision Card and remaining work</a>.</p>
+        </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:16px 0">
           <div style="border:1px solid #78716c;padding:16px;border-radius:8px">
             <h3 style="font-weight:600;margin-bottom:12px">Serving today</h3>

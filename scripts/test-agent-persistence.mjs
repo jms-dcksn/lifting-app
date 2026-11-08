@@ -9,6 +9,7 @@ import { spawn } from "node:child_process";
 import pg from "pg";
 import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
 import { FencedTestPool } from "./agent-persistence-pool.mjs";
+import { proveSliceBSchema } from "./spikes/agent-foundations/slice-b-schema-proof.mjs";
 
 // No URL input: this runner owns the disposable cluster, credentials and cleanup.
 const packagePath = process.env.AGENT_TEST_PG_MODULE;
@@ -55,6 +56,7 @@ try {
   started = true;
   admin = new pg.Pool({ connectionString: adminUrl, max: 2 });
   console.log(`Local PostgreSQL: ${(await admin.query("SHOW server_version")).rows[0].server_version}`);
+  await proveSliceBSchema(admin, adminUrl);
   await new PostgresSaver(admin, undefined, { schema: "coach_checkpoint_test" }).setup();
   await admin.query(`
     CREATE ROLE coach_runtime LOGIN PASSWORD '${password}' NOSUPERUSER NOBYPASSRLS;

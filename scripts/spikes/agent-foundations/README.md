@@ -32,3 +32,8 @@ The report, proposed architecture, Decision Card and delivery gates live in
 [AI-COACH.md](../../../docs/AI-COACH.md#runtime-foundations-plan-247).
 No Postgres restart, real owner isolation, hosted pooling, Next function packaging or
 live provider behavior is established by these tests.
+
+`slice-b-schema.sql` is a review draft, not an application migration. The root
+`npm run test:agent:persistence` runs `slice-b-schema-proof.mjs` against its own disposable
+PostgreSQL cluster. It checks native saver compatibility, owner/privilege isolation,
+turn constraints and cascading cleanup. It does not implement the serving lifecycle.

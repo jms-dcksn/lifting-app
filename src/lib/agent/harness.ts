@@ -6,8 +6,7 @@ import {
 } from "deepagents";
 import { createMiddleware, toolCallLimitMiddleware } from "langchain";
 import { AI_GATEWAY_BASE_URL, agentModelId, gatewayApiKey, TOOL_CALL_BUDGET } from "./policy";
-import { AGENT_SYSTEM_PROMPT } from "./prompt";
-import { COACH_SUMMARY_PROMPT, createTurnBudget } from "./turn-budget";
+import { AGENT_SYSTEM_PROMPT, COACH_SUMMARY_PROMPT } from "./prompt";
 
 /** Durable runtime is selected only by the server-side rollout switch. */
 export function createCoachHarness(input: {
@@ -17,15 +16,19 @@ export function createCoachHarness(input: {
   apiKey?: string;
   fetch?: typeof globalThis.fetch;
   signal?: AbortSignal;
-  limits?: Parameters<typeof createTurnBudget>[0]["limits"];
+  timeoutMs?: number;
   beforeTool?: () => Promise<void>;
 }) {
   const apiKey = input.apiKey ?? gatewayApiKey();
   if (!apiKey) throw new Error("AI Gateway is not configured");
-  const budget = createTurnBudget(input);
+  const signal = AbortSignal.any([AbortSignal.timeout(input.timeoutMs ?? 60_000), ...(input.signal ? [input.signal] : [])]);
+  const network = input.fetch ?? globalThis.fetch;
   const model = new ChatOpenAI({
-    model: agentModelId(), apiKey, temperature: 0, maxRetries: 0, streamUsage: true,
-    configuration: { baseURL: AI_GATEWAY_BASE_URL, fetch: budget.fetch },
+    model: agentModelId(), apiKey, temperature: 0, maxRetries: 0, maxTokens: 4000, streamUsage: true,
+    configuration: { baseURL: AI_GATEWAY_BASE_URL, fetch: (url, init) => {
+      signal.throwIfAborted();
+      return network(url, { ...init, signal: AbortSignal.any([signal, ...(init?.signal ? [init.signal] : [])]) });
+    } },
   });
   const backend = new StateBackend();
   const agent = createDeepAgent({
@@ -34,14 +37,14 @@ export function createCoachHarness(input: {
     middleware: [
       createMiddleware({ name: "subAgentMiddleware" }),
       createMiddleware({ name: "ownedExecution", wrapToolCall: async (request, handler) => {
-        budget.signal.throwIfAborted();
+        signal.throwIfAborted();
         await input.beforeTool?.();
         return handler(request);
       } }),
       createFilesystemMiddleware({ backend, tools: ["read_file", "ls", "glob", "grep"], toolTokenLimitBeforeEvict: 2000, grepMaxCount: 20 }),
-      createSummarizationMiddleware({ backend, model, summaryPrompt: COACH_SUMMARY_PROMPT, trigger: { type: "tokens", value: 6000 }, keep: { type: "messages", value: 4 }, trimTokensToSummarize: 6000 }),
+      createSummarizationMiddleware({ backend, model, summaryPrompt: COACH_SUMMARY_PROMPT }),
       toolCallLimitMiddleware({ runLimit: TOOL_CALL_BUDGET, exitBehavior: "continue" }),
     ],
-  }).withConfig({ signal: budget.signal, recursionLimit: 40 });
-  return { agent, signal: budget.signal, usage: budget.usage };
+  }).withConfig({ signal, recursionLimit: 40 });
+  return { agent, signal };
 }

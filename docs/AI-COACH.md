@@ -644,46 +644,45 @@ prompt to remove. The supported same-name replacement of `subAgentMiddleware` re
 delegation entirely. Filesystem tools are read/search-only in this slice. Scratch writes,
 skill discovery/versioning, file quotas and cross-chat memory are not enabled yet.
 
-`turn-budget.ts` shares a single transport and abort signal across main model and native
-summary calls. It admits at most ten provider requests, including at most one summary,
-with a 60-second deadline, 24,000 estimated/reconciled input tokens and 4,000 output tokens.
-It includes tool schemas in input estimation, sets each request's maximum output to the
-remaining reservation, reconciles actual provider usage and disables automatic retries.
-Streaming bytes pass through unchanged. Missing usage or interrupted/failed requests retain
-their full reservations: another request may be refused rather than silently unmetered.
-Input admission is an estimate, not an exact provider tokenizer or dollar-spend guarantee;
-an observed overrun stops further calls. The existing eight-call native tool limit covers
-filesystem reads too. These limits apply to the gated durable path, not legacy execution. Each explicit resume
-starts a new bounded execution attempt; duplicate delivery alone never starts generation.
+The harness uses `ChatOpenAI({ maxTokens: 4000 })` to cap each provider response,
+including summaries. There is no cumulative input/output budget, model-call counter,
+summary-call counter, usage reservation/reconciliation or custom SSE parser. Missing usage
+reports do not block another model request. The provider SDK retains ordinary usage/tracing.
+A shared abort signal combines caller cancellation with a 60-second execution timeout,
+which remains below the durable claim's 90-second lease. A small fetch wrapper forwards
+that signal to main and native summary requests; it does not inspect their bodies or usage.
+Existing eight-tool-call and recursion guards remain loop protection, not token accounting.
 
-Native summarization uses a versioned application summary prompt that preserves identities,
-constraints and unresolved questions without granting authority. Its marker and single-user
-request shape distinguish internal summaries for budgeting; ordinary main calls include the
-system instructions. This is fixed runtime metadata, not a topic classifier or a new
-summarizer. The same native middleware and direct `new StateBackend()` persist its files.
+Native summarization inherits the pinned library's model-aware defaults: with a known
+input context size, trigger at 85% and preserve the most recent 10% by token capacity;
+without a model profile, trigger at 170,000 estimated tokens and keep six messages.
+No application `trigger`, `keep` or `trimTokensToSummarize` override remains. System/tool
+schemas contribute to trigger accounting, and tool call/result groups stay together.
+The custom Coach summary prompt preserves identities, constraints and unresolved questions
+without granting authority; direct `new StateBackend()` persists offloaded history.
 
-**Summarization follow-up (2026-11-08):** the 6,000-token trigger, four-message keep and
-6,000-token summarizer-input cap are provisional proof settings, not calibrated production
-choices. Before enablement, measure fixed system/tool-schema overhead and representative
-tool-heavy coaching conversations. Select trigger, retained context and summarizer-input
-cap together with the 24,000-token shared input budget and one-summary-per-execution limit.
-The trigger includes system/tool overhead; the trim cap limits history sent to the
-summarizer, not its output length. An aggressive trigger can exhaust the summary allowance.
-Do not raise the threshold independently of the shared budget. These values remain unchanged.
+**Owner simplification decision (2026-11-08):** remove the custom cumulative budget and
+use native context management plus per-response `maxTokens`. This supersedes the earlier
+6,000/four/6,000 proof settings and the proposed 24,000-input/4,000-output aggregate caps.
+The earlier calibration note is resolved by using native defaults, rather than tuning those
+custom limits. Remaining follow-up is ordinary model/context compatibility and summary
+quality: verify the Gateway model's profile/fallback behavior and representative coaching
+conversations before enabling rollout. Do not treat synthetic responses as summary-quality
+or live-provider acceptance evidence.
 
-The application summary prompt now uses native `{conversation}` interpolation. The previous
-`{messages}` placeholder was passed literally and omitted the history from the summary
-request. The harness regression failed on missing historical text before the fix and now
-inspects the actual provider request for included history and absence of either placeholder.
-Synthetic replies prove correct input transport, not real-model summary quality.
+The summary prompt uses native `{conversation}` interpolation. The former `{messages}`
+placeholder omitted history and is fixed. The harness regression now uses enough synthetic
+history to trigger the native fallback defaults; it checks real summary request contents,
+independent response caps and file recovery through a fresh harness. Other checks cover
+registered tools, actual v3 streaming, missing usage, cancellation (including the native
+summarizer), deadlines and captured LangSmith SDK transport. A stopped graph cannot undo
+an already committed domain action; B supplies interruption status and safe recovery.
 
-Nine new tests cover real registered e1RM/confirm-only tools, actual v3 tool events/answer
-streaming, absence of delegation/shell/file-write tools and unwanted prompt guidance,
-LangSmith 0.9's actual tracer/Client through captured HTTP, checkpointed summary files,
-shared model/summary/input/output limits, split SSE frames, missing usage, overrun and
-cancellation/deadline propagation. Existing Coach and evaluation regressions run on the
-selected root dependencies. A stopped graph cannot undo an already committed domain action;
-Slice B below adds interruption status, explicit resume and stable draft identity/recovery.
+Simplification verification: the missing-usage regression failed under the old cumulative
+reservation check and passes with independent per-response caps. `npm run verify -- base
+agent` and the real PostgreSQL restart/recovery proof pass. The updated HTML source excerpts
+match code and the summary section was inspected at 390px without overflow. No live model
+call, hosted operation, new migration or rollout occurred.
 
 **Real PostgreSQL readiness proof:** `npm run test:agent:persistence` creates its own
 temporary loopback cluster, random local credentials and private fixture schema. It does
@@ -772,7 +771,7 @@ runtime reads native state and submits the newly admitted input with its stable 
 Explicit resume repairs unfinished calls as unavailable and starts a new execution; it
 does not invoke saved pending tool tasks. Compaction/file state stays in native checkpoints.
 
-**Fencing:** a claim has a 90-second lease; the execution transport has a 60-second budget.
+**Fencing:** a claim has a 90-second lease; the execution transport has a 60-second timeout.
 The pinned saver's promise-only pool adapter checks the binding and running lease under
 row locks in the same transaction as every checkpoint/pending write or native deletion.
 A replacement claim increments the epoch. The old worker cannot persist results or
@@ -970,10 +969,10 @@ Proposed initial ceilings (reviewable defaults, **not measured provider limits**
 | Resource | Starting ceiling / response |
 | --- | --- |
 | Total turn time | 60 seconds, including tools/summary/retries; abort before platform timeout |
-| Model calls | 10 total, including at most one summarization; no nested execution |
-| Tokens | 24,000 cumulative input + 4,000 cumulative output tokens per turn; reserve before each call using estimation, account actual usage, stop on exhaustion |
+| Model calls | No custom aggregate model/summary call cap; no nested execution |
+| Output | `maxTokens: 4000` per provider response, including summaries; no cumulative input/output accounting |
 | Tools | Existing eight total calls, including filesystem/skill reads; no separate unmetered skill budget |
-| Context | Summarize at approximately 6,000 tokens, retain four recent messages; hard preflight includes system instructions and tool schemas; use direct StateBackend |
+| Context | Native model-aware summarization defaults; no trigger/keep/trim overrides; direct StateBackend |
 | Tool offload | Start above 2,000 estimated tokens; bounded read-back at most 200 lines / 8 KiB, search at most 20 matches |
 | Working files | 128 KiB/file, 32 files, 1 MiB live files/thread; reject excess without silently deleting proposal evidence |
 | Checkpoint growth | Measure total physical tables/indexes/pending writes over 100 representative turns; gate at 20 MiB/thread and define pruning before raising it |
@@ -983,7 +982,7 @@ The probe's deliberately tiny 200-token offload threshold is not the proposed se
 threshold. Its byte/character result is not a token/cost benchmark. Offloading saves model
 context, not necessarily storage: files and native messages may both remain in checkpoints.
 No physical storage benchmark is available. Summary calls must use the same configured
-model and budget, with no default provider fallback. The current app's 24,000-character
+model and cancellation signal, with no default provider fallback. The current app's 24,000-character
 soft budget is not a token limit; don't report it as one.
 
 **Deletion:** mark thread/account closing and fence/abort active execution before cleanup.

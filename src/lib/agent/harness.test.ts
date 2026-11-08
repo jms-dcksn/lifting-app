@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { HumanMessage } from "@langchain/core/messages";
 import { MemorySaver } from "@langchain/langgraph";
 import { tool } from "langchain";
@@ -12,7 +12,7 @@ import { createCoachHarness } from "./harness";
 import { AGENT_SYSTEM_PROMPT } from "./prompt";
 import { bindAgentTools } from "./tools";
 
-function provider(replies: Array<string | { name: string; args: Record<string, unknown> }>) {
+function provider(replies: Array<string | { name: string; args: Record<string, unknown> }>, includeUsage = true) {
   const requests: Array<Record<string, unknown>> = [];
   const fetch = vi.fn<typeof globalThis.fetch>(async (_url, init) => {
     const body = JSON.parse(String(init?.body));
@@ -22,7 +22,7 @@ function provider(replies: Array<string | { name: string; args: Record<string, u
     const message = typeof reply === "string" ? { content: reply } : {
       tool_calls: [{ index: 0, id: "call-1", type: "function", function: { name: reply.name, arguments: JSON.stringify(reply.args) } }],
     };
-    const usage = { prompt_tokens: 100, completion_tokens: 20, total_tokens: 120 };
+    const usage = includeUsage ? { prompt_tokens: 100, completion_tokens: 20, total_tokens: 120 } : undefined;
     if (!body.stream) return Response.json({ id: "fixture", object: "chat.completion", created: 0,
       choices: [{ index: 0, message: { role: "assistant", ...message }, finish_reason: "stop" }], usage });
     const chunks = [
@@ -35,12 +35,17 @@ function provider(replies: Array<string | { name: string; args: Record<string, u
   return { fetch, requests };
 }
 
-function hasBudgetCause(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
-  return /budget/.test(error.message) || hasBudgetCause(error.cause);
-}
+afterEach(() => { vi.unstubAllEnvs(); });
 
-describe("prepared Coach harness (not selected by the chat route)", () => {
+describe("gated Coach harness", () => {
+  it("continues across model calls without usage reports and caps each response independently", async () => {
+    const source = provider([{ name: "evidence", args: {} }, "Answer."], false);
+    const evidence = tool(async () => "Evidence", { name: "evidence", description: "Read evidence", schema: z.object({}) });
+    const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [evidence] });
+    await agent.invoke({ messages: [new HumanMessage("Inspect")] });
+    expect(source.requests).toHaveLength(2);
+    for (const request of source.requests) expect(request.max_completion_tokens ?? request.max_tokens).toBe(4000);
+  });
   it("runs registered domain tools, preserves confirm-only actions, and transports real SDK traces", async () => {
     const databaseFetch = vi.fn<typeof globalThis.fetch>(async () => { throw Error("No database call expected"); });
     const supabase = createClient<Database>("https://fixture.invalid", "fixture", {
@@ -76,7 +81,7 @@ describe("prepared Coach harness (not selected by the chat route)", () => {
   it("keeps Coach instructions and actual domain tools without delegation, shell or write tools", async () => {
     const { fetch, requests } = provider([{ name: "fixtureEvidence", args: {} }, "Grounded answer."]);
     const evidence = tool(async () => "owned fixture evidence", { name: "fixtureEvidence", description: "Reads evidence", schema: z.object({}) });
-    const { agent, usage } = createCoachHarness({ apiKey: "fixture", fetch, tools: [evidence] });
+    const { agent } = createCoachHarness({ apiKey: "fixture", fetch, tools: [evidence] });
     const run = await agent.streamEvents({ messages: [new HumanMessage("Inspect")] }, { version: "v3", metadata: { thread_id: "fixture" } });
     const text: string[] = [];
     const events: string[] = [];
@@ -94,20 +99,21 @@ describe("prepared Coach harness (not selected by the chat route)", () => {
     expect(names).toContain("read_file");
     for (const name of ["task", "execute", "write_todos", "write_file", "edit_file", "delete"]) expect(names).not.toContain(name);
     expect(JSON.stringify(requests[0]?.messages)).not.toMatch(/general-purpose|subagent_usage|write_todos/);
-    expect(usage()).toEqual({ calls: 2, summaries: 0, inputTokens: 200, outputTokens: 40 });
+    expect(requests).toHaveLength(2);
   });
 
-  it("counts hidden summary calls and restores summary files through a fresh harness", async () => {
+  it("uses native summarization defaults, includes history and restores files through a fresh harness", async () => {
+    vi.stubEnv("AGENT_MODEL", "fixture/unknown-model");
     const saver = new MemorySaver();
     const first = provider(["Summary of earlier messages.", "Current answer."]);
-    const prepared = createCoachHarness({ apiKey: "fixture", fetch: first.fetch, tools: [], checkpointer: saver, limits: { inputTokens: 100_000 } });
-    const history = Array.from({ length: 24 }, (_, index) => new HumanMessage(`Earlier question ${index}: ${"x".repeat(1000)}`));
+    const prepared = createCoachHarness({ apiKey: "fixture", fetch: first.fetch, tools: [], checkpointer: saver });
+    const history = Array.from({ length: 8 }, (_, index) => new HumanMessage(`Earlier question ${index}: ${"x".repeat(100_000)}`));
     const config = { configurable: { thread_id: "summary" } };
     const output = await prepared.agent.invoke({ messages: history }, config);
-    expect(prepared.usage().calls).toBe(2);
-    expect(prepared.usage().summaries).toBe(1);
+    expect(first.requests).toHaveLength(2);
+    for (const request of first.requests) expect(request.max_completion_tokens ?? request.max_tokens).toBe(4000);
     const summaryInput = JSON.stringify(first.requests[0]?.messages);
-    expect(summaryInput).toContain("Earlier question 19:");
+    expect(summaryInput).toContain("Earlier question 1:");
     expect(summaryInput).not.toContain("{messages}");
     expect(summaryInput).not.toContain("{conversation}");
     const path = Object.keys(output.files ?? {}).find(path => path.startsWith("/conversation_history/"));
@@ -117,27 +123,26 @@ describe("prepared Coach harness (not selected by the chat route)", () => {
     const restored = await createCoachHarness({ apiKey: "fixture", fetch: second.fetch, tools: [], checkpointer: saver }).agent.graph.getState(config);
     expect(JSON.stringify(restored.values.files?.[path])).toContain("Earlier question 0");
     expect(second.fetch).not.toHaveBeenCalled();
-    const blocked = createCoachHarness({ apiKey: "fixture", fetch: second.fetch, tools: [], limits: { summaryCalls: 0, inputTokens: 100_000 } });
-    await expect(blocked.agent.invoke({ messages: history }).catch(error => hasBudgetCause(error))).resolves.toBe(true);
-    expect(second.fetch).not.toHaveBeenCalled();
   });
 
-  it("refuses another provider request when the shared model-call budget is exhausted", async () => {
-    const { fetch } = provider([{ name: "evidence", args: {} }, "Must not run"]);
-    const evidence = tool(async () => "data", { name: "evidence", description: "Reads data", schema: z.object({}) });
-    const { agent } = createCoachHarness({ apiKey: "fixture", fetch, tools: [evidence], limits: { modelCalls: 1 } });
-    await expect(agent.invoke({ messages: [new HumanMessage("Inspect")] }).catch(error => hasBudgetCause(error))).resolves.toBe(true);
+  it("cancels a native summarizer request through the same execution signal", async () => {
+    vi.stubEnv("AGENT_MODEL", "fixture/unknown-model");
+    const controller = new AbortController();
+    let started!: () => void;
+    const ready = new Promise<void>(resolve => { started = resolve; });
+    const fetch = vi.fn<typeof globalThis.fetch>(async (_url, init) => new Promise((_resolve, reject) => {
+      expect(String(init?.body)).toContain("Coach conversation summary (v1).");
+      init?.signal?.addEventListener("abort", () => reject(init.signal?.reason), { once: true });
+      started();
+    }));
+    const { agent } = createCoachHarness({ apiKey: "fixture", fetch, tools: [], signal: controller.signal });
+    const history = Array.from({ length: 8 }, () => new HumanMessage("x".repeat(100_000)));
+    const result = agent.invoke({ messages: history });
+    const assertion = expect(result).rejects.toThrow();
+    await ready;
+    controller.abort(new Error("Cancelled"));
+    await assertion;
     expect(fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it("rejects oversized input before a provider call and bounds output reservations", async () => {
-    const { fetch, requests } = provider(["Answer."]);
-    const small = createCoachHarness({ apiKey: "fixture", fetch, tools: [], limits: { inputTokens: 1 } });
-    await expect(small.agent.invoke({ messages: [new HumanMessage("Hello")] }).catch(error => hasBudgetCause(error))).resolves.toBe(true);
-    expect(fetch).not.toHaveBeenCalled();
-    const bounded = createCoachHarness({ apiKey: "fixture", fetch, tools: [], limits: { outputTokens: 100 } });
-    await bounded.agent.invoke({ messages: [new HumanMessage("Hello")] });
-    expect(requests[0]?.max_tokens ?? requests[0]?.max_completion_tokens).toBe(100);
   });
 
   it("propagates cancellation and a shared deadline to a pending provider request", async () => {
@@ -149,7 +154,7 @@ describe("prepared Coach harness (not selected by the chat route)", () => {
         init?.signal?.addEventListener("abort", () => reject(init.signal?.reason), { once: true });
         started();
       }));
-      const { agent } = createCoachHarness({ apiKey: "fixture", fetch, tools: [], signal: controller.signal, limits: { timeMs: mode === "deadline" ? 50 : 1000 } });
+      const { agent } = createCoachHarness({ apiKey: "fixture", fetch, tools: [], signal: controller.signal, timeoutMs: mode === "deadline" ? 50 : 1000 });
       const result = agent.invoke({ messages: [new HumanMessage("Hello")] });
       const assertion = expect(result).rejects.toThrow();
       await ready;

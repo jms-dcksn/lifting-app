@@ -1114,7 +1114,9 @@ persists summarized history and lets a fresh agent read it. No disk backend is r
 The user subsequently approved the plan and requested Slice A in this chat. Root
 dependencies now use that compatible pinned set, including LangSmith 0.9.0. The
 server-only prepared harness uses the existing Gateway, removes delegation and shell
-tools, and shares time/model/summary/token budgets across main and summary requests.
+tools. The original shared token/call accounting was subsequently removed at the owner's
+request; current behavior uses per-response `maxTokens: 4000`, native summarization defaults
+and a shared execution timeout/cancellation signal.
 The serving route defaults to the original runtime; B adds the gated selection below. Actual domain tools and captured
 LangSmith SDK trace transport pass offline regressions. A disposable native PostgreSQL
 cluster proves database/process restart and owner/epoch isolation with the pinned saver.
@@ -1138,3 +1140,10 @@ recovery cannot create a missing program. Native pending write tasks are never b
 The migration is unapplied to hosted storage; a human applies it after merge, then redeploys.
 Credential provisioning, hosted pooling/TLS/load, full authenticated browser verification and
 C/D packaging/retention gates precede enablement. No Store or skill bundle is introduced in B.
+
+The owner subsequently chose to remove cumulative model/summary/token caps and the custom
+usage-accounting transport. Use Deep Agents' native summarization defaults and the Coach
+summary prompt for context management, with `maxTokens: 4000` per provider response. The
+60-second execution timeout remains coupled to B's 90-second lease; cancellation and
+existing loop guards remain. The former 6,000/four/6,000 proof overrides no longer govern
+the harness. Missing usage reports cannot prevent another model request.

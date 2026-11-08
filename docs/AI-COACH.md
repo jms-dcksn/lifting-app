@@ -28,12 +28,13 @@ Slice 2 (gallery intake to inactive draft) shipped; later slices remain planned.
 [AI Coach threads](DECISIONS.md#ai-coach-threads-2026-09-27). The teaching surface
 is [ai-coach.html](ai-coach.html) — update that HTML whenever agent behavior changes.
 
-**Runtime foundations (#247, Slice A built locally):** [compatibility report, Decision Card and
+**Runtime foundations (#247, Slices A/B built locally; rollout disabled):** [compatibility report, Decision Card and
 delivery sequence](#runtime-foundations-plan-247) replace the blanket Slice 5 deferral.
 The user approved the staged plan on 2026-11-07. A prepared server-only Deep Agents
-harness, bounded transport and disposable PostgreSQL proof are implemented. The serving
-route remains `createAgent()` without native checkpoints. No hosted schema change,
-runtime rollout, provider change or user-memory writes have occurred.
+harness, bounded transport and durable execution/projection path are implemented.
+`COACH_RUNTIME_ENABLED=1` selects the new path; the default remains legacy. The approved
+checkpoint migration is unapplied to hosted storage. No rollout, provider change or
+user-memory writes have occurred.
 
 Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/coach`,
 `/api/agent/chat`) so they do not collide with Track Coach.
@@ -50,7 +51,7 @@ Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/c
 | Surface | Persistent entry + `Sheet` on Lift / Track / Program / You. Full screen at `/coach?thread=`. Both carry chat history and New chat. No fifth tab. Hidden wherever `hideAppChrome` is true. |
 | Jev | Skip in Slice 0. Slice 2 uses it to classify program constraints, not to emit a program. |
 | Models | Vercel AI Gateway, server-only. LangSmith is the trace sink. |
-| Data | Logged-in user client + RLS for domain tools. No elevated domain client, generic SQL tool, or embeddings over `set_log`. #247 proposes separate server-only infrastructure access; it is not implemented. |
+| Data | Logged-in user client + RLS for domain tools. No elevated domain client, generic SQL tool, or embeddings over `set_log`. #247 implements separate server-only checkpoint infrastructure behind a disabled rollout switch. |
 | Authority | Engine owns numbers and prescriptions. Agent owns language, intake, drafts, and navigation. |
 | Privacy | Period observations stay out unless a later, separate opt-in. Same default as Coach. |
 | Context | Full transcript per thread in Postgres. Each model turn gets system prompt + that thread's last N messages. No summarization, compaction, or distilled user-memory in Slice 0. |
@@ -286,20 +287,23 @@ approved probe establishing useful provider output; generic activity always work
 Owner-scoped `agent_thread` and `agent_message` with the same RLS pattern as other
 user tables. A user has many threads, and **every message persists**. Message `parts`
 are stored as JSON so tool calls survive a reload. The UI reads a thread's full
-history. The model does not: the chat route loads that thread's last N messages
+history. On the default legacy path the model does not: the chat route loads that thread's last N messages
 (`CONTEXT_MESSAGE_LIMIT` in `src/lib/agent/policy.ts`), and `selectModelMessages` is
-the only place that cut is made.
+the only place that legacy cut is made. The gated durable path uses native checkpoint
+state and summarization instead; see [Slice B](#slice-b-durable-execution-implemented-locally-rollout-disabled).
 
 - **Draft, then saved.** New chat is a draft with no row, so opening chat or pressing
-  New chat never writes. The first send inserts the thread row, then its first message
+  New chat never writes. On the legacy path the first send inserts the thread row, then its first message
   (`startTurn` in `src/lib/agent/thread.ts`). If that message insert fails, `startTurn`
   deletes the thread row before rethrowing.
-- **Id and title.** The app picks the thread id with LangSmith `uuid7()`. The same id is
+- **Id and title.** Legacy chat picks the thread id with LangSmith `uuid7()`. Durable
+  chat derives stable UUIDv8 thread/input identities from the owner and request ID. The same id is
   the LangSmith `metadata.thread_id`, which groups a conversation's traces. There is no
-  checkpointer and no `configurable.thread_id`; Postgres is the transcript. The title is
+  checkpointer or `configurable.thread_id` on the legacy path. Durable chat uses that
+  thread ID for native configuration while preserving existing imported IDs. The title is
   the first user message with whitespace collapsed and cut to 80 characters, or
   `New chat` when that is empty (`threadTitleFromUserText`).
-- **Order.** Each message insert moves the thread's `updated_at` to that message's
+- **Order.** On the legacy path each message insert moves the thread's `updated_at` to that message's
   `created_at`. History lists the latest 50 threads by `updated_at desc`
   (`agent_thread_user_updated_idx`).
 - **Ownership.** `agent_message (thread_id, user_id)` references
@@ -327,9 +331,16 @@ response is no-store and noindex.
 | `POST` without the `threadId` key, with blank text, or with a malformed id | 400 with no writes. |
 | `POST` without a Gateway key | 503 with no writes. |
 
-GET never writes. A turn streams SSE in a fixed order: `thread` (the saved summary and
-user message), then `text` / `tool-start` / `tool-end` (call IDs and execution outcomes), then `done` (the saved
-messages) or `error`.
+GET never starts generation or domain actions. Legacy GET is read-only; durable GET can
+record lease expiry and repair missing UI projection from committed checkpoints. The durable
+path requires `requestId` on sends; `POST {threadId,requestId,resume:true,context}` explicitly
+resumes an owned accepted turn without inserting a new user message.
+
+SSE begins with `thread` (saved summary/user row), then durable `runtime` status when
+applicable, followed by `text` / `tool-start` / `tool-end`, and `done` only after persistence.
+`error` leaves recovery available. An existing unresolved request returns `pending` status
+without generation. `done.replayed` suppresses automatic client navigation on duplicate or
+recovered results. Both clients recognize the same status/recovery protocol.
 
 The client is one reducer (`chatReducer` in `src/lib/agent/chat-state.ts`) over three
 screens: `loading`, `chat` (a conversation plus an optional in-flight turn), and
@@ -524,8 +535,8 @@ capabilities does not authorize them or a provider/model change.
 ## Runtime foundations plan (#247)
 
 Planning baseline dated 2026-11-07, against app `52b0efa`; approved for staged implementation
-in this chat. [Slice A](#slice-a-integration-readiness-implemented-locally) is built locally.
-Proposed later contracts below are not serving behavior. #247 remains the architecture
+in this chat. Slices A and B are built locally; the B schema was approved on 2026-11-08.
+Rollout is disabled. Skills, quotas/retention and user memory remain later slices. #247 remains the architecture
 parent; no follow-up issues were opened.
 
 ### Compatibility report
@@ -597,7 +608,8 @@ tool disclosure from skill metadata may bypass domain authorization.
 ### Decision Card — staged plan approved; serving cutover remains gated
 
 The user approved this plan and requested the first build slice on 2026-11-07. That
-approval covers the reversible Slice A implementation and local proofs described below.
+approval covered Slice A. The user also approved the concrete B schema on 2026-11-08;
+A/B implementation and local proofs are below.
 Hosted provisioning, production enablement and paid calls remain separate operations.
 
 - **Recommendation:** keep TypeScript/Next.js and the existing Gateway model/adapter.
@@ -641,7 +653,8 @@ Streaming bytes pass through unchanged. Missing usage or interrupted/failed requ
 their full reservations: another request may be refused rather than silently unmetered.
 Input admission is an estimate, not an exact provider tokenizer or dollar-spend guarantee;
 an observed overrun stops further calls. The existing eight-call native tool limit covers
-filesystem reads too. These limits belong to the **prepared harness**, not serving chat yet.
+filesystem reads too. These limits apply to the gated durable path, not legacy execution. Each explicit resume
+starts a new bounded execution attempt; duplicate delivery alone never starts generation.
 
 Native summarization uses a versioned application summary prompt that preserves identities,
 constraints and unresolved questions without granting authority. Its marker and single-user
@@ -655,7 +668,7 @@ LangSmith 0.9's actual tracer/Client through captured HTTP, checkpointed summary
 shared model/summary/input/output limits, split SSE frames, missing usage, overrun and
 cancellation/deadline propagation. Existing Coach and evaluation regressions run on the
 selected root dependencies. A stopped graph cannot undo an already committed domain action;
-Slice B still needs durable interruption status and receipt-based recovery.
+Slice B below adds interruption status, explicit resume and stable draft identity/recovery.
 
 **Real PostgreSQL readiness proof:** `npm run test:agent:persistence` creates its own
 temporary loopback cluster, random local credentials and private fixture schema. It does
@@ -707,72 +720,117 @@ excerpts checked. No authenticated hosted/browser journey, CI, live eval or depl
 ran. Migration: none. The new `server-only@0.0.1` marker also lets the standalone Node
 worker load the prepared module under the `react-server` condition.
 
-### Slice B schema review (draft, not serving)
+### Slice B durable execution (implemented locally; rollout disabled)
 
-The owner requested Slice B on 2026-11-08. Its first deliverable is the concrete
-[schema draft](../scripts/spikes/agent-foundations/slice-b-schema.sql), outside
-`supabase/migrations/` pending the schema decision required by `AGENTS.md`.
-This is not an applied migration or a completed durable runtime. The chat route,
-browser protocol and domain tools remain unchanged.
+The user approved the concrete schema on 2026-11-08. It is promoted from the review draft
+into [20261108183830_coach_durable_execution.sql](../supabase/migrations/20261108183830_coach_durable_execution.sql),
+version `20261108183830`, **unapplied to hosted storage**. The human runs
+`npx supabase db push` after merge from the linked `main` checkout, then redeploys.
+The agent never applies hosted SQL. The switch stays off until release prerequisites pass.
 
-| Proposed object | Purpose |
+| Module/object | Implemented behavior |
 | --- | --- |
-| `coach_runtime.thread` | Bind the existing conversation and owner to a runtime version, execution epoch and bootstrap checkpoint/version |
-| `coach_runtime.turn` | Owner/request identity and payload hash, exact input message, status/lease, committed versus projected checkpoint IDs |
-| Native `checkpoints`, `checkpoint_blobs`, `checkpoint_writes` | Pinned PostgresSaver state, with cascading thread references |
-| Native `checkpoint_migrations` | Reviewed library versions 0–5; unavailable to runtime role |
-| `agent_message_identity_owner_key` | Composite unique key lets a turn reference only an input belonging to its own thread and owner |
-| `coach_agent_runtime` | Dedicated NOLOGIN, non-bypass role until separately provisioned; private state and owner-scoped conversation DML, no training/auth table access |
+| `durable-chat.ts` | Authenticated route/page integration, runtime discovery, disabled-by-default rollout, SSE cancellation, status/recovery and no legacy fallback for checkpoint-backed threads |
+| `durable-store.ts` | Atomic admission/input/claim, request hash checks, transaction-local owner/thread scope, epoch/lease checks, transactional projection and completion |
+| `durable-runtime.ts` | Bootstrap once, native incremental execution, bounded transport, tool authorization checks, explicit interruption recovery and projection repair without generation |
+| `durable-messages.ts` | Stable constructor-supplied native IDs, historical incomplete-tool stubs, deterministic UI identities and hidden internal messages |
+| `coach_runtime.thread` / `turn` | Owner/runtime/bootstrap binding and request/status/lease/checkpoint progress; one unresolved turn per thread |
+| Native checkpoint tables / ledger | Pinned saver DDL versions 0–5, cascading owner/thread cleanup; runtime cannot access the ledger or call `setup()` |
+| `agent_runtime_version` RPC | Owned runtime discovery through the signed-in client, including when the private credential is unavailable |
+| Projection guard trigger | Reject authenticated transcript-only inserts/edits/deletes on checkpoint-backed messages; allow cascading thread/account cleanup |
 
-**Decision Card — schema:** recommend this additive layout. It preserves existing
-thread/message IDs and episode links while separating execution records from UI rows.
-One unresolved turn per thread must be recovered before another distinct send; completed
-turns require matching committed/projected checkpoint IDs. The input foreign key is
-deferred so account/thread deletion can cascade through messages and runtime records
-without depending on trigger ordering. Native state rows cascade from the binding.
+**Request/retry contract:** the browser sends a UUID request ID. A tab stores only its
+payload hash and ID in versioned session storage, not message text, so a lost
+acknowledgement can retry the same input. New thread/input IDs are deterministic per
+owner/request. Admission serializes competing requests through transaction-scoped locks,
+validates the owned thread, saves the input and claims its epoch in one transaction.
+A duplicate returns status/saved output; a changed payload is rejected. A distinct send
+cannot append a user row while another turn is unresolved. Episode Discuss reuses the
+exact session-authorized seed; imports retain its existing UI identity and links.
 
-**Risk:** schema/credential provisioning is harder to reverse than local code. RLS uses
-server-authenticated transaction context, not browser-supplied identity and not raw
-`auth.uid()` on a pool connection. The runtime credential is trusted to set that context;
-RLS is not independent proof of browser identity. Production must use transaction-local
-settings and the fenced adapter, not this test's per-connection fixture settings.
+**Native state:** an old conversation imports all rows, including unanswered user input.
+IDs are supplied to message constructors so they survive native serialization. Importing
+an unfinished historical tool call records an unavailable result and never invokes the
+tool. Bootstrap writes its checkpoint before marking initialization; a crash between those
+steps can safely repeat the stable-ID import before any model execution. Thereafter the
+runtime reads native state and submits the newly admitted input with its stable ID.
+Explicit resume repairs unfinished calls as unavailable and starts a new execution; it
+does not invoke saved pending tool tasks. Compaction/file state stays in native checkpoints.
 
-**Decision needed:** approve the concrete schema before promoting it to an application
-migration and implementing admission/projection against it. No hosted SQL or credentials
-have been used. After a future migration is reviewed/merged, a human applies it under
-[DEPLOY](../DEPLOY.md); request handlers must never call native `setup()`.
+**Fencing:** a claim has a 90-second lease; the execution transport has a 60-second budget.
+The pinned saver's promise-only pool adapter checks the binding and running lease under
+row locks in the same transaction as every checkpoint/pending write or native deletion.
+A replacement claim increments the epoch. The old worker cannot persist results or
+project after takeover. No transaction stays open over provider execution. Tool entry
+also rechecks the active claim; a completed domain write still cannot be undone by abort.
 
-The existing `npm run test:agent:persistence` now also executes the draft in its own
-disposable PostgreSQL cluster using the repository's original conversation migrations.
-The proof exercises native saver writes/reads/list/delete, real cross-owner state,
-non-bypass privileges, duplicate/unresolved turn constraints, foreign input rejection,
-bootstrap/completion consistency and account cleanup with populated native tables.
-It found a real deletion-order failure before the deferred input-FK fix.
-This is schema evidence, not admission concurrency, UI recovery or production pooling proof.
+**Projection/recovery:** newly committed native messages use deterministic UI UUIDs.
+Projection plus completed status is one transaction; `done` follows that commit. Native
+intermediate checkpoints retain messages removed by compaction, and repair reads their
+states before projection. It never calls the model. Failed projection stays recoverable.
+GET/reopen repairs failed/interrupted completed execution; an expired running lease becomes
+interrupted. Running work has a Refresh response control; interrupted work has an explicit
+Resume response control in both sheet and page. GET never starts generation. A duplicate
+or recovered result does not automatically repeat client navigation. Unmount/disconnect
+aborts the fetch/graph/provider path and lets persistence cleanup finish.
 
-Local verification for this draft: `npm run verify -- base agent` passed (1,403 app
-tests, 228 agent tests; two gated live tests skipped in each applicable run). Lint
-retains the existing `board.ts` unused `_catalog` warning. The disposable PostgreSQL
-18.6 proof passed with real blobs and pending writes present before account deletion.
-The HTML schema section was inspected at 390px with no section overflow. Serving code
-and domain tools match the Slice A commit; the pre-existing harness comment is preserved.
-No authenticated app journey, CI, deployment, paid call or hosted operation ran.
-Migration: none; SQL remains a review draft outside the migrations directory.
+**Domain writes:** `draftProgramFromIntake` retains the signed-in user's Supabase client.
+The durable path supplies a stable program ID per turn, serializes draft calls and checks
+that owned program before writing. Existing results return a builder confirmation; a
+resumed/uncertain attempt with no verified program returns unavailable and cannot create
+another program. This is identity-based reconciliation, not graph-based approval or a
+new proposal authority. Fresh legacy tool behavior and confirmed training-action RPCs are
+unchanged. #233 still owns future proposal/revision/confirmation receipts.
 
-**Recovery design to finish before cutover:** `draftProgramFromIntake` currently generates
-a fresh random program ID and persists through `save_program`; replay could duplicate a
-program after an unknown outcome. Graph checkpoints alone do not solve this. B must
-add a caller-observable regression and stable domain write identity/receipt handling
-before enabling interrupted write-tool recovery. Never blindly resume an uncertain write.
-The already approved #233 workflow receipt design remains authoritative; this draft
-does not introduce competing proposal or training-action state.
+**Connection/rollback contract:** `COACH_RUNTIME_DATABASE_URL` uses the dedicated
+`coach_agent_runtime` role (or its pooler-qualified username). It has no training/Auth
+access, schema-creation rights or inherited role memberships. Production connections use
+verified TLS, finite timeouts and a two-connection warm pool; loopback test/dev connections
+can use plaintext. Browser/model input never selects connection settings, native config
+or checkpoint IDs. Transaction-local settings carry server-authenticated owner identity;
+RLS is defense in depth, not independent proof of browser identity.
+The switch is enabled only by `COACH_RUNTIME_ENABLED=1`. With it off, checkpoint-backed
+threads remain read-only, while untouched threads use legacy execution. Keep the private
+credential during rollback for status/repair; if unavailable, owned public history remains
+read-only. Drain old executors before rollout; the projection guard is not a substitute
+for preventing old binaries from making provider/domain calls.
+
+**Evidence and limits:** `npm run test:agent:persistence` applies the actual migration in
+an owned disposable PostgreSQL 18.6 cluster, uses a real non-bypass login and imports the
+production modules in separate processes. It covers concurrent duplicates/distinct sends,
+changed payloads, new/old/authorized-seed imports, native serialization, projection outage
+repair without generation, expired claims/stale writes, cross-owner/thread access and
+account cleanup with populated native tables. It kills a worker during provider execution,
+restarts PostgreSQL and explicitly resumes in a fresh process without duplicating input.
+Unit/UI tests cover request-ID persistence, rollout refusal, cancellation, owner-bound tool
+injection, uncertain draft recovery and sheet/page Resume/Refresh behavior. Live model
+behavior, full local Supabase/PostgREST/Auth, hosted transaction pooling/TLS/load and
+credential provisioning remain unverified release gates. Skills are C; physical file
+quotas, retention and the 100-turn storage benchmark remain D. User memory remains E.
+
+`pg@8.16.3` is now an explicit runtime dependency. `ws@8.22.2` satisfies the optional
+LangSmith peer that the production bundler resolves when the harness enters the route
+and page import graphs; the real production build passes with it installed.
+
+Verification on 2026-11-08: `npm run verify -- base agent` passed (typecheck, lint,
+strict indexed-access slice, hook tests, app tests, agent tests and production build).
+The existing `board.ts` `_catalog` lint warning remains. The real PostgreSQL proof passed,
+including application clock-skew checks using database-authoritative leases. Registered
+concurrent draft calls make one mocked save with one stable program ID; uncertain missing
+draft recovery makes none. The HTML B section was visually inspected at 390px/1100px
+without section overflow, and its source snippets/references were checked.
+`supabase/tests/coach_checkpoint_rls.sql` adds full-stack CI ownership/rollback-guard/cleanup
+coverage but was not run locally: Docker/local Supabase is unavailable. Authenticated
+browser verification is likewise blocked locally. No CI, push, deployment, hosted query,
+credential provisioning or paid eval ran. Standards review: no outstanding hard misses;
+spec review: B is locally implemented with the stated release-verification limits.
 
 ### State and tool ownership contract
 
 | State | Authoritative owner | Reader/writer rule |
 | --- | --- | --- |
-| Conversation identity/title/history list | Existing `agent_thread` | Preserve IDs, owner composite key and episode links; opening chat remains read-only |
-| Accepted input and retry identity | Proposed owner/thread-scoped turn admission record | One stable client request ID and payload hash; durable pending input before execution; same ID/different payload rejects |
+| Conversation identity/title/history list | Existing `agent_thread` | Preserve IDs, owner composite key and episode links; draft opening is read-only; owned reopen may repair projection |
+| Accepted input and retry identity | Private owner/thread-scoped `coach_runtime.turn` | One stable client request ID and payload hash; durable pending input before execution; same ID/different payload rejects |
 | Graph messages, pending execution, middleware state, scratch files | Native checkpoints | Owned thread and allowed runtime version required; new invocations submit only newly admitted input |
 | Visible chat rows | Existing `agent_message`, deliberate projection after cutover | Preserve all old IDs/episode seed FKs; generated rows keyed by stable native identity; never reconstruct new graph state from an incomplete projection |
 | Proposal/workflow/revision/baseline/confirmation receipts | #233 domain persistence | Typed, owner-validated transitions; graph state references identity/revision rather than holding a competing authoritative artifact |
@@ -781,7 +839,7 @@ does not introduce competing proposal or training-action state.
 | Future cross-chat preferences | Separate persistent Store, later slice | Server-derived user namespace; neither facts nor permissions nor active workflow state |
 
 Keep orchestration at the existing `chat-handler.ts` → `thread.ts` / `run.ts` seam.
-One server-only module admits an owned turn, invokes the selected runtime and projects
+The server-only durable chat module admits an owned turn, invokes the selected runtime and projects
 committed output. Do not expose raw checkpoint/store objects, arbitrary
 `configurable` values, namespaces, checkpoint IDs or database credentials to model tools
 or browser inputs. Keep public SSE ordering and both Coach surfaces compatible; extend
@@ -833,11 +891,11 @@ training confirmations even when a tool response/checkpoint is lost.
 
 ### Connection and authorization design
 
-Propose a private, non-Data-API schema for checkpoints and, later, a separate private
-Store schema. Use a dedicated server-only runtime database role with only required DML,
+The approved migration creates a private, non-Data-API checkpoint schema. A separate
+private Store schema remains a later slice. Use a dedicated server-only runtime database role with only required DML,
 no DDL, no general domain-table access and no client grants. Do not use
 `SUPABASE_SECRET_KEY`, the database owner or `service_role` for domain tools. This is a
-new infrastructure credential, requiring review/provisioning before rollout.
+new infrastructure credential; its provisioning and pooler settings still require release review.
 
 The saver has no `user_id` predicate or automatic session claims. Owner validation must
 cover every get/list/put/pending-write/resume/delete operation, including reconciliation
@@ -925,14 +983,14 @@ not outlive their source without an explicit expired/unavailable result.
 
 ### Staged delivery and measurable exits
 
-The staged plan is approved. Slice A is built locally; B has a locally testable schema
-draft awaiting its concrete schema decision. B's runtime and Slices C–E remain unimplemented.
+The staged plan and B schema are approved. Slices A/B are built locally, with rollout
+disabled and the migration unapplied to hosted storage. Slices C–E remain unimplemented.
 These are bounded work units, not newly filed issues or a claim of deployed behavior.
 
 | Slice | Bounded work | Exit before next slice |
 | --- | --- | --- |
 | A — integration readiness (built locally) | Selected exact stack; prepared server-only harness, bounded Gateway transport and local fenced saver proof | Local exits pass; see implementation/evidence above. Production pooler/credential provisioning remains a release gate |
-| B — durable execution | Add reviewed additive schema, admission/fencing, bootstrap-once, native serialization and projection recovery; server-only rollout switch | Old/new/episode threads survive killed/restarted processes; parallel/retry sends don't duplicate input/effects; checkpoint-success/projection-failure repairs without a model call; cross-owner read/list/resume/delete fails; deletion and outages pass |
+| B — durable execution (built locally) | Approved additive migration, admission/fencing, bootstrap-once, native serialization, projection recovery and disabled server-only rollout switch | Old/new/episode threads survive killed/restarted processes; parallel/retry sends don't duplicate input/effects; checkpoint-success/projection-failure repairs without a model call; cross-owner read/list/resume/delete fails; deletion and outages pass |
 | C — reusable skills | Bundle manifest/read-only backend; native discovery/pinning; version restoration via authoritative workflow references | Compiled Next function contains SKILL.md/references; discovery/nonactivation, pin reset, missing/changed skill, trim/reopen/resume and forbidden writes pass; #177 then delivers actual program behavior |
 | D — working files/context | Enable quotas, recoverable offloading/summaries and cleanup, using B/C | Oversized result → stable file reference → bounded read after process restart; cross-thread/user isolation; quota and 100-turn physical-size benchmark; summaries never advertise missing history |
 | E — user memory, separate | Review schema/product controls, introduce persistent Store/StoreBackend | Explicit preference written in one owned chat reads in another after restart; correction/conflict/retrieval/edit/delete/account cleanup and cross-owner rejection pass |

@@ -33,7 +33,9 @@ The report, proposed architecture, Decision Card and delivery gates live in
 No Postgres restart, real owner isolation, hosted pooling, Next function packaging or
 live provider behavior is established by these tests.
 
-`slice-b-schema.sql` is a review draft, not an application migration. The root
-`npm run test:agent:persistence` runs `slice-b-schema-proof.mjs` against its own disposable
-PostgreSQL cluster. It checks native saver compatibility, owner/privilege isolation,
-turn constraints and cascading cleanup. It does not implement the serving lifecycle.
+The approved B schema is now the application migration
+[`20261108183830_coach_durable_execution.sql`](../../../supabase/migrations/20261108183830_coach_durable_execution.sql).
+The root `npm run test:agent:persistence` runs `scripts/agent-schema-proof.mjs` and the production
+runtime worker against an owned disposable PostgreSQL cluster. Those separate proofs cover
+real storage, admission, restart and projection recovery; the isolated eleven probes above
+do not establish those facts by themselves. The hosted migration remains human-applied.

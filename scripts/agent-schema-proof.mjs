@@ -18,9 +18,9 @@ export async function proveSliceBSchema(admin, adminUrl) {
     create function auth.uid() returns uuid language sql stable as
       $$select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid$$;`);
   for (const name of ["20260920181553_agent_threads.sql", "20260927170000_agent_multi_thread.sql"]) {
-    await admin.query(await readFile(new URL(`../../../supabase/migrations/${name}`, import.meta.url), "utf8"));
+    await admin.query(await readFile(new URL(`../supabase/migrations/${name}`, import.meta.url), "utf8"));
   }
-  await admin.query(await readFile(new URL("./slice-b-schema.sql", import.meta.url), "utf8"));
+  await admin.query(await readFile(new URL("../supabase/migrations/20261108183830_coach_durable_execution.sql", import.meta.url), "utf8"));
   await admin.query("create table public.training_fixture(id int)");
   await admin.query("insert into auth.users values ($1), ($2)", [a, b]);
   await admin.query("insert into public.agent_thread(id,user_id,title) values ($1,$2,'A'), ($3,$4,'B')", [threadA, a, threadB, b]);
@@ -28,6 +28,15 @@ export async function proveSliceBSchema(admin, adminUrl) {
     values ($1,$2,$3,'user','[]'), ($4,$5,$6,'user','[]')`, [inputA, threadA, a, inputB, threadB, b]);
   await admin.query(`insert into coach_runtime.thread(conversation_id,owner_id,runtime_version)
     values ($1,$2,'coach-deep-v1'), ($3,$4,'coach-deep-v1')`, [threadA, a, threadB, b]);
+  const authenticated = await admin.connect();
+  try {
+    await authenticated.query("begin");
+    await authenticated.query("set local role authenticated");
+    await authenticated.query("select set_config('request.jwt.claim.sub',$1,true)", [a]);
+    assert.equal((await authenticated.query("select public.agent_runtime_version($1) as version", [threadA])).rows[0].version, "coach-deep-v1");
+    assert.equal((await authenticated.query("select public.agent_runtime_version($1) as version", [threadB])).rows[0].version, null);
+    await assert.rejects(authenticated.query("insert into public.agent_message(thread_id,user_id,role,parts) values($1,$2,'user','[]')", [threadA, a]), /Checkpoint-backed messages/);
+  } finally { await authenticated.query("rollback"); authenticated.release(); }
   const url = new URL(adminUrl);
   url.username = "coach_agent_runtime";
   // The draft provisions NOLOGIN. Only this disposable fixture enables login.
@@ -76,7 +85,7 @@ export async function proveSliceBSchema(admin, adminUrl) {
     await assert.rejects(ownerA.saver.setup(), /permission denied/);
     const role = await ownerA.pool.query("select rolsuper, rolbypassrls from pg_roles where rolname=current_user");
     assert.deepEqual(role.rows[0], { rolsuper: false, rolbypassrls: false });
-    console.log("PASS: Slice B draft supports native saver; non-bypass role isolates conversations and cannot access training/auth data or run setup");
+    console.log("PASS: Slice B migration supports native saver; non-bypass role isolates conversations and cannot access training/auth data or run setup");
 
     const request = "40000000-0000-4000-8000-000000000001";
     const insert = `insert into coach_runtime.turn(request_id,owner_id,conversation_id,payload_hash,input_message_id,status,epoch)
@@ -89,7 +98,7 @@ export async function proveSliceBSchema(admin, adminUrl) {
     await assert.rejects(ownerA.pool.query("update coach_runtime.turn set status='completed' where request_id=$1", [request]), /check constraint/);
     await assert.rejects(ownerA.pool.query("update coach_runtime.thread set bootstrap_version=1 where conversation_id=$1", [threadA]), /check constraint/);
     assert.equal((await wrong.pool.query("select * from coach_runtime.turn")).rowCount, 0);
-    console.log("PASS: draft rejects cross-thread input, duplicate/unresolved sends and incomplete bootstrap/completion records");
+    console.log("PASS: migration rejects cross-thread input, duplicate/unresolved sends and incomplete bootstrap/completion records");
 
     await ownerA.pool.query("update coach_runtime.turn set status='running',lease_until=now()+interval '90 seconds' where request_id=$1", [request]);
     await ownerA.pool.query(`update coach_runtime.turn set status='completed',lease_until=null,
@@ -108,6 +117,7 @@ export async function proveSliceBSchema(admin, adminUrl) {
     }
     assert.ok(await ownerB.saver.getTuple(configB));
     console.log("PASS: account deletion cascades runtime state without deleting another owner's checkpoint");
+    return url.href;
   } finally {
     await Promise.all(pools.map(pool => pool.end()));
   }

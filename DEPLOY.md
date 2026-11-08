@@ -198,18 +198,33 @@ named `CURSOR_API_KEY`. Do not commit it.
   has no pinned Node engine, `.nvmrc`, or `vercel.json`; CI uses Node 22 for Supabase's native
   WebSocket support. Verify the selected deployment runtime at release.
 
-### Planned Coach runtime persistence (#247)
+### Coach runtime persistence (#247; rollout disabled)
 
-Serving chat still uses the existing transcript tables. Slice A selects the pinned
-dependency set and adds a prepared server-only harness plus disposable PostgreSQL proofs;
-the chat route does not select that harness yet. No checkpoint/Store migration or hosted
-credential is introduced here. The proposed private-schema role, Node pool,
-human-applied DDL and rollout/rollback gates are in
-[AI Coach foundations](docs/AI-COACH.md#runtime-foundations-plan-247).
-Do not run library `setup()` or automatic Store table creation in a request. Future
-schema work must use versioned migrations and the existing human deployment procedure.
-Checkpoint-backed threads must remain read-only during an incompatible runtime rollback;
-falling back to transcript-only execution can lose files and replay domain effects.
+Slices A/B implement the bounded Deep Agents harness and durable execution behind
+`COACH_RUNTIME_ENABLED=1`; leave it unset/off until release review. Migration
+`20261108183830_coach_durable_execution.sql` (version `20261108183830`) is **unapplied**
+to hosted storage. The human runs `npx supabase db push` after merge, from the linked
+`main` checkout, then redeploys. The agent does not apply or query hosted SQL.
+
+The migration installs a private schema and a dedicated `coach_agent_runtime` NOLOGIN,
+non-bypass role. Separately review/provision its login credential and transaction-pooler
+connection before setting server-only `COACH_RUNTIME_DATABASE_URL`. No training/Auth-table
+access or inherited roles; domain tools retain the session client. Pooler usernames may
+include the project suffix. Production TLS verification is required; URL `sslmode`
+overrides are rejected. The Node pool has at most two connections per warm function and
+finite timeouts. Validate aggregate project limits, pooling/TLS, deployment Node version,
+account deletion and both authenticated UI surfaces before enablement. Local proofs do
+not establish those hosted facts. C/D packaging, quotas/retention and rollback gates still
+apply; do not enable this slice merely because the local build passes.
+
+Never run native `setup()` or automatic Store creation in a request. During rollback,
+turn the switch off, fence/drain executions and retain the credential for status/projection
+repair. Checkpoint-backed threads become read-only; untouched legacy threads can continue.
+Credential loss also leaves existing owned public history read-only. Never fall back to
+transcript-only generation on a checkpoint-backed thread. Drain older deployments before
+cutover; the migration rejects their transcript writes but cannot stop an old binary's
+provider calls. Do not destructively remove checkpoints or roll back the additive schema.
+Details: [durable runtime and evidence](docs/AI-COACH.md#slice-b-durable-execution-implemented-locally-rollout-disabled).
 
 ### Deload progression migration
 

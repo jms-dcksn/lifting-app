@@ -31,11 +31,11 @@
       </header>
 
       <section id="runtime-foundations" class="space-y-4 rounded-lg border border-slate-300 p-5">
-        <h2 class="font-serif text-2xl">Runtime foundations (#247): Slice A prepared, not serving</h2>
+        <h2 class="font-serif text-2xl">Runtime foundations (#247): A/B built, rollout disabled</h2>
         <p>The current Coach rebuilds a fresh agent from bounded chat history on every send.
-          The staged plan is approved. Slice A adds the prepared Deep Agents harness and real
-          local persistence proofs. The chat route still uses the original runtime; hosted
-          persistence and serving cutover belong to Slice B.</p>
+          The staged plan and B schema are approved. A/B add the bounded Deep Agents harness,
+          durable execution and real local persistence/recovery proofs. The rollout switch
+          defaults off; the hosted migration and credential are not provisioned.</p>
         <div style="border:1px solid #78716c;padding:16px;border-radius:8px;margin:16px 0">
           <h3 style="font-weight:600">Built in Slice A</h3>
           <p>Caller supplies user-session tools → server-only prepared harness → shared
@@ -53,7 +53,8 @@ const backend = new StateBackend();</code></pre>
             at most one summary, a 60-second deadline, 24,000 estimated/reconciled input
             tokens and 4,000 output tokens. Input includes tool schemas; output is reserved
             before requests and reconciled from usage. Missing usage retains the whole
-            reservation. These limits are prepared code, not the serving chat policy yet.</p>
+            reservation. These limits govern the gated durable path. An explicit resume starts a new bounded
+            execution attempt; duplicate delivery alone never starts another model call.</p>
           <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// scripts/agent-persistence-pool.mjs
 const result = await client.query("SELECT epoch FROM coach_checkpoint_test.thread_binding WHERE thread_id=$1 FOR SHARE", [thread]);
 if (result.rows[0]?.epoch !== epoch) throw Error("Owned execution claim is unavailable or stale");</code></pre>
@@ -63,31 +64,47 @@ if (result.rows[0]?.epoch !== epoch) throw Error("Owned execution claim is unava
             reads through a fresh Node process using a non-bypass role. Two owners have
             real stored state for cross-owner read/list/write/delete checks.</p>
         </div>
-        <div id="slice-b-schema" style="border:1px solid #78716c;padding:16px;border-radius:8px;margin:16px 0">
-          <h3 style="font-weight:600">Slice B started: schema draft for review</h3>
-          <p>The draft adds execution records without replacing existing chat identities.
-            It has been exercised only in disposable local PostgreSQL. It is not an
-            application migration, and the serving route still uses the old runtime.</p>
+        <div id="slice-b-runtime" style="border:1px solid #78716c;padding:16px;border-radius:8px;margin:16px 0">
+          <h3 style="font-weight:600">Slice B: durable execution and recovery</h3>
+          <p>A request ID identifies one accepted user input. Admission saves that input and
+            claims execution atomically. Another tab cannot append a competing turn while
+            this response is unresolved. A changed payload cannot reuse the same ID.</p>
           <div style="display:flex;flex-wrap:wrap;gap:12px;margin:16px 0">
-            <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Existing owned conversation<br>↓ cascading owner binding<br><strong>Runtime version + execution epoch</strong></div>
-            <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Request + exact input<br>↓ one unresolved turn<br><strong>Status + checkpoint/projection progress</strong></div>
-            <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Native messages + files<br>↓ native saver tables<br><strong>Owner-scoped checkpoints</strong></div>
+            <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Signed-in user + request ID<br>↓ atomic admission<br><strong>Input + owned epoch/lease</strong><br>↓ bootstrap once, then new input<br>Bounded model + user-session tools</div>
+            <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Native messages + files<br>↓ fenced checkpoint transaction<br><strong>Stable UI projection + completed status</strong><br>↓ commit before done<br>Existing chat history and seed IDs</div>
+            <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Interrupted or projection failed<br>↓ read saved native checkpoints<br><strong>Repair UI without generation</strong><br>↓ if execution remains unfinished<br>Explicit Resume; never replay pending writes</div>
           </div>
-          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>-- scripts/spikes/agent-foundations/slice-b-schema.sql (draft)
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>-- supabase/migrations/20261108183830_coach_durable_execution.sql
 create unique index coach_one_unresolved_turn on coach_runtime.turn(conversation_id)
   where status &lt;&gt; 'completed';</code></pre>
-          <p>This constraint rejects a second unresolved send; the admission transaction
-            and retry logic still need implementation. Completion also requires matching
-            saved and projected checkpoint IDs. The dedicated role cannot access training
-            tables or run native schema setup.</p>
-          <p>The schema proof caught an account-deletion ordering bug. Deferring the
-            turn-to-input foreign key allows related rows to cascade before the constraint
-            is checked. Tests populate all three native state tables before deleting an
-            owner and verify that another owner's checkpoint survives.</p>
-          <p><strong>Remaining recovery problem:</strong> the draft-program tool currently
-            chooses a random program ID. An interrupted write must be reconciled with a
-            stable domain identity/receipt before retry; replaying a graph is not enough.</p>
-          <p><a class="underline" href="AI-COACH.md#slice-b-schema-review-draft-not-serving">Concrete schema Decision Card and remaining work</a>.</p>
+          <p>The dedicated role can write private checkpoints and owner-scoped chat rows,
+            but has no training/Auth access or schema-creation rights. Every native write
+            locks and validates the current epoch and running lease in its own transaction.
+            A reclaimed execution fences its predecessor. No transaction spans a model call.</p>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/durable-runtime.ts
+const completed = await recoverDurableTurn(store, scope, turn);
+if (completed) return completed;</code></pre>
+          <p>Saved final output can repair a failed UI write without another model call.
+            Intermediate checkpoints preserve messages removed by compaction until projection.
+            GET never starts generation. Sheet and page share Refresh response / Resume
+            response controls; reconnecting does not automatically repeat navigation.</p>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/tools/draft-program.ts
+const programId = durable?.programId ?? crypto.randomUUID();</code></pre>
+          <p>The durable path supplies one stable draft-program ID per turn. Before writing,
+            the tool checks that owned program through the signed-in client. Interrupted
+            recovery can return an existing builder confirmation, but cannot create a missing
+            program after an uncertain write. Existing training confirmations retain their
+            own authoritative domain checks.</p>
+          <p>The local proof uses the actual migration and production modules: concurrent
+            sends, old and seed-thread imports, native serialization, projection outage,
+            stale workers and populated account cleanup. It kills a worker during a provider
+            call, restarts PostgreSQL and resumes in a fresh process without duplicate input.</p>
+          <p><strong>Rollout stays off:</strong> hosted migration/credential, transaction
+            pooling/TLS/load and authenticated browser release checks remain. Bound threads
+            become read-only when the switch is off; they never fall back to transcript-only
+            generation. The migration is unapplied. A human runs the database push after merge
+            and redeploys. Skills are C; quotas/retention are D; user memory is E.</p>
+          <p><a class="underline" href="AI-COACH.md#slice-b-durable-execution-implemented-locally-rollout-disabled">Durable runtime contract, evidence and limits</a>.</p>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:16px 0">
           <div style="border:1px solid #78716c;padding:16px;border-radius:8px">
@@ -99,7 +116,7 @@ create unique index coach_one_unresolved_turn on coach_runtime.turn(conversation
             <div>Append replies → visible history</div>
           </div>
           <div style="border:1px solid #78716c;padding:16px;border-radius:8px">
-            <h3 style="font-weight:600;margin-bottom:12px">Proposed after approval and verification</h3>
+            <h3 style="font-weight:600;margin-bottom:12px">Gated durable path (switch off)</h3>
             <div>Authenticate → owned turn admission + fencing</div>
             <div style="padding:8px 0">↓ stable new input; bootstrap old history once</div>
             <div>Main Coach ↔ native checkpoints + thread files</div>
@@ -107,7 +124,7 @@ create unique index coach_one_unresolved_turn on coach_runtime.turn(conversation
             <div>Existing history rows + preserved episode seed IDs</div>
           </div>
         </div>
-        <p>Checkpoints would own execution state. Domain tables still own training facts,
+        <p>In the gated path, checkpoints own execution state. Domain tables still own training facts,
           proposal revisions and confirmed-action receipts. A restored checkpoint cannot
           grant permission or make a confirmed action safe to repeat. Domain tools keep
           the signed-in user's Supabase client; private persistence credentials stay server-only.</p>
@@ -146,17 +163,18 @@ createSummarizationMiddleware({ backend, model, trigger: { type: "tokens", value
           the candidate needs a different LangSmith version. The original summary-file finding
           was a legacy configuration failure: direct <code>new StateBackend()</code> persists
           the history, verified by read-back through a fresh agent. Required-skill validation,
-          compiled skill packaging and the durable serving lifecycle still precede cutover.
-          Slice A now proves assembled prompts, fenced writes, real local PostgreSQL restart,
-          owner isolation and captured SDK trace transport. Hosted pooler/load behavior
+          compiled skill packaging, quotas/retention and hosted release verification still precede cutover.
+          A/B prove assembled prompts, fenced writes, real local PostgreSQL restart,
+          killed-worker recovery, owner isolation and captured SDK trace transport. Hosted pooler/load behavior
           and production provisioning remain unverified.</p>
         <p>Delivery: integration readiness → checkpoints/projection → shared skills (#177
           supplies program behavior; #233 owns proposals) → bounded files/context → optional
           user memory. The same main Coach owns the conversation throughout.</p>
         <p>Full report, limits, approved staged Decision Card and measurable exits:
           <a class="underline" href="AI-COACH.md#runtime-foundations-plan-247">AI-COACH.md</a>.
-          The eleven passing probes include an explicit test of the missing-pin limitation; they establish
-          no real database, live-provider or production-readiness claim.</p>
+          The isolated eleven probes include an explicit test of the missing-pin limitation.
+          Separate PostgreSQL proofs cover A/B storage and recovery; neither proves live-provider
+          behavior or hosted production readiness.</p>
       </section>
 
       <section id="edited-workout-targets" class="space-y-4">

@@ -185,6 +185,13 @@ afterEach(() => {
 });
 
 describe("agent chat POST", () => {
+  it("rejects resume on the legacy handler without appending blank input", async () => {
+    const { POST, store, runTurn } = setup();
+    const before = rowCounts(store.tables);
+    expect((await POST(post({ threadId: ownThread, resume: true, requestId: crypto.randomUUID() }))).status).toBe(400);
+    expect(rowCounts(store.tables)).toEqual(before);
+    expect(runTurn).not.toHaveBeenCalled();
+  });
   it("Discuss answers the owned episode seed with current context and no second user row", async () => {
     const { POST, store, runTurn } = setup();
     const seed = store.tables.agent_message.find(row => row.thread_id === ownThread)!;

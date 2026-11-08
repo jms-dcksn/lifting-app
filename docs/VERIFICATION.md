@@ -256,10 +256,12 @@ binary setup, source paths, isolation/fencing coverage and limits are documented
 [AI Coach Slice A](AI-COACH.md#slice-a-integration-readiness-implemented-locally).
 It supplements `base` + `agent`; it is not the Supabase `database` profile or evidence
 of hosted pooling, applied migrations or authenticated browser behavior.
-The same runner also applies the [Slice B review draft](AI-COACH.md#slice-b-schema-review-draft-not-serving)
-to its disposable cluster, checking native saver compatibility, turn constraints,
-conversation/owner isolation and cascading cleanup. This does not verify B's unbuilt
-admission, bootstrap or projection lifecycle.
+The same runner applies the actual [Slice B migration](AI-COACH.md#slice-b-durable-execution-implemented-locally-rollout-disabled)
+to its disposable cluster and imports the production admission/saver/runtime modules. It
+checks parallel/retry sends, bootstrap, projection-only repair, real killed-worker/DB-restart
+recovery, owner/thread isolation, stale epochs and populated account cleanup. Synthetic
+provider responses make no paid calls. This does not establish Supabase Auth/PostgREST,
+hosted pooling/TLS/load or the authenticated browser journey.
 
 ## Human review
 

@@ -1093,9 +1093,8 @@ AI discovery and advanced sequencing such as intra-set tempo changes remain sepa
 ## AI Coach runtime foundations planning (2026-11-07)
 
 #247 supersedes the blanket Deep Agents/Slice 5 deferral and the assumption that a
-checkpointer must be a competing transcript authority. Current serving behavior is
-unchanged: `createAgent()`, no native checkpoints, full UI history in Postgres and
-bounded per-turn reconstruction. The proposed contract and staged Decision
+checkpointer must be a competing transcript authority. The default serving path remains `createAgent()` and bounded transcript reconstruction;
+the separately gated durable path is described below. The proposed contract and staged Decision
 Card are in [AI-COACH.md](AI-COACH.md#runtime-foundations-plan-247).
 
 Prefer the full TypeScript Deep Agents harness after compatibility gates, with native
@@ -1116,9 +1115,26 @@ The user subsequently approved the plan and requested Slice A in this chat. Root
 dependencies now use that compatible pinned set, including LangSmith 0.9.0. The
 server-only prepared harness uses the existing Gateway, removes delegation and shell
 tools, and shares time/model/summary/token budgets across main and summary requests.
-The serving route still selects the original runtime. Actual domain tools and captured
+The serving route defaults to the original runtime; B adds the gated selection below. Actual domain tools and captured
 LangSmith SDK trace transport pass offline regressions. A disposable native PostgreSQL
 cluster proves database/process restart and owner/epoch isolation with the pinned saver.
-Its transaction-scoped pool is a readiness prototype; Slice B must implement authenticated
-admission, typed production access and projection recovery before serving cutover.
+That Slice A transaction-scoped pool remains a readiness prototype; B now supplies the
+production scoped saver and execution path.
 No hosted schema/credential provisioning, production rollout or paid evaluation occurred.
+
+### Durable Coach execution schema (#247, 2026-11-08)
+
+The user approved the concrete schema. Migration `20261108183830_coach_durable_execution.sql`
+adds a private owner/runtime binding and turn ledger beside the pinned native saver tables.
+Existing thread/message/episode-seed IDs remain authoritative for UI identity. A dedicated
+non-bypass role can access private state and owner-scoped conversation rows, not training
+or Auth tables; domain tools keep the signed-in client. Runtime state never grants approval.
+
+B is implemented locally: atomic request admission, single unresolved turn, fenced native
+writes, stable-ID bootstrap, checkpoint-to-UI projection repair and explicit resume. The
+rollout switch defaults off. Bound threads remain read-only during rollback; no transcript
+fallback. Draft creation uses one stable program identity per durable turn; uncertain
+recovery cannot create a missing program. Native pending write tasks are never blindly replayed.
+The migration is unapplied to hosted storage; a human applies it after merge, then redeploys.
+Credential provisioning, hosted pooling/TLS/load, full authenticated browser verification and
+C/D packaging/retention gates precede enablement. No Store or skill bundle is introduced in B.

@@ -759,6 +759,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: CoachFunctions & WorkoutEditorFunctions & {
+      agent_runtime_version: { Args: { p_thread_id: string }; Returns: string | null };
       save_bodyweight_entry: {
         Args: { p_entry_id: string | null; p_logged_on: string; p_weight: number; p_replace_entry_id?: string | null }
         Returns: string

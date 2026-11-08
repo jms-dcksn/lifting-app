@@ -9,7 +9,7 @@ import { AI_GATEWAY_BASE_URL, agentModelId, gatewayApiKey, TOOL_CALL_BUDGET } fr
 import { AGENT_SYSTEM_PROMPT } from "./prompt";
 import { COACH_SUMMARY_PROMPT, createTurnBudget } from "./turn-budget";
 
-/** Prepared runtime only; serving chat stays on runAgentTurn until durable cutover. */
+/** Durable runtime is selected only by the server-side rollout switch. */
 export function createCoachHarness(input: {
   tools: StructuredToolInterface[];
   systemPrompt?: string;
@@ -18,6 +18,7 @@ export function createCoachHarness(input: {
   fetch?: typeof globalThis.fetch;
   signal?: AbortSignal;
   limits?: Parameters<typeof createTurnBudget>[0]["limits"];
+  beforeTool?: () => Promise<void>;
 }) {
   const apiKey = input.apiKey ?? gatewayApiKey();
   if (!apiKey) throw new Error("AI Gateway is not configured");
@@ -32,6 +33,11 @@ export function createCoachHarness(input: {
     tools: input.tools, backend, checkpointer: input.checkpointer, subagents: [],
     middleware: [
       createMiddleware({ name: "subAgentMiddleware" }),
+      createMiddleware({ name: "ownedExecution", wrapToolCall: async (request, handler) => {
+        budget.signal.throwIfAborted();
+        await input.beforeTool?.();
+        return handler(request);
+      } }),
       createFilesystemMiddleware({ backend, tools: ["read_file", "ls", "glob", "grep"], toolTokenLimitBeforeEvict: 2000, grepMaxCount: 20 }),
       createSummarizationMiddleware({ backend, model, summaryPrompt: COACH_SUMMARY_PROMPT, trigger: { type: "tokens", value: 6000 }, keep: { type: "messages", value: 4 }, trimTokensToSummarize: 6000 }),
       toolCallLimitMiddleware({ runLimit: TOOL_CALL_BUDGET, exitBehavior: "continue" }),

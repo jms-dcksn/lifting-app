@@ -1,9 +1,21 @@
--- Review draft only. Not an application migration; never run against hosted data.
+-- Human applies after merge; never run setup() in a request.
 -- Native tables match @langchain/langgraph-checkpoint-postgres@1.1.2.
-create role coach_agent_runtime nologin nosuperuser nocreatedb nocreaterole noinherit nobypassrls;
+do $$
+begin
+  if not exists (select 1 from pg_roles where rolname='coach_agent_runtime') then
+    create role coach_agent_runtime nologin nosuperuser nocreatedb nocreaterole noinherit nobypassrls;
+  end if;
+  if exists (select 1 from pg_roles where rolname='coach_agent_runtime'
+    and (rolsuper or rolcreatedb or rolcreaterole or rolinherit or rolbypassrls))
+    or exists (select 1 from pg_auth_members where member=(select oid from pg_roles where rolname='coach_agent_runtime')) then
+    raise exception 'Coach runtime role must have no elevated attributes or role memberships';
+  end if;
+  execute format('grant coach_agent_runtime to %I with inherit false', current_user);
+end $$;
 create schema coach_runtime;
 revoke all on schema coach_runtime from public, anon, authenticated;
 grant usage on schema coach_runtime to coach_agent_runtime;
+grant usage on schema public to coach_agent_runtime;
 
 alter table public.agent_message add constraint agent_message_identity_owner_key
   unique (id, thread_id, user_id);
@@ -52,6 +64,7 @@ create table coach_runtime.turn (
 -- Unresolved work must be recovered before accepting a distinct new send.
 create unique index coach_one_unresolved_turn on coach_runtime.turn(conversation_id)
   where status <> 'completed';
+create index coach_turn_recent on coach_runtime.turn(conversation_id, created_at desc);
 
 create table coach_runtime.checkpoint_migrations (v integer primary key);
 create table coach_runtime.checkpoints (
@@ -135,3 +148,33 @@ create policy runtime_projection on public.agent_message to coach_agent_runtime
   with check (user_id = nullif(current_setting('coach.owner', true), '')::uuid
     and thread_id::text = current_setting('coach.thread', true));
 -- No checkpoint_migrations, auth.users or training-domain table grants.
+
+-- Owner-scoped discovery survives rollout being disabled or infrastructure being offline.
+create function public.agent_runtime_version(p_thread_id uuid) returns text
+language sql stable security definer set search_path = '' as $$
+  select runtime_version from coach_runtime.thread
+  where conversation_id = p_thread_id and owner_id = (select auth.uid())
+$$;
+revoke all on function public.agent_runtime_version(uuid) from public, anon;
+grant execute on function public.agent_runtime_version(uuid) to authenticated;
+
+-- Older authenticated executors must not append transcript-only output after cutover.
+create function coach_runtime.guard_projection() returns trigger
+language plpgsql security definer set search_path = '' as $$
+declare target uuid;
+begin
+  target := case when tg_op = 'DELETE' then old.thread_id else new.thread_id end;
+  if current_setting('role', true) in ('authenticated', 'anon') and pg_trigger_depth() = 1
+    and exists (select 1 from coach_runtime.thread where conversation_id = target and owner_id=(select auth.uid())) then
+    raise exception 'Checkpoint-backed messages are managed by the Coach runtime';
+  end if;
+  if tg_op = 'UPDATE' and current_setting('role', true) in ('authenticated', 'anon')
+    and exists (select 1 from coach_runtime.thread where conversation_id = old.thread_id and owner_id=(select auth.uid())) then
+    raise exception 'Checkpoint-backed messages are managed by the Coach runtime';
+  end if;
+  if tg_op = 'DELETE' then return old; end if;
+  return new;
+end $$;
+revoke all on function coach_runtime.guard_projection() from public, anon, authenticated;
+create trigger protect_checkpoint_projection before insert or update or delete on public.agent_message
+  for each row execute function coach_runtime.guard_projection();

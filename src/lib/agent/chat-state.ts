@@ -6,10 +6,11 @@ import type { AgentStreamEvent } from "./stream";
 export type ThreadId = string & { readonly ThreadId: unique symbol };
 
 export type ThreadSummary = { id: ThreadId; title: string; updatedAt: string };
+export type DurableChatStatus = { requestId: string; status: "running" | "interrupted" | "completed"; readOnly: boolean };
 
 export type Conversation =
   | { kind: "draft" }
-  | { kind: "saved"; threadId: ThreadId; title: string; messages: AgentMessage[] };
+  | { kind: "saved"; threadId: ThreadId; title: string; messages: AgentMessage[]; runtime?: DurableChatStatus };
 
 export type AgentChatSnapshot = { threads: ThreadSummary[]; open: Conversation };
 
@@ -43,6 +44,8 @@ export type ChatState = {
 
 export type ChatAction =
   | { type: "loaded"; snapshot: AgentChatSnapshot }
+  | { type: "refreshed"; snapshot: AgentChatSnapshot }
+  | { type: "refresh-failed"; error: string }
   | { type: "failed"; error: string }
   | { type: "send"; optimisticId: string; text: string }
   | { type: "event"; event: AgentStreamEvent }
@@ -103,6 +106,12 @@ export function initialChatState(snapshot?: AgentChatSnapshot): ChatState {
 export function chatReducer(state: ChatState, action: ChatAction): ChatState {
   const { screen } = state;
   switch (action.type) {
+    case "refreshed":
+      return screen.name === "chat" && !screen.turn && screen.conversation.kind === "saved"
+        && action.snapshot.open.kind === "saved" && screen.conversation.threadId === action.snapshot.open.threadId
+        ? show(action.snapshot) : state;
+    case "refresh-failed":
+      return screen.name === "chat" && !screen.turn ? { ...state, error: action.error } : state;
     case "loaded":
       return isWaitingForSnapshot(screen, action.snapshot) ? show(action.snapshot) : state;
     case "failed":
@@ -203,9 +212,15 @@ function applyEvent(
       });
     case "done":
       if (conversation.kind === "draft") return chat(conversation, null);
-      return chat({ ...conversation, messages: mergeById(conversation.messages, event.messages) }, null);
-    case "error":
+      return chat({ ...conversation, messages: mergeById(conversation.messages, event.messages),
+        ...(conversation.runtime ? { runtime: { ...conversation.runtime, status: "completed" } } : {}) }, null);
+    case "runtime":
+      return conversation.kind === "saved" ? chat({ ...conversation, runtime: event.status }, turn) : state;
+    case "pending":
       return { ...chat(conversation, null), error: event.message };
+    case "error":
+      return { ...chat(conversation.kind === "saved" && conversation.runtime
+        ? { ...conversation, runtime: { ...conversation.runtime, status: "interrupted" } } : conversation, null), error: event.message };
   }
 }
 

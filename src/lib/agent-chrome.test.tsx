@@ -40,6 +40,7 @@ beforeEach(() => {
   document.body.append(host);
   root = createRoot(host);
   push.mockReset();
+  sessionStorage.clear();
 });
 
 afterEach(() => {
@@ -104,6 +105,47 @@ function sseResponse(events: AgentStreamEvent[]) {
     { headers: { "Content-Type": "text/event-stream" } },
   );
 }
+
+describe("durable Coach controls", () => {
+  it.each(["sheet", "page"] as const)("resumes the saved request in the %s without duplicating input or replaying navigation", async variant => {
+    if (saved.open.kind !== "saved") throw Error("Saved fixture required");
+    const conversation = saved.open;
+    const requestId = "40000000-0000-4000-8000-000000000001";
+    const runtime = { requestId, status: "interrupted" as const, readOnly: false };
+    const answer: AgentMessage = { id: "recovered", role: "tool", createdAt: "2026-11-08T00:00:00Z",
+      parts: [{ type: "tool-result", id: "nav", name: "openProgram", result: { action: "navigate", href: "/program/existing" } }] };
+    const fetchMock = vi.fn<typeof fetch>(async () => sseResponse([
+      { type: "thread", thread: saved.threads[0], userMessage: conversation.messages[0] },
+      { type: "runtime", status: { ...runtime, status: "running" } },
+      { type: "done", messages: [answer], replayed: true },
+    ]));
+    vi.stubGlobal("fetch", fetchMock);
+    act(() => { root.render(<AgentChat variant={variant} initial={{ ...saved, open: { ...conversation, runtime } }} />); });
+    expect(button("Send")?.disabled).toBe(true);
+    const resume = [...host.querySelectorAll("button")].find(button => button.textContent === "Resume response");
+    await act(async () => {
+      resume?.click();
+      for (let tick = 0; tick < 5; tick += 1) await new Promise(resolve => setTimeout(resolve, 0));
+    });
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({ resume: true, requestId, threadId: A });
+    expect(push).not.toHaveBeenCalled();
+    expect(host.querySelectorAll(".uppercase")).toHaveLength(1);
+    expect([...host.querySelectorAll("button")].some(button => button.textContent === "Resume response")).toBe(false);
+    expect(host.querySelector("input")?.disabled).toBe(false);
+  });
+
+  it("offers status refresh for a running response without starting generation", async () => {
+    if (saved.open.kind !== "saved") throw Error("Saved fixture required");
+    const initial = { ...saved, open: { ...saved.open, runtime: { requestId: "request", status: "running" as const, readOnly: false } } };
+    const fetchMock = vi.fn<typeof fetch>(async () => Response.json(initial));
+    vi.stubGlobal("fetch", fetchMock);
+    act(() => { root.render(<AgentChat variant="sheet" initial={initial} />); });
+    expect(fetchMock).not.toHaveBeenCalled();
+    await act(async () => { [...host.querySelectorAll("button")].find(button => button.textContent === "Refresh response")?.click(); });
+    expect(fetchMock).toHaveBeenCalledWith(`/api/agent/chat?thread=${A}`);
+    expect([...host.querySelectorAll("button")].some(button => button.textContent === "Resume response")).toBe(false);
+  });
+});
 
 describe("agent chrome", () => {
   it("starts an explicitly requested episode discussion once, then reopens without another model call", async () => {
@@ -437,7 +479,7 @@ describe("agent chrome", () => {
     type("How was my week?");
     await submit();
 
-    expect(fetchMock.mock.calls[0]?.[1]?.body).toBe(JSON.stringify({
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
       text: "How was my week?",
       threadId: null,
       context: {
@@ -446,7 +488,8 @@ describe("agent chrome", () => {
         openSessionId: null,
         focusedExerciseId: null,
       },
-    }));
+      requestId: expect.stringMatching(/^[0-9a-f-]{36}$/),
+    });
     expect(`${window.location.pathname}${window.location.search}`).toBe("/coach?thread=0199a3b2-0000-7000-8000-00000000000a");
     expect(host.querySelector("h1")?.textContent).toBe("Coach");
     expect([...host.querySelectorAll(".uppercase")].map((node) => node.textContent)).toEqual(["You", "Coach"]);

@@ -16,7 +16,18 @@ export async function draftProgramFromIntake(
   supabase: Client,
   userId: string,
   input: unknown,
+  durable?: { programId: string; recoveryOnly: boolean },
 ) {
+  if (durable) {
+    const { data, error } = await supabase.from("program").select("id,name").eq("id", durable.programId).eq("user_id", userId).maybeSingle();
+    if (error) throw new Error("Unable to verify the saved draft. Please retry later.");
+    if (data) return { source: "draftProgramFromIntake" as const, status: "draft" as const,
+      programId: data.id, name: data.name, action: "confirm" as const, href: programEditHref(data.id),
+      matchTraits: [],
+      message: "Recovered the existing program. Open it in the builder to review its current contents." };
+    if (durable.recoveryOnly) return { source: "draftProgramFromIntake" as const, status: "unavailable" as const,
+      message: "The interrupted draft outcome is unverified. Check your programs before requesting another draft in a new turn." };
+  }
   const classification = classifyProgramIntake(input);
   if (!classification.ready || !classification.intake) {
     return {
@@ -35,7 +46,7 @@ export async function draftProgramFromIntake(
     intake,
     recentExerciseIds: recentIds,
   });
-  const programId = crypto.randomUUID();
+  const programId = durable?.programId ?? crypto.randomUUID();
   const activate = await shouldActivateFirstProgram(supabase);
   const tree = buildProgramTreeFromDraft(draft, { programId, isActive: activate });
   await persistProgramTree(supabase, tree);

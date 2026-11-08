@@ -9,7 +9,7 @@ import { spawn } from "node:child_process";
 import pg from "pg";
 import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
 import { FencedTestPool } from "./agent-persistence-pool.mjs";
-import { proveSliceBSchema } from "./spikes/agent-foundations/slice-b-schema-proof.mjs";
+import { proveSliceBSchema } from "./agent-schema-proof.mjs";
 
 // No URL input: this runner owns the disposable cluster, credentials and cleanup.
 const packagePath = process.env.AGENT_TEST_PG_MODULE;
@@ -35,6 +35,22 @@ let started = false;
 let admin;
 const pools = [];
 const scope = { owner: "owner-a", thread: "thread-a", epoch: 1 };
+let durableUrl;
+function runtimeWorker(mode) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, ["--conditions=react-server", "--import", "tsx", "scripts/agent-runtime-worker.mjs", mode], {
+      stdio: ["ignore", "pipe", "inherit"], env: { ...process.env, LANGSMITH_TRACING: "false", LANGCHAIN_TRACING_V2: "false", AGENT_TEST_DURABLE_URL: durableUrl },
+    });
+    let output = "";
+    child.stdout.on("data", data => {
+      process.stdout.write(data);
+      output += data;
+      if (mode === "interrupt" && output.includes("PENDING_RUNTIME_PROVIDER")) child.kill("SIGKILL");
+    });
+    child.on("error", reject);
+    child.on("exit", (code, signal) => code === 0 || (mode === "interrupt" && signal === "SIGKILL") ? resolve() : reject(Error(`Runtime worker ${mode} failed (${code})`)));
+  });
+}
 function worker(mode) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, ["--conditions=react-server", "--import", "tsx", "scripts/agent-persistence-worker.mjs", mode], {
@@ -56,7 +72,10 @@ try {
   started = true;
   admin = new pg.Pool({ connectionString: adminUrl, max: 2 });
   console.log(`Local PostgreSQL: ${(await admin.query("SHOW server_version")).rows[0].server_version}`);
-  await proveSliceBSchema(admin, adminUrl);
+  durableUrl = await proveSliceBSchema(admin, adminUrl);
+  await runtimeWorker("write");
+  await runtimeWorker("interrupt");
+  await admin.query("update coach_runtime.turn set lease_until=clock_timestamp()-interval '1 second' where request_id='50000000-0000-4000-8000-000000000002'");
   await new PostgresSaver(admin, undefined, { schema: "coach_checkpoint_test" }).setup();
   await admin.query(`
     CREATE ROLE coach_runtime LOGIN PASSWORD '${password}' NOSUPERUSER NOBYPASSRLS;
@@ -83,6 +102,8 @@ try {
   await cluster.start(); started = true;
   admin = new pg.Pool({ connectionString: adminUrl, max: 2 });
   await worker("read");
+  await runtimeWorker("read");
+  await runtimeWorker("resume");
   console.log("PASS: real PostgreSQL stop/start preserves harness messages and files");
 
   const a = saverFor(scope);

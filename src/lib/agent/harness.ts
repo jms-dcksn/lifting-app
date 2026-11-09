@@ -35,7 +35,7 @@ export function createCoachHarness(input: {
     model, systemPrompt: input.systemPrompt ?? AGENT_SYSTEM_PROMPT,
     tools: input.tools, backend, checkpointer: input.checkpointer, subagents: [],
     middleware: [
-      createMiddleware({ name: "subAgentMiddleware" }),
+      createMiddleware({ name: "subAgentMiddleware" }), //disable subagents
       createMiddleware({ name: "ownedExecution", wrapToolCall: async (request, handler) => {
         signal.throwIfAborted();
         await input.beforeTool?.();

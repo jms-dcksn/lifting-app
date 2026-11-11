@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import pg from "pg";
+import { resolve } from "node:path";
+import { createCoachSkills } from "../src/lib/agent/skills.ts";
 import { createDurableStore, ownedTransaction, scopedSaver } from "../src/lib/agent/durable-store.ts";
 import { executeDurableTurn, recoverDurableTurn } from "../src/lib/agent/durable-runtime.ts";
 import { createCoachHarness } from "../src/lib/agent/harness.ts";
@@ -13,8 +15,10 @@ const store = createDurableStore(pool);
 const owner = "10000000-0000-4000-8000-000000000002";
 const requestId = "50000000-0000-4000-8000-000000000001";
 const request = { kind: "new", text: "A durable question", context: { pathname: "/coach", activeProgramId: null, openSessionId: null, focusedExerciseId: null } };
+const rootDir = resolve("src/lib/agent/__fixtures__/skills");
+const skills = { rootDir, required: createCoachSkills({ rootDir }).skills };
 let calls = 0;
-const harness = input => createCoachHarness({ ...input, apiKey: "fixture", fetch: async (_url, init) => {
+const harness = input => createCoachHarness({ ...input, skills, apiKey: "fixture", fetch: async (_url, init) => {
   if (process.argv[2] === "interrupt") {
     process.stdout.write("PENDING_RUNTIME_PROVIDER\n");
     return new Promise(() => {});
@@ -22,6 +26,7 @@ const harness = input => createCoachHarness({ ...input, apiKey: "fixture", fetch
   calls += 1;
   const id = crypto.randomUUID();
   const body = JSON.parse(String(init.body));
+  assert.ok(JSON.stringify(body.messages).includes("Do not invent preferences"));
   const message = { role: "assistant", content: "A durable answer" };
   const usage = { prompt_tokens: 100, completion_tokens: 10, total_tokens: 110 };
   if (!body.stream) return Response.json({ id, object: "chat.completion", created: 0,
@@ -143,6 +148,9 @@ try {
     assert.equal(calls, 0);
     const state = await scopedSaver(pool, { owner, thread: replay.thread.id }).getTuple({ configurable: { thread_id: replay.thread.id } });
     assert.ok(state);
+    assert.equal(state.checkpoint.channel_values.skillsMetadata[0].name, "coach-context-check");
+    assert.equal(state.checkpoint.channel_values.messages.filter(message => message.additional_kwargs.lc_source === "pinned_skill").length, 1);
+    console.log("PASS: production checkpoints retain skill metadata and one native pin without projecting internal instructions");
     console.log("PASS: fresh process after PostgreSQL restart restores production runtime state and UI projection without generation");
   }
 } finally { await pool.end(); }

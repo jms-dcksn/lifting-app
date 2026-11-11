@@ -1147,3 +1147,18 @@ summary prompt for context management, with `maxTokens: 4000` per provider respo
 60-second execution timeout remains coupled to B's 90-second lease; cancellation and
 existing loop guards remain. The former 6,000/four/6,000 proof overrides no longer govern
 the harness. Missing usage reports cannot prevent another model request.
+
+### Reusable Coach skill bundle (#247, 2026-11-10)
+
+The user approved Slice C with a test-only `coach-context-check` skill and checklist
+reference. Native skills middleware handles discovery, reads and consumed pins. A trusted
+deployment manifest lists versions/files; content digests include references. A read-only
+FilesystemBackend owns `/skills/`; checkpoint-backed StateBackend owns thread files.
+Production registration stays empty until #177. No new schema or Store is introduced.
+
+Required skill references come only from trusted server callers. Validate version/digest,
+restore missing instructions after summarization/reopen, invalidate discovery and expire old pins/reads in place
+when the bundle changes (preserving native compaction offsets), and fail before the main model if native loading skipped a
+required skill. Loaded state is not workflow activation or permission. #177/#233 must
+supply authoritative owner/thread-scoped workflow references; no workflow lookup or
+lifecycle is invented in this infrastructure slice. See [Slice C](AI-COACH.md#slice-c-reusable-skills-implemented-locally-production-manifest-empty).

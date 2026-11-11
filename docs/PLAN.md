@@ -95,10 +95,12 @@ original build sequence and historical checks.
 - [x] Slice 1 — screen context and confirmed navigation; Slice 2 — gallery intake to
       inactive draft. Current contracts live in [AI-COACH.md](AI-COACH.md).
 - [ ] #247 — [runtime foundations plan](AI-COACH.md#runtime-foundations-plan-247):
-      approved for staged implementation. Slices A/B are built locally: pinned bounded
+      approved for staged implementation. Slices A–C are built locally: pinned
       harness, approved migration, durable admission/fencing/bootstrap/projection and
-      killed-worker/database restart proofs. Rollout is disabled; hosted migration and
-      credential/pooling/browser release gates remain. C supplies reusable skills.
+      killed-worker/database restart proofs, plus bundled read-only skill discovery/pinning.
+      Rollout is disabled; hosted migration and credential/pooling/browser release gates
+      remain. C has an empty production manifest; #177/#233 supply real skill behavior
+      and workflow references.
       Main Coach owns #177 custom design and #233 proposal workflows;
       no program-writer subagent. User memory is a separate later slice.
 

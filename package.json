@@ -22,6 +22,7 @@
     "verify": "node scripts/verify.mjs",
     "test:browser": "playwright test",
     "test:agent": "vitest run src/lib/agent src/lib/coach-invariants.test.ts",
+    "test:agent:bundle": "node scripts/test-agent-skill-bundle.mjs",
     "test:agent:persistence": "node scripts/test-agent-persistence.mjs",
     "prepare": "lefthook install",
     "check:commit": "node scripts/git-hooks.mjs commit",

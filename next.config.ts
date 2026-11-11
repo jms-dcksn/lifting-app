@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  outputFileTracingExcludes: {
+    "/api/agent/chat": ["./src/lib/agent/__fixtures__/**/*"],
+    "/coach": ["./src/lib/agent/__fixtures__/**/*"],
+  },
+  outputFileTracingIncludes: {
+    "/api/agent/chat": ["./src/lib/agent/skills/**/*"],
+    "/coach": ["./src/lib/agent/skills/**/*"],
+  },
   turbopack: {
     root: __dirname,
   },

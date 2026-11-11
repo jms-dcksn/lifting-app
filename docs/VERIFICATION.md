@@ -263,6 +263,13 @@ recovery, owner/thread isolation, stale epochs and populated account cleanup. Sy
 provider responses make no paid calls. This does not establish Supabase Auth/PostgREST,
 hosted pooling/TLS/load or the authenticated browser journey.
 
+`npm run test:agent:bundle` verifies Slice C's actual production function traces include
+bundled skill Markdown and reference contents. It temporarily copies an unregistered test
+fixture into the skill directory and removes it afterward; run the ordinary build afterward
+before using `.next`. The production manifest remains empty. The PostgreSQL proof also
+checks native skill metadata/pins through production execution and projection, then database
+restart/fresh-process restoration after trimming. See [Slice C](AI-COACH.md#slice-c-reusable-skills-implemented-locally-production-manifest-empty).
+
 ## Human review
 
 Focus review on training policy/numeric interpretation, comparison scope, ownership/RLS,

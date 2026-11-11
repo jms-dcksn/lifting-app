@@ -101,6 +101,11 @@ exact identity plus the current effort pair, keeping the browser payload bounded
 sessions use pre-start history and preserve entered/logged values. Planner/agent resolve
 stored open-session context instead of the completed-count phase; missing choices stay explicit.
 
+Upcoming workout rows, including uniform program slots, use `workout-editor-targets.ts`
+to advance from each stable set ID separately. `workout-editor-data.ts` recovers pre-snapshot
+rows using saved slot/set indexes. The slot-level first-set reference remains the first-row
+fallback and the basis for existing stall/Coach assessments; it is not copied to later rows.
+
 Grouping by exact exercise stays. Card 3 of the
 [2026-09-29 rollup spec](superpowers/specs/2026-09-29-non-machine-movement-rollup-design.md)
 would widen ordinary-pound families only on the word `family`. That card is not approved.

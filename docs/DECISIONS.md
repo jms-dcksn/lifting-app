@@ -1164,3 +1164,17 @@ metadata caching, silently skipped missing pins and instruction loss from the mo
 summarized context remain native behavior. #177/#233 will add narrowly scoped required-skill
 and version/restoration checks when their authoritative workflows exist. Loaded skills
 never grant workflow activation or training-write permission. See [Slice C](AI-COACH.md#slice-c-reusable-skills-implemented-locally-no-production-skills).
+
+### Coach working files and deferred memory (#247, 2026-11-11)
+
+The owner explicitly deferred the 100-turn storage benchmark and Slice E cross-chat memory
+for the current two-user feedback phase. Neither is a release gate. D retains native
+summarization defaults and uses a bounded StateBackend for working files, without a new
+Store or schema. Limits apply to native automatic offloads/history appends, not just model
+tools. Quota failure must never produce a link to a file that was not saved.
+
+Prune completed intermediate checkpoints after 30 days following successful projection,
+keeping current state, bootstrap, completed-turn receipts and immediate parents. Skip
+unfinished work; never evict live files or workflow evidence. Retained checkpoint/message
+history is not bounded by live file quotas. No background worker or physical-size gate is
+introduced. See [Slice D](AI-COACH.md#slice-d-working-files-and-context-implemented-locally).

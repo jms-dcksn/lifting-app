@@ -108,6 +108,32 @@ function hashPayload(request: TurnRequest): string {
 export function createDurableStore(pool: pg.Pool) {
   return {
     pool,
+    async prune(scope: OwnedScope) {
+      return ownedTransaction(pool, scope, async client => {
+        const thread = await client.query("select id from public.agent_thread where id=$1 for update", [scope.thread]);
+        if (!thread.rowCount) throw new DurableChatError("Conversation unavailable", 404);
+        await binding(client, scope.thread);
+        const unfinished = await client.query("select 1 from coach_runtime.turn where conversation_id=$1 and status<>'completed'", [scope.thread]);
+        if (unfinished.rowCount) return { checkpoints: 0, writes: 0, blobs: 0 };
+        const removed = await client.query(`with retained as (
+          select checkpoint_ns,checkpoint_id,parent_checkpoint_id from coach_runtime.checkpoints c where thread_id=$1 and (
+            (checkpoint->>'ts')::timestamptz >= clock_timestamp()-interval '30 days'
+            or checkpoint_id=(select max(checkpoint_id) from coach_runtime.checkpoints where thread_id=$1 and checkpoint_ns=c.checkpoint_ns)
+            or checkpoint_id=(select bootstrap_checkpoint_id from coach_runtime.thread where conversation_id=$1::uuid)
+            or checkpoint_id in (select committed_checkpoint_id from coach_runtime.turn where conversation_id=$1::uuid)
+            or checkpoint_id in (select projected_checkpoint_id from coach_runtime.turn where conversation_id=$1::uuid)))
+          delete from coach_runtime.checkpoints c where thread_id=$1
+          and not exists(select 1 from retained r where r.checkpoint_ns=c.checkpoint_ns
+            and (r.checkpoint_id=c.checkpoint_id or r.parent_checkpoint_id=c.checkpoint_id)) returning checkpoint_id`, [scope.thread]);
+        const writes = await client.query(`delete from coach_runtime.checkpoint_writes w where thread_id=$1
+          and not exists(select 1 from coach_runtime.checkpoints c where c.thread_id=w.thread_id
+            and c.checkpoint_ns=w.checkpoint_ns and c.checkpoint_id=w.checkpoint_id)`, [scope.thread]);
+        const blobs = await client.query(`delete from coach_runtime.checkpoint_blobs b where thread_id=$1
+          and not exists(select 1 from coach_runtime.checkpoints c where c.thread_id=b.thread_id
+            and c.checkpoint_ns=b.checkpoint_ns and c.checkpoint->'channel_versions'->>b.channel=b.version)`, [scope.thread]);
+        return { checkpoints: removed.rowCount ?? 0, writes: writes.rowCount ?? 0, blobs: blobs.rowCount ?? 0 };
+      });
+    },
     async admit(owner: string, input: { requestId: string; request: TurnRequest; resume?: boolean; seedId?: string }) {
       const { request, requestId } = input;
       const thread = request.kind === "new" ? stableUuid(`thread:${owner}:${requestId}`) : request.threadId;

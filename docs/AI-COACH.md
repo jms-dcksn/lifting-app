@@ -28,7 +28,7 @@ Slice 2 (gallery intake to inactive draft) shipped; later slices remain planned.
 [AI Coach threads](DECISIONS.md#ai-coach-threads-2026-09-27). The teaching surface
 is [ai-coach.html](ai-coach.html) — update that HTML whenever agent behavior changes.
 
-**Runtime foundations (#247, Slices A/B built locally; rollout disabled):** [compatibility report, Decision Card and
+**Runtime foundations (#247, Slices A–D built locally; rollout disabled):** [compatibility report, Decision Card and
 delivery sequence](#runtime-foundations-plan-247) replace the blanket Slice 5 deferral.
 The user approved the staged plan on 2026-11-07. A prepared server-only Deep Agents
 harness, bounded transport and durable execution/projection path are implemented.
@@ -535,8 +535,8 @@ capabilities does not authorize them or a provider/model change.
 ## Runtime foundations plan (#247)
 
 Planning baseline dated 2026-11-07, against app `52b0efa`; approved for staged implementation
-in this chat. Slices A and B are built locally; the B schema was approved on 2026-11-08.
-Rollout is disabled. Skills, quotas/retention and user memory remain later slices. #247 remains the architecture
+in this chat. Slices A–D are built locally; the B schema was approved on 2026-11-08.
+Rollout is disabled. The 100-turn storage benchmark and Slice E user memory are deferred at the owner’s request (2026-11-11). #247 remains the architecture
 parent; no follow-up issues were opened.
 
 ### Compatibility report
@@ -642,7 +642,7 @@ The assembled prompt is checked with the actual app instructions and registered 
 For this pinned stack/default Gateway model, there is no extra general-purpose/coding
 prompt to remove. The supported same-name replacement of `subAgentMiddleware` removes
 delegation entirely. Filesystem tools are read/search-only in this slice. Scratch writes,
-skill discovery/versioning, file quotas and cross-chat memory are not enabled yet.
+skill discovery/versioning, file quotas and cross-chat memory were not enabled in A. C/D below add native skill loading and bounded working files; cross-chat memory is deferred.
 
 The harness uses `ChatOpenAI({ maxTokens: 4000 })` to cap each provider response,
 including summaries. There is no cumulative input/output budget, model-call counter,
@@ -820,7 +820,7 @@ Unit/UI tests cover request-ID persistence, rollout refusal, cancellation, owner
 injection, uncertain draft recovery and sheet/page Resume/Refresh behavior. Live model
 behavior, full local Supabase/PostgREST/Auth, hosted transaction pooling/TLS/load and
 credential provisioning remain unverified release gates. C below adds skill infrastructure; physical file
-quotas, retention and the 100-turn storage benchmark remain D. User memory remains E.
+quotas and retention are implemented in D below. The 100-turn storage benchmark and E user memory are deferred.
 
 `pg@8.16.3` is now an explicit runtime dependency. `ws@8.22.2` satisfies the optional
 LangSmith peer that the production bundler resolves when the harness enters the route
@@ -996,7 +996,7 @@ DDL is confined to the disposable local proof.
   routing to a genuinely read-only backend (mutation methods reject, not just model
   tool permissions). No local shell, execute tool, arbitrary host paths or uploaded skills.
   The synthetic state skill in the probe is not the deployment design.
-- `/workspace/`, `/tool_results/`, `/conversation_history/`: thread-isolated StateBackend.
+- `/workspace/`, `/large_tool_results/`, `/conversation_history/`: thread-isolated StateBackend.
   Checkpointing supplies durability; ordinary Vercel disk does not. Automatic middleware
   writes must obey the same count/byte quotas as model writes. Read-only skill tool
   permissions do not automatically constrain backend-internal writes.
@@ -1026,8 +1026,8 @@ Proposed initial ceilings (reviewable defaults, **not measured provider limits**
 | Context | Native model-aware summarization defaults; no trigger/keep/trim overrides; direct StateBackend |
 | Tool offload | Start above 2,000 estimated tokens; bounded read-back at most 200 lines / 8 KiB, search at most 20 matches |
 | Working files | 128 KiB/file, 32 files, 1 MiB live files/thread; reject excess without silently deleting proposal evidence |
-| Checkpoint growth | Measure total physical tables/indexes/pending writes over 100 representative turns; gate at 20 MiB/thread and define pruning before raising it |
-| Retention | Retain latest resumable state while thread exists; propose 30 days of completed intermediate checkpoints after projection repair; never expire active workflow/proposal state implicitly |
+| Checkpoint growth | 100-turn physical-size benchmark and proposed 20 MiB/thread gate deferred by owner; live file quotas do not bound full database history |
+| Retention | After projection, prune intermediate checkpoints older than 30 days only when all turns are completed; retain latest, bootstrap, turn receipts and their immediate parents; retain live files |
 
 The probe's deliberately tiny 200-token offload threshold is not the proposed serving
 threshold. Its byte/character result is not a token/cost benchmark. Offloading saves model
@@ -1046,11 +1046,74 @@ and LangSmith trace deletion follow their separate provider policies; don't prom
 removing application rows erases backups/traces. Working-file recovery references must
 not outlive their source without an explicit expired/unavailable result.
 
+### Slice D working files and context (implemented locally)
+
+The owner deferred the 100-turn physical-storage benchmark and Slice E user memory on
+2026-11-11. D keeps the existing native summarization defaults and per-response output cap;
+there is no cumulative token budget or new persistent Store/schema.
+
+`WorkingFilesBackend` extends native StateBackend. The harness routes `/skills/` to the
+unchanged read-only bundle; other file paths remain checkpointed, thread-local state:
+
+```ts
+const backend = new CompositeBackend(new WorkingFilesBackend(), {
+  "/skills/": new ReadOnlySkillsBackend({ rootDir: input.skillsDirectory ?? resolve("src/lib/agent/skills"), virtualMode: true }),
+});
+```
+
+- Enforce 128 KiB/file, 32 files and 1 MiB live content/thread on write, edit and upload,
+  including middleware-internal writes. Count UTF-8 bytes and native decoded upload size.
+  Same-step reservations keyed by the root checkpoint prevent concurrent tool offloads
+  from spending the same remaining space. No file is silently evicted to make room.
+- Native oversized tool results use `/large_tool_results/<call-id>.txt` above 2,000 estimated
+  tokens. If saving fails, the tool result explicitly reports unavailable evidence and
+  does not advertise a path. Read-back is at most 200 lines / 8 KiB of source content,
+  with a continuation line offset (native formatting adds line labels). A single line
+  larger than 8 KiB returns a narrowing request, not a silently truncated fact.
+- Search permits at most 20 matches and 8 KiB of structured search output; an oversized
+  search asks for a narrower pattern. Skill reads retain native behavior.
+- Native summarization writes/appends `/conversation_history/` through the same quotas.
+  When that cannot fit, it still generates a summary without a history-file link. Full
+  messages remain checkpointed; a file quota is not a cap on message or database storage.
+  Model context filtering is separate from durable history, and neither grants approval.
+
+After a successful execution projects its response, `store.prune(scope)` runs best-effort.
+It locks the owned conversation and runtime binding, skips any unresolved turn, and deletes
+only checkpoints older than 30 days that are not the latest in their namespace, bootstrap,
+committed/projected turn receipts or an immediate parent of a retained checkpoint. It then
+removes pending writes for deleted checkpoints and channel blobs unreferenced by retained
+checkpoints. It never deletes live files, conversation rows or training data. It is
+transactional, repeatable and owner-scoped; failure does not invalidate a saved response.
+There is no background scheduler: idle threads wait until a later successful execution.
+Thread/account deletion still uses B's existing cascading cleanup. Historical replay to
+pruned intermediate checkpoints is intentionally unavailable; retained current state and
+turn recovery receipts remain readable. This is retention, not a database size guarantee.
+
+The test seam is the real harness with a synthetic provider plus the existing disposable
+PostgreSQL runner. It exercises rejected/concurrent offloads, native summary success and
+quota failure, bounded read-file/grep, fresh-thread isolation, native history and evidence
+across PostgreSQL restart, owner rejection, pruning retries, unfinished-turn preservation,
+and unchanged resumable state. No paid model calls or hosted SQL are needed.
+
+Verification on 2026-11-11: `npm run verify -- base agent` passed (typecheck, lint,
+strict indexed-access checks, nine hook tests, 1,427 app tests, 252 agent tests and the
+production build; two opt-in live tests skipped). The existing `board.ts` unused-variable
+warning remains. An initial full run hit two episode UI timing assertions; the unchanged
+27-test UI file and subsequent full run passed. The real PostgreSQL 18.6 persistence
+command passed, including genuinely expired native checkpoints and preserved old receipt/
+bootstrap states. Its expected history-upload quota rejection still permits summary and
+read-back. Seven relevant HTML snippets match source; the new section was visually
+inspected at 390px with no section overflow. Standards review: no outstanding findings.
+Spec review: D is implemented locally with the explicitly deferred benchmark and E.
+No new migration, hosted query, deployment, push, CI run or paid call was performed.
+Authenticated application browser checks are not applicable to these server-only changes;
+previous rollout/browser/pooling release gates remain outstanding.
+
 ### Staged delivery and measurable exits
 
-The staged plan and B schema are approved. Slices A–C are built locally, with rollout
+The staged plan and B schema are approved. Slices A–D are built locally, with rollout
 disabled and the migration unapplied to hosted storage. C uses native loading with no production skill directories yet;
-#177/#233 supply real skill behavior and any required workflow restoration/version checks. Slices D/E remain unimplemented.
+#177/#233 supply real skill behavior and any required workflow restoration/version checks. The 100-turn benchmark and Slice E are deferred by owner (2026-11-11).
 These are bounded work units, not newly filed issues or a claim of deployed behavior.
 
 | Slice | Bounded work | Exit before next slice |
@@ -1058,10 +1121,10 @@ These are bounded work units, not newly filed issues or a claim of deployed beha
 | A — integration readiness (built locally) | Selected exact stack; prepared server-only harness, bounded Gateway transport and local fenced saver proof | Local exits pass; see implementation/evidence above. Production pooler/credential provisioning remains a release gate |
 | B — durable execution (built locally) | Approved additive migration, admission/fencing, bootstrap-once, native serialization, projection recovery and disabled server-only rollout switch | Old/new/episode threads survive killed/restarted processes; parallel/retry sends don't duplicate input/effects; checkpoint-success/projection-failure repairs without a model call; cross-owner read/list/resume/delete fails; deletion and outages pass |
 | C — reusable skills (built locally, simplified) | Small read-only filesystem wrapper; native discovery, reads and explicit pins | Packaging, discovery/nonactivation, reference reads, pin reset, checkpoint/restart reuse and forbidden writes pass. Production skills and workflow-specific version/restoration checks remain #177/#233 |
-| D — working files/context | Enable quotas, recoverable offloading/summaries and cleanup, using B/C | Oversized result → stable file reference → bounded read after process restart; cross-thread/user isolation; quota and 100-turn physical-size benchmark; summaries never advertise missing history |
-| E — user memory, separate | Review schema/product controls, introduce persistent Store/StoreBackend | Explicit preference written in one owned chat reads in another after restart; correction/conflict/retrieval/edit/delete/account cleanup and cross-owner rejection pass |
+| D — working files/context (built locally) | Bounded StateBackend writes/read-back, native offloading/summaries and post-projection cleanup | Offload → stable file reference → bounded read after PostgreSQL restart; owner/thread isolation; concurrent quotas; safe pruning; no missing-history links. 100-turn benchmark deferred |
+| E — user memory (deferred) | No implementation now; later review schema/product controls and persistent Store/StoreBackend | Explicit preference written in one owned chat reads in another after restart; correction/conflict/retrieval/edit/delete/account cleanup and cross-owner rejection pass |
 
-Slice E does not block #177. Before enabling it, define explicit user-requested write
+Slice E is explicitly deferred; it does not block #177 or harness rollout. Before revisiting it, define explicit user-requested write
 triggers only, source message/time and version provenance, confirmed replacement of
 conflicting preferences, deterministic retrieval and user inspection/edit/delete controls.
 No automatic extraction, embeddings, vector index or background memory worker. Preference

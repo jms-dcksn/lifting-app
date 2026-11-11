@@ -13,7 +13,10 @@ import { createCoachHarness } from "./harness";
 import { AGENT_SYSTEM_PROMPT } from "./prompt";
 import { bindAgentTools } from "./tools";
 
-function provider(replies: Array<string | { name: string; args: Record<string, unknown> }>, includeUsage = true) {
+let providerSequence = 0;
+type ProviderCall = { name: string; args: Record<string, unknown> };
+function provider(replies: Array<string | ProviderCall | ProviderCall[]>, includeUsage = true) {
+  const instance = ++providerSequence;
   const requests: Array<Record<string, unknown>> = [];
   const fetch = vi.fn<typeof globalThis.fetch>(async (_url, init) => {
     const body = JSON.parse(String(init?.body));
@@ -21,15 +24,15 @@ function provider(replies: Array<string | { name: string; args: Record<string, u
     const reply = replies.shift();
     if (!reply) throw Error(`Unexpected ${body.stream ? "stream" : "summary"} call ${requests.length}`);
     const message = typeof reply === "string" ? { content: reply } : {
-      tool_calls: [{ index: 0, id: `call-${requests.length}`, type: "function", function: { name: reply.name, arguments: JSON.stringify(reply.args) } }],
+      tool_calls: (Array.isArray(reply) ? reply : [reply]).map((call, index) => ({ index, id: `call-${instance}-${requests.length}${index ? `-${index}` : ""}`, type: "function", function: { name: call.name, arguments: JSON.stringify(call.args) } })),
     };
     const usage = includeUsage ? { prompt_tokens: 100, completion_tokens: 20, total_tokens: 120 } : undefined;
-    if (!body.stream) return Response.json({ id: `fixture-${requests.length}`, object: "chat.completion", created: 0,
+    if (!body.stream) return Response.json({ id: `fixture-${instance}-${requests.length}`, object: "chat.completion", created: 0,
       choices: [{ index: 0, message: { role: "assistant", ...message }, finish_reason: "stop" }], usage });
     const chunks = [
       { choices: [{ index: 0, delta: { role: "assistant", ...message }, finish_reason: null }] },
       { choices: [{ index: 0, delta: {}, finish_reason: "stop" }], usage },
-    ].map((chunk) => ({ id: `fixture-${requests.length}`, object: "chat.completion.chunk", created: 0, ...chunk }));
+    ].map((chunk) => ({ id: `fixture-${instance}-${requests.length}`, object: "chat.completion.chunk", created: 0, ...chunk }));
     return new Response(chunks.map((chunk) => `data: ${JSON.stringify(chunk)}\n\n`).join("") + "data: [DONE]\n\n",
       { headers: { "Content-Type": "text/event-stream" } });
   });
@@ -157,12 +160,67 @@ describe("gated Coach harness", () => {
     expect(requests).toHaveLength(2);
   });
 
+  it("rejects oversized offloads without advertising a missing file", async () => {
+    const source = provider([{ name: "evidence", args: {} }, "Could not save the evidence."]);
+    const evidence = tool(async () => "x".repeat(128 * 1024 + 1), { name: "evidence", description: "Read evidence", schema: z.object({}) });
+    const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [evidence] });
+    const result = await agent.invoke({ messages: [new HumanMessage("Inspect")] });
+    expect(JSON.stringify(source.requests[1]?.messages)).toContain("could not be saved");
+    expect(Object.keys(result.files ?? {})).toEqual([]);
+  });
+
+  it("counts concurrent automatic offloads against the same thread quota", async () => {
+    const source = provider([[{ name: "evidence", args: {} }, { name: "evidence", args: {} }], "Done."]);
+    const evidence = tool(async () => "x".repeat(9000), { name: "evidence", description: "Read evidence", schema: z.object({}) });
+    const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [evidence] });
+    const files = Object.fromEntries(Array.from({ length: 31 }, (_, i) => [`/workspace/${i}.txt`, { content: "proof", mimeType: "text/plain", created_at: "2026-11-11", modified_at: "2026-11-11" }]));
+    const result = await agent.invoke({ messages: [new HumanMessage("Inspect")], files });
+    expect(Object.keys(result.files ?? {})).toHaveLength(32);
+    expect(JSON.stringify(source.requests[1]?.messages)).toContain("32 files");
+  });
+
+  it("reopens offloaded evidence through bounded reads without exposing another thread", async () => {
+    const saver = new MemorySaver();
+    const config = { configurable: { thread_id: "offload" } };
+    const content = Array.from({ length: 1000 }, (_, i) => `Evidence row ${i}: owned source facts`).join("\n");
+    const evidence = tool(async () => content, { name: "evidence", description: "Read evidence", schema: z.object({}) });
+    const first = provider([{ name: "evidence", args: {} }, "Saved."]);
+    const result = await createCoachHarness({ apiKey: "fixture", fetch: first.fetch, tools: [evidence], checkpointer: saver }).agent.invoke({ messages: [new HumanMessage("Inspect")] }, config);
+    const path = Object.keys(result.files ?? {})[0];
+    expect(path).toMatch(/^\/large_tool_results\/call-\d+-1.txt$/);
+    const second = provider([{ name: "read_file", args: { file_path: path, limit: 10000 } }, "Read."]);
+    const reopened = createCoachHarness({ apiKey: "fixture", fetch: second.fetch, tools: [], checkpointer: saver });
+    await reopened.agent.invoke({ messages: [new HumanMessage("Read saved evidence")] }, config);
+    const messages = JSON.stringify(second.requests[1]?.messages);
+    expect(messages).toContain("Evidence row 199:");
+    expect(messages).not.toContain("Evidence row 200:");
+    const other = provider([{ name: "read_file", args: { file_path: path } }, "Unavailable."]);
+    await createCoachHarness({ apiKey: "fixture", fetch: other.fetch, tools: [], checkpointer: saver }).agent.invoke({ messages: [new HumanMessage("Read")] }, { configurable: { thread_id: "other" } });
+    expect(JSON.stringify(other.requests[1]?.messages)).toContain("not found");
+    expect(JSON.stringify(other.requests)).not.toContain("owned source facts");
+  });
+
+  it("summarizes without a history link when the history exceeds the file quota", async () => {
+    vi.stubEnv("AGENT_MODEL", "fixture/unknown-model");
+    const warnings = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const source = provider(["Summary.", "Answer."]);
+      const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [] });
+      const messages = Array.from({ length: 8 }, (_, i) => new HumanMessage(`Original ${i}: ${"x".repeat(100_000)}`));
+      const result = await agent.invoke({ messages });
+      expect(Object.keys(result.files ?? {})).toEqual([]);
+      expect(JSON.stringify(source.requests[1]?.messages)).not.toContain("/conversation_history/");
+      expect(result.messages.some(message => String(message.content).startsWith("Original 0:"))).toBe(true);
+      expect(warnings).toHaveBeenCalled();
+    } finally { warnings.mockRestore(); }
+  });
+
   it("uses native summarization defaults, includes history and restores files through a fresh harness", async () => {
     vi.stubEnv("AGENT_MODEL", "fixture/unknown-model");
     const saver = new MemorySaver();
     const first = provider(["Summary of earlier messages.", "Current answer."]);
     const prepared = createCoachHarness({ apiKey: "fixture", fetch: first.fetch, tools: [], checkpointer: saver });
-    const history = Array.from({ length: 8 }, (_, index) => new HumanMessage(`Earlier question ${index}: ${"x".repeat(100_000)}`));
+    const history = Array.from({ length: 8 }, (_, index) => new HumanMessage(`Earlier question ${index}: ${"x".repeat(index < 2 ? 10_000 : 120_000)}`));
     const config = { configurable: { thread_id: "summary" } };
     const output = await prepared.agent.invoke({ messages: history }, config);
     expect(first.requests).toHaveLength(2);

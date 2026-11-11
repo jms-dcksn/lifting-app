@@ -90,6 +90,7 @@ export async function executeDurableTurn(input: {
     for (const result of results) if (result.status === "rejected") throw result.reason;
     const saved = await recoverDurableTurn(store, scope, turn);
     if (!saved) throw new Error("Coach response is saved incompletely. Reopen this chat to recover.");
+    await store.prune(scope).catch(() => { console.error("Coach checkpoint cleanup failed"); });
     return saved;
   } catch (error) {
     await store.interrupt(scope, turn.request_id, prepared.signal.aborted ? "interrupted" : "failed").catch(() => {});

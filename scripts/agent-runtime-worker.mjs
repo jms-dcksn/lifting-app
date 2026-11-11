@@ -59,11 +59,37 @@ try {
     assert.equal(retry.execute, false);
     assert.deepEqual(retry.history, saved);
 
+    await ownedTransaction(pool, admission.scope, async client => {
+      await client.query(`update coach_runtime.checkpoints set checkpoint=jsonb_set(checkpoint,'{ts}',to_jsonb((clock_timestamp()-interval '31 days')::text)) where thread_id=$1`, [admission.thread.id]);
+      await client.query(`insert into coach_runtime.checkpoints(thread_id,checkpoint_ns,checkpoint_id,checkpoint,metadata)
+        select thread_id,checkpoint_ns,'0000-expired-intermediate',
+        jsonb_set(jsonb_set(checkpoint,'{id}','"0000-expired-intermediate"'),'{ts}',to_jsonb((clock_timestamp()-interval '31 days')::text)),metadata
+        from coach_runtime.checkpoints where thread_id=$1 order by checkpoint_id desc limit 1`, [admission.thread.id]);
+      await client.query(`insert into coach_runtime.checkpoint_writes(thread_id,checkpoint_id,task_id,idx,channel,blob)
+        values($1,'0000-expired-intermediate','orphan',0,'proof',decode('01','hex'))`, [admission.thread.id]);
+      await client.query(`insert into coach_runtime.checkpoint_blobs(thread_id,channel,version,type,blob)
+        values($1,'orphan','unreferenced','bytes',decode('01','hex'))`, [admission.thread.id]);
+    });
+    const beforeCleanup = await scopedSaver(pool, { owner, thread: admission.thread.id }).getTuple({ configurable: { thread_id: admission.thread.id } });
+    const protectedIds = await ownedTransaction(pool, admission.scope, client => client.query(`select bootstrap_checkpoint_id as id from coach_runtime.thread where conversation_id=$1
+      union select committed_checkpoint_id from coach_runtime.turn where conversation_id=$1`, [admission.thread.id]));
+    await assert.rejects(store.prune({ owner: "10000000-0000-4000-8000-000000000001", thread: admission.thread.id }), /unavailable/);
+    const cleaned = await store.prune(admission.scope);
+    assert.ok(cleaned.checkpoints >= 1);
+    assert.ok(cleaned.writes >= 1);
+    assert.ok(cleaned.blobs >= 1);
+    for (const { id } of protectedIds.rows) assert.ok(await scopedSaver(pool, { owner, thread: admission.thread.id }).getTuple({ configurable: { thread_id: admission.thread.id, checkpoint_id: id } }));
+    const afterCleanup = await scopedSaver(pool, { owner, thread: admission.thread.id }).getTuple({ configurable: { thread_id: admission.thread.id } });
+    assert.deepEqual(afterCleanup.checkpoint, beforeCleanup.checkpoint);
+    assert.deepEqual(await store.prune(admission.scope), { checkpoints: 0, writes: 0, blobs: 0 });
+    console.log("PASS: owner-scoped checkpoint cleanup removes expired intermediates and orphan data, preserves resumable state and is retry-safe");
+
     const contenders = await Promise.allSettled([1, 2].map(() => store.admit(owner, { requestId: crypto.randomUUID(), request: {
       kind: "continue", threadId: admission.thread.id, text: "Projection can fail", context: request.context } })));
     assert.equal(contenders.filter(value => value.status === "fulfilled").length, 1);
     const winner = contenders.find(value => value.status === "fulfilled");
     const failures = winner.value;
+    assert.deepEqual(await store.prune(failures.scope), { checkpoints: 0, writes: 0, blobs: 0 });
     const broken = { ...store, project: async () => { throw Error("projection outage"); } };
     await assert.rejects(executeDurableTurn({ store: broken, admission: failures, harness, tools: [], systemPrompt: "Fixture", onEvent: () => {} }), /projection outage/);
     const before = calls;

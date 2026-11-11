@@ -3,11 +3,12 @@ import { resolve } from "node:path";
 import { ChatOpenAI } from "@langchain/openai";
 import type { StructuredToolInterface } from "@langchain/core/tools";
 import {
-  createDeepAgent, createFilesystemMiddleware, createSummarizationMiddleware, CompositeBackend, StateBackend,
+  createDeepAgent, createFilesystemMiddleware, createSummarizationMiddleware, CompositeBackend,
 } from "deepagents";
 import { createMiddleware, toolCallLimitMiddleware } from "langchain";
 import { AI_GATEWAY_BASE_URL, agentModelId, gatewayApiKey, TOOL_CALL_BUDGET } from "./policy";
 import { ReadOnlySkillsBackend } from "./skills";
+import { WorkingFilesBackend } from "./working-files";
 import { AGENT_SYSTEM_PROMPT, COACH_SUMMARY_PROMPT } from "./prompt";
 
 /** Durable runtime is selected only by the server-side rollout switch. */
@@ -33,7 +34,7 @@ export function createCoachHarness(input: {
       return network(url, { ...init, signal: AbortSignal.any([signal, ...(init?.signal ? [init.signal] : [])]) });
     } },
   });
-  const backend = new CompositeBackend(new StateBackend(), {
+  const backend = new CompositeBackend(new WorkingFilesBackend(), {
     "/skills/": new ReadOnlySkillsBackend({ rootDir: input.skillsDirectory ?? resolve("src/lib/agent/skills"), virtualMode: true }),
   });
   const agent = createDeepAgent({

@@ -271,6 +271,13 @@ The PostgreSQL proof checks native discovery metadata and consumed pins after da
 restart/fresh-process reopen; it does not assert automatic repinning after context trimming.
 See [Slice C](AI-COACH.md#slice-c-reusable-skills-implemented-locally-no-production-skills).
 
+Slice D extends that runner with real native oversized-tool offloads and summary history,
+PostgreSQL restart/fresh-process bounded read-back, and owner-scoped retention. It verifies
+expired intermediates/orphan writes/blobs are removed without changing current state,
+unfinished turns prevent cleanup and retries are safe. Harness tests cover concurrent
+quota writes and summary fallback without a missing-history link. The 100-turn storage
+benchmark and Slice E memory are explicitly deferred; neither is a verification gate.
+
 ## Human review
 
 Focus review on training policy/numeric interpretation, comparison scope, ownership/RLS,

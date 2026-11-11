@@ -106,7 +106,7 @@ const programId = durable?.programId ?? crypto.randomUUID();</code></pre>
             pooling/TLS/load and authenticated browser release checks remain. Bound threads
             become read-only when the switch is off; they never fall back to transcript-only
             generation. The migration is unapplied. A human runs the database push after merge
-            and redeploys. C adds read-only skills below; quotas/retention are D; user memory is E.</p>
+            and redeploys. C adds read-only skills below; D adds file quotas and retention; Slice E user memory and the 100-turn benchmark are deferred.</p>
           <p><a class="underline" href="AI-COACH.md#slice-b-durable-execution-implemented-locally-rollout-disabled">Durable runtime contract, evidence and limits</a>.</p>
         </div>
         <div id="slice-c-skills" style="border:1px solid #78716c;padding:16px;border-radius:8px;margin:16px 0">
@@ -119,7 +119,7 @@ const programId = durable?.programId ?? crypto.randomUUID();</code></pre>
             <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Native messages + thread files<br>↓ graph state / StateBackend<br><strong>Owned PostgreSQL checkpoint</strong><br>Reopen → saved metadata/messages<br>Skill source files stay in the app bundle</div>
           </div>
           <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/harness.ts
-const backend = new CompositeBackend(new StateBackend(), {
+const backend = new CompositeBackend(new WorkingFilesBackend(), {
     &quot;/skills/&quot;: new ReadOnlySkillsBackend({ rootDir: input.skillsDirectory ?? resolve(&quot;src/lib/agent/skills&quot;), virtualMode: true }),
   });</code></pre>
           <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/harness.ts
@@ -136,8 +136,7 @@ export class ReadOnlySkillsBackend extends FilesystemBackend {
   }
 }</code></pre>
           <p>The wrapper rejects write, edit, delete and upload calls at the backend itself.
-            Its virtual root confines reads to the bundled directory. Other paths retain
-            StateBackend. There is no Store, seeding step, manifest, hashing or custom
+            Its virtual root confines reads to the bundled directory. Other paths use the bounded StateBackend described in D. There is no Store, seeding step, manifest, hashing or custom
             restoration middleware.</p>
           <p><strong>Test fixture only:</strong> <code>coach-context-check/SKILL.md</code>
             asks for stated goals, constraints and open questions; its reference defines
@@ -156,6 +155,43 @@ export class ReadOnlySkillsBackend extends FilesystemBackend {
             proof checks saved native metadata/pins after restart, not automatic repinning
             after context trimming.</p>
           <p><a class="underline" href="AI-COACH.md#slice-c-reusable-skills-implemented-locally-no-production-skills">Current skill contract and deferred workflow work</a>.</p>
+        </div>
+        <div id="slice-d-files" style="border:1px solid #78716c;padding:16px;border-radius:8px;margin:16px 0">
+          <h3 style="font-weight:600">Slice D: durable working files with limits</h3>
+          <p>Large tool results stay out of the model’s immediate context. Their contents live
+            in the current chat’s virtual files, persisted with PostgreSQL checkpoints.
+            They survive process restarts; they do not live on Vercel’s local disk.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin:16px 0">
+            <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Large tool result or summarized history<br>↓ Native middleware<br><strong>Bounded StateBackend</strong><br>Quota passes → file + truthful reference<br>Quota fails → explicit unavailable / no history link</div>
+            <div style="flex:1;min-width:180px;border:1px solid #78716c;padding:12px">Owned PostgreSQL checkpoint<br>↓ Restart and reopen this chat<br><strong>read_file → bounded page + next offset</strong><br>Another chat cannot read this file<br>Skills stay in the separate read-only bundle</div>
+          </div>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/harness.ts
+const backend = new CompositeBackend(new WorkingFilesBackend(), {
+    &quot;/skills/&quot;: new ReadOnlySkillsBackend({ rootDir: input.skillsDirectory ?? resolve(&quot;src/lib/agent/skills&quot;), virtualMode: true }),
+  });</code></pre>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/working-files.ts
+export const WORKING_FILE_LIMITS = { fileBytes: 128 * 1024, files: 32, totalBytes: 1024 * 1024,
+  readLines: 200, readBytes: 8 * 1024 };</code></pre>
+          <p>Write, edit and upload all enforce the same limits, including automatic history
+            appends. Concurrent tool calls reserve space against the same checkpoint.
+            Nothing silently deletes evidence to make room. Reads return at most 200 lines
+            and 8 KiB of source content; line labels add formatting. A single oversized line
+            asks for narrower evidence. Search is capped at 20 matches and 8 KiB.</p>
+          <p>Summarization keeps its native defaults. If its history file exceeds the quota,
+            the summary has no new file link. Full messages still persist in checkpoints.
+            File limits do not bound total message history or database size.</p>
+          <div style="border:1px solid #78716c;padding:12px;margin:12px 0">Response projected successfully<br>↓ Best-effort owner-scoped cleanup<br>Any unfinished turn? → preserve everything<br>Otherwise → remove intermediate checkpoints older than 30 days<br><strong>Keep latest state, bootstrap, turn receipts and immediate parents</strong><br>Remove orphan pending writes and unreferenced blobs; keep live files</div>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/durable-runtime.ts
+    await store.prune(scope).catch(() =&gt; { console.error(&quot;Coach checkpoint cleanup failed&quot;); });</code></pre>
+          <p>Cleanup runs after a successful response, with no background scheduler. Idle
+            chats wait for their next successful turn. Failure does not invalidate the saved
+            response. Retention is transactional and never touches training data; replay of
+            deleted intermediate checkpoints is unavailable.</p>
+          <p><strong>Deferred by owner:</strong> the 100-turn storage benchmark and Slice E
+            cross-chat memory. No persistent Store or new schema is added. Rollout remains
+            disabled. Synthetic-provider tests and a real disposable PostgreSQL restart
+            exercise offload, retrieval, ownership and cleanup without paid model calls.</p>
+          <p><a class="underline" href="AI-COACH.md#slice-d-working-files-and-context-implemented-locally">Working-file contract and retention details</a>.</p>
         </div>
         <div id="summary-calibration" style="border:1px solid #78716c;padding:16px;border-radius:8px;margin:16px 0">
           <h3 style="font-weight:600">Summarization: native defaults and the Coach prompt</h3>

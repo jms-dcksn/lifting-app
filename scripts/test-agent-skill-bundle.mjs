@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
-// A temporary, unregistered fixture proves the actual Next trace includes Markdown assets.
+// A temporary fixture proves the actual Next trace includes Markdown assets.
 const root = resolve("src/lib/agent/skills");
 const fixture = resolve("src/lib/agent/__fixtures__/skills/coach-context-check");
 const probe = join(root, "coach-context-check");
@@ -25,7 +25,7 @@ try {
     const files = JSON.parse(await readFile(trace, "utf8")).files.map(file => resolve(dirname(trace), file));
     assert.ok(!files.includes(resolve("next.config.ts")), `${trace} traced the whole project`);
     assert.ok(files.every(file => !file.includes("/__fixtures__/")), `${trace} packaged test fixtures`);
-    for (const file of ["manifest.json", "coach-context-check/SKILL.md", "coach-context-check/references/checklist.md"]) {
+    for (const file of ["coach-context-check/SKILL.md", "coach-context-check/references/checklist.md"]) {
       const source = join(root, file);
       assert.ok(files.includes(source), `${trace} omitted ${file}`);
       const target = join(directory, file);
@@ -33,7 +33,7 @@ try {
       assert.equal(await readFile(target, "utf8"), await readFile(source, "utf8"));
     }
   }
-  console.log("PASS: both production function traces package the manifest, SKILL.md and reference contents");
+  console.log("PASS: both production function traces package SKILL.md and reference contents");
 } finally {
   if (copied) await rm(probe, { recursive: true, force: true });
   await rm(directory, { recursive: true, force: true });

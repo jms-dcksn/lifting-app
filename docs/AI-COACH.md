@@ -839,67 +839,58 @@ browser verification is likewise blocked locally. No CI, push, deployment, hoste
 credential provisioning or paid eval ran. Standards review: no outstanding hard misses;
 spec review: B is locally implemented with the stated release-verification limits.
 
-### Slice C reusable skills (implemented locally; production manifest empty)
+### Slice C reusable skills (implemented locally; no production skills)
 
-The harness now uses native `createSkillsMiddleware` with a deployment-bundled,
-read-only filesystem route. `src/lib/agent/skills/manifest.json` registers trusted skills
-by name, version and Markdown file list. `createCoachSkills` validates the bundle and
-computes a SHA-256 digest over each skill's declared instructions/references. The
-production manifest is empty until #177 supplies the first production skill.
-`coach-context-check` and its checklist reference live under `__fixtures__/skills` only;
-they exercise loading without program creation, workflow activation or training writes.
+The user chose a simpler implementation after reviewing the initial Slice C build.
+`skills.ts` now only exports a small `ReadOnlySkillsBackend` extending the native
+`FilesystemBackend`; write, edit, delete and upload reject. The harness configures:
 
-`CompositeBackend` routes `/skills/` to a virtual-root `FilesystemBackend` whose write,
-edit, delete and upload methods reject. Other paths still use checkpoint-backed
-`StateBackend`. Skill source files are not copied into state files; native discovery
-metadata and loaded instruction messages are checkpointed normally. No StoreBackend,
-new database schema, shell or user-supplied skill registration is added.
+```ts
+const backend = new CompositeBackend(new StateBackend(), {
+  "/skills/": new ReadOnlySkillsBackend({ rootDir: input.skillsDirectory ?? resolve("src/lib/agent/skills"), virtualMode: true }),
+});
+```
 
-Ordinary chat sees concise native discovery metadata and uses `read_file` to load full
-instructions/references on demand. Trusted server callers may supply required
-`{ name, version, digest }` references through the harness's `skills.required` input.
-Missing or changed required references throw before execution. Before each main model
-call, after native summarization, the restoration middleware checks for an exact native
-pin or successful complete `read_file` result still in context and requests missing native
-pins. Native `pinnedSkills` is consumed/reset, not an active-workflow flag. Native
-summarization retains full history in state but filters the model's message view during
-`wrapModelCall`. After that filtering, the adapter reuses the native pin hook to restore
-required instructions in the actual request, without appending duplicate snapshots to
-history or splitting AI/tool-result pairs. A final check refuses the main model call if
-native loading skipped a required instruction.
+`createDeepAgent` receives `skills: ["/skills/"]`. Native middleware discovers names and
+descriptions, then the model reads instructions/references through the existing bounded
+`read_file` tool. Native `pinnedSkills` remains available and is consumed/reset normally.
+There is no custom manifest, version/hash validation, instruction matching, checkpoint
+rewriting or automatic restoration middleware. Those parts of the initial build were
+removed because no production workflow consumes them yet.
 
-A changed bundle digest clears checkpointed discovery metadata and replaces old native
-pins and earlier skill/reference tool reads with explicit expired results, preserving
-message positions because native compaction stores an index into full history. Matching
-current references can then repin; older versions/digests require an explicit caller decision rather than silent reuse. References themselves remain on-demand
-reads. Actual owner/thread-scoped workflow lookup and lifecycle transitions belong to
-#177/#233, which do not exist yet; this slice supplies their server-only input interface
-and tests it with trusted fixture references. It does not infer workflow identity from
-chat text, a summary or a loaded skill.
+Production skill directories will live in `src/lib/agent/skills`; it currently contains
+only a README. The `coach-context-check` SKILL.md and checklist reference remain test
+fixtures under `__fixtures__/skills`. Source files are bundled with the application,
+not copied into StateBackend files. Native discovery metadata and loaded messages are
+checkpointed normally. Other virtual paths retain checkpoint-backed StateBackend. No
+StoreBackend, database schema, shell or user-supplied skill registration is introduced.
 
-Next's explicit output-file tracing includes the bundle for `/api/agent/chat` and `/coach`.
-`npm run test:agent:bundle` temporarily places an unregistered fixture under the bundle,
-builds the app, verifies both function traces include the manifest, SKILL.md and reference
-contents while excluding the original test-fixture directory, then removes its fixture.
-Dynamic filesystem reads use Next's tracing annotations; explicit includes avoid tracing
-the whole repository. The packaging proof rejects that broad trace as well. Run a normal
-build afterward before using the local build output. No fixture is registered in production.
+Next explicitly includes the skill directory in `/api/agent/chat` and `/coach` function
+traces and excludes the fixture directory. `npm run test:agent:bundle` temporarily copies
+the fixture into the production directory, builds, checks that both traces contain its
+SKILL.md/reference bytes and exclude test fixtures/broad project files, then cleans up.
+No server is started during the proof. Run a normal build afterward before using `.next`.
 
-Verification on 2026-11-10: discovery without instruction loading/activation, real
-read_file loading of instructions/references, native pin reset/deduplication, reopen/trim,
-actual native summarization, deployment cache invalidation, missing/changed required
-skills, reference-content digests, forbidden backend mutations, traversal and escaping
-symlinks pass deterministic tests. `npm run verify -- base agent` and the production
-bundle proof passed (1,422 app tests and 247 agent tests; two live-gated skips in each
-run). The existing `board.ts` lint warning remains. The disposable PostgreSQL proof verifies metadata/native pins after
-a real database restart and restoration after trim in a fresh process; production
-admission/projection/recovery runs with the required fixture and keeps internal pins out
-of visible history. No paid calls, hosted operations, push or rollout occurred. The B
-migration remains unapplied to hosted storage; authenticated rollout gates remain open.
-The HTML explainer was inspected at 390px with no section overflow. Browser: not
-applicable to this server-only change; authenticated rollout verification remains open.
-Standards review: no outstanding hard misses. Spec review: C infrastructure and fixture
-exits pass; real workflow lookup/behavior remains explicitly owned by #177/#233.
+The tradeoff is deliberate: native discovery is cached per thread, missing native pins
+can be silently skipped, and summarization can remove loaded instructions from the
+model's context while retaining them in full history. This slice makes no automatic
+required-skill restoration or deployment-version compatibility guarantee. #177/#233 must
+add the smallest necessary checks alongside actual authoritative workflow state. Loaded
+skill state is neither workflow activation nor permission to write training data.
+
+Verification on 2026-11-10: native discovery without activation, on-demand instruction and
+reference reads, explicit pin reset, fresh harness/checkpoint reuse, forbidden mutations,
+traversal and escaping-symlink reads pass deterministic tests. `npm run verify -- base
+agent` passed (1,420 app tests and 245 agent tests; two live-gated skips in each run), as
+did `npm run test:agent:bundle` and the disposable PostgreSQL restart proof. The existing
+`board.ts` lint warning remains. The latter preserves native
+skill metadata/consumed pins across a fresh process; production admission/projection and
+explicit interrupted-turn resume still pass. It does not prove automatic repinning after
+context trimming. The HTML explainer's snippets and phone layout were checked. No paid
+calls, hosted operations, push or rollout occurred. The B migration remains unapplied to
+hosted storage. Browser: not applicable to this server-only change; authenticated rollout
+verification remains open. Standards review: no outstanding hard misses. Spec review:
+the simplified C contract is implemented; actual workflow continuity remains #177/#233.
 
 ### State and tool ownership contract
 
@@ -910,7 +901,7 @@ exits pass; real workflow lookup/behavior remains explicitly owned by #177/#233.
 | Graph messages, pending execution, middleware state, scratch files | Native checkpoints | Owned thread and allowed runtime version required; new invocations submit only newly admitted input |
 | Visible chat rows | Existing `agent_message`, deliberate projection after cutover | Preserve all old IDs/episode seed FKs; generated rows keyed by stable native identity; never reconstruct new graph state from an incomplete projection |
 | Proposal/workflow/revision/baseline/confirmation receipts | #233 domain persistence | Typed, owner-validated transitions; graph state references identity/revision rather than holding a competing authoritative artifact |
-| Program instructions/references | Trusted deployment manifest and read-only skill backend | Version/content hash; model/user/retrieved content cannot register skills or write this route |
+| Program instructions/references | Repository bundle and read-only skill backend | Git/deployment version; model/user/retrieved content cannot register skills or write this route; workflow compatibility checks are deferred |
 | Current training facts/calculations | Existing domain tables/tools and pure helpers | Request user's Supabase client + RLS; historical tool results are not fresh evidence |
 | Future cross-chat preferences | Separate persistent Store, later slice | Server-derived user namespace; neither facts nor permissions nor active workflow state |
 
@@ -1013,15 +1004,13 @@ DDL is confined to the disposable local proof.
   LangGraph Store with a namespace derived from authenticated identity, not tool arguments.
   A Store is not provisioned by a saver, and a storage bucket is not a StoreBackend.
 - Native discovery advertises concise metadata; instructions/references load on demand.
-  #177 provides the actual program-creation skill. #233 workflow identity determines when
-  required instructions must be restored. Loaded instructions do not start a workflow.
-  Active/reopened work and explicit resume validate manifest/hash, then request native
-  pinning if the correct instructions are absent. Pins are consumed/reset, not persistent
-  lifecycle flags. Deduplicate with native skill/message metadata, not duplicate snapshots.
-- On deployment, invalidate checkpointed `skillsMetadata` when the deployment manifest
-  changes. Compare workflow skill/reference versions before reuse; compatible updates
-  repin once, incompatible versions require an explicit migration/review. Missing required
-  skill fails before model execution; ordinary non-workflow chat can proceed independently.
+  Native pins are consumed/reset, not workflow lifecycle flags. Current loading is native
+  only: no manifest, hashes, cache rewriting or automatic repinning after summarization.
+- #177 provides the program-creation skill; #233 owns authoritative workflow identity.
+  Required-skill failures, restoration after context loss, deduplication and deployment
+  compatibility checks are deferred until those workflows exist. Native metadata is cached
+  per thread; callers can use native `skillsMetadata: null` to explicitly refresh it. No
+  automatic deployment invalidation is implemented. Loaded skills do not start workflows.
 - Model-context selection is distinct from full durable history. Refresh authoritative
   workflow references outside summaries. Summaries and offloaded data are untrusted context,
   cannot grant authority, and must preserve exact IDs/constraints by reference to #233.
@@ -1060,15 +1049,15 @@ not outlive their source without an explicit expired/unavailable result.
 ### Staged delivery and measurable exits
 
 The staged plan and B schema are approved. Slices A–C are built locally, with rollout
-disabled and the migration unapplied to hosted storage. C has no production skills yet;
-#177/#233 supply real skill behavior and authoritative workflow references. Slices D/E remain unimplemented.
+disabled and the migration unapplied to hosted storage. C uses native loading with no production skill directories yet;
+#177/#233 supply real skill behavior and any required workflow restoration/version checks. Slices D/E remain unimplemented.
 These are bounded work units, not newly filed issues or a claim of deployed behavior.
 
 | Slice | Bounded work | Exit before next slice |
 | --- | --- | --- |
 | A — integration readiness (built locally) | Selected exact stack; prepared server-only harness, bounded Gateway transport and local fenced saver proof | Local exits pass; see implementation/evidence above. Production pooler/credential provisioning remains a release gate |
 | B — durable execution (built locally) | Approved additive migration, admission/fencing, bootstrap-once, native serialization, projection recovery and disabled server-only rollout switch | Old/new/episode threads survive killed/restarted processes; parallel/retry sends don't duplicate input/effects; checkpoint-success/projection-failure repairs without a model call; cross-owner read/list/resume/delete fails; deletion and outages pass |
-| C — reusable skills (built locally) | Manifest/read-only backend; native discovery/pinning; version/digest-checked restoration input | Packaging, discovery/nonactivation, pin reset/deduplication, missing/changed skill, compaction/reopen/resume and forbidden writes pass with the fixture. #177/#233 supply production skills and authoritative workflow lookup |
+| C — reusable skills (built locally, simplified) | Small read-only filesystem wrapper; native discovery, reads and explicit pins | Packaging, discovery/nonactivation, reference reads, pin reset, checkpoint/restart reuse and forbidden writes pass. Production skills and workflow-specific version/restoration checks remain #177/#233 |
 | D — working files/context | Enable quotas, recoverable offloading/summaries and cleanup, using B/C | Oversized result → stable file reference → bounded read after process restart; cross-thread/user isolation; quota and 100-turn physical-size benchmark; summaries never advertise missing history |
 | E — user memory, separate | Review schema/product controls, introduce persistent Store/StoreBackend | Explicit preference written in one owned chat reads in another after restart; correction/conflict/retrieval/edit/delete/account cleanup and cross-owner rejection pass |
 

@@ -1148,17 +1148,19 @@ summary prompt for context management, with `maxTokens: 4000` per provider respo
 existing loop guards remain. The former 6,000/four/6,000 proof overrides no longer govern
 the harness. Missing usage reports cannot prevent another model request.
 
-### Reusable Coach skill bundle (#247, 2026-11-10)
+### Reusable Coach skills (#247, 2026-11-10)
 
-The user approved Slice C with a test-only `coach-context-check` skill and checklist
-reference. Native skills middleware handles discovery, reads and consumed pins. A trusted
-deployment manifest lists versions/files; content digests include references. A read-only
-FilesystemBackend owns `/skills/`; checkpoint-backed StateBackend owns thread files.
-Production registration stays empty until #177. No new schema or Store is introduced.
+The initial Slice C implementation included a manifest, digests, cache invalidation and
+required-instruction restoration. After reviewing it, the user chose native loading with
+an 11-line read-only FilesystemBackend wrapper. The harness routes `/skills/` to bundled
+repository files and supplies `skills: ["/skills/"]` to createDeepAgent. StateBackend still
+owns thread files; no Store or schema is added. Production has no skill directories yet;
+`coach-context-check` and its reference remain test-only.
 
-Required skill references come only from trusted server callers. Validate version/digest,
-restore missing instructions after summarization/reopen, invalidate discovery and expire old pins/reads in place
-when the bundle changes (preserving native compaction offsets), and fail before the main model if native loading skipped a
-required skill. Loaded state is not workflow activation or permission. #177/#233 must
-supply authoritative owner/thread-scoped workflow references; no workflow lookup or
-lifecycle is invented in this infrastructure slice. See [Slice C](AI-COACH.md#slice-c-reusable-skills-implemented-locally-production-manifest-empty).
+Remove the custom version/restoration infrastructure rather than maintaining it ahead
+of a real workflow. Keep native discovery, on-demand reads, explicit consumed pins,
+backend write rejection, deployment packaging and checkpoint/restart tests. Native
+metadata caching, silently skipped missing pins and instruction loss from the model's
+summarized context remain native behavior. #177/#233 will add narrowly scoped required-skill
+and version/restoration checks when their authoritative workflows exist. Loaded skills
+never grant workflow activation or training-write permission. See [Slice C](AI-COACH.md#slice-c-reusable-skills-implemented-locally-no-production-skills).

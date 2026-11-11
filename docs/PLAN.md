@@ -99,8 +99,8 @@ original build sequence and historical checks.
       harness, approved migration, durable admission/fencing/bootstrap/projection and
       killed-worker/database restart proofs, plus bundled read-only skill discovery/pinning.
       Rollout is disabled; hosted migration and credential/pooling/browser release gates
-      remain. C has an empty production manifest; #177/#233 supply real skill behavior
-      and workflow references.
+      remain. C uses native loading with no production skills; #177/#233 supply real skill
+      behavior and any workflow-specific restoration/version checks.
       Main Coach owns #177 custom design and #233 proposal workflows;
       no program-writer subagent. User memory is a separate later slice.
 

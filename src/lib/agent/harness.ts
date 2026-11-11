@@ -1,18 +1,19 @@
 import "server-only";
+import { resolve } from "node:path";
 import { ChatOpenAI } from "@langchain/openai";
 import type { StructuredToolInterface } from "@langchain/core/tools";
 import {
-  createDeepAgent, createFilesystemMiddleware, createSummarizationMiddleware,
+  createDeepAgent, createFilesystemMiddleware, createSummarizationMiddleware, CompositeBackend, StateBackend,
 } from "deepagents";
 import { createMiddleware, toolCallLimitMiddleware } from "langchain";
 import { AI_GATEWAY_BASE_URL, agentModelId, gatewayApiKey, TOOL_CALL_BUDGET } from "./policy";
-import { createCoachSkills } from "./skills";
+import { ReadOnlySkillsBackend } from "./skills";
 import { AGENT_SYSTEM_PROMPT, COACH_SUMMARY_PROMPT } from "./prompt";
 
 /** Durable runtime is selected only by the server-side rollout switch. */
 export function createCoachHarness(input: {
   tools: StructuredToolInterface[];
-  skills?: Parameters<typeof createCoachSkills>[0];
+  skillsDirectory?: string;
   systemPrompt?: string;
   checkpointer?: NonNullable<Parameters<typeof createDeepAgent>[0]>["checkpointer"];
   apiKey?: string;
@@ -32,11 +33,12 @@ export function createCoachHarness(input: {
       return network(url, { ...init, signal: AbortSignal.any([signal, ...(init?.signal ? [init.signal] : [])]) });
     } },
   });
-  const skills = createCoachSkills(input.skills);
-  const { backend } = skills;
+  const backend = new CompositeBackend(new StateBackend(), {
+    "/skills/": new ReadOnlySkillsBackend({ rootDir: input.skillsDirectory ?? resolve("src/lib/agent/skills"), virtualMode: true }),
+  });
   const agent = createDeepAgent({
     model, systemPrompt: input.systemPrompt ?? AGENT_SYSTEM_PROMPT,
-    tools: input.tools, backend, checkpointer: input.checkpointer, subagents: [],
+    tools: input.tools, backend, skills: ["/skills/"], checkpointer: input.checkpointer, subagents: [],
     middleware: [
       createMiddleware({ name: "subAgentMiddleware" }), //disable subagents
       createMiddleware({ name: "ownedExecution", wrapToolCall: async (request, handler) => {
@@ -46,7 +48,6 @@ export function createCoachHarness(input: {
       } }),
       createFilesystemMiddleware({ backend, tools: ["read_file", "ls", "glob", "grep"], toolTokenLimitBeforeEvict: 2000, grepMaxCount: 20 }),
       createSummarizationMiddleware({ backend, model, summaryPrompt: COACH_SUMMARY_PROMPT }),
-      ...skills.middleware,
       toolCallLimitMiddleware({ runLimit: TOOL_CALL_BUDGET, exitBehavior: "continue" }),
     ],
   }).withConfig({ signal, recursionLimit: 40 });

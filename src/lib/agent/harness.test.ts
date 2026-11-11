@@ -1,8 +1,6 @@
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { HumanMessage, RemoveMessage } from "@langchain/core/messages";
+import { HumanMessage } from "@langchain/core/messages";
 import { MemorySaver } from "@langchain/langgraph";
 import { tool } from "langchain";
 import { z } from "zod";
@@ -11,7 +9,6 @@ import { LangChainTracer } from "@langchain/core/tracers/tracer_langchain";
 import { awaitAllCallbacks } from "@langchain/core/callbacks/promises";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
-import { createCoachSkills } from "./skills";
 import { createCoachHarness } from "./harness";
 import { AGENT_SYSTEM_PROMPT } from "./prompt";
 import { bindAgentTools } from "./tools";
@@ -42,10 +39,17 @@ function provider(replies: Array<string | { name: string; args: Record<string, u
 afterEach(() => { vi.unstubAllEnvs(); });
 
 describe("gated Coach harness", () => {
+  it("keeps the test skill out of production discovery", async () => {
+    const source = provider(["Hello."]);
+    const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [] });
+    const output = await agent.invoke({ messages: [new HumanMessage("Hello")] });
+    expect(output.skillsMetadata).toEqual([]);
+    expect(JSON.stringify(source.requests[0]?.messages)).not.toContain("coach-context-check");
+  });
   it("discovers bundled skills without loading instructions or starting a workflow", async () => {
     const source = provider(["Hello."]);
     const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [],
-      skills: { rootDir: resolve("src/lib/agent/__fixtures__/skills") } });
+      skillsDirectory: resolve("src/lib/agent/__fixtures__/skills") });
     const output = await agent.invoke({ messages: [new HumanMessage("Hello")] });
     const prompt = JSON.stringify(source.requests[0]?.messages);
     expect(prompt).toContain("coach-context-check");
@@ -61,103 +65,32 @@ describe("gated Coach harness", () => {
     const source = provider([
       { name: "read_file", args: { file_path: "/skills/coach-context-check/SKILL.md" } },
       { name: "read_file", args: { file_path: "/skills/coach-context-check/references/checklist.md" } },
-      "Goal: strength. Constraints: unknown. Open questions: schedule.", "Continue checklist.",
+      "Goal: strength. Constraints: unknown. Open questions: schedule.",
     ]);
     const saver = new MemorySaver();
     const config = { configurable: { thread_id: "skill-read" } };
-    const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [], checkpointer: saver, skills: { rootDir } });
+    const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [], checkpointer: saver, skillsDirectory: rootDir });
     const output = await agent.invoke({ messages: [new HumanMessage("Use the checklist skill")] }, config);
     expect(JSON.stringify(source.requests[1]?.messages)).toContain("Do not invent preferences");
     expect(JSON.stringify(source.requests[2]?.messages)).toContain("# Checklist format");
     expect(Object.keys(output.files ?? {})).toEqual([]);
-    const required = createCoachSkills({ rootDir }).skills;
-    const resumed = await createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [], checkpointer: saver, skills: { rootDir, required } })
-      .agent.invoke({ messages: [new HumanMessage("Continue")] }, config);
-    expect(resumed.messages.filter(message => message.additional_kwargs.lc_source === "pinned_skill")).toHaveLength(0);
   });
 
-  it("restores a required skill after reopening and trimming without repeatedly pinning it", async () => {
-    const rootDir = resolve("src/lib/agent/__fixtures__/skills");
-    const required = createCoachSkills({ rootDir }).skills;
+  it("consumes native pins and preserves skill metadata through a fresh harness", async () => {
+    const skillsDirectory = resolve("src/lib/agent/__fixtures__/skills");
     const saver = new MemorySaver();
     const config = { configurable: { thread_id: "skills" } };
     const first = provider(["Checklist."]);
-    const prepared = createCoachHarness({ apiKey: "fixture", fetch: first.fetch, tools: [], checkpointer: saver, skills: { rootDir, required } });
-    const output = await prepared.agent.invoke({ messages: [new HumanMessage("Inspect")] }, config);
+    const { agent } = createCoachHarness({ apiKey: "fixture", fetch: first.fetch, tools: [], checkpointer: saver, skillsDirectory });
+    const output = await agent.invoke({ messages: [new HumanMessage("Inspect")], pinnedSkills: ["coach-context-check"] }, config);
     expect(JSON.stringify(first.requests[0]?.messages)).toContain("Do not invent preferences");
     expect(output.pinnedSkills).toEqual([]);
-    const second = provider(["Again.", "Restored."]);
-    const reopened = createCoachHarness({ apiKey: "fixture", fetch: second.fetch, tools: [], checkpointer: saver, skills: { rootDir, required } });
+    const second = provider([{ name: "read_file", args: { file_path: "/skills/coach-context-check/references/checklist.md" } }, "Checklist continued."]);
+    const reopened = createCoachHarness({ apiKey: "fixture", fetch: second.fetch, tools: [], checkpointer: saver, skillsDirectory });
     const result = await reopened.agent.invoke({ messages: [new HumanMessage("Continue")] }, config);
-    const pins = result.messages.filter(message => message.additional_kwargs.lc_source === "pinned_skill");
-    expect(pins).toHaveLength(1);
-    await reopened.agent.graph.updateState(config, { messages: pins.map(message => { if (!message.id) throw new Error("Missing pin ID"); return new RemoveMessage({ id: message.id }); }) });
-    const resumed = await reopened.agent.invoke({ messages: [new HumanMessage("Resume")] }, config);
-    expect(resumed.messages.filter(message => message.additional_kwargs.lc_source === "pinned_skill")).toHaveLength(1);
-    expect(JSON.stringify(second.requests[1]?.messages)).toContain("Do not invent preferences");
-  });
-
-  it("invalidates discovery after a bundle change and refuses outdated required references before a model call", async () => {
-    const rootDir = mkdtempSync(resolve(tmpdir(), "coach-skills-"));
-    try {
-      cpSync(resolve("src/lib/agent/__fixtures__/skills"), rootDir, { recursive: true });
-      const required = createCoachSkills({ rootDir }).skills;
-      const saver = new MemorySaver();
-      const config = { configurable: { thread_id: "changed-skills" } };
-      const first = provider([{ name: "read_file", args: { file_path: "/skills/coach-context-check/references/checklist.md" } }, "Checklist."]);
-      await createCoachHarness({ apiKey: "fixture", fetch: first.fetch, tools: [], checkpointer: saver, skills: { rootDir, required } })
-        .agent.invoke({ messages: [new HumanMessage("Inspect")] }, config);
-      const skillPath = resolve(rootDir, "coach-context-check/SKILL.md");
-      writeFileSync(skillPath, readFileSync(skillPath, "utf8").replace("Review the user's stated goal", "Inspect the user's stated goal") + "\nRevised instructions.\n");
-      const source = provider(["Updated."]);
-      expect(() => createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [], skills: { rootDir, required } }))
-        .toThrow("Required skill unavailable or changed");
-      expect(() => createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [],
-        skills: { rootDir, required: createCoachSkills({ rootDir }).skills.map(skill => ({ ...skill, version: "outdated" })) } }))
-        .toThrow("Required skill unavailable or changed");
-      expect(source.fetch).not.toHaveBeenCalled();
-      const current = createCoachSkills({ rootDir }).skills;
-      const result = await createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [], checkpointer: saver, skills: { rootDir, required: current } })
-        .agent.invoke({ messages: [new HumanMessage("Continue")] }, config);
-      const prompt = JSON.stringify(source.requests[0]?.messages);
-      expect(prompt).toContain("Inspect the user's stated goal");
-      expect(prompt).toContain("Revised instructions.");
-      expect(prompt).not.toContain("# Checklist format");
-      expect(result.messages.filter(message => message.additional_kwargs.lc_source === "pinned_skill")).toHaveLength(1);
-      writeFileSync(resolve(rootDir, "manifest.json"), '{"skills":[]}');
-      expect(() => createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [], skills: { rootDir, required: current } }))
-        .toThrow("Required skill unavailable or changed");
-      const ordinary = provider(["Ordinary chat."]);
-      await createCoachHarness({ apiKey: "fixture", fetch: ordinary.fetch, tools: [], checkpointer: saver, skills: { rootDir } })
-        .agent.invoke({ messages: [new HumanMessage("Hello")] }, config);
-      expect(JSON.stringify(ordinary.requests[0]?.messages)).not.toContain("Revised instructions.");
-    } finally { rmSync(rootDir, { recursive: true, force: true }); }
-  });
-
-  it("preserves the compacted context window when a deployment replaces old skill pins", async () => {
-    vi.stubEnv("AGENT_MODEL", "fixture/unknown-model");
-    const rootDir = mkdtempSync(resolve(tmpdir(), "compacted-skills-"));
-    try {
-      cpSync(resolve("src/lib/agent/__fixtures__/skills"), rootDir, { recursive: true });
-      const saver = new MemorySaver();
-      const config = { configurable: { thread_id: "compacted-deployment" } };
-      const source = provider(["Seed.", "Summary.", "Compacted.", "Updated."]);
-      const prepared = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [], checkpointer: saver,
-        skills: { rootDir, required: createCoachSkills({ rootDir }).skills } });
-      await prepared.agent.invoke({ messages: [new HumanMessage("Begin")] }, config);
-      await prepared.agent.invoke({ messages: [new HumanMessage("x".repeat(800_000)),
-        ...Array.from({ length: 6 }, (_, index) => new HumanMessage(`Keep marker ${index}`))] }, config);
-      expect(JSON.stringify(source.requests[2]?.messages)).toContain("Keep marker 0");
-      const path = resolve(rootDir, "coach-context-check/SKILL.md");
-      writeFileSync(path, readFileSync(path, "utf8") + "\nCurrent deployment instructions.\n");
-      await createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [], checkpointer: saver,
-        skills: { rootDir, required: createCoachSkills({ rootDir }).skills } })
-        .agent.invoke({ messages: [new HumanMessage("Latest question")] }, config);
-      const prompt = JSON.stringify(source.requests[3]?.messages);
-      expect(prompt).toContain("Keep marker 0");
-      expect(prompt).toContain("Latest question");
-      expect(prompt).toContain("Current deployment instructions.");
-    } finally { rmSync(rootDir, { recursive: true, force: true }); }
+    expect(result.skillsMetadata?.map(skill => skill.name)).toEqual(["coach-context-check"]);
+    expect(result.messages.filter(message => message.additional_kwargs.lc_source === "pinned_skill")).toHaveLength(1);
+    expect(JSON.stringify(second.requests[1]?.messages)).toContain("# Checklist format");
   });
 
   it("continues across model calls without usage reports and caps each response independently", async () => {
@@ -227,22 +160,17 @@ describe("gated Coach harness", () => {
   it("uses native summarization defaults, includes history and restores files through a fresh harness", async () => {
     vi.stubEnv("AGENT_MODEL", "fixture/unknown-model");
     const saver = new MemorySaver();
-    const first = provider(["Initial response.", "Summary of earlier messages.", "Current answer."]);
-    const rootDir = resolve("src/lib/agent/__fixtures__/skills");
-    const required = createCoachSkills({ rootDir }).skills;
-    const prepared = createCoachHarness({ apiKey: "fixture", fetch: first.fetch, tools: [], checkpointer: saver, skills: { rootDir, required } });
+    const first = provider(["Summary of earlier messages.", "Current answer."]);
+    const prepared = createCoachHarness({ apiKey: "fixture", fetch: first.fetch, tools: [], checkpointer: saver });
     const history = Array.from({ length: 8 }, (_, index) => new HumanMessage(`Earlier question ${index}: ${"x".repeat(100_000)}`));
     const config = { configurable: { thread_id: "summary" } };
-    await prepared.agent.invoke({ messages: [new HumanMessage("Start this checklist")] }, config);
     const output = await prepared.agent.invoke({ messages: history }, config);
-    expect(first.requests).toHaveLength(3);
-    expect(output.messages.filter(message => message.additional_kwargs.lc_source === "pinned_skill")).toHaveLength(1);
+    expect(first.requests).toHaveLength(2);
     for (const request of first.requests) expect(request.max_completion_tokens ?? request.max_tokens).toBe(4000);
-    const summaryInput = JSON.stringify(first.requests[1]?.messages);
+    const summaryInput = JSON.stringify(first.requests[0]?.messages);
     expect(summaryInput).toContain("Earlier question 1:");
     expect(summaryInput).not.toContain("{messages}");
     expect(summaryInput).not.toContain("{conversation}");
-    expect(JSON.stringify(first.requests[2]?.messages)).toContain("Do not invent preferences");
     const path = Object.keys(output.files ?? {}).find(path => path.startsWith("/conversation_history/"));
     expect(path).toBeDefined();
     if (!path) throw Error("Missing history path");
@@ -250,12 +178,6 @@ describe("gated Coach harness", () => {
     const restored = await createCoachHarness({ apiKey: "fixture", fetch: second.fetch, tools: [], checkpointer: saver }).agent.graph.getState(config);
     expect(JSON.stringify(restored.values.files?.[path])).toContain("Earlier question 0");
     expect(second.fetch).not.toHaveBeenCalled();
-    const followup = provider(["Follow-up answer."]);
-    const reopened = await createCoachHarness({ apiKey: "fixture", fetch: followup.fetch, tools: [], checkpointer: saver, skills: { rootDir, required } })
-      .agent.invoke({ messages: [new HumanMessage("Continue the checklist")] }, config);
-    expect(followup.requests).toHaveLength(1);
-    expect(JSON.stringify(followup.requests[0]?.messages)).toContain("Do not invent preferences");
-    expect(reopened.messages.filter(message => message.additional_kwargs.lc_source === "pinned_skill")).toHaveLength(1);
   });
 
   it("cancels a native summarizer request through the same execution signal", async () => {

@@ -1,9 +1,0 @@
-{
-  "skills": [
-    {
-      "name": "coach-context-check",
-      "version": "1",
-      "files": ["SKILL.md", "references/checklist.md"]
-    }
-  ]
-}

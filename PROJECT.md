@@ -18,8 +18,8 @@ Kanban workstreams (intended GitHub Projects **Status** columns):
 3. **Dogfood stays personal.** James's usage notes live in **Dogfood**; promote selectively so personal polish does not crowd out friend-critical work.
 4. **Later is a parking lot.** Native iOS and in-session agent presence remain parked.
    #247's shared Deep Agents/checkpoint/skills foundations for #177/#233 are approved
-   for staged implementation; A–C are built locally (C has an empty production skill
-   manifest), with rollout disabled and hosted schema/credential/pooling/browser release
+   for staged implementation; A–C are built locally (C uses native skill
+   loading with no production skills), with rollout disabled and hosted schema/credential/pooling/browser release
    gates outstanding.
    This supersedes the blanket Slice 5 deferral. #198 owns
    scoped research. User memory remains a separate later slice. See the

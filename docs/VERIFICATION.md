@@ -264,11 +264,12 @@ provider responses make no paid calls. This does not establish Supabase Auth/Pos
 hosted pooling/TLS/load or the authenticated browser journey.
 
 `npm run test:agent:bundle` verifies Slice C's actual production function traces include
-bundled skill Markdown and reference contents. It temporarily copies an unregistered test
-fixture into the skill directory and removes it afterward; run the ordinary build afterward
-before using `.next`. The production manifest remains empty. The PostgreSQL proof also
-checks native skill metadata/pins through production execution and projection, then database
-restart/fresh-process restoration after trimming. See [Slice C](AI-COACH.md#slice-c-reusable-skills-implemented-locally-production-manifest-empty).
+bundled SKILL.md/reference contents and exclude test fixtures/broad project files. It
+temporarily copies a fixture into the skill directory and removes it afterward; run an
+ordinary build afterward before using `.next`. Production has no skill directories yet.
+The PostgreSQL proof checks native discovery metadata and consumed pins after database
+restart/fresh-process reopen; it does not assert automatic repinning after context trimming.
+See [Slice C](AI-COACH.md#slice-c-reusable-skills-implemented-locally-no-production-skills).
 
 ## Human review
 

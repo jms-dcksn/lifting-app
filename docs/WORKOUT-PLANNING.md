@@ -116,7 +116,13 @@ simulates completion or compounds a weight increase. Distinct set rows match by 
 identity, exact exercise/equipment and saved rep/effort context; heavy and lighter rows do
 not share the old card-wide first-set reference. Context edits start a new comparison window.
 The canonical `resolveExactWorkoutTarget` calculation still owns suggestions and repeated
-effort adjustments. Legacy uniform slots retain their existing first-working-set behavior.
+effort adjustments. Uniform slots also resolve each row from its own actual performance, using deterministic
+slot/index row IDs without requiring a saved per-set program edit. Completed workouts before
+plan snapshots fall back to saved set indexes; their historical rep/RIR context is unknown,
+so it does not gate progression. Snapshot-backed rows continue to require matching context.
+Only the first row may fall back to the slot-level reference when row evidence is unavailable;
+later rows use a starting estimate rather than copying the first set. Explicit weight seeds
+retain their chosen target reps until comparable performance exists (recovery still wins).
 
 **Use recommended target** clears only that row's weight adjustment. Its apply-to-all control
 explicitly names all sets in the exercise. It does not reset reps, RIR, rest, order, grouping,

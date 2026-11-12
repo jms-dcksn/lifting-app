@@ -1178,3 +1178,14 @@ keeping current state, bootstrap, completed-turn receipts and immediate parents.
 unfinished work; never evict live files or workflow evidence. Retained checkpoint/message
 history is not bounded by live file quotas. No background worker or physical-size gate is
 introduced. See [Slice D](AI-COACH.md#slice-d-working-files-and-context-implemented-locally).
+
+## Per-set targets for uniform programs (2026-11-11)
+
+Actual set performance drives upcoming row targets even when the program has no explicit
+`set_prescriptions`. Generate the same deterministic slot/index IDs used by captured workouts
+and resolve through `plannedSetTarget`; preserve exact exercise/equipment and known saved
+rep/RIR contexts. Pre-snapshot logs use their saved set index without inventing historical
+prescription context. First-set stall/effort assessment stays separate. Manual seed targets
+retain their reps until comparable evidence supersedes them; recovery remains authoritative.
+A lighter program row is a seed that progresses independently, not a permanent percentage
+relationship to another row.

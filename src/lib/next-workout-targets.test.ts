@@ -1,4 +1,4 @@
-vi.mock("./workout-editor-data", () => ({ loadPlannedPerformances: async () => [] }));
+vi.mock("./workout-editor-data", () => ({ loadPlannedPerformances: async () => plannedHistory }));
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EXERCISE_BY_ID } from "./strength/coefficients";
 import { buildWorkoutTargetHistory, resolveEffectiveWorkoutTarget } from "./effective-workout-target";
@@ -25,6 +25,7 @@ let statError: boolean;
 let savedPlan: unknown;
 let logged: unknown[];
 let adaptations: unknown[];
+let plannedHistory: import("./workout-editor-targets").PlannedPerformance[] = [];
 const calls: Array<{ table: string; operation: string; args: unknown[] }> = [];
 
 function client() {
@@ -47,6 +48,7 @@ function client() {
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(now);
+  plannedHistory = [];
   calls.length = 0; savedPlan = null; open = null; statError = false; logged = []; adaptations = [];
   program = { id: "program", name: "Training", description: null, tags: [], weeks: 5, isActive: true,
     style: "classic", phases: [], days: [{ id: "day", name: "Upper", slots: [{ id: "slot", exerciseId: "bb-bench",
@@ -186,4 +188,22 @@ it("refreshes stale saved automatic targets before preview and capture, preservi
     targetReps: fresh.editorPlan.slots[0].sets[0].targetReps });
   expect(refreshed.editorPlan.slots[0].sets[1].weight).toBe(120);
   expect(plan.slots[0].sets[0].suggestedWeight).toBe(500);
+});
+
+
+it("advances each default program row from its own actual performance", async () => {
+  const id = "123e4567-e89b-42d3-a456-426614174000";
+  program.days[0].slots[0].id = id;
+  program.days[0].slots[0].repMin = 8;
+  program.days[0].slots[0].repMax = 12;
+  plannedHistory = [10, 9].map((reps, index) => ({
+    exerciseId: "bb-bench", equipmentInstanceId: null, sessionId: "done", setId: `set-${index}`,
+    programSlotId: id, performedAt: "2026-09-29T12:00:00Z", weight: 25, reps, rir: 2,
+    e1rm: index === 0 ? 36.76 : 35.36,
+    plannedSetId: id.slice(0, 24) + (index + 1).toString(16).padStart(12, "0"),
+    repMin: 8, repMax: 12, rirMin: 2, rirMax: 2,
+  }));
+  const next = await loadNextWorkout(client(), "user", program);
+  expect(next.editorPlan.slots[0].sets.map(s => [s.suggestedWeight, s.targetReps]))
+    .toEqual([[25, 11], [25, 10]]);
 });

@@ -46,18 +46,31 @@ export function resolveWorkoutSlots(input: {
     let effectiveTarget = resolveExactWorkoutTarget({ slotId: slot.id, identity: exactExerciseIdentity(exerciseId, equipmentInstanceId),
       prescription, context, isDeload: input.sessionIsDeload ?? isDeload(prescription.phase),
       history: targetHistory, catalog, stats, bodyweight });
-    let plannedSets: PlannedSet[] | undefined;
-    let normalSets: PlannedSet[] | undefined;
-    if (slot.setPrescriptions) {
+    let plannedSets: PlannedSet[];
+    let normalSets: PlannedSet[];
+    {
+      const setPrescriptions = slot.setPrescriptions ?? editorSlot({ ...slot, exerciseId,
+        prescription, effectiveTarget, restSeconds: slot.restSeconds ?? input.defaultRestSeconds }).normalSets!;
       const normalPrescription=isDeload(prescription.phase)
         ? resolvePrescription({...slot,repMin:folded.repMin,repMax:folded.repMax},week,[]) : {...prescription,phase:null};
-      normalSets=recoverySets(slot.setPrescriptions,{...normalPrescription,phase:null}).map(set=>plannedSetTarget({
+      normalSets=recoverySets(setPrescriptions,{...normalPrescription,phase:null}).map(set=>plannedSetTarget({
         slotId:slot.id,exerciseId,equipmentInstanceId,set,history:input.plannedHistory??[],
         context:{...context,phaseId:null},catalog,stats,bodyweight,isDeload:false}));
-      const rows = recoverySets(slot.setPrescriptions, prescription);
+      const rows = recoverySets(setPrescriptions, prescription);
       plannedSets = rows.map(set => plannedSetTarget({ slotId: slot.id, exerciseId, equipmentInstanceId, set,
         history: input.plannedHistory ?? [], context, catalog, stats, bodyweight, isDeload: input.sessionIsDeload ?? isDeload(prescription.phase) }));
       prescription.targetSets = plannedSets.length;
+      if (!slot.setPrescriptions) {
+        // Missing row evidence may use the existing slot estimate; actual row history always wins.
+        const hasEvidence = (set: PlannedSet) => (input.plannedHistory ?? []).some(p => p.plannedSetId === set.id
+          && p.exerciseId === exerciseId && p.equipmentInstanceId === equipmentInstanceId);
+        plannedSets = plannedSets.map((set, index) => index !== 0 || hasEvidence(set) ? set : { ...set,
+          suggestedWeight: effectiveTarget.target?.weight ?? set.suggestedWeight,
+          targetReps: effectiveTarget.target?.targetReps ?? set.targetReps });
+        normalSets = normalSets.map((set, index) => index !== 0 || hasEvidence(set) ? set : { ...set,
+          suggestedWeight: effectiveTarget.target?.weight ?? set.suggestedWeight,
+          targetReps: effectiveTarget.target?.targetReps ?? set.targetReps });
+      }
       if(plannedSets[0]) effectiveTarget=plannedCardTarget(effectiveTarget,plannedSets[0]);
     }
     return { ...slot, resolvedTempo: resolveTempo(catalog[exerciseId], slot.tempo), baseExerciseId, exerciseId, prescription, targetContext: context, effectiveTarget,
@@ -155,7 +168,7 @@ export async function loadNextWorkout(
         programDayId: day.id, exerciseId: s.exerciseId, targetSets: s.sets.length,
         repMin: first.repMin, repMax: first.repMax, targetRir: first.rirMax }, s.exerciseId, null,
         { targetSets: s.sets.length, repMin: first.repMin, repMax: first.repMax, targetRir: first.rirMax,
-          targetRirMin: first.rirMin, targetRirMax: first.rirMax, phase: null }, null), plannedSets: s.sets, normalSets: s.normalSets,
+          targetRirMin: first.rirMin, targetRirMax: first.rirMax, phase: null }, null), plannedSets: s.sets, normalSets: s.normalSets ?? s.sets,
     };
   });
   return { key, choices, completed, week, day, slots, catalog, open: open.data, targetHistory, stats, bodyweight,

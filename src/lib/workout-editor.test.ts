@@ -48,6 +48,7 @@ describe("full workout editor contract",()=>{
     const set={...row(),weight:100,seedAt:"2026-10-20T00:00:00.000Z"};
     const input={slotId:"slot",exerciseId:"db-bench",set,history:[],catalog:EXERCISE_BY_ID,stats:[],bodyweight:180,isDeload:false};
     expect(plannedSetTarget(input).weight).toBe(100);
+    expect(plannedSetTarget({...input,set:{...set,targetReps:7}}).targetReps).toBe(7);
     expect(plannedSetTarget(input)).toEqual(plannedSetTarget(input));
     const evidence={exerciseId:"db-bench",equipmentInstanceId:null,sessionId:"done",setId:"logged",programSlotId:"slot",performedAt:"2026-10-21T00:00:00.000Z",weight:100,reps:8,rir:2,e1rm:130,plannedSetId:set.id,repMin:5,repMax:8,rirMin:2,rirMax:2};
     const next=plannedSetTarget({...input,history:[evidence]});

@@ -56,6 +56,9 @@ flowchart LR
 })) } : {}),</code></pre>
         <p>Heavy and lighter rows retain distinct identities. Their comparable completed evidence
           goes through the existing target resolver. A planner read never writes performance.
+          Uniform program slots now use the same per-set calculation. Before plan snapshots,
+          saved slot/set indexes recover row identity without inventing old prescription context.
+          First-set references remain a fallback for the first row; later rows do not copy it.
           New saves invalidate source revisions so an old Coach confirmation cannot silently
           undo a replacement; retired slots retain history but stop appearing in future evidence.</p>
       </section>

@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { ReadOnlySkillsBackend } from "./skills";
 
-const fixture = resolve("src/lib/agent/__fixtures__/skills");
+const fixture = resolve("src/lib/agent/skills");
 const path = "/coach-context-check/SKILL.md";
 
 describe("read-only Coach skills", () => {

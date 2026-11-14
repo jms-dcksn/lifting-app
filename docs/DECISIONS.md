@@ -1154,8 +1154,10 @@ The initial Slice C implementation included a manifest, digests, cache invalidat
 required-instruction restoration. After reviewing it, the user chose native loading with
 an 11-line read-only FilesystemBackend wrapper. The harness routes `/skills/` to bundled
 repository files and supplies `skills: ["/skills/"]` to createDeepAgent. StateBackend still
-owns thread files; no Store or schema is added. Production has no skill directories yet;
-`coach-context-check` and its reference remain test-only.
+owns thread files; no Store or schema is added. At that point production had no skill directories;
+`coach-context-check` and its reference were test-only. The owner subsequently promoted
+that checklist into the deployed skill bundle on 2026-11-14 for Preview testing, sharing
+one source directory between the app and tests.
 
 Remove the custom version/restoration infrastructure rather than maintaining it ahead
 of a real workflow. Keep native discovery, on-demand reads, explicit consumed pins,
@@ -1163,7 +1165,7 @@ backend write rejection, deployment packaging and checkpoint/restart tests. Nati
 metadata caching, silently skipped missing pins and instruction loss from the model's
 summarized context remain native behavior. #177/#233 will add narrowly scoped required-skill
 and version/restoration checks when their authoritative workflows exist. Loaded skills
-never grant workflow activation or training-write permission. See [Slice C](AI-COACH.md#slice-c-reusable-skills-implemented-locally-no-production-skills).
+never grant workflow activation or training-write permission. See [Slice C](AI-COACH.md#slice-c-reusable-skills-bundled-checklist).
 
 ### Coach working files and deferred memory (#247, 2026-11-11)
 

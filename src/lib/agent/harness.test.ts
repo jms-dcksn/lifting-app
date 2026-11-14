@@ -42,17 +42,17 @@ function provider(replies: Array<string | ProviderCall | ProviderCall[]>, includ
 afterEach(() => { vi.unstubAllEnvs(); });
 
 describe("gated Coach harness", () => {
-  it("keeps the test skill out of production discovery", async () => {
+  it("discovers the checklist skill from the default deployed directory", async () => {
     const source = provider(["Hello."]);
     const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [] });
     const output = await agent.invoke({ messages: [new HumanMessage("Hello")] });
-    expect(output.skillsMetadata).toEqual([]);
-    expect(JSON.stringify(source.requests[0]?.messages)).not.toContain("coach-context-check");
+    expect(output.skillsMetadata?.map(skill => skill.name)).toEqual(["coach-context-check"]);
+    expect(JSON.stringify(source.requests[0]?.messages)).toContain("/skills/coach-context-check/SKILL.md");
   });
   it("discovers bundled skills without loading instructions or starting a workflow", async () => {
     const source = provider(["Hello."]);
     const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [],
-      skillsDirectory: resolve("src/lib/agent/__fixtures__/skills") });
+      skillsDirectory: resolve("src/lib/agent/skills") });
     const output = await agent.invoke({ messages: [new HumanMessage("Hello")] });
     const prompt = JSON.stringify(source.requests[0]?.messages);
     expect(prompt).toContain("coach-context-check");
@@ -64,7 +64,7 @@ describe("gated Coach harness", () => {
     expect(source.fetch).toHaveBeenCalledTimes(1);
   });
   it("loads skill instructions and references on demand through the real read_file tool", async () => {
-    const rootDir = resolve("src/lib/agent/__fixtures__/skills");
+    const rootDir = resolve("src/lib/agent/skills");
     const source = provider([
       { name: "read_file", args: { file_path: "/skills/coach-context-check/SKILL.md" } },
       { name: "read_file", args: { file_path: "/skills/coach-context-check/references/checklist.md" } },
@@ -80,7 +80,7 @@ describe("gated Coach harness", () => {
   });
 
   it("consumes native pins and preserves skill metadata through a fresh harness", async () => {
-    const skillsDirectory = resolve("src/lib/agent/__fixtures__/skills");
+    const skillsDirectory = resolve("src/lib/agent/skills");
     const saver = new MemorySaver();
     const config = { configurable: { thread_id: "skills" } };
     const first = provider(["Checklist."]);

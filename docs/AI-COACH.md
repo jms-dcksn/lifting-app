@@ -28,13 +28,14 @@ Slice 2 (gallery intake to inactive draft) shipped; later slices remain planned.
 [AI Coach threads](DECISIONS.md#ai-coach-threads-2026-09-27). The teaching surface
 is [ai-coach.html](ai-coach.html) — update that HTML whenever agent behavior changes.
 
-**Runtime foundations (#247, Slices A–D built locally; rollout disabled):** [compatibility report, Decision Card and
+**Runtime foundations (#247, Slices A–D built; Preview testing enabled):** [compatibility report, Decision Card and
 delivery sequence](#runtime-foundations-plan-247) replace the blanket Slice 5 deferral.
 The user approved the staged plan on 2026-11-07. A prepared server-only Deep Agents
 harness, bounded transport and durable execution/projection path are implemented.
-`COACH_RUNTIME_ENABLED=1` selects the new path; the default remains legacy. The approved
-checkpoint migration is unapplied to hosted storage. No rollout, provider change or
-user-memory writes have occurred.
+`COACH_RUNTIME_ENABLED=1` selects the new path; the default remains legacy. The owner
+reports applying the approved migration to `lifting-app-dev`; authenticated Preview new-chat
+admission and generation were verified on 2026-11-14. Production migration/credentials and
+rollout remain separate release gates. No provider change or user-memory writes occurred.
 
 Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/coach`,
 `/api/agent/chat`) so they do not collide with Track Coach.
@@ -844,7 +845,7 @@ browser verification is likewise blocked locally. No CI, push, deployment, hoste
 credential provisioning or paid eval ran. Standards review: no outstanding hard misses;
 spec review: B is locally implemented with the stated release-verification limits.
 
-### Slice C reusable skills (implemented locally; no production skills)
+### Slice C reusable skills (bundled checklist)
 
 The user chose a simpler implementation after reviewing the initial Slice C build.
 `skills.ts` now only exports a small `ReadOnlySkillsBackend` extending the native
@@ -863,25 +864,31 @@ There is no custom manifest, version/hash validation, instruction matching, chec
 rewriting or automatic restoration middleware. Those parts of the initial build were
 removed because no production workflow consumes them yet.
 
-Production skill directories will live in `src/lib/agent/skills`; it currently contains
-only a README. The `coach-context-check` SKILL.md and checklist reference remain test
-fixtures under `__fixtures__/skills`. Source files are bundled with the application,
-not copied into StateBackend files. Native discovery metadata and loaded messages are
-checkpointed normally. Other virtual paths retain checkpoint-backed StateBackend. No
-StoreBackend, database schema, shell or user-supplied skill registration is introduced.
+The `coach-context-check` skill is bundled under
+`src/lib/agent/skills/coach-context-check/`, with `SKILL.md` and `references/checklist.md`.
+The owner promoted the automated-test fixture on 2026-11-14 to exercise native skill
+loading in the Preview. Tests use these same source files; there is no duplicate fixture.
+The skill reports stated goals, explicit constraints and unanswered questions only. It
+creates no program or training changes. #177/#233 still own real program workflows.
 
-Next explicitly includes the skill directory in `/api/agent/chat` and `/coach` function
-traces and excludes the fixture directory. `npm run test:agent:bundle` temporarily copies
-the fixture into the production directory, builds, checks that both traces contain its
-SKILL.md/reference bytes and exclude test fixtures/broad project files, then cleans up.
-No server is started during the proof. Run a normal build afterward before using `.next`.
+Source files stay in the application bundle, not StateBackend files. Native discovery
+metadata and loaded messages are checkpointed normally; other paths retain StateBackend.
+No Store, schema change, shell or user-supplied skill registration is introduced.
 
-The tradeoff is deliberate: native discovery is cached per thread, missing native pins
-can be silently skipped, and summarization can remove loaded instructions from the
-model's context while retaining them in full history. This slice makes no automatic
-required-skill restoration or deployment-version compatibility guarantee. #177/#233 must
-add the smallest necessary checks alongside actual authoritative workflow state. Loaded
-skill state is neither workflow activation nor permission to write training data.
+Next explicitly includes this directory in `/api/agent/chat` and `/coach` function traces.
+`npm run test:agent:bundle` builds and verifies both traces include the actual SKILL.md and
+reference bytes, without modifying the source directory. Tests cover default-directory
+discovery, progressive disclosure, explicit pin/reset behavior, reads, forbidden mutations
+and escaping symlinks.
+
+**Preview test:** start a new chat, since native metadata is cached per thread, then ask:
+
+> Use the coach-context-check skill. My goal is strength. I can train three days a week
+> for 45 minutes. Summarize my goal, constraints and open questions.
+
+The agent should read `/skills/coach-context-check/SKILL.md` and its checklist reference
+before returning the three-part checklist. No automatic repinning/cache invalidation is
+added by this promotion. The existing native limitations below still apply.
 
 Verification on 2026-11-10: native discovery without activation, on-demand instruction and
 reference reads, explicit pin reset, fresh harness/checkpoint reuse, forbidden mutations,
@@ -1118,16 +1125,17 @@ previous rollout/browser/pooling release gates remain outstanding.
 
 ### Staged delivery and measurable exits
 
-The staged plan and B schema are approved. Slices A–D are built locally, with rollout
-disabled and the migration unapplied to hosted storage. C uses native loading with no production skill directories yet;
+The staged plan and B schema are approved. Slices A–D are built, with authenticated
+Preview testing enabled against `lifting-app-dev`; Production rollout remains disabled. C bundles the read-only checklist skill for Preview testing;
 #177/#233 supply real skill behavior and any required workflow restoration/version checks. The 100-turn benchmark and Slice E are deferred by owner (2026-11-11).
-These are bounded work units, not newly filed issues or a claim of deployed behavior.
+These are bounded work units, not newly filed issues. Preview smoke evidence is recorded
+in [PR #267](https://github.com/jms-dcksn/lifting-app/pull/267); it is not full production acceptance.
 
 | Slice | Bounded work | Exit before next slice |
 | --- | --- | --- |
 | A — integration readiness (built locally) | Selected exact stack; prepared server-only harness, bounded Gateway transport and local fenced saver proof | Local exits pass; see implementation/evidence above. Production pooler/credential provisioning remains a release gate |
 | B — durable execution (built locally) | Approved additive migration, admission/fencing, bootstrap-once, native serialization, projection recovery and disabled server-only rollout switch | Old/new/episode threads survive killed/restarted processes; parallel/retry sends don't duplicate input/effects; checkpoint-success/projection-failure repairs without a model call; cross-owner read/list/resume/delete fails; deletion and outages pass |
-| C — reusable skills (built locally, simplified) | Small read-only filesystem wrapper; native discovery, reads and explicit pins | Packaging, discovery/nonactivation, reference reads, pin reset, checkpoint/restart reuse and forbidden writes pass. Production skills and workflow-specific version/restoration checks remain #177/#233 |
+| C — reusable skills (built locally, simplified) | Small read-only filesystem wrapper; bundled checklist, native discovery, reads and explicit pins | Packaging, discovery/nonactivation, reference reads, pin reset, checkpoint/restart reuse and forbidden writes pass. Program-creation skills and workflow-specific version/restoration checks remain #177/#233 |
 | D — working files/context (built locally) | Bounded StateBackend writes/read-back, native offloading/summaries and post-projection cleanup | Offload → stable file reference → bounded read after PostgreSQL restart; owner/thread isolation; concurrent quotas; safe pruning; no missing-history links. 100-turn benchmark deferred |
 | E — user memory (deferred) | No implementation now; later review schema/product controls and persistent Store/StoreBackend | Explicit preference written in one owned chat reads in another after restart; correction/conflict/retrieval/edit/delete/account cleanup and cross-owner rejection pass |
 

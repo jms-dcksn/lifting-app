@@ -1,3 +1,5 @@
-Production Coach skills belong in subdirectories containing `SKILL.md` and optional references.
-Deep Agents discovers them natively. The checklist fixture stays under `../__fixtures__/skills`.
-No production skills are installed yet.
+Trusted Coach skills are bundled here and discovered natively by Deep Agents.
+
+`coach-context-check` summarizes stated goals, constraints and open questions for testing
+skill loading. Instructions and references are read-only. Start a new chat after adding
+skills because native discovery metadata is cached per thread.

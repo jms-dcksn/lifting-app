@@ -14,7 +14,7 @@ const store = createDurableStore(pool);
 const owner = "10000000-0000-4000-8000-000000000002";
 const requestId = "50000000-0000-4000-8000-000000000001";
 const request = { kind: "new", text: "A durable question", context: { pathname: "/coach", activeProgramId: null, openSessionId: null, focusedExerciseId: null } };
-const rootDir = resolve("src/lib/agent/__fixtures__/skills");
+const rootDir = resolve("src/lib/agent/skills");
 let calls = 0;
 const harness = input => createCoachHarness({ ...input, skillsDirectory: rootDir, apiKey: "fixture", fetch: async (_url, init) => {
   if (process.argv[2] === "interrupt") {

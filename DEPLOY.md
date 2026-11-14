@@ -201,12 +201,13 @@ named `CURSOR_API_KEY`. Do not commit it.
   has no pinned Node engine, `.nvmrc`, or `vercel.json`; CI uses Node 22 for Supabase's native
   WebSocket support. Verify the selected deployment runtime at release.
 
-### Coach runtime persistence (#247; rollout disabled)
+### Coach runtime persistence (#247; Preview testing enabled)
 
-Slices A/B implement the bounded Deep Agents harness and durable execution behind
-`COACH_RUNTIME_ENABLED=1`; leave it unset/off until release review. Migration
-`20261108183830_coach_durable_execution.sql` (version `20261108183830`) is **unapplied**
-to hosted storage. The human runs `npx supabase db push` after merge, from the linked
+Slices A–D implement the Deep Agents harness and durable execution behind
+`COACH_RUNTIME_ENABLED=1`. The feature-branch Preview uses `lifting-app-dev`; keep the
+Production flag unset/off until Production release review. Migration
+`20261108183830_coach_durable_execution.sql` (version `20261108183830`) is recorded as **unapplied to Production**. The owner reports applying it to the dev DB,
+and authenticated Preview chat was verified on 2026-11-14. The human runs `npx supabase db push` after merge, from the linked
 `main` checkout, then redeploys. The agent does not apply or query hosted SQL.
 
 The migration installs a private schema and a dedicated `coach_agent_runtime` NOLOGIN,

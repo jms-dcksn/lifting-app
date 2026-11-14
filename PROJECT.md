@@ -19,8 +19,8 @@ Kanban workstreams (intended GitHub Projects **Status** columns):
 4. **Later is a parking lot.** Native iOS and in-session agent presence remain parked.
    #247's shared Deep Agents/checkpoint/skills foundations for #177/#233 are approved
    for staged implementation; A–D are built locally (C uses native skill
-   loading with no production skills), with rollout disabled and hosted schema/credential/pooling/browser release
-   gates outstanding.
+   loading with a bundled checklist skill). Preview testing is enabled against the dev DB;
+   Production schema/credential/pooling/browser release gates remain outstanding.
    This supersedes the blanket Slice 5 deferral. #198 owns
    scoped research. Slice E user memory and the 100-turn storage benchmark are explicitly deferred. See the
    [foundation plan and Decision Card](docs/AI-COACH.md#runtime-foundations-plan-247).

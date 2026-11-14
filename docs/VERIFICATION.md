@@ -263,13 +263,13 @@ recovery, owner/thread isolation, stale epochs and populated account cleanup. Sy
 provider responses make no paid calls. This does not establish Supabase Auth/PostgREST,
 hosted pooling/TLS/load or the authenticated browser journey.
 
-`npm run test:agent:bundle` verifies Slice C's actual production function traces include
-bundled SKILL.md/reference contents and exclude test fixtures/broad project files. It
-temporarily copies a fixture into the skill directory and removes it afterward; run an
-ordinary build afterward before using `.next`. Production has no skill directories yet.
+`npm run test:agent:bundle` verifies the actual production function traces contain the
+bundled checklist SKILL.md/reference contents and exclude test fixtures/broad project files.
+It builds without changing the deployed skill source directory. The app and tests share
+`src/lib/agent/skills/coach-context-check`; there is no separate checklist fixture.
 The PostgreSQL proof checks native discovery metadata and consumed pins after database
 restart/fresh-process reopen; it does not assert automatic repinning after context trimming.
-See [Slice C](AI-COACH.md#slice-c-reusable-skills-implemented-locally-no-production-skills).
+See [Slice C](AI-COACH.md#slice-c-reusable-skills-bundled-checklist).
 
 Slice D extends that runner with real native oversized-tool offloads and summary history,
 PostgreSQL restart/fresh-process bounded read-back, and owner-scoped retention. It verifies

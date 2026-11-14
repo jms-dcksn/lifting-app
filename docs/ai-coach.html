@@ -102,7 +102,7 @@ const programId = durable?.programId ?? crypto.randomUUID();</code></pre>
             sends, old and seed-thread imports, native serialization, projection outage,
             stale workers and populated account cleanup. It kills a worker during a provider
             call, restarts PostgreSQL and resumes in a fresh process without duplicate input.</p>
-          <p><strong>Rollout stays off:</strong> hosted migration/credential, transaction
+          <p><strong>Production rollout stays off:</strong> production migration/credential, transaction
             pooling/TLS/load and authenticated browser release checks remain. Bound threads
             become read-only when the switch is off; they never fall back to transcript-only
             generation. The migration is unapplied. A human runs the database push after merge
@@ -150,23 +150,36 @@ export class ReadOnlySkillsBackend extends FilesystemBackend {
           <p>The wrapper rejects write, edit, delete and upload calls at the backend itself.
             Its virtual root confines reads to the bundled directory. Other paths use the bounded StateBackend described in D. There is no Store, seeding step, manifest, hashing or custom
             restoration middleware.</p>
-          <p><strong>Test fixture only:</strong> <code>coach-context-check/SKILL.md</code>
-            asks for stated goals, constraints and open questions; its reference defines
-            the checklist. Production <code>src/lib/agent/skills</code> currently contains
-            only a README. Native discovery, reads, explicit consumed pins, backend write
-            rejection and checkpoint/restart reuse are tested without paid model calls.</p>
+          <p><strong>Bundled checklist:</strong> <code>coach-context-check/SKILL.md</code>
+            and its reference now live in <code>src/lib/agent/skills/coach-context-check</code>.
+            The owner promoted this fixture for Preview testing; app and tests share one
+            copy. It summarizes stated goals, constraints and open questions, without
+            inventing answers or creating a program.</p>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/skills/coach-context-check/SKILL.md
+---
+name: coach-context-check
+description: Review the user&#x27;s stated goal, constraints and unresolved questions as a short checklist.
+---
+# Coach context check
+
+Use only facts stated in this conversation. Do not invent preferences or resolve unanswered questions.
+Read `/skills/coach-context-check/references/checklist.md` for the output format.
+This skill produces a checklist only; it does not start a program workflow or authorize writes.
+</code></pre>
+          <p>Start a <strong>new chat</strong>, then try: “Use the coach-context-check skill.
+            My goal is strength. I can train three days a week for 45 minutes. Summarize my
+            goal, constraints and open questions.” Native discovery advertises the skill;
+            the agent reads its instructions and checklist reference on demand.</p>
           <p>Native metadata is cached per thread. Missing pins may be silently skipped,
             and summarization may drop loaded instructions from the model's view. Automatic
             required-skill restoration and deployment-version checks are deferred until
             #177/#233 supplies a real authoritative workflow. Loaded skills never activate
             workflows or authorize training writes.</p>
-          <p><code>npm run test:agent:bundle</code> temporarily copies the fixture into the
-            bundle and verifies both production function traces contain its Markdown and
-            reference bytes while excluding the original fixture directory. It then cleans
-            up; a normal build restores the ordinary local build artifact. The PostgreSQL
-            proof checks saved native metadata/pins after restart, not automatic repinning
-            after context trimming.</p>
-          <p><a class="underline" href="AI-COACH.md#slice-c-reusable-skills-implemented-locally-no-production-skills">Current skill contract and deferred workflow work</a>.</p>
+          <p><code>npm run test:agent:bundle</code> verifies both production function traces
+            contain the real bundled Markdown/reference bytes without modifying the source
+            directory. Tests exercise discovery, native pin/reset, reference reads and
+            forbidden mutations against those same files.</p>
+          <p><a class="underline" href="AI-COACH.md#slice-c-reusable-skills-bundled-checklist">Current skill contract and deferred workflow work</a>.</p>
         </div>
         <div id="slice-d-files" style="border:1px solid #78716c;padding:16px;border-radius:8px;margin:16px 0">
           <h3 style="font-weight:600">Slice D: durable working files with limits</h3>
@@ -200,7 +213,7 @@ export const WORKING_FILE_LIMITS = { fileBytes: 128 * 1024, files: 32, totalByte
             response. Retention is transactional and never touches training data; replay of
             deleted intermediate checkpoints is unavailable.</p>
           <p><strong>Deferred by owner:</strong> the 100-turn storage benchmark and Slice E
-            cross-chat memory. No persistent Store or new schema is added. Rollout remains
+            cross-chat memory. No persistent Store or new schema is added. Production rollout remains
             disabled. Synthetic-provider tests and a real disposable PostgreSQL restart
             exercise offload, retrieval, ownership and cleanup without paid model calls.</p>
           <p><a class="underline" href="AI-COACH.md#slice-d-working-files-and-context-implemented-locally">Working-file contract and retention details</a>.</p>

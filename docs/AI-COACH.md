@@ -980,7 +980,9 @@ Do not claim a stock saver plus `auth.uid()` policy works on a raw pool connecti
 Prefer a small module-scoped `pg.Pool` in the Node route and Supabase's transaction pooler,
 with TLS verification and finite connection/query/idle timeouts. Starting candidate:
 maximum two connections per warm function; validate aggregate concurrency against the
-actual project limit before release. Inspected saver queries are parameterized without
+actual project limit before release. `COACH_RUNTIME_CA_CERT` optionally supplies the intended
+database's PEM CA certificate to the pool. Certificate and hostname verification remain
+enabled; no `rejectUnauthorized: false` fallback is allowed. Inspected saver queries are parameterized without
 named prepared statements, and write transactions retain one checked-out connection.
 These source facts make transaction pooling plausible, not verified. Test transaction
 pooler behavior, fencing, cold starts and concurrent load before selecting production

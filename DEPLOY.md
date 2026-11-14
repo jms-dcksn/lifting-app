@@ -22,6 +22,9 @@ the 2026-09-13 documentation review.
 | `LANGSMITH_PROJECT` | Production: `lifting-app`; local/Preview: `lifting-app-dev` |
 | `LANGSMITH_WORKSPACE_ID` | Optional explicit workspace shared by CLI, datasets and SDK traces |
 | `AGENT_MODEL` | Optional Gateway model id (`provider/model`). Default `openai/gpt-5.4` |
+| `COACH_RUNTIME_ENABLED` | Server-only durable Coach switch; `1` enables after provisioning |
+| `COACH_RUNTIME_DATABASE_URL` | Server-only dedicated runtime role connection URL |
+| `COACH_RUNTIME_CA_CERT` | Optional PEM CA certificate for verified database TLS |
 
 The first two are required for the app and exposed in the browser bundle.
 `SUPABASE_SECRET_KEY` stays server-only for `npm run eval:agent`; the application
@@ -211,7 +214,12 @@ non-bypass role. Separately review/provision its login credential and transactio
 connection before setting server-only `COACH_RUNTIME_DATABASE_URL`. No training/Auth-table
 access or inherited roles; domain tools retain the session client. Pooler usernames may
 include the project suffix. Production TLS verification is required; URL `sslmode`
-overrides are rejected. The Node pool has at most two connections per warm function and
+overrides are rejected. If the database certificate chains to Supabase's private CA,
+set `COACH_RUNTIME_CA_CERT` to the complete PEM certificate downloaded from the intended
+project's **Database → Settings → SSL Configuration**. Preserve actual newlines, including
+the BEGIN/END CERTIFICATE lines. This supplies the trusted CA without disabling certificate
+or hostname verification. For Preview testing, scope it to the feature branch.
+The Node pool has at most two connections per warm function and
 finite timeouts. Validate aggregate project limits, pooling/TLS, deployment Node version,
 account deletion and both authenticated UI surfaces before enablement. Local proofs do
 not establish those hosted facts. C/D packaging, quotas/retention and rollback gates still

@@ -240,7 +240,8 @@ export function configuredDurableStore() {
     if (url.username.split(".")[0] !== "coach_agent_runtime") throw new Error("Coach requires its dedicated runtime role");
     if (url.searchParams.has("sslmode")) throw new Error("Configure verified TLS without sslmode URL overrides");
     const loopback = ["127.0.0.1", "localhost", "[::1]"].includes(url.hostname);
-    sharedPool = new pg.Pool({ connectionString, ssl: loopback ? false : { rejectUnauthorized: true }, max: 2,
+    const ca = process.env.COACH_RUNTIME_CA_CERT;
+    sharedPool = new pg.Pool({ connectionString, ssl: loopback ? false : { rejectUnauthorized: true, ...(ca ? { ca } : {}) }, max: 2,
       connectionTimeoutMillis: 5000, statement_timeout: 10000, idleTimeoutMillis: 30000 });
     sharedPool.on("error", () => { console.error("Coach persistence pool connection failed"); });
   }

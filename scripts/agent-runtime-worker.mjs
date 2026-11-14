@@ -40,6 +40,9 @@ try {
     assert.equal(parallel.filter(turn => turn.execute).length, 1);
     const admission = parallel.find(turn => turn.execute);
     assert.equal(admission.execute, true);
+    const lease = await ownedTransaction(pool, admission.scope, client => client.query(
+      "select extract(epoch from (lease_until-clock_timestamp()))::float as seconds from coach_runtime.turn where request_id=$1", [requestId]));
+    assert.ok(lease.rows[0].seconds > 120 && lease.rows[0].seconds <= 180, "Lease must outlast the 120-second execution deadline");
     const duplicate = await store.admit(owner, { requestId, request });
     assert.equal(duplicate.execute, false);
     const originalNow = Date.now;

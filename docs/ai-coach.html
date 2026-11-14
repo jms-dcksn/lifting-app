@@ -43,7 +43,7 @@
             disposable PostgreSQL proof checks owner + execution epoch in the same
             transaction as checkpoint writes. Nothing here grants training-action approval.</p>
           <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/harness.ts
-const signal = AbortSignal.any([AbortSignal.timeout(input.timeoutMs ?? 60_000), ...(input.signal ? [input.signal] : [])]);
+const signal = AbortSignal.any([AbortSignal.timeout(input.timeoutMs ?? DEEP_AGENT_TIMEOUT_MS), ...(input.signal ? [input.signal] : [])]);
 const network = input.fetch ?? globalThis.fetch;
 const model = new ChatOpenAI({
   model: agentModelId(), apiKey, temperature: 0, maxRetries: 0, maxTokens: 4000, streamUsage: true,
@@ -56,7 +56,7 @@ const model = new ChatOpenAI({
             There is no cumulative input/output budget or model/summary call counter.
             Missing usage reports do not stop follow-up calls. The SDK streams responses
             normally; no custom token accounting or SSE parser remains. Caller cancellation
-            and the 60-second timeout still reach both model paths, within the 90-second
+            and the 120-second timeout still reach both model paths, within the 180-second
             execution lease. Existing tool/recursion guards prevent runaway loops.</p>
           <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// scripts/agent-persistence-pool.mjs
 const result = await client.query("SELECT epoch FROM coach_checkpoint_test.thread_binding WHERE thread_id=$1 FOR SHARE", [thread]);
@@ -186,6 +186,15 @@ This skill produces a checklist only; it does not start a program workflow or au
           <p><a class="underline" href="AI-COACH.md#slice-c-reusable-skills-bundled-checklist">Current skill contract and deferred workflow work</a>.</p>
         </div>
         <div id="slice-d-files" style="border:1px solid #78716c;padding:16px;border-radius:8px;margin:16px 0">
+          <h3 style="font-weight:600">Preview execution limits</h3>
+          <div style="border:1px solid #78716c;padding:12px;margin:12px 0">Up to 24 tool calls / 120 graph steps<br>↓ Tool ceiling reached<br><strong>Next model request: tools disabled, answer from available evidence</strong><br>Provider still requests tools? → visible incomplete-review response<br>120-second execution deadline → 180-second database lease and function duration</div>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/policy.ts
+export const DEEP_AGENT_TOOL_CALL_BUDGET = 24;
+export const DEEP_AGENT_TIMEOUT_MS = 120_000;</code></pre>
+          <p>Each model response still has a 4,000-token output ceiling. Native model-aware
+            summarization manages context. There is no cumulative token budget. Tool output
+            offloads above 20,000 estimated tokens (about 80,000 characters), so ordinary
+            weekly reports can remain inline. The legacy runtime retains eight tool calls.</p>
           <h3 style="font-weight:600">Slice D: durable working files with limits</h3>
           <p>Large tool results stay out of the model’s immediate context. Their contents live
             in the current chat’s virtual files, persisted with PostgreSQL checkpoints.
@@ -204,8 +213,8 @@ export const WORKING_FILE_LIMITS = { fileBytes: 128 * 1024, files: 32, totalByte
           <p>Write, edit and upload all enforce the same limits, including automatic history
             appends. Concurrent tool calls reserve space against the same checkpoint.
             Nothing silently deletes evidence to make room. Reads return at most 200 lines
-            and 8 KiB of source content; line labels add formatting. A single oversized line
-            asks for narrower evidence. Search is capped at 20 matches and 8 KiB.</p>
+            and 8 KiB of source content; line labels add formatting. Long lines wrap into 2 KiB display lines at Unicode character boundaries;
+            the next offset continues that view. Stored content stays intact. Search uses original source line numbers. Search is capped at 20 matches and 8 KiB.</p>
           <p>Summarization keeps its native defaults. If its history file exceeds the quota,
             the summary has no new file link. Full messages still persist in checkpoints.
             File limits do not bound total message history or database size.</p>

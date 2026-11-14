@@ -173,7 +173,7 @@ export function createDurableStore(pool: pg.Pool) {
         if (execute) {
           const next = await client.query("update coach_runtime.thread set epoch=epoch+1 where conversation_id=$1 returning epoch", [thread]);
           const epoch = z.coerce.number().int().parse(next.rows[0].epoch);
-          const updated = await client.query(`update coach_runtime.turn set status='running',epoch=$3,lease_until=clock_timestamp()+interval '90 seconds',
+          const updated = await client.query(`update coach_runtime.turn set status='running',epoch=$3,lease_until=clock_timestamp()+interval '180 seconds',
             error_code=null,updated_at=clock_timestamp() where owner_id=$1 and request_id=$2 returning *`, [owner, requestId, epoch]);
           turn = turnSchema.parse(updated.rows[0]);
         }

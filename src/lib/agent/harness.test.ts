@@ -42,6 +42,44 @@ function provider(replies: Array<string | ProviderCall | ProviderCall[]>, includ
 afterEach(() => { vi.unstubAllEnvs(); });
 
 describe("gated Coach harness", () => {
+  it("allows 24 tool calls then asks for a final answer without tools", async () => {
+    const evidence = tool(vi.fn(async () => "Owned evidence"), { name: "evidence", description: "Read evidence", schema: z.object({}) });
+    const source = provider([...Array.from({ length: 24 }, () => ({ name: "evidence", args: {} })), "Here is the review."]);
+    const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [evidence] });
+    const output = await agent.invoke({ messages: [new HumanMessage("Review")] });
+    expect(output.messages.at(-1)?.content).toBe("Here is the review.");
+    expect(source.requests).toHaveLength(25);
+    expect(source.requests.at(-1)?.tools ?? []).toEqual([]);
+  });
+
+  it("returns a visible explanation when a parallel batch exhausts the tool limit", async () => {
+    const execute = vi.fn(async () => "Owned evidence");
+    const evidence = tool(execute, { name: "evidence", description: "Read evidence", schema: z.object({}) });
+    const source = provider([Array.from({ length: 25 }, () => ({ name: "evidence", args: {} })), "Review from available evidence."]);
+    const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [evidence] });
+    const output = await agent.invoke({ messages: [new HumanMessage("Review")] });
+    expect(execute).toHaveBeenCalledTimes(24);
+    expect(output.messages.at(-1)?.content).toBe("Review from available evidence.");
+  });
+
+  it("never leaves an empty reply if the model requests tools after access is disabled", async () => {
+    const execute = vi.fn(async () => "Evidence");
+    const evidence = tool(execute, { name: "evidence", description: "Read evidence", schema: z.object({}) });
+    const source = provider([Array.from({ length: 24 }, () => ({ name: "evidence", args: {} })), { name: "evidence", args: {} }]);
+    const output = await createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [evidence] }).agent.invoke({ messages: [new HumanMessage("Review")] });
+    expect(execute).toHaveBeenCalledTimes(24);
+    expect(output.messages.at(-1)?.content).toContain("couldn’t finish");
+  });
+
+  it("keeps a normal weekly report inline", async () => {
+    const content = JSON.stringify({ report: "x".repeat(53_000) });
+    const evidence = tool(async () => content, { name: "evidence", description: "Read evidence", schema: z.object({}) });
+    const source = provider([{ name: "evidence", args: {} }, "Review."]);
+    const output = await createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [evidence] }).agent.invoke({ messages: [new HumanMessage("Review")] });
+    expect(Object.keys(output.files ?? {})).toEqual([]);
+    expect(JSON.stringify(source.requests[1]?.messages)).toContain(content.slice(20, 100));
+  });
+
   it("discovers the checklist skill from the default deployed directory", async () => {
     const source = provider(["Hello."]);
     const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [] });
@@ -171,7 +209,7 @@ describe("gated Coach harness", () => {
 
   it("counts concurrent automatic offloads against the same thread quota", async () => {
     const source = provider([[{ name: "evidence", args: {} }, { name: "evidence", args: {} }], "Done."]);
-    const evidence = tool(async () => "x".repeat(9000), { name: "evidence", description: "Read evidence", schema: z.object({}) });
+    const evidence = tool(async () => "x".repeat(81_000), { name: "evidence", description: "Read evidence", schema: z.object({}) });
     const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [evidence] });
     const files = Object.fromEntries(Array.from({ length: 31 }, (_, i) => [`/workspace/${i}.txt`, { content: "proof", mimeType: "text/plain", created_at: "2026-11-11", modified_at: "2026-11-11" }]));
     const result = await agent.invoke({ messages: [new HumanMessage("Inspect")], files });
@@ -182,7 +220,7 @@ describe("gated Coach harness", () => {
   it("reopens offloaded evidence through bounded reads without exposing another thread", async () => {
     const saver = new MemorySaver();
     const config = { configurable: { thread_id: "offload" } };
-    const content = Array.from({ length: 1000 }, (_, i) => `Evidence row ${i}: owned source facts`).join("\n");
+    const content = Array.from({ length: 3000 }, (_, i) => `Evidence row ${i}: owned source facts`).join("\n");
     const evidence = tool(async () => content, { name: "evidence", description: "Read evidence", schema: z.object({}) });
     const first = provider([{ name: "evidence", args: {} }, "Saved."]);
     const result = await createCoachHarness({ apiKey: "fixture", fetch: first.fetch, tools: [evidence], checkpointer: saver }).agent.invoke({ messages: [new HumanMessage("Inspect")] }, config);

@@ -32,7 +32,7 @@ try {
     await agent.invoke({ messages: [new HumanMessage({ id: "stable-input", content: "Persist this" })], pinnedSkills: ["coach-context-check"],
       files: { "/workspace/proof.txt": { content: ["durable-file"], created_at: "2026-11-07T00:00:00Z", modified_at: "2026-11-07T00:00:00Z" } } }, config);
     assert.ok(JSON.stringify(requests[0].messages).includes("Do not invent preferences"));
-    const evidence = tool(async () => Array.from({ length: 1000 }, (_, i) => `Evidence row ${i}: owned facts`).join("\n"), {
+    const evidence = tool(async () => Array.from({ length: 3000 }, (_, i) => `Evidence row ${i}: owned facts`).join("\n"), {
       name: "evidence", description: "Read evidence", schema: z.object({}),
     });
     replies.push({ name: "evidence", args: {} }, "Evidence saved.");

@@ -53,7 +53,25 @@ export class WorkingFilesBackend extends StateBackend {
   }
 
   override read(path: string, offset = 0, limit = 100): ReturnType<StateBackend["read"]> {
-    const result = super.read(path, offset, Math.min(limit, WORKING_FILE_LIMITS.readLines));
+    const raw = super.readRaw(path);
+    if (!raw.data) return { error: raw.error };
+    // Read-only display lines let native line offsets page through large JSON strings.
+    const content = raw.data.content;
+    const display = typeof content === "string" ? content.split("\n").flatMap(line => {
+      const chunks: string[] = [];
+      let chunk = "";
+      let size = 0;
+      for (const character of line) {
+        const width = Buffer.byteLength(character);
+        if (size + width > 2048) { chunks.push(chunk); chunk = ""; size = 0; }
+        chunk += character;
+        size += width;
+      }
+      chunks.push(chunk);
+      return chunks;
+    }).join("\n") : content;
+    const reader = new StateBackend({ state: { files: { [path]: { ...raw.data, content: display } } } });
+    const result = reader.read(path, offset, Math.min(limit, WORKING_FILE_LIMITS.readLines));
     if (result.error || result.content === undefined) return result;
     if (typeof result.content !== "string") return { error: "Working files support text read-back only." };
     const lines = result.content.split("\n");
@@ -66,7 +84,6 @@ export class WorkingFilesBackend extends StateBackend {
       count++;
     }
     if (count === lines.length) return result;
-    if (!count) return { error: "A line exceeds the 8 KiB read limit; request narrower evidence from the source tool." };
     const endLine = (result.startLine ?? offset + 1) + count - 1;
     return { ...result, content: lines.slice(0, count).join("\n"), endLine, nextOffset: endLine };
   }

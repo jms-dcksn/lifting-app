@@ -3,6 +3,7 @@ import { createAgentChatHandlers } from "@/lib/agent/chat-handler";
 import { durableChat } from "@/lib/agent/durable-chat";
 
 export const runtime = "nodejs";
+export const maxDuration = 180;
 export const dynamic = "force-dynamic";
 
 const handlers = createAgentChatHandlers({

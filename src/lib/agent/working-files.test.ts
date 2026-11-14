@@ -37,6 +37,24 @@ describe("thread working files", () => {
     expect(append.filesUpdate?.["/workspace/0.txt"]?.content).toBe("proof\nappended");
   });
 
+  it("pages a long UTF-8 JSON line without losing evidence or altering stored content", () => {
+    const content = JSON.stringify({ report: "é😀".repeat(3000), end: "last evidence" });
+    const backend = new WorkingFilesBackend({ state: { files: { "/long.json": file(content) } } });
+    let offset = 0;
+    let recovered = "";
+    for (let page = 0; page < 30; page++) {
+      const result = backend.read("/long.json", offset, 100);
+      expect(result.error).toBeUndefined();
+      expect(Buffer.byteLength(String(result.content))).toBeLessThanOrEqual(8192);
+      recovered += String(result.content).replaceAll("\n", "");
+      if (result.nextOffset == null) break;
+      expect(result.nextOffset).toBeGreaterThan(offset);
+      offset = result.nextOffset;
+    }
+    expect(recovered).toBe(content);
+    expect(backend.readRaw("/long.json").data?.content).toBe(content);
+  });
+
   it("bounds reads by lines and bytes with a usable continuation offset", () => {
     const content = Array.from({ length: 300 }, (_, i) => `${i}: ${"é".repeat(30)}`).join("\n");
     const backend = new WorkingFilesBackend({ state: { files: { "/proof.txt": file(content), "/long.txt": file("x".repeat(9000)) } } });
@@ -47,7 +65,7 @@ describe("thread working files", () => {
     expect(Buffer.byteLength(String(first.content))).toBeLessThanOrEqual(8192);
     const second = backend.read("/proof.txt", first.nextOffset, 10000);
     expect(second.startLine).toBe((first.nextOffset ?? 0) + 1);
-    expect(backend.read("/long.txt").error).toContain("8 KiB");
+    expect(backend.read("/long.txt").nextOffset).toBeGreaterThan(0);
     expect(backend.read("/missing.txt").error).toContain("not found");
     expect(backend.grep("é", "/", null, 10000).matches).toHaveLength(20);
     expect(backend.grep("x", "/long.txt").error).toContain("8 KiB");

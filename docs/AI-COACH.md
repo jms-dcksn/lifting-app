@@ -649,10 +649,14 @@ The harness uses `ChatOpenAI({ maxTokens: 4000 })` to cap each provider response
 including summaries. There is no cumulative input/output budget, model-call counter,
 summary-call counter, usage reservation/reconciliation or custom SSE parser. Missing usage
 reports do not block another model request. The provider SDK retains ordinary usage/tracing.
-A shared abort signal combines caller cancellation with a 60-second execution timeout,
-which remains below the durable claim's 90-second lease. A small fetch wrapper forwards
+A shared abort signal combines caller cancellation with a 120-second execution timeout,
+which remains below the durable claim's 180-second lease. A small fetch wrapper forwards
 that signal to main and native summary requests; it does not inspect their bodies or usage.
-Existing eight-tool-call and recursion guards remain loop protection, not token accounting.
+The Deep Agent allows 24 tool calls and 120 graph steps. At the tool ceiling, its next model
+request disables tools and asks for an answer from existing evidence. If the provider still
+requests tools and native execution ends on a limit error, a visible incomplete-review
+message replaces the empty reply. These are loop guards, not token accounting. The legacy
+runtime keeps its eight-call ceiling.
 
 Native summarization inherits the pinned library's model-aware defaults: with a known
 input context size, trigger at 85% and preserve the most recent 10% by token capacity;
@@ -772,7 +776,7 @@ runtime reads native state and submits the newly admitted input with its stable 
 Explicit resume repairs unfinished calls as unavailable and starts a new execution; it
 does not invoke saved pending tool tasks. Compaction/file state stays in native checkpoints.
 
-**Fencing:** a claim has a 90-second lease; the execution transport has a 60-second timeout.
+**Fencing:** a claim has a 180-second lease; the execution transport has a 120-second timeout.
 The pinned saver's promise-only pool adapter checks the binding and running lease under
 row locks in the same transaction as every checkpoint/pending write or native deletion.
 A replacement claim increments the epoch. The old worker cannot persist results or
@@ -1035,12 +1039,12 @@ Proposed initial ceilings (reviewable defaults, **not measured provider limits**
 
 | Resource | Starting ceiling / response |
 | --- | --- |
-| Total turn time | 60 seconds, including tools/summary/retries; abort before platform timeout |
+| Total turn time | 120 seconds, including tools/summary; route maxDuration 180 seconds leaves time for projection |
 | Model calls | No custom aggregate model/summary call cap; no nested execution |
 | Output | `maxTokens: 4000` per provider response, including summaries; no cumulative input/output accounting |
-| Tools | Existing eight total calls, including filesystem/skill reads; no separate unmetered skill budget |
+| Tools | 24 total calls, including filesystem/skill reads; 120 graph steps; no separate unmetered skill budget |
 | Context | Native model-aware summarization defaults; no trigger/keep/trim overrides; direct StateBackend |
-| Tool offload | Start above 2,000 estimated tokens; bounded read-back at most 200 lines / 8 KiB, search at most 20 matches |
+| Tool offload | Start above 20,000 estimated tokens; bounded read-back at most 200 lines / 8 KiB, search at most 20 matches |
 | Working files | 128 KiB/file, 32 files, 1 MiB live files/thread; reject excess without silently deleting proposal evidence |
 | Checkpoint growth | 100-turn physical-size benchmark and proposed 20 MiB/thread gate deferred by owner; live file quotas do not bound full database history |
 | Retention | After projection, prune intermediate checkpoints older than 30 days only when all turns are completed; retain latest, bootstrap, turn receipts and their immediate parents; retain live files |
@@ -1081,11 +1085,13 @@ const backend = new CompositeBackend(new WorkingFilesBackend(), {
   including middleware-internal writes. Count UTF-8 bytes and native decoded upload size.
   Same-step reservations keyed by the root checkpoint prevent concurrent tool offloads
   from spending the same remaining space. No file is silently evicted to make room.
-- Native oversized tool results use `/large_tool_results/<call-id>.txt` above 2,000 estimated
+- Native oversized tool results use `/large_tool_results/<call-id>.txt` above 20,000 estimated
   tokens. If saving fails, the tool result explicitly reports unavailable evidence and
   does not advertise a path. Read-back is at most 200 lines / 8 KiB of source content,
-  with a continuation line offset (native formatting adds line labels). A single line
-  larger than 8 KiB returns a narrowing request, not a silently truncated fact.
+  with a continuation display-line offset (native formatting adds line labels). Lines longer
+  than 2 KiB are wrapped at Unicode character boundaries in a read-only display view, so
+  long JSON strings remain pageable. Stored content is unchanged. Search keeps original
+  source line numbers; use read_file continuation offsets when paging.
 - Search permits at most 20 matches and 8 KiB of structured search output; an oversized
   search asks for a narrower pattern. Skill reads retain native behavior.
 - Native summarization writes/appends `/conversation_history/` through the same quotas.

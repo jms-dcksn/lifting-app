@@ -7,6 +7,9 @@ export const MODEL_CONTEXT_CHAR_BUDGET = 24_000;
 /** Max tool calls the agent may make in one turn. */
 export const TOOL_CALL_BUDGET = 8;
 
+export const DEEP_AGENT_TOOL_CALL_BUDGET = 24;
+export const DEEP_AGENT_TIMEOUT_MS = 120_000;
+
 /** Local and Preview fallback; Vercel Production uses lifting-app. */
 export const LANGSMITH_PROJECT_NAME = "lifting-app-dev";
 

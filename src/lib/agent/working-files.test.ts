@@ -37,9 +37,12 @@ describe("thread working files", () => {
     expect(append.filesUpdate?.["/workspace/0.txt"]?.content).toBe("proof\nappended");
   });
 
-  it("pages a long UTF-8 JSON line without losing evidence or altering stored content", () => {
+  it.each([false, true])("pages long UTF-8 JSON without changing stored content (legacy=%s)", legacy => {
     const content = JSON.stringify({ report: "é😀".repeat(3000), end: "last evidence" });
-    const backend = new WorkingFilesBackend({ state: { files: { "/long.json": file(content) } } });
+    const stored: FileData = legacy
+      ? { content: [content], created_at: "2026-11-11", modified_at: "2026-11-11" }
+      : file(content);
+    const backend = new WorkingFilesBackend({ state: { files: { "/long.json": stored } } });
     let offset = 0;
     let recovered = "";
     for (let page = 0; page < 30; page++) {
@@ -52,7 +55,7 @@ describe("thread working files", () => {
       offset = result.nextOffset;
     }
     expect(recovered).toBe(content);
-    expect(backend.readRaw("/long.json").data?.content).toBe(content);
+    expect(backend.readRaw("/long.json").data?.content).toEqual(stored.content);
   });
 
   it("bounds reads by lines and bytes with a usable continuation offset", () => {

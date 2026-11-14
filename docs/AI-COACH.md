@@ -1090,7 +1090,8 @@ const backend = new CompositeBackend(new WorkingFilesBackend(), {
   does not advertise a path. Read-back is at most 200 lines / 8 KiB of source content,
   with a continuation display-line offset (native formatting adds line labels). Lines longer
   than 2 KiB are wrapped at Unicode character boundaries in a read-only display view, so
-  long JSON strings remain pageable. Stored content is unchanged. Search keeps original
+  long JSON strings remain pageable in both native text and legacy line-array checkpoints.
+  Stored content is unchanged. Search keeps original
   source line numbers; use read_file continuation offsets when paging.
 - Search permits at most 20 matches and 8 KiB of structured search output; an oversized
   search asks for a narrower pattern. Skill reads retain native behavior.

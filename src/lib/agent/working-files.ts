@@ -56,7 +56,7 @@ export class WorkingFilesBackend extends StateBackend {
     const raw = super.readRaw(path);
     if (!raw.data) return { error: raw.error };
     // Read-only display lines let native line offsets page through large JSON strings.
-    const content = raw.data.content;
+    const content = Array.isArray(raw.data.content) ? raw.data.content.join("\n") : raw.data.content;
     const display = typeof content === "string" ? content.split("\n").flatMap(line => {
       const chunks: string[] = [];
       let chunk = "";

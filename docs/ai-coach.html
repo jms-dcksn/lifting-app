@@ -214,7 +214,7 @@ export const WORKING_FILE_LIMITS = { fileBytes: 128 * 1024, files: 32, totalByte
             appends. Concurrent tool calls reserve space against the same checkpoint.
             Nothing silently deletes evidence to make room. Reads return at most 200 lines
             and 8 KiB of source content; line labels add formatting. Long lines wrap into 2 KiB display lines at Unicode character boundaries;
-            the next offset continues that view. Stored content stays intact. Search uses original source line numbers. Search is capped at 20 matches and 8 KiB.</p>
+            the next offset continues that view. Native text and legacy line-array checkpoints both work; stored content stays intact. Search uses original source line numbers. Search is capped at 20 matches and 8 KiB.</p>
           <p>Summarization keeps its native defaults. If its history file exceeds the quota,
             the summary has no new file link. Full messages still persist in checkpoints.
             File limits do not bound total message history or database size.</p>

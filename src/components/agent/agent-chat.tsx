@@ -267,14 +267,14 @@ export function AgentChat({
         </form>
       ) : null}
       {error ? <p className="shrink-0 px-4 pb-3 text-caption text-danger">{error}</p> : null}
-      {runtime && blocked ? <div className="mx-4 mb-3 space-y-2">
+      {runtime && blocked && screen.name === "chat" && screen.turn === null ? <div className="mx-4 mb-3 space-y-2">
         <p role="status" className="text-caption text-muted">{runtime.readOnly ? "This conversation is temporarily read-only." : runtime.status === "running" ? "Your response is still running. Refresh to check its progress." : "Your saved response was interrupted. Resume to continue."}</p>
-        <Button variant="secondary" disabled={screen.name !== "chat" || screen.turn !== null} onClick={async () => {
+        <Button variant="secondary" onClick={async () => {
           if (screen.name !== "chat" || screen.conversation.kind !== "saved") return;
           try { dispatch({ type: "refreshed", snapshot: await fetchSnapshot(`/api/agent/chat?thread=${screen.conversation.threadId}`) }); }
           catch { dispatch({ type: "refresh-failed", error: "Could not refresh. Please retry." }); }
         }}>Refresh response</Button>
-        {!runtime.readOnly && runtime.status === "interrupted" ? <Button variant="secondary" disabled={screen.name !== "chat" || screen.turn !== null} onClick={() => void sendTurn("", false, true)}>Resume response</Button> : null}
+        {!runtime.readOnly && runtime.status === "interrupted" ? <Button variant="secondary" onClick={() => void sendTurn("", false, true)}>Resume response</Button> : null}
       </div> : null}
       {error && unansweredReview && !runtime ? <Button variant="secondary" className="mx-4 mb-3" onClick={() => void sendTurn("", true)}>Retry discussion</Button> : null}
     </div>

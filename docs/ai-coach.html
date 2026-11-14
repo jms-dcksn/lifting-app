@@ -89,8 +89,12 @@ const completed = await recoverDurableTurn(store, scope, turn);
 if (completed) return completed;</code></pre>
           <p>Saved final output can repair a failed UI write without another model call.
             Intermediate checkpoints preserve messages removed by compaction until projection.
-            GET never starts generation. Sheet and page share Refresh response / Resume
-            response controls; reconnecting does not automatically repeat navigation.</p>
+            GET never starts generation. Sheet and page show Refresh response / Resume
+            response only for reopened or disconnected work, when no local stream is active.
+            Live generation shows activity and streamed text without recovery clutter.
+            Reconnecting does not automatically repeat navigation.</p>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/components/agent/agent-chat.tsx
+      {runtime &amp;&amp; blocked &amp;&amp; screen.name === &quot;chat&quot; &amp;&amp; screen.turn === null ? &lt;div className=&quot;mx-4 mb-3 space-y-2&quot;&gt;</code></pre>
           <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/tools/draft-program.ts
 const programId = durable?.programId ?? crypto.randomUUID();</code></pre>
           <p>The durable path supplies one stable draft-program ID per turn. Before writing,

@@ -134,6 +134,32 @@ describe("durable Coach controls", () => {
     expect(host.querySelector("input")?.disabled).toBe(false);
   });
 
+  it.each(["sheet", "page"] as const)("keeps recovery controls out of a live %s response, then offers them after disconnect", async variant => {
+    if (saved.open.kind !== "saved") throw Error("Saved fixture required");
+    const encoder = new TextEncoder();
+    let streamController!: ReadableStreamDefaultController<Uint8Array>;
+    const stream = new ReadableStream<Uint8Array>({ start(controller) {
+      streamController = controller;
+      for (const event of [
+        { type: "thread", thread: saved.threads[0], userMessage: userMessage("live-input", "Inspect") },
+        { type: "runtime", status: { requestId: "request", status: "running", readOnly: false } },
+        { type: "text", text: "Live response fragment" },
+      ] satisfies AgentStreamEvent[]) controller.enqueue(encoder.encode(encodeSse(event)));
+    } });
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(stream, { headers: { "Content-Type": "text/event-stream" } })));
+    act(() => { root.render(<AgentChat variant={variant} initial={saved} />); });
+    type("Inspect");
+    await submit();
+    expect(host.textContent).toContain("Live response fragment");
+    expect(host.textContent).not.toContain("Refresh response");
+    expect(host.textContent).not.toContain("Refresh to check its progress");
+    expect(host.textContent).not.toContain("Resume response");
+    await act(async () => { streamController.close(); });
+    const refresh = [...host.querySelectorAll("button")].find(button => button.textContent === "Refresh response");
+    expect(refresh).toBeDefined();
+    expect(refresh?.disabled).toBe(false);
+  });
+
   it("offers status refresh for a running response without starting generation", async () => {
     if (saved.open.kind !== "saved") throw Error("Saved fixture required");
     const initial = { ...saved, open: { ...saved.open, runtime: { requestId: "request", status: "running" as const, readOnly: false } } };

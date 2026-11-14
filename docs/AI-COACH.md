@@ -784,8 +784,10 @@ Projection plus completed status is one transaction; `done` follows that commit.
 intermediate checkpoints retain messages removed by compaction, and repair reads their
 states before projection. It never calls the model. Failed projection stays recoverable.
 GET/reopen repairs failed/interrupted completed execution; an expired running lease becomes
-interrupted. Running work has a Refresh response control; interrupted work has an explicit
-Resume response control in both sheet and page. GET never starts generation. A duplicate
+interrupted. Recovery controls appear only when no local response stream is active: a
+reopened/disconnected running turn offers Refresh response, and interrupted work offers
+Resume response in both sheet and page. Live generation shows only its normal activity
+and streamed content, without a recovery note or disabled recovery buttons. GET never starts generation. A duplicate
 or recovered result does not automatically repeat client navigation. Unmount/disconnect
 aborts the fetch/graph/provider path and lets persistence cleanup finish.
 

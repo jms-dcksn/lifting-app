@@ -27,7 +27,7 @@ insert into coach_runtime.checkpoints(thread_id,checkpoint_id,checkpoint) values
  ('96000000-0000-0000-0000-000000000011','fixture','{}'),
  ('96000000-0000-0000-0000-000000000022','fixture','{}');
 insert into coach_runtime.turn(request_id,owner_id,conversation_id,payload_hash,input_message_id,status,epoch)
- values('96000000-0000-0000-0000-000000001111','96000000-0000-0000-000000000001','96000000-0000-0000-0000-000000000011',repeat('a',64),'96000000-0000-0000-0000-000000000111','accepted',1);
+ values('96000000-0000-0000-0000-000000001111','96000000-0000-0000-0000-000000000001','96000000-0000-0000-0000-000000000011',repeat('a',64),'96000000-0000-0000-0000-000000000111','accepted',1);
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub','96000000-0000-0000-0000-000000000001',true);

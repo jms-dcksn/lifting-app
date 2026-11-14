@@ -48,6 +48,7 @@ export const durableChat = {
 
   async post(input: { supabase: Client; owner: string; request: Request; turnRequest: TurnRequest; body: unknown }): Promise<Response | null> {
     const { supabase, owner, turnRequest } = input;
+    let stage = "runtime-version";
     try {
       const runtime = turnRequest.kind === "new" ? null : await version(supabase, turnRequest.threadId);
       if (!runtime && !enabled()) {
@@ -57,6 +58,7 @@ export const durableChat = {
       if (!enabled() || (runtime && runtime !== COACH_RUNTIME_VERSION)) throw new DurableChatError("This conversation is temporarily read-only.");
       const parsed = envelope.safeParse(input.body);
       if (!parsed.success) throw new DurableChatError("A valid request ID is required.", 400);
+      stage = "configuration";
       const store = configuredDurableStore();
       let seedId: string | undefined;
       if (turnRequest.kind === "review") {
@@ -65,6 +67,7 @@ export const durableChat = {
         if (error || !data) throw new DurableChatError("Review unavailable", 404);
         seedId = data.seed_message_id;
       }
+      stage = "admission";
       const admission = await store.admit(owner, { request: turnRequest, ...parsed.data, seedId });
       const abort = new AbortController();
       const signal = AbortSignal.any([input.request.signal, abort.signal]);
@@ -110,6 +113,15 @@ export const durableChat = {
         "Cache-Control": "private, no-store, max-age=0", "X-Robots-Tag": "noindex, nofollow" } });
     } catch (error) {
       const known = error instanceof DurableChatError;
+      if (!known || error.status >= 500) {
+        const diagnostic = z.object({ code: z.string().regex(/^[A-Z0-9_]{1,64}$/) }).safeParse(error);
+        const configurationCode = stage === "configuration" && error instanceof Error ? new Map([
+          ["Coach requires its dedicated runtime role", "INVALID_RUNTIME_ROLE"],
+          ["Configure verified TLS without sslmode URL overrides", "UNSUPPORTED_SSLMODE"],
+          ["Coach persistence is unavailable. Please retry later.", "MISSING_RUNTIME_DATABASE_URL"],
+        ]).get(error.message) : undefined;
+        console.error("Coach persistence failed", { stage, code: diagnostic.success ? diagnostic.data.code : configurationCode ?? "UNKNOWN" });
+      }
       return Response.json({ error: known ? error.message : "Coach persistence is unavailable. Please retry later." }, {
         status: known ? error.status : 503, headers: { "Cache-Control": "private, no-store", "X-Robots-Tag": "noindex, nofollow" },
       });

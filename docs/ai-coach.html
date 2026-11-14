@@ -107,6 +107,11 @@ const programId = durable?.programId ?? crypto.randomUUID();</code></pre>
             become read-only when the switch is off; they never fall back to transcript-only
             generation. The migration is unapplied. A human runs the database push after merge
             and redeploys. C adds read-only skills below; D adds file quotas and retention; Slice E user memory and the 100-turn benchmark are deferred.</p>
+          <p>Persistence failures return a generic message to the browser. Server diagnostics
+            record the failing stage and driver/configuration code, excluding raw error
+            messages, credentials and connection strings.</p>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/durable-chat.ts
+        console.error(&quot;Coach persistence failed&quot;, { stage, code: diagnostic.success ? diagnostic.data.code : configurationCode ?? &quot;UNKNOWN&quot; });</code></pre>
           <p><a class="underline" href="AI-COACH.md#slice-b-durable-execution-implemented-locally-rollout-disabled">Durable runtime contract, evidence and limits</a>.</p>
         </div>
         <div id="slice-c-skills" style="border:1px solid #78716c;padding:16px;border-radius:8px;margin:16px 0">

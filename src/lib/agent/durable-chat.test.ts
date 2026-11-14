@@ -40,6 +40,21 @@ describe("durable chat rollout and transport", () => {
     expect((await post({}))?.status).toBe(400);
     expect(mocks.store).not.toHaveBeenCalled();
   });
+  it("logs the safe database error code while keeping credentials out of logs and responses", async () => {
+    vi.stubEnv("COACH_RUNTIME_ENABLED", "1");
+    const secret = "postgresql://runtime:secret-password@private-host/postgres";
+    const error = Object.assign(new Error(`authentication failed: ${secret}`), { code: "28P01" });
+    mocks.store.mockReturnValue({ admit: vi.fn().mockRejectedValue(error) });
+    const logger = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const response = await post();
+      expect(response?.status).toBe(503);
+      expect(logger).toHaveBeenCalledWith("Coach persistence failed", { stage: "admission", code: "28P01" });
+      expect(JSON.stringify(logger.mock.calls)).not.toContain("secret-password");
+      expect(await response?.text()).not.toContain("secret-password");
+    } finally { logger.mockRestore(); }
+  });
+
   it("returns a completed duplicate without generation or client action replay", async () => {
     vi.stubEnv("COACH_RUNTIME_ENABLED", "1");
     const admission = { execute: false, turn: { request_id: requestId, status: "completed" },

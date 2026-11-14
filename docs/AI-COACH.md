@@ -822,6 +822,11 @@ behavior, full local Supabase/PostgREST/Auth, hosted transaction pooling/TLS/loa
 credential provisioning remain unverified release gates. C below adds skill infrastructure; physical file
 quotas and retention are implemented in D below. The 100-turn storage benchmark and E user memory are deferred.
 
+Persistence admission/configuration failures emit a server-only `Coach persistence failed`
+record with the stage and a bounded driver/configuration error code. Raw error messages,
+connection strings and credentials are excluded; clients still receive the generic 503.
+This makes Preview connection failures diagnosable without leaking database credentials.
+
 `pg@8.16.3` is now an explicit runtime dependency. `ws@8.22.2` satisfies the optional
 LangSmith peer that the production bundler resolves when the harness enters the route
 and page import graphs; the real production build passes with it installed.

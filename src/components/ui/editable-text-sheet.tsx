@@ -5,18 +5,17 @@ import { Sheet, useSheetDismiss } from "./sheet";
 import { Button } from "./button";
 import { WORKOUT_TEXT_LIMIT, normalizeWorkoutText } from "@/lib/workout-details";
 
-export function EditableTextSheet({ title, identity, label, initial, placeholder, remembered, onSave, onClose }: {
+export function EditableTextSheet({ title, identity, label, initial, placeholder, onSave, onClose }: {
   title: string; identity: React.ReactNode; label: string; initial: string | null;
-  placeholder: string; remembered?: string | null;
-  onSave: (text: string | null, remember: boolean) => Promise<void>; onClose: () => void;
+  placeholder: string;
+  onSave: (text: string | null) => Promise<void>; onClose: () => void;
 }) {
   const [text, setText] = useState(initial ?? "");
-  const [remember, setRemember] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [keyboard, setKeyboard] = useState(0);
   const allowClose = useRef(false);
-  const dirty = text !== (initial ?? "") || remember;
+  const dirty = text !== (initial ?? "");
   const dirtyRef = useRef(dirty);
   const pendingRef = useRef(pending);
   const onCloseRef = useRef(onClose);
@@ -57,18 +56,13 @@ export function EditableTextSheet({ title, identity, label, initial, placeholder
         className="mt-1 min-h-32 w-full resize-y rounded-control border border-border bg-surface p-3 text-body focus-visible:outline-2 focus-visible:outline-foreground"
         onChange={event=>{setText(event.target.value);setError(null);}} />
       <p id={`${id}-count`} className="text-caption text-muted">{Array.from(text).length.toLocaleString()} / {WORKOUT_TEXT_LIMIT.toLocaleString()} characters</p>
-      {remembered !== undefined && <>
-        {remembered && <details className="mt-3 rounded-control bg-surface p-3"><summary className="min-h-11 cursor-pointer py-2 text-caption">Remembered setup</summary><p className="whitespace-pre-wrap break-words text-body">{remembered}</p>
-          <Button type="button" variant="secondary" disabled={pending} onClick={()=>setText(remembered)}>Use remembered setup</Button></details>}
-        <label className="mt-3 flex min-h-11 items-center gap-2 text-body"><input type="checkbox" disabled={pending} checked={remember} onChange={event=>setRemember(event.target.checked)} />Remember for this machine / cable</label>
-      </>}
       {error && <p role="alert" className="mt-3 text-body text-danger">{error}</p>}
       <TextActions pending={pending} clear={()=>setText("")} save={async dismiss=>{
         if(pending) return;
         try {
           const normalized=normalizeWorkoutText(text);
           setPending(true);setError(null);
-          await onSave(normalized,remember);allowClose.current=true;dismiss();
+          await onSave(normalized);allowClose.current=true;dismiss();
         } catch(cause) {setError(cause instanceof Error?cause.message:"Could not save. Your draft is still here. Try again.");}
         finally {setPending(false);}
       }} />

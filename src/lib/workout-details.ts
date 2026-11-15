@@ -13,4 +13,4 @@ export function supportsSetup(def: ExerciseDef | undefined, catalog: Record<stri
   return def.equipment==="machine" || def.equipment==="cable" || profile==="machine" || profile==="cable";
 }
 export type WorkoutExerciseDetail = { id: string; occurrence_id: string; exercise_id: string; equipment_instance_id: string | null; setup: string | null; note: string | null };
-export type RememberedSetup = { id: string; exercise_id: string; equipment_instance_id: string | null; setup: string | null };
+export type RememberedSetup = { latestSetup?: string | null; id: string; exercise_id: string; equipment_instance_id: string | null; setup: string | null };

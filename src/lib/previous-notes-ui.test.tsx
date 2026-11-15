@@ -21,7 +21,7 @@ it("loads only on demand, handles retry and keeps browsing read-only",async()=>{
   load.mockRejectedValueOnce(Error("offline")).mockResolvedValue(page);
   await render();expect(load).not.toHaveBeenCalled();
   await click("Previous notes");expect(host.querySelector('[role="alert"]')).not.toBeNull();
-  await click("Try again");expect(host.textContent).toContain("Remembered setup · not applied");
+  await click("Try again");expect(host.textContent).toContain("Saved setup reference");
   expect(host.textContent).toContain("No previous workout notes");expect(host.querySelector("textarea,input")).toBeNull();
 });
 it("drops responses from the previous identity when selection changes",async()=>{

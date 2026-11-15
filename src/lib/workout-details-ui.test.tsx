@@ -26,13 +26,13 @@ it("preserves text and exposes a retry after a failed save",async()=>{
   await text("A new observation");await act(async()=>button("Save").click());
   expect(host.querySelector("textarea")!.value).toBe("A new observation");expect(host.textContent).toContain("Connection failed");expect(close).not.toHaveBeenCalled();
   save.mockResolvedValueOnce(undefined);
-  await act(async()=>button("Save").click());expect(save).toHaveBeenLastCalledWith("A new observation",false);
+  await act(async()=>button("Save").click());expect(save).toHaveBeenLastCalledWith("A new observation");
 });
 it("rejects oversized text without truncation, and clearing still requires Save",async()=>{
   await text("a".repeat(2001));await act(async()=>button("Save").click());
   expect(save).not.toHaveBeenCalled();expect(host.querySelector("textarea")!.value).toHaveLength(2001);
   await act(async()=>button("Clear").click());expect(save).not.toHaveBeenCalled();
-  save.mockRejectedValueOnce(new Error("offline"));await act(async()=>button("Save").click());expect(save).toHaveBeenCalledWith(null,false);
+  save.mockRejectedValueOnce(new Error("offline"));await act(async()=>button("Save").click());expect(save).toHaveBeenCalledWith(null);
 });
 it("guards Escape and Cancel while a changed note is unsaved",async()=>{
   await text("Unsaved");

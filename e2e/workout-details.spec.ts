@@ -34,13 +34,13 @@ test("prescribed and performed tempo survive program, plan, workout and history"
     const session=new URL(page.url()).pathname.split('/').at(-1)!;
     await expect(page.getByText('Tempo 2-1-1-0',{exact:false}).first()).toBeVisible();
     await page.getByRole('button',{name:'Skip',exact:true}).click();
-    await page.locator('summary').filter({hasText:'Set details'}).click();
+    await page.locator('summary').filter({hasText:/^Tempo /}).click();
     await page.getByLabel('Lower',{exact:true}).fill('4');
     await page.getByRole('button',{name:'Log set',exact:true}).click();
     await expect.poll(async()=>(await db.query('select tempo from public.set_log where session_id=$1',[session])).rows[0]?.tempo).toEqual([4,1,1,0]);
     await expect(page.getByRole('listitem').getByText('Tempo 4-1-1-0',{exact:true})).toBeVisible();
     // A new set returns to the prescription, rather than inheriting the last override.
-    await page.locator('summary').filter({hasText:'Set details'}).click();
+    await page.locator('summary').filter({hasText:/^Tempo /}).click();
     await expect(page.getByLabel('Lower',{exact:true})).toHaveValue('2');
     await page.reload(); await expect(page.getByRole('listitem').getByText('Tempo 4-1-1-0',{exact:true})).toBeVisible();
     await page.getByRole('button',{name:/^Edit set \d+ for /}).click();

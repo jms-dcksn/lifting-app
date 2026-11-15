@@ -76,35 +76,35 @@ test("workout notes, exact setup reuse and historical set context",async({page,c
     await machine.getByRole('button',{name:/^Edit machine or cable setup/}).click();
     sheet=page.getByRole('dialog',{name:'Machine / cable setup',exact:true});
     await expect(sheet).toContainText('press-a');
-    await sheet.getByRole('textbox').fill('Seat 4, back pad 2');await sheet.getByRole('checkbox').check();
+    await sheet.getByRole('textbox').fill('Seat 4, back pad 2');
     await sheet.getByRole('button',{name:'Save',exact:true}).click();await expect(sheet).toHaveCount(0);
-    // A duplicate occurrence offers remembered setup, rather than claiming it was applied.
-    await expect(duplicate.getByText('Remembered · not applied',{exact:true})).toBeVisible();
+    // Setup is scoped to this occurrence; another slot is not silently changed.
+    await expect(duplicate.getByText('Seat 4, back pad 2',{exact:true})).toHaveCount(0);
     await cable.getByRole('button',{name:/^Edit machine or cable setup/}).click();
     sheet=page.getByRole('dialog',{name:'Machine / cable setup',exact:true});
     await sheet.getByRole('textbox').fill('Pulley 12, rope attachment');await sheet.getByRole('button',{name:'Save',exact:true}).click();await expect(sheet).toHaveCount(0);
     await page.getByRole('button',{name:'Skip',exact:true}).click();
-    await machine.locator('summary').filter({hasText:'Set details'}).click();
-    await machine.getByLabel('Note for this set (optional)',{exact:true}).fill('Left shoulder discomfort');
+    await machine.locator('summary').filter({hasText:/^Tempo /}).click();
+    await expect(machine.getByLabel('Note for this set (optional)',{exact:true})).toHaveCount(0);
     await machine.getByLabel('Lower',{exact:true}).fill('4');
     await machine.getByRole('textbox',{name:'Weight',exact:true}).fill('50');
     await machine.getByRole('button',{name:'Log set',exact:true}).click();
     await expect.poll(async()=>(await db.query('select count(*)::int n from public.set_log where session_id=$1',[session])).rows[0].n).toBe(1);
     const saved=(await db.query('select * from public.set_log where session_id=$1',[session])).rows[0];
-    expect(saved).toMatchObject({note:'Left shoulder discomfort',tempo:[4,0,1,0],setup_snapshot:'Seat 4, back pad 2'});
+    expect(saved).toMatchObject({note:null,tempo:[4,0,1,0],setup_snapshot:'Seat 4, back pad 2'});
     const rest=await page.evaluate(id=>sessionStorage.getItem(`lifting-rest-timer:${id}`),session);
     expect(rest).not.toBeNull();
     await machine.getByRole('button',{name:/^Edit machine or cable setup/}).click();
     sheet=page.getByRole('dialog',{name:'Machine / cable setup',exact:true});
-    await sheet.getByRole('textbox').fill('Seat 5');await sheet.getByRole('checkbox').check();await sheet.getByRole('button',{name:'Save',exact:true}).click();await expect(sheet).toHaveCount(0);
+    await sheet.getByRole('textbox').fill('Seat 5');await sheet.getByRole('button',{name:'Save',exact:true}).click();await expect(sheet).toHaveCount(0);
     expect(await page.evaluate(id=>sessionStorage.getItem(`lifting-rest-timer:${id}`),session)).toBe(rest);
     await machine.getByRole('button',{name:/^Edit set \d+ for /}).click();
     await machine.getByRole('textbox',{name:'Reps',exact:true}).fill('9');await machine.getByRole('button',{name:'Save',exact:true}).click();
-    await expect.poll(async()=>(await db.query('select reps,note,tempo,setup_snapshot from public.set_log where id=$1',[saved.id])).rows[0]).toMatchObject({reps:9,note:'Left shoulder discomfort',tempo:[4,0,1,0],setup_snapshot:'Seat 4, back pad 2'});
+    await expect.poll(async()=>(await db.query('select reps,note,tempo,setup_snapshot from public.set_log where id=$1',[saved.id])).rows[0]).toMatchObject({reps:9,note:null,tempo:[4,0,1,0],setup_snapshot:'Seat 4, back pad 2'});
     await expect(machine.getByRole('button',{name:/^Edit set \d+ for /})).toBeVisible();
     await page.reload();await expect(machine.getByText('Seat 5',{exact:true})).toBeVisible();
-    await expect(machine.getByText('Left shoulder discomfort',{exact:true}).first()).toBeVisible();
-    await machine.getByRole('button',{name:/^Edit set \d+ for /}).click();await machine.locator('summary').filter({hasText:'Set details'}).click();
+
+    await machine.getByRole('button',{name:/^Edit set \d+ for /}).click();await machine.locator('summary').filter({hasText:/^Tempo /}).click();
     await machine.getByLabel('Note for this set (optional)',{exact:true}).fill('Observed on this set only');
     await machine.getByRole('button',{name:'Save',exact:true}).click();
     await expect.poll(async()=>(await db.query('select note,reps from public.set_log where id=$1',[saved.id])).rows[0]).toEqual({note:'Observed on this set only',reps:9});
@@ -164,15 +164,14 @@ test("workout notes, exact setup reuse and historical set context",async({page,c
     const nextSession=new URL(page.url()).pathname.split('/').at(-1)!;
     await machine.getByRole('button',{name:/^Previous notes for /}).click();previous=page.getByRole('dialog',{name:/^Previous notes for /});
     await expect(previous).toContainText('Recovered network draft');
-    await expect(previous).toContainText('Remembered setup · not applied');
+    await expect(previous).toContainText('Previous workout setup');
     await previous.getByRole('button',{name:'Close',exact:true}).click();await expect(previous).toHaveCount(0);
     expect((await db.query('select count(*)::int n from public.set_log where session_id=$1',[nextSession])).rows[0].n).toBe(0);
 
-    await expect(machine.getByText('Remembered · not applied',{exact:true})).toBeVisible();
+    await expect(machine.getByText('Last workout',{exact:true})).toBeVisible();
     await expect(machine.getByText('Recovered network draft',{exact:true})).toHaveCount(0);
     await machine.getByRole('button',{name:/^Edit machine or cable setup/}).click();sheet=page.getByRole('dialog',{name:'Machine / cable setup',exact:true});
-    await expect(sheet.getByRole('textbox')).toHaveValue('');await sheet.getByText('Remembered setup',{exact:true}).click();
-    await sheet.getByRole('button',{name:'Use remembered setup',exact:true}).click();await expect(sheet.getByRole('textbox')).toHaveValue('Seat 5');
+    await expect(sheet.getByRole('textbox')).toHaveValue('Seat 5');
     await sheet.getByRole('button',{name:'Save',exact:true}).click();await expect(sheet).toHaveCount(0);
     expect(errors).toEqual([]);
   } finally {if(owner) await db.query('delete from auth.users where id=$1',[owner]);await db.end();}

@@ -28,12 +28,18 @@ clear it. Workout exercise notes use session + stable occurrence + exact exercis
 identity. Duplicate slots stay independent, including before their first set. A swap selects
 the destination's record; prior observations remain available under their original identity.
 
-Setup references use owner + exact exercise + equipment identity. The UI provides a labeled
-**Machine setup** or **Cable setup** action beside Exercise note.
+Setup references use owner + exact exercise + equipment identity. Active workout cards
+group **Machine setup** or **Cable setup**, **Exercise note**, and
+**Previous notes** under one Notes & setup section. New-set entry contains only a Tempo
+expander; observations belong in Exercise note. Existing set notes remain editable via
+the saved set’s Edit action.
 Before equipment is selected, the same action opens station selection; it does not save
 settings against an unresolved template. Free-weight exercises do not show a setup action.
-The editor offers remembered setup explicitly, rather than treating it as a newly recorded observation. Saving setup
-records the current occurrence and optionally updates that reusable reference. Each set
+Active cards show the latest finished workout’s setup for the exact exercise/equipment,
+labeled Last workout, until setup is saved for the current occurrence. The setup editor
+starts with that text; saving records it for this occurrence. No remembered/apply controls
+are shown in active workout entry. The historical reusable reference remains available
+in Previous notes. Each set
 captures the setup that applied when logged. Later setup edits affect subsequent sets;
 earlier sets retain their original snapshot. Exercise/set observations never auto-copy.
 
@@ -49,10 +55,8 @@ rest, create sets, finish work, or trigger Coach interpretation.
 - `workout_exercise_detail`: owner/session/occurrence/exact exercise/equipment, independent
   setup and exercise note. Direct writes are denied; an invoker wrapper calls the existing
   non-login/non-bypass workout executor with owner RLS and validated session identities.
-- `exercise_setup`: optional reusable setup for an exact user/exercise/equipment. The editor
-  starts with this workout's saved text; **Use remembered setup** explicitly fills a draft.
-  **Remember for this machine / cable** also updates the reference on Save. Clear affects
-  the reusable reference only when that option is selected.
+- `exercise_setup`: optional reusable setup for an exact user/exercise/equipment. Legacy
+  reusable references are read by Previous notes; active workout edits save only the occurrence.
 - `set_log.note`, `setup_snapshot`, `tempo`: one actual set's observation and historical
   context. An insert trigger captures applied setup under the existing owner source lock;
   updates preserve that snapshot. Unapplied remembered setup is never claimed as performed.

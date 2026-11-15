@@ -51,7 +51,7 @@ function NotesContent({selection,name,def,catalog,equipmentLabel}:{selection:Not
       <Button variant="secondary" size="sm" onClick={dismiss}>Close</Button>
     </header>
     <div className="min-h-0 overflow-y-auto overscroll-contain" tabIndex={0} aria-label="Previous workout notes">
-      {page?.remembered && <section className="mb-4 rounded-control bg-surface p-3"><h3 className="text-caption font-medium">Remembered setup · not applied</h3><Text value={page.remembered}/></section>}
+      {page?.remembered && <section className="mb-4 rounded-control bg-surface p-3"><h3 className="text-caption font-medium">Saved setup reference</h3><Text value={page.remembered}/></section>}
       {page?.workouts.map(workout=><section key={workout.id} className="mb-4 rounded-card border border-border p-3" aria-label={`Workout ${workout.finishedAt}`}>
         <h3 className="text-body font-medium">Workout · <time dateTime={workout.finishedAt??undefined}>{new Date(workout.finishedAt!).toLocaleString()}</time></h3>
         {workout.occurrences.map((occurrence,index)=><div key={occurrence.id} className="mt-3 border-t border-border pt-2">

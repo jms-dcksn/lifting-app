@@ -17,7 +17,7 @@ export function WorkoutExerciseDetails({sessionId,slotId,exerciseId,equipmentIns
   equipmentLabels:Record<string,string>;
   catalog:Record<string,ExerciseDef>;details:WorkoutExerciseDetail[];remembered:RememberedSetup[];
 }) {
-  const [editing,setEditing]=useState<{kind:"setup"|"note";exerciseId:string;equipment:string|null;initial:string|null;reference:string|null}|null>(null);
+  const [editing,setEditing]=useState<{kind:"setup"|"note";exerciseId:string;equipment:string|null;initial:string|null;draft:string|null}|null>(null);
   const close=useCallback(()=>setEditing(null),[]);
   const def=catalog[exerciseId];
   const current=details.find(d=>d.exercise_id===exerciseId && d.equipment_instance_id===equipmentInstanceId);
@@ -25,7 +25,7 @@ export function WorkoutExerciseDetails({sessionId,slotId,exerciseId,equipmentIns
   function open(kind:"setup"|"note",id=exerciseId,equipment=equipmentInstanceId) {
     const detail=details.find(d=>d.exercise_id===id && d.equipment_instance_id===equipment);
     const reference=remembered.find(d=>d.exercise_id===id && d.equipment_instance_id===equipment);
-    setEditing({kind,exerciseId:id,equipment,initial:detail?.[kind]??null,reference:reference?.setup??null});
+    setEditing({kind,exerciseId:id,equipment,initial:detail?.[kind]??null,draft:kind==="setup" ? (detail?.setup??reference?.latestSetup??null) : detail?.note??null});
   }
   const label=def?.name??exerciseId;
   const template=stationTemplateFor(def,catalog);
@@ -34,16 +34,17 @@ export function WorkoutExerciseDetails({sessionId,slotId,exerciseId,equipmentIns
   const canEditSetup=supportsSetup(def,catalog);
   const needsSetupStation=!canEditSetup && !!template && (setupProfile==="machine" || setupProfile==="cable");
   return <div className="mt-3 border-t border-border pt-2">
-    <div className="grid grid-cols-2 items-start gap-x-3 gap-y-1">
+    <p className="mb-1 text-caption font-medium">{canEditSetup || needsSetupStation ? "Notes & setup" : "Notes"}</p>
+    <div className="grid grid-cols-1 items-start gap-x-3 gap-y-1">
       {canEditSetup && <DetailAction compact={compact} title={setupTitle} label={`Edit machine or cable setup for ${label}`} saved={!!current?.setup}
-        value={current?.setup??reference?.setup} remembered={!current?.setup && !!reference?.setup}
+        value={current?.setup??reference?.latestSetup} status={!current?.setup && reference?.latestSetup ? "Last workout" : undefined}
         onClick={()=>open("setup")}><IconSettings /></DetailAction>}
       {needsSetupStation && <DetailAction compact={compact}
         title={setupTitle} label={`Choose ${setupProfile} to edit setup for ${label}`} saved={false}
         status={onChooseSetup ? `Choose ${setupProfile} first` : `No ${setupProfile} selected`} disabled={!onChooseSetup} onClick={()=>onChooseSetup?.()}><IconSettings /></DetailAction>}
       <DetailAction compact={compact} title="Exercise note" label={`Edit exercise note for ${label}`} saved={!!current?.note} value={current?.note}
         onClick={()=>open("note")}><IconNote /></DetailAction>
-    {compact && <div className={canEditSetup || needsSetupStation ? "col-span-2" : undefined}><PreviousNotes inline exerciseId={exerciseId} equipmentInstanceId={equipmentInstanceId} excludeSessionId={sessionId} def={def} catalog={catalog} equipmentLabel={equipmentInstanceId?equipmentLabels[equipmentInstanceId]:undefined}/></div>}
+    {compact && <div className="min-w-0"><PreviousNotes inline exerciseId={exerciseId} equipmentInstanceId={equipmentInstanceId} excludeSessionId={sessionId} def={def} catalog={catalog} equipmentLabel={equipmentInstanceId?equipmentLabels[equipmentInstanceId]:undefined}/></div>}
     </div>
     {!compact && <PreviousNotes exerciseId={exerciseId} equipmentInstanceId={equipmentInstanceId} excludeSessionId={sessionId} def={def} catalog={catalog} equipmentLabel={equipmentInstanceId?equipmentLabels[equipmentInstanceId]:undefined}/>}
     {details.some(d=>d.exercise_id!==exerciseId || d.equipment_instance_id!==equipmentInstanceId) && <details className="mt-2 text-caption">
@@ -57,19 +58,18 @@ export function WorkoutExerciseDetails({sessionId,slotId,exerciseId,equipmentIns
     {editing && <EditableTextSheet title={editing.kind==="setup"?"Machine / cable setup":"Exercise note"}
       identity={<>{catalog[editing.exerciseId]?<ExerciseCardLabel as="div" size="body" def={catalog[editing.exerciseId]} catalog={catalog}/>:editing.exerciseId}{editing.equipment && <p>{equipmentLabels[editing.equipment]??editing.equipment}</p>}</>}
       label={editing.kind==="setup"?"Setup for this workout":"Observation for this exercise in this workout"}
-      initial={editing.initial}
+      initial={editing.draft}
       placeholder={editing.kind==="setup"?"Seat 4, back pad 2; pulley at 12, rope attachment":"Last set felt unstable; shorten range next time"}
-      remembered={editing.kind==="setup"?editing.reference:undefined}
-      onClose={close} onSave={async(text,remember)=>{
+      onClose={close} onSave={async(text)=>{
         await saveWorkoutExerciseDetail({sessionId,slotId,exerciseId:editing.exerciseId,equipmentInstanceId:editing.equipment,kind:editing.kind,text,
-          expected:editing.initial,remember,referenceExpected:editing.reference});
+          expected:editing.initial,remember:false,referenceExpected:null});
       }}/>}
   </div>;
 }
-function DetailAction({title,label,value,saved,remembered,onClick,children,compact=false,status,disabled}:{compact?:boolean;title:string;label:string;value?:string|null;saved:boolean;remembered?:boolean;onClick:()=>void;children:React.ReactNode;status?:string;disabled?:boolean}) {
+function DetailAction({title,label,value,saved,onClick,children,compact=false,status,disabled}:{compact?:boolean;title:string;label:string;value?:string|null;saved:boolean;onClick:()=>void;children:React.ReactNode;status?:string;disabled?:boolean}) {
   return <div className={compact ? "min-w-0" : "min-w-0 rounded-control bg-surface px-2 pb-2"}>
     <IconButton variant="ghost" className="h-auto min-h-11 w-full justify-start gap-2 py-1 text-left" aria-label={label} disabled={disabled} onClick={onClick}>{children}
-      <span className="min-w-0 text-caption">{title}<span className="block text-faint">{status??(saved?"Saved":remembered?"Remembered · not applied":"Add")}</span></span></IconButton>
+      <span className="min-w-0 text-caption">{title}<span className="block text-faint">{status??(saved?"Saved":"Add")}</span></span></IconButton>
     {value && <button type="button" aria-label={`Read ${title.toLowerCase()}: ${label}`} onClick={onClick} className="line-clamp-2 min-h-11 w-full break-words text-left text-caption text-muted">{value}</button>}
   </div>;
 }

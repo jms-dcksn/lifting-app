@@ -55,6 +55,14 @@ beforeEach(() => {
 afterEach(async () => { await act(async () => root.unmount()); host.remove(); });
 
 describe("active workout set progress", () => {
+  it("keeps new observations in the exercise notes section", async () => {
+    await render(0);
+    expect(host.textContent).not.toContain("Set details");
+    expect(host.querySelector("textarea")).toBeNull();
+    expect(host.querySelector('button[aria-label^="Edit exercise note"]')).not.toBeNull();
+    expect(Array.from(host.querySelectorAll("summary")).some(el=>el.textContent?.startsWith("Tempo "))).toBe(true);
+  });
+
   it("keeps the exercise pin in the card header without opening More", async () => {
     await render(0);
     const card=host.querySelector('[data-workout-slot]')!;

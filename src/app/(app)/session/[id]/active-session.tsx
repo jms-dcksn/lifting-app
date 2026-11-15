@@ -1058,13 +1058,13 @@ function SetEntry({
           }}
         />
       </div>
-      <details className="text-caption"><summary className="min-h-11 cursor-pointer py-3">Set details · Tempo {tempo?.join("-") ?? "unspecified"}{note ? " · Note" : ""}</summary>
+      <details className="text-caption"><summary className="min-h-11 cursor-pointer py-3">Tempo {tempo?.join("-") ?? "unspecified"}{onCancel && note ? " · Set note" : ""}</summary>
         {savedSetup && <SavedSetDetails tempo={initialTempo} setup={savedSetup}/>}
-        <label className="mt-2 block text-caption text-muted" htmlFor={noteId}>Note for this set (optional)</label>
+        {onCancel && <><label className="mt-2 block text-caption text-muted" htmlFor={noteId}>Note for this set (optional)</label>
         <textarea id={noteId} rows={3} value={note} placeholder="Left shoulder discomfort on this set"
           className="mt-1 w-full rounded-control border border-border bg-surface p-3 text-body focus-visible:outline-2 focus-visible:outline-foreground"
           aria-invalid={Array.from(note).length>WORKOUT_TEXT_LIMIT || undefined} onChange={event=>{setNote(event.target.value);setDetailError(null);}} />
-        <p className="text-caption text-muted">{Array.from(note).length} / {WORKOUT_TEXT_LIMIT} characters</p>
+        <p className="text-caption text-muted">{Array.from(note).length} / {WORKOUT_TEXT_LIMIT} characters</p></>}
         <TempoFields variant="row" value={tempo ?? [2,0,1,0]} onChange={value => {setTempo(value);setTempoTouched(true);setDetailError(null);}} />
         {tempo && <Button type="button" variant="ghost" onClick={() => {setTempo(null);setTempoTouched(true);}}>Mark tempo unspecified</Button>}
       </details>

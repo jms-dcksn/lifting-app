@@ -30,6 +30,17 @@ test("workout notes, exact setup reuse and historical set context",async({page,c
     const machine=cards.nth(0),duplicate=cards.nth(1),cable=cards.nth(2),free=cards.nth(3);
     await expect(cards).toHaveCount(4);
     await expect(free.getByRole('button',{name:/^Edit machine or cable setup/})).toHaveCount(0);
+    // Personal-detail actions share one row without shrinking touch targets.
+    for (const width of [320,390,1280]) {
+      await page.setViewportSize({width,height:900});
+      const controls=[machine.getByRole('button',{name:/^Edit machine or cable setup/}),machine.getByRole('button',{name:/^Edit exercise note for /}),machine.getByRole('button',{name:/^Previous notes for /})];
+      const boxes=await Promise.all(controls.map(control=>control.boundingBox()));
+      for (const box of boxes) {expect(box).not.toBeNull();expect(box!.width).toBeGreaterThanOrEqual(44);expect(box!.height).toBeGreaterThanOrEqual(44);}
+      expect(Math.max(...boxes.map(box=>box!.y))-Math.min(...boxes.map(box=>box!.y))).toBeLessThan(2);
+      expect(boxes[0]!.x+boxes[0]!.width).toBeLessThanOrEqual(boxes[1]!.x+1);
+      expect(boxes[1]!.x+boxes[1]!.width).toBeLessThanOrEqual(boxes[2]!.x+1);
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    }
     const openNote=()=>machine.getByRole('button',{name:/^Edit exercise note for /}).click();
     await openNote();
     let sheet=page.getByRole('dialog',{name:'Exercise note',exact:true});
@@ -43,16 +54,20 @@ test("workout notes, exact setup reuse and historical set context",async({page,c
     let freeSheet=page.getByRole('dialog',{name:'Exercise note',exact:true});
     const longNote='Controlled range and steady breathing. '.repeat(40);
     await freeSheet.getByRole('textbox').fill(longNote);await freeSheet.getByRole('button',{name:'Save',exact:true}).click();await expect(freeSheet).toHaveCount(0);
-    expect(await free.getByRole('button',{name:/^Read exercise note:/}).evaluate(element=>element.clientHeight)).toBeLessThanOrEqual(50);
+    await expect(free.getByRole('button',{name:/^Edit exercise note for /}).getByRole('img',{name:'Saved note available'})).toBeVisible();
+    await expect(free.getByText(longNote,{exact:true})).toHaveCount(0);
     await free.getByRole('button',{name:/^Edit exercise note for /}).click();freeSheet=page.getByRole('dialog',{name:'Exercise note',exact:true});
+    await expect(freeSheet.getByRole('textbox')).toHaveValue(longNote.trim());
     await freeSheet.getByRole('button',{name:'Clear',exact:true}).click();
     expect((await db.query('select note from public.workout_exercise_detail where session_id=$1 and occurrence_id=$2',[session,slots[3]])).rows[0].note).not.toBeNull();
     await freeSheet.getByRole('button',{name:'Save',exact:true}).click();await expect(freeSheet).toHaveCount(0);
-    await expect(free.getByRole('button',{name:/^Read exercise note:/})).toHaveCount(0);
+    await expect(free.getByRole('button',{name:/^Edit exercise note for /}).getByRole('img',{name:'Saved note available'})).toHaveCount(0);
     expect((await db.query('select count(*)::int n from public.set_log where session_id=$1',[session])).rows[0].n).toBe(0);
-    await expect(machine.getByText('Last set felt unstable',{exact:true})).toBeVisible();
+    await expect(machine.getByRole('button',{name:/^Edit exercise note for /}).getByRole('img',{name:'Saved note available'})).toBeVisible();
+    await expect(machine.getByText('Last set felt unstable',{exact:true})).toHaveCount(0);
     await expect(duplicate.getByText('Last set felt unstable',{exact:true})).toHaveCount(0);
-    await page.reload();await expect(machine.getByText('Last set felt unstable',{exact:true})).toBeVisible();
+    await page.reload();await expect(machine.getByRole('button',{name:/^Edit exercise note for /}).getByRole('img',{name:'Saved note available'})).toBeVisible();
+    await expect(machine.getByText('Last set felt unstable',{exact:true})).toHaveCount(0);
 
     // Validation and an actual aborted Server Action keep the draft available for retry.
     await openNote();sheet=page.getByRole('dialog',{name:'Exercise note',exact:true});
@@ -102,14 +117,15 @@ test("workout notes, exact setup reuse and historical set context",async({page,c
     await machine.getByRole('textbox',{name:'Reps',exact:true}).fill('9');await machine.getByRole('button',{name:'Save',exact:true}).click();
     await expect.poll(async()=>(await db.query('select reps,note,tempo,setup_snapshot from public.set_log where id=$1',[saved.id])).rows[0]).toMatchObject({reps:9,note:null,tempo:[4,0,1,0],setup_snapshot:'Seat 4, back pad 2'});
     await expect(machine.getByRole('button',{name:/^Edit set \d+ for /})).toBeVisible();
-    await page.reload();await expect(machine.getByText('Seat 5',{exact:true})).toBeVisible();
+    await page.reload();await expect(machine.getByRole('button',{name:/^Edit machine or cable setup/}).getByRole('img',{name:'Saved note available'})).toBeVisible();
+    await expect(machine.getByText('Seat 5',{exact:true})).toHaveCount(0);
 
     await machine.getByRole('button',{name:/^Edit set \d+ for /}).click();await machine.locator('summary').filter({hasText:/^Tempo /}).click();
     await machine.getByLabel('Note for this set (optional)',{exact:true}).fill('Observed on this set only');
     await machine.getByRole('button',{name:'Save',exact:true}).click();
     await expect.poll(async()=>(await db.query('select note,reps from public.set_log where id=$1',[saved.id])).rows[0]).toEqual({note:'Observed on this set only',reps:9});
     await expect(machine.getByRole('button',{name:/^Edit set \d+ for /})).toBeVisible();
-    await expect(machine.getByText('Recovered network draft',{exact:true})).toBeVisible();
+    await expect(machine.getByRole('button',{name:/^Edit exercise note for /}).getByRole('img',{name:'Saved note available'})).toBeVisible();
     // Swapping keeps the source observation available, without applying it to the destination.
     await machine.getByRole('button',{name:/^Swap .* for another exercise$/}).click();
     await page.getByPlaceholder('Search exercises…').fill('Dumbbell Incline Bench');
@@ -168,7 +184,8 @@ test("workout notes, exact setup reuse and historical set context",async({page,c
     await previous.getByRole('button',{name:'Close',exact:true}).click();await expect(previous).toHaveCount(0);
     expect((await db.query('select count(*)::int n from public.set_log where session_id=$1',[nextSession])).rows[0].n).toBe(0);
 
-    await expect(machine.getByText('Last workout',{exact:true})).toBeVisible();
+    await expect(machine.getByRole('button',{name:/^Edit machine or cable setup/}).getByRole('img',{name:'Saved note available'})).toBeVisible();
+    await expect(machine.getByRole('button',{name:/^Previous notes for /}).getByRole('img',{name:'Saved note available'})).toBeVisible();
     await expect(machine.getByText('Recovered network draft',{exact:true})).toHaveCount(0);
     await machine.getByRole('button',{name:/^Edit machine or cable setup/}).click();sheet=page.getByRole('dialog',{name:'Machine / cable setup',exact:true});
     await expect(sheet.getByRole('textbox')).toHaveValue('Seat 5');

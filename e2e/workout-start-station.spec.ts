@@ -67,9 +67,13 @@ for (const entry of ["home", "planner"] as const) {
       const cableLog=(await db.query('select exercise_id from public.set_log where session_id=$1 and program_slot_id=$2',[session,cable])).rows[0];
       expect(cableLog.exercise_id).not.toBe('lat-pulldown');
       await page.reload();
-      const savedSetup=cableCard.getByRole('button',{name:/^Read cable setup:/});
-      await expect(savedSetup).toBeVisible();
-      await expect(savedSetup).toHaveText('Pulley 12, neutral handles');
+      const savedSetup=cableCard.getByRole('button',{name:/^Edit machine or cable setup/});
+      await expect(savedSetup.getByRole('img',{name:'Saved note available'})).toBeVisible();
+      await expect(savedSetup).not.toContainText('Pulley 12, neutral handles');
+      await savedSetup.click();
+      await expect(setup.getByRole('textbox',{name:'Setup for this workout',exact:true})).toHaveValue('Pulley 12, neutral handles');
+      await setup.getByRole('button',{name:'Cancel',exact:true}).click();
+      await expect(setup).toHaveCount(0);
       await expect(page.getByRole("button", { name: "Log set", exact: true })).toHaveCount(1);
       expect((await db.query("select count(*)::integer n from public.workout_session where user_id=$1", [owner])).rows[0].n).toBe(1);
       expect(errors).toEqual([]);

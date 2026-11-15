@@ -7,17 +7,18 @@ import type { ExerciseDef } from "@/lib/strength/coefficients";
 import { Sheet, useSheetDismiss } from "./sheet";
 import { Button } from "./button";
 import { IconButton } from "./icon-button";
+import { NoteIndicator } from "./note-indicator";
 import { IconNote } from "./icons";
 import { ExerciseCardLabel } from "./exercise-card-label";
 
-export function PreviousNotes({exerciseId,equipmentInstanceId,excludeSessionId,def,catalog,equipmentLabel,inline=false}: Omit<NotesSelection,"cursor"> & {
-  def?:ExerciseDef;catalog:Record<string,ExerciseDef>;equipmentLabel?:string;inline?:boolean;
+export function PreviousNotes({exerciseId,equipmentInstanceId,excludeSessionId,def,catalog,equipmentLabel,inline=false,stacked=false,hasNotes=false}: Omit<NotesSelection,"cursor"> & {
+  def?:ExerciseDef;catalog:Record<string,ExerciseDef>;equipmentLabel?:string;inline?:boolean;stacked?:boolean;hasNotes?:boolean;
 }) {
   const [open,setOpen] = useState(false);
   const name=def?.name??exerciseId;
   return <div className={inline ? "min-w-0" : "mt-2"}>
-    <IconButton variant="ghost" className={`h-auto min-h-11 justify-start gap-2 text-left ${inline ? "w-auto" : "w-full"}`} aria-label={`Previous notes for ${name}`} onClick={()=>setOpen(true)}>
-      <IconNote/><span className="text-caption">Previous notes</span>
+    <IconButton variant="ghost" className={`h-auto min-h-11 ${stacked ? "w-full flex-col gap-1 py-1 text-center" : `justify-start gap-2 text-left ${inline ? "w-auto" : "w-full"}`}`} aria-label={`Previous notes for ${name}`} onClick={()=>setOpen(true)}>
+      <span className="relative inline-flex"><IconNote/>{hasNotes && <NoteIndicator />}</span><span className="text-caption">Previous notes</span>
     </IconButton>
     {open && <Sheet ariaLabel={`Previous notes for ${name}`} onClose={()=>setOpen(false)}>
       <NotesContent key={JSON.stringify([exerciseId,equipmentInstanceId,excludeSessionId])}

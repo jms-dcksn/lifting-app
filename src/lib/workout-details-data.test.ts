@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./supabase/types";
 
 it("uses the latest finished session for each exact setup, including a cleared setup", async()=>{
-  const row=(id:string,setup:string|null,finished:string,equipment:string|null=null)=>({id,exercise_id:"machine",equipment_instance_id:equipment,setup,workout_session:{id,finished_at:finished}});
+  const row=(id:string,setup:string|null,finished:string,equipment:string|null=null)=>({id,exercise_id:"machine",equipment_instance_id:equipment,setup,note:equipment?"Previous observation":null,workout_session:{id,finished_at:finished}});
   const history=[row("old","Seat 2","2026-01-01"),row("new","Seat 4","2026-02-01"),row("other",null,"2026-03-01","other")];
   const from=vi.fn((table:string)=>{
     let historical=false;
@@ -18,7 +18,7 @@ it("uses the latest finished session for each exact setup, including a cleared s
   });
   const result=await loadWorkoutDetails({from} as unknown as SupabaseClient<Database>,"owner","current");
   expect(result.remembered).toEqual(expect.arrayContaining([
-    expect.objectContaining({exercise_id:"machine",equipment_instance_id:null,setup:"Stale reference",latestSetup:"Seat 4"}),
-    expect.objectContaining({exercise_id:"machine",equipment_instance_id:"other",latestSetup:null}),
+    expect.objectContaining({exercise_id:"machine",equipment_instance_id:null,setup:"Stale reference",latestSetup:"Seat 4",hasPreviousNotes:true}),
+    expect.objectContaining({exercise_id:"machine",equipment_instance_id:"other",latestSetup:null,hasPreviousNotes:true}),
   ]));
 });

@@ -69,7 +69,7 @@ for (const entry of ["home", "planner"] as const) {
       await page.reload();
       const savedSetup=cableCard.getByRole('button',{name:/^Edit machine or cable setup/});
       await expect(savedSetup.getByRole('img',{name:'Saved note available'})).toBeVisible();
-      await expect(cableCard.getByText('Pulley 12, neutral handles',{exact:true})).toHaveCount(0);
+      await expect(savedSetup).not.toContainText('Pulley 12, neutral handles');
       await savedSetup.click();
       await expect(setup.getByRole('textbox',{name:'Setup for this workout',exact:true})).toHaveValue('Pulley 12, neutral handles');
       await setup.getByRole('button',{name:'Cancel',exact:true}).click();

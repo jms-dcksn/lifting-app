@@ -30,6 +30,17 @@ test("workout notes, exact setup reuse and historical set context",async({page,c
     const machine=cards.nth(0),duplicate=cards.nth(1),cable=cards.nth(2),free=cards.nth(3);
     await expect(cards).toHaveCount(4);
     await expect(free.getByRole('button',{name:/^Edit machine or cable setup/})).toHaveCount(0);
+    // Personal-detail actions share one row without shrinking touch targets.
+    for (const width of [320,390,1280]) {
+      await page.setViewportSize({width,height:900});
+      const controls=[machine.getByRole('button',{name:/^Edit machine or cable setup/}),machine.getByRole('button',{name:/^Edit exercise note for /}),machine.getByRole('button',{name:/^Previous notes for /})];
+      const boxes=await Promise.all(controls.map(control=>control.boundingBox()));
+      for (const box of boxes) {expect(box).not.toBeNull();expect(box!.width).toBeGreaterThanOrEqual(44);expect(box!.height).toBeGreaterThanOrEqual(44);}
+      expect(Math.max(...boxes.map(box=>box!.y))-Math.min(...boxes.map(box=>box!.y))).toBeLessThan(2);
+      expect(boxes[0]!.x+boxes[0]!.width).toBeLessThanOrEqual(boxes[1]!.x+1);
+      expect(boxes[1]!.x+boxes[1]!.width).toBeLessThanOrEqual(boxes[2]!.x+1);
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    }
     const openNote=()=>machine.getByRole('button',{name:/^Edit exercise note for /}).click();
     await openNote();
     let sheet=page.getByRole('dialog',{name:'Exercise note',exact:true});

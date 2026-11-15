@@ -30,7 +30,10 @@ the destination's record; prior observations remain available under their origin
 
 Setup references use owner + exact exercise + equipment identity. Active workout cards
 group **Machine setup** or **Cable setup**, **Exercise note**, and
-**Previous notes** under one Notes & setup section. New-set entry contains only a Tempo
+**Previous notes** under one Notes & setup section. Compact cards place these actions in
+one horizontal row with icons above full labels and at least 44px touch targets. Empty
+Add/Saved captions are omitted; last-workout context and saved text remain visible below
+their actions. Free-weight cards use two columns. New-set entry contains only a Tempo
 expander; observations belong in Exercise note. Existing set notes remain editable via
 the saved set’s Edit action.
 Before equipment is selected, the same action opens station selection; it does not save

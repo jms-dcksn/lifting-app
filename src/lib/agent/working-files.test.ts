@@ -8,9 +8,9 @@ describe("thread working files", () => {
   it("counts UTF-8 bytes, permits replacement and rejects excess without changing evidence", () => {
     const files = { "/workspace/evidence.txt": file("original") };
     const backend = new WorkingFilesBackend({ state: { files } });
-    expect(backend.write("/workspace/evidence.txt", "é".repeat(65_536)).error).toBeUndefined();
-    expect(backend.write("/workspace/evidence.txt", "é".repeat(65_537)).error).toContain("128 KiB");
-    expect(backend.edit("/workspace/evidence.txt", "original", "x".repeat(131_073)).error).toContain("128 KiB");
+    expect(backend.write("/workspace/evidence.txt", "é".repeat(131_072)).error).toBeUndefined();
+    expect(backend.write("/workspace/evidence.txt", "é".repeat(131_073)).error).toContain("256 KiB");
+    expect(backend.edit("/workspace/evidence.txt", "original", "x".repeat(262_145)).error).toContain("256 KiB");
     expect(backend.edit("/workspace/evidence.txt", "original", "updated").filesUpdate?.["/workspace/evidence.txt"]?.content).toBe("updated");
     expect(files["/workspace/evidence.txt"].content).toBe("original");
     expect(backend.edit("/workspace/evidence.txt", "missing", "new").error).toContain("not found");
@@ -22,16 +22,16 @@ describe("thread working files", () => {
     expect(backend.write("/workspace/new.txt", "x").error).toContain("32 files");
     expect(backend.write("/workspace/0.txt", "new").error).toBeUndefined();
     expect(backend.uploadFiles([["/workspace/new.txt", new Uint8Array(10)]])[0]?.error).toBe("permission_denied");
-    const atBytes = Object.fromEntries(Array.from({ length: 8 }, (_, i) => [`/${i}.txt`, file("x".repeat(WORKING_FILE_LIMITS.fileBytes))]));
+    const atBytes = Object.fromEntries(Array.from({ length: 4 }, (_, i) => [`/${i}.txt`, file("x".repeat(WORKING_FILE_LIMITS.fileBytes))]));
     const large = new WorkingFilesBackend({ state: { files: atBytes } });
     expect(large.write("/new.txt", "x").error).toContain("1 MiB");
     expect(large.uploadFiles([["/new.txt", new Uint8Array(1)]])[0]?.error).toBe("permission_denied");
     expect(large.write("/0.txt", "smaller").error).toBeUndefined();
     const empty = new WorkingFilesBackend({ state: { files: {} } });
-    const batch = Array.from({ length: 9 }, (_, i): [string, Uint8Array] => [`/${i}.txt`, new Uint8Array(WORKING_FILE_LIMITS.fileBytes)]);
+    const batch = Array.from({ length: 5 }, (_, i): [string, Uint8Array] => [`/${i}.txt`, new Uint8Array(WORKING_FILE_LIMITS.fileBytes)]);
     expect(empty.uploadFiles(batch).every(result => result.error)).toBe(true);
     expect(empty.glob("**/*").files).toEqual([]);
-    expect(empty.uploadFiles([["/invalid.txt", new Uint8Array(50_000).fill(255)]])[0]?.error).toBe("permission_denied");
+    expect(empty.uploadFiles([["/invalid.txt", new Uint8Array(100_000).fill(255)]])[0]?.error).toBe("permission_denied");
     const append = backend.uploadFiles([["/workspace/0.txt", new TextEncoder().encode("proof\nappended")]]);
     expect(append[0]?.error).toBeNull();
     expect(append.filesUpdate?.["/workspace/0.txt"]?.content).toBe("proof\nappended");

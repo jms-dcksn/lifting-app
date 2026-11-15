@@ -200,7 +200,7 @@ describe("gated Coach harness", () => {
 
   it("rejects oversized offloads without advertising a missing file", async () => {
     const source = provider([{ name: "evidence", args: {} }, "Could not save the evidence."]);
-    const evidence = tool(async () => "x".repeat(128 * 1024 + 1), { name: "evidence", description: "Read evidence", schema: z.object({}) });
+    const evidence = tool(async () => "x".repeat(256 * 1024 + 1), { name: "evidence", description: "Read evidence", schema: z.object({}) });
     const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [evidence] });
     const result = await agent.invoke({ messages: [new HumanMessage("Inspect")] });
     expect(JSON.stringify(source.requests[1]?.messages)).toContain("could not be saved");
@@ -220,7 +220,7 @@ describe("gated Coach harness", () => {
   it("reopens offloaded evidence through bounded reads without exposing another thread", async () => {
     const saver = new MemorySaver();
     const config = { configurable: { thread_id: "offload" } };
-    const content = Array.from({ length: 3000 }, (_, i) => `Evidence row ${i}: owned source facts`).join("\n");
+    const content = Array.from({ length: 5000 }, (_, i) => `Evidence row ${i}: owned source facts`).join("\n");
     const evidence = tool(async () => content, { name: "evidence", description: "Read evidence", schema: z.object({}) });
     const first = provider([{ name: "evidence", args: {} }, "Saved."]);
     const result = await createCoachHarness({ apiKey: "fixture", fetch: first.fetch, tools: [evidence], checkpointer: saver }).agent.invoke({ messages: [new HumanMessage("Inspect")] }, config);
@@ -244,7 +244,7 @@ describe("gated Coach harness", () => {
     try {
       const source = provider(["Summary.", "Answer."]);
       const { agent } = createCoachHarness({ apiKey: "fixture", fetch: source.fetch, tools: [] });
-      const messages = Array.from({ length: 8 }, (_, i) => new HumanMessage(`Original ${i}: ${"x".repeat(100_000)}`));
+      const messages = Array.from({ length: 8 }, (_, i) => new HumanMessage(`Original ${i}: ${"x".repeat(160_000)}`));
       const result = await agent.invoke({ messages });
       expect(Object.keys(result.files ?? {})).toEqual([]);
       expect(JSON.stringify(source.requests[1]?.messages)).not.toContain("/conversation_history/");

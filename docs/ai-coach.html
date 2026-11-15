@@ -195,6 +195,13 @@ export const DEEP_AGENT_TIMEOUT_MS = 120_000;</code></pre>
             summarization manages context. There is no cumulative token budget. Tool output
             offloads above 20,000 estimated tokens (about 80,000 characters), so ordinary
             weekly reports can remain inline. The legacy runtime retains eight tool calls.</p>
+          <h3 style="font-weight:600">Compact weekly evidence</h3>
+          <div style="border:1px solid #78716c;padding:12px;margin:12px 0">Canonical Track Coach report<br>↓ summarizeWeeklyCoach<br><strong>All aggregate metrics, trends and recommendations</strong><br>Session dates, totals, readiness, pain and phases; matching review decisions<br>↓ current targets or deeper history needed?<br>nextWorkout / exerciseReview</div>
+          <p>The agent response omits duplicate formatted text, raw session sets/prescriptions,
+            free-text notes, unrelated decision history and the embedded next workout.
+            Track Coach's UI and calculations are unchanged. The failed Production payload
+            shrinks from 157,544 to 59,588 bytes with all 28 recommendations retained.
+            Offload stays at 20,000 estimated tokens; the file ceiling increases to 256 KiB.</p>
           <h3 style="font-weight:600">Slice D: durable working files with limits</h3>
           <p>Large tool results stay out of the model’s immediate context. Their contents live
             in the current chat’s virtual files, persisted with PostgreSQL checkpoints.
@@ -208,7 +215,7 @@ const backend = new CompositeBackend(new WorkingFilesBackend(), {
     &quot;/skills/&quot;: new ReadOnlySkillsBackend({ rootDir: input.skillsDirectory ?? resolve(&quot;src/lib/agent/skills&quot;), virtualMode: true }),
   });</code></pre>
           <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/working-files.ts
-export const WORKING_FILE_LIMITS = { fileBytes: 128 * 1024, files: 32, totalBytes: 1024 * 1024,
+export const WORKING_FILE_LIMITS = { fileBytes: 256 * 1024, files: 32, totalBytes: 1024 * 1024,
   readLines: 200, readBytes: 8 * 1024 };</code></pre>
           <p>Write, edit and upload all enforce the same limits, including automatic history
             appends. Concurrent tool calls reserve space against the same checkpoint.
@@ -451,7 +458,7 @@ flowchart TD
           <div class="rounded-lg border border-slate-300 p-4">3. One Jev request produces grounded and complete scores. Both must reach 0.7; no average or extra graders.</div>
         </div>
         <p class="text-slate-700">Real source from <code>src/lib/agent/evals/weekly-runner.ts</code>:</p>
-        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>if (definition.name === "weeklyCoach") return JSON.stringify(inputs.evidence.weeklyCoach);
+        <pre class="code-rail overflow-auto bg-stone-100 p-4"><code>if (definition.name === "weeklyCoach") return JSON.stringify(weekly);
 if (definition.name === "nextWorkout") return JSON.stringify({ source: "nextWorkout", workout: inputs.evidence.weeklyCoach.currentWorkout });
 return JSON.stringify({ status: "unavailable", reason: "No fixture supplied for this tool. No action performed." });</code></pre>
         <p class="text-sm text-slate-600">Run <code>npm run eval:weekly:export -- --output /private/tmp/weekly-coach-v1.json</code>
@@ -706,7 +713,7 @@ flowchart TD
   Reduce --> Result
   Result --> Planner[Home and planner]
   Result --> Active[Initial active-session suggestion]
-  Result --> Coach[nextWorkout and weeklyCoach.currentWorkout]
+  Result --> Coach[nextWorkout]
         </pre>
         <p class="text-slate-700">The same canonical calculation supplies every consumer. Recovery takes
           precedence. Effort evidence must match exact exercise/equipment, slot, phase, adaptation,
@@ -1007,14 +1014,7 @@ export const TOOL_CALL_BUDGET = 8;</code></pre>
         <article class="space-y-2">
           <h3 class="font-mono text-sm">src/lib/agent/tools/weekly-coach.ts — wrap, do not fork</h3>
           <pre class="code-rail bg-white border border-slate-200 p-4 text-sm overflow-x-auto"><code>export async function weeklyCoach(supabase: Client, userId: string) {
-  const loaded = await loadCoachUi(userId, supabase);
-  return {
-    source: "weeklyCoach" as const,
-    checkInText: loaded.coachCheckIn,
-    report: loaded.coachReport,
-    recommendations: loaded.coachRecommendations,
-    decisions: loaded.decisions,
-  };
+  return summarizeWeeklyCoach(await loadCoachUi(userId, supabase));
 }</code></pre>
           <p class="text-sm text-slate-600">The LangChain <code class="font-mono">tool()</code> adapter sits beside this. The public interface is the function, not the adapter.</p>
         </article>

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { AIMessage } from "@langchain/core/messages";
 import type { ChatResult } from "@langchain/core/outputs";
+import { summarizeWeeklyCoach } from "../tools/weekly-summary";
 import { WEEKLY_EXAMPLES } from "./weekly-cases";
 import { runWeeklyTurn } from "./weekly-runner";
 
@@ -27,9 +28,22 @@ describe("weekly fixture runner (not model narration quality)", () => {
     const example = WEEKLY_EXAMPLES.find((item) => item.inputs.id === "edited-history-freshness")!;
     const output = await runWeeklyTurn(example.inputs, scriptedWeeklyModel("2/4 so far.\nSource: Track Coach"));
     expect(output).toMatchObject({ answer: "2/4 so far.\nSource: Track Coach", toolCalls: [{ name: "weeklyCoach", args: {} }],
-      toolResults: [{ name: "weeklyCoach", result: example.inputs.evidence.weeklyCoach }] });
+      toolResults: [{ name: "weeklyCoach", result: summarizeWeeklyCoach({ coachReport: example.inputs.evidence.weeklyCoach.report, coachRecommendations: example.inputs.evidence.weeklyCoach.recommendations, decisions: example.inputs.evidence.weeklyCoach.decisions }) }] });
     expect(output.toolResults).toHaveLength(1);
   });
+  it("loads current targets separately from the compact weekly report", async () => {
+    const example = WEEKLY_EXAMPLES.find(item => item.inputs.id === "recommendation-vs-target");
+    if (!example) throw Error("Missing target fixture");
+    const model = new WeeklyScript([
+      new AIMessage({ content: "", tool_calls: [{ id: "weekly", name: "weeklyCoach", args: {}, type: "tool_call" }] }),
+      new AIMessage({ content: "", tool_calls: [{ id: "target", name: "nextWorkout", args: {}, type: "tool_call" }] }),
+      new AIMessage("Report proposal: 200 lb. Current target: 190 lb. Review acceptance is not an applied change."),
+    ]);
+    const output = await runWeeklyTurn(example.inputs, model);
+    expect(output.toolResults[0]?.result).not.toHaveProperty("currentWorkout");
+    expect(output.toolResults[1]?.result).toEqual({ source: "nextWorkout", workout: example.inputs.evidence.weeklyCoach.currentWorkout });
+  });
+
   it("blocks attempted write execution while preserving the attempted tool call", async () => {
     const example = WEEKLY_EXAMPLES[0]!;
     const output = await runWeeklyTurn(example.inputs, scriptedWeeklyModel("No action performed.", "startNextWorkout"));
@@ -133,7 +147,7 @@ describe("weekly regression fixtures and grading controls", () => {
     expect(manifest.exampleCount).toBe(WEEKLY_EXAMPLES.length);
     expect(manifest.fixtureSha256).toBe(createHash("sha256").update(JSON.stringify(snapshot)).digest("hex"));
     const runner = readFileSync("src/lib/agent/evals/weekly-runner.ts", "utf8");
-    const snippet = 'if (definition.name === "weeklyCoach") return JSON.stringify(inputs.evidence.weeklyCoach);';
+    const snippet = 'if (definition.name === "weeklyCoach") return JSON.stringify(weekly);';
     expect(runner).toContain(snippet);
     expect(html).toContain(snippet);
     expect(readFileSync("docs/ai-coach.html", "utf8")).toContain(snippet);

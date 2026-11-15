@@ -28,9 +28,10 @@ it("keeps setup discoverable before choosing a machine, without editing unresolv
   await act(async()=>setup!.click());
   expect(choose).toHaveBeenCalledOnce();
   expect(host.querySelector("textarea")).toBeNull();
+  expect(host.querySelector('[aria-label="Saved note available"]')).toBeNull();
 });
 
-it("shows saved machine settings and opens their editor independently of exercise notes",async()=>{
+it("marks saved details without previewing text and opens the full editor",async()=>{
   const def={...EXERCISE_BY_ID["assisted-pullup"],id:"machine",baseExerciseId:"assisted-pullup",stationProfile:undefined};
   await act(async()=>root.render(createElement(WorkoutExerciseDetails,{
     compact:true,sessionId:"session",slotId:"slot",exerciseId:def.id,equipmentInstanceId:null,
@@ -39,8 +40,10 @@ it("shows saved machine settings and opens their editor independently of exercis
   })));
   const setup=host.querySelector<HTMLButtonElement>('[aria-label^="Edit machine or cable setup"]')!;
   expect(setup.textContent).toContain("Machine setup");
-  expect(host.textContent).toContain("Knee pad 4");
-  expect(host.textContent).toContain("Keep shoulders down");
+  expect(host.textContent).not.toContain("Knee pad 4");
+  expect(setup.querySelector('[aria-label="Saved note available"]')).not.toBeNull();
+  expect(host.textContent).not.toContain("Keep shoulders down");
+  expect(host.querySelector('[aria-label^="Edit exercise note"] [aria-label="Saved note available"]')).not.toBeNull();
   await act(async()=>setup.click());
   expect(host.querySelector("textarea")?.value).toBe("Knee pad 4");
 });
@@ -51,10 +54,11 @@ it("groups notes and shows the last workout setup without a remembered status",a
     compact:true,sessionId:"session",slotId:"slot",exerciseId:def.id,equipmentInstanceId:null,
     catalog:{...EXERCISE_BY_ID,[def.id]:def},equipmentLabels:{},
     details:[{id:"note",occurrence_id:"slot",exercise_id:def.id,equipment_instance_id:null,setup:null,note:"Current observation"}],
-    remembered:[{id:"ref",exercise_id:def.id,equipment_instance_id:null,setup:"Old reference",latestSetup:"Seat 4"}],
+    remembered:[{id:"ref",exercise_id:def.id,equipment_instance_id:null,setup:"Old reference",latestSetup:"Seat 4",hasPreviousNotes:true}],
   })));
   expect(host.textContent).toContain("Notes & setup");
-  expect(host.textContent).toContain("Seat 4");
+  expect(host.textContent).not.toContain("Seat 4");
+  expect(host.querySelector('[aria-label^="Previous notes for"] [aria-label="Saved note available"]')).not.toBeNull();
   expect(host.textContent).not.toContain("Remembered");
   await act(async()=>host.querySelector<HTMLButtonElement>('[aria-label^="Edit machine or cable setup"]')!.click());
   expect(host.querySelector("textarea")?.value).toBe("Seat 4");

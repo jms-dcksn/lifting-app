@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { PreviousNotes } from "@/components/ui/previous-notes";
+import { NoteIndicator } from "@/components/ui/note-indicator";
 import { IconButton } from "@/components/ui/icon-button";
 import { IconSettings, IconNote } from "@/components/ui/icons";
 import { EditableTextSheet } from "@/components/ui/editable-text-sheet";
@@ -37,14 +38,14 @@ export function WorkoutExerciseDetails({sessionId,slotId,exerciseId,equipmentIns
     <p className="mb-1 text-caption font-medium">{canEditSetup || needsSetupStation ? "Notes & setup" : "Notes"}</p>
     <div className={`grid ${compact ? (canEditSetup || needsSetupStation ? "grid-cols-3" : "grid-cols-2") : "grid-cols-1"} items-start gap-2`}>
       {canEditSetup && <DetailAction compact={compact} title={setupTitle} label={`Edit machine or cable setup for ${label}`} saved={!!current?.setup}
-        value={current?.setup??reference?.latestSetup} status={!current?.setup && reference?.latestSetup ? "Last workout" : undefined}
+        value={current?.setup??reference?.latestSetup}
         onClick={()=>open("setup")}><IconSettings /></DetailAction>}
       {needsSetupStation && <DetailAction compact={compact}
         title={setupTitle} label={`Choose ${setupProfile} to edit setup for ${label}`} saved={false}
         status={onChooseSetup ? `Choose ${setupProfile} first` : `No ${setupProfile} selected`} disabled={!onChooseSetup} onClick={()=>onChooseSetup?.()}><IconSettings /></DetailAction>}
       <DetailAction compact={compact} title="Exercise note" label={`Edit exercise note for ${label}`} saved={!!current?.note} value={current?.note}
         onClick={()=>open("note")}><IconNote /></DetailAction>
-    {compact && <div className="min-w-0"><PreviousNotes inline stacked exerciseId={exerciseId} equipmentInstanceId={equipmentInstanceId} excludeSessionId={sessionId} def={def} catalog={catalog} equipmentLabel={equipmentInstanceId?equipmentLabels[equipmentInstanceId]:undefined}/></div>}
+    {compact && <div className="min-w-0"><PreviousNotes inline stacked hasNotes={reference?.hasPreviousNotes} exerciseId={exerciseId} equipmentInstanceId={equipmentInstanceId} excludeSessionId={sessionId} def={def} catalog={catalog} equipmentLabel={equipmentInstanceId?equipmentLabels[equipmentInstanceId]:undefined}/></div>}
     </div>
     {!compact && <PreviousNotes exerciseId={exerciseId} equipmentInstanceId={equipmentInstanceId} excludeSessionId={sessionId} def={def} catalog={catalog} equipmentLabel={equipmentInstanceId?equipmentLabels[equipmentInstanceId]:undefined}/>}
     {details.some(d=>d.exercise_id!==exerciseId || d.equipment_instance_id!==equipmentInstanceId) && <details className="mt-2 text-caption">
@@ -68,8 +69,7 @@ export function WorkoutExerciseDetails({sessionId,slotId,exerciseId,equipmentIns
 }
 function DetailAction({title,label,value,saved,onClick,children,compact=false,status,disabled}:{compact?:boolean;title:string;label:string;value?:string|null;saved:boolean;onClick:()=>void;children:React.ReactNode;status?:string;disabled?:boolean}) {
   return <div className={compact ? "min-w-0" : "min-w-0 rounded-control bg-surface px-2 pb-2"}>
-    <IconButton variant="ghost" className={`h-auto min-h-11 w-full gap-1 py-1 ${compact ? "flex-col text-center" : "justify-start gap-2 text-left"}`} aria-label={label} disabled={disabled} onClick={onClick}>{children}
+    <IconButton variant="ghost" className={`h-auto min-h-11 w-full gap-1 py-1 ${compact ? "flex-col text-center" : "justify-start gap-2 text-left"}`} aria-label={label} disabled={disabled} onClick={onClick}><span className="relative inline-flex">{children}{value && <NoteIndicator />}</span>
       <span className="min-w-0 text-caption">{title}{(status || !compact) && <span className="block text-faint">{status??(saved?"Saved":"Add")}</span>}</span></IconButton>
-    {value && <button type="button" aria-label={`Read ${title.toLowerCase()}: ${label}`} onClick={onClick} className="flex min-h-11 w-full items-center break-words text-left text-caption text-muted"><span className="line-clamp-2">{value}</span></button>}
   </div>;
 }

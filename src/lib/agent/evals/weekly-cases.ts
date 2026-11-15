@@ -1,14 +1,23 @@
-import { buildCoachCheckInReport, formatCoachCheckIn, type CoachSessionInput, type CoachSetInput } from "@/lib/coach-check-in";
+import { buildCoachCheckInReport, formatCoachCheckIn, type CoachCheckInReport, type CoachSessionInput, type CoachSetInput } from "@/lib/coach-check-in";
 import type { CoachRecommendation } from "@/lib/coach-recommendations";
 import { computeE1rm } from "@/lib/strength/e1rm";
 import { EXERCISE_BY_ID } from "@/lib/strength/coefficients";
 import { resolveEffectiveWorkoutTarget, effectiveTargetExplanation } from "@/lib/effective-workout-target";
-import type { weeklyCoach } from "../tools/weekly-coach";
+import type { nextWorkout } from "../tools/next-workout";
+import type { RecommendationDecision } from "@/lib/coach-recommendation-decisions";
 import type { AgentMessage } from "../messages";
 
 export const WEEKLY_DATASET = "lifting-app-weekly-coach-v1";
 export const WEEKLY_POLICY_VERSION = "weekly-v1";
-export type WeeklyEvidence = Awaited<ReturnType<typeof weeklyCoach>>;
+// Published synthetic snapshots keep their original shape; the runner projects current tool responses.
+export type WeeklyEvidence = {
+  source: "weeklyCoach";
+  checkInText: string;
+  report: CoachCheckInReport;
+  recommendations: CoachRecommendation[];
+  decisions: RecommendationDecision[];
+  currentWorkout: Extract<Awaited<ReturnType<typeof nextWorkout>>, { workout: unknown }>["workout"];
+};
 export type WeeklyReference = {
   expectedTools: string[];
   allowedTools: string[];

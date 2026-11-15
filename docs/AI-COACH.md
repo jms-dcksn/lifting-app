@@ -168,8 +168,8 @@ effort pair. This preserves best-recent targets without shipping every historica
 - `nextWorkout` returns the same target, effective result and `targetExplanation`, with
   `targetEngine: resolveEffectiveWorkoutTarget`. Open workouts use stored day/week/choices,
   persisted deload and pre-start history. Missing stored exercise choices stay unavailable.
-- `weeklyCoach.currentWorkout` supplies those same current targets alongside historical
-  report/proposals/legacy decisions. The prompt uses this field for current-target claims,
+- `weeklyCoach` returns historical report/proposals and matching legacy review decisions.
+  Fetch `nextWorkout` separately for current-target claims. The prompt
   never subtracts another increment and never equates accepted review with an applied change.
 
 Reasons are `starting_weight`, `add_load`, `add_rep`, `hold_load`, `below_rep_floor`,
@@ -385,7 +385,7 @@ Build in order. A later slice may add tools; it may not weaken an invariant.
   tool results before user/assistant text if a token budget is also applied. Facts
   still come from tools, not from earlier tool JSON in the window.
 - Four read tools, each wrapping an existing path:
-  - `weeklyCoach` → `loadCoachUi` (report + proposals + formatted text).
+  - `weeklyCoach` → `loadCoachUi` → compact structured report + recommendations + matching review decisions.
   - `activeProgram` → `getActiveProgram`.
   - `exerciseReview` → the same finished-session grouping as `/history/[exerciseId]`
     (`groupReviewSessions` and the Last / 21-day / chart summaries). Ordinary-pound
@@ -532,6 +532,27 @@ The blanket Deep Agents deferral is superseded by #247's staged foundations belo
 #198 owns scoped research tools; #177/#233 own their program integration. Onboarding,
 in-session presence and user memory remain separate product slices. Shipping earlier
 capabilities does not authorize them or a provider/model change.
+
+### Compact weekly tool response
+
+`weeklyCoach` uses `summarizeWeeklyCoach()` to project the canonical Track Coach report.
+All aggregate metrics, exercise trends, fixed-load progress and recommendations are retained.
+Sessions retain dates, day/week, durations, set totals, readiness, session-scoped pain and
+unique phase names; raw sets, exercise prescriptions and free-text notes are omitted.
+The tool excludes duplicate `checkInText` and the full next workout. Review decisions are
+restricted to keys in the current recommendations; accepted review never means applied change.
+Use `nextWorkout` for current targets and `exerciseReview` for deeper exercise history.
+This changes the agent response only; Track Coach's report/UI and strength calculations stay intact.
+
+The production failure payload was 157,544 bytes against the old 128 KiB file cap.
+Replaying it through the compact projection produced 59,588 bytes, retaining all 28
+recommendations while dropping 276 unrelated decisions. It fits below the native 20,000
+estimated-token offload trigger (roughly 80,000 characters). The file cap is now 256 KiB;
+32 files, 1 MiB/thread, bounded read/search and native summarization defaults are unchanged.
+
+Weekly eval snapshots remain the published synthetic v1 inputs. The runner projects their
+raw reports through the same summary function and exposes their saved workout evidence
+only through `nextWorkout`; snapshots and the remote dataset are not rewritten.
 
 ## Runtime foundations plan (#247)
 
@@ -1045,7 +1066,7 @@ Proposed initial ceilings (reviewable defaults, **not measured provider limits**
 | Tools | 24 total calls, including filesystem/skill reads; 120 graph steps; no separate unmetered skill budget |
 | Context | Native model-aware summarization defaults; no trigger/keep/trim overrides; direct StateBackend |
 | Tool offload | Start above 20,000 estimated tokens; bounded read-back at most 200 lines / 8 KiB, search at most 20 matches |
-| Working files | 128 KiB/file, 32 files, 1 MiB live files/thread; reject excess without silently deleting proposal evidence |
+| Working files | 256 KiB/file, 32 files, 1 MiB live files/thread; reject excess without silently deleting proposal evidence |
 | Checkpoint growth | 100-turn physical-size benchmark and proposed 20 MiB/thread gate deferred by owner; live file quotas do not bound full database history |
 | Retention | After projection, prune intermediate checkpoints older than 30 days only when all turns are completed; retain latest, bootstrap, turn receipts and their immediate parents; retain live files |
 
@@ -1081,7 +1102,7 @@ const backend = new CompositeBackend(new WorkingFilesBackend(), {
 });
 ```
 
-- Enforce 128 KiB/file, 32 files and 1 MiB live content/thread on write, edit and upload,
+- Enforce 256 KiB/file, 32 files and 1 MiB live content/thread on write, edit and upload,
   including middleware-internal writes. Count UTF-8 bytes and native decoded upload size.
   Same-step reservations keyed by the root checkpoint prevent concurrent tool offloads
   from spending the same remaining space. No file is silently evicted to make room.
@@ -1343,7 +1364,7 @@ If a report proposal and current target differ, distinguish the values. Explain 
 discrepancy only when returned evidence establishes its cause; a difference alone does not
 prove an earlier phase, identity mismatch or effort correction. Describe a repeated-effort
 adjustment only when the returned reason is repeated_effort_miss. Current targets still
-come from nextWorkout or weeklyCoach.currentWorkout; their engine and calculations are unchanged.
+come from nextWorkout; their engine and calculations are unchanged.
 
 These prompt-only changes address the reviewed v3 answers. They have not had a paid rerun or
 authenticated acceptance check. The two evaluators, threshold, fixture snapshot and historical
@@ -1536,7 +1557,7 @@ provider, scheduler, notification policy or target formula changes are added by 
 
 ### Complete workout editor target projection (#238)
 
-`nextWorkout` and `weeklyCoach.currentWorkout` retain the full saved upcoming occurrence.
+`nextWorkout` retains the full saved upcoming occurrence; `weeklyCoach` does not embed it.
 Edited slots expose `perSetTargets`, including stable set ID, rep/RIR bounds, resolved weight,
 target reps and `user`/`suggested` source. `manual_target` identifies an explicit saved weight;
 it is not completed evidence or a permanent load lock. Do not flatten heavy/lighter rows to

@@ -15,6 +15,7 @@ vi.mock("./coach-ui-data", () => ({ loadCoachUi: mocks.coach }));
 
 import { loadNextWorkout } from "./next-workout";
 import { nextWorkout } from "./agent/tools/next-workout";
+import { weeklyFixture } from "./agent/evals/fixtures";
 import { weeklyCoach } from "./agent/tools/weekly-coach";
 
 const now = new Date("2026-09-30T20:00:00Z");
@@ -64,13 +65,13 @@ beforeEach(() => {
   mocks.catalog.mockResolvedValue(EXERCISE_BY_ID); mocks.bodyweight.mockResolvedValue(180);
   mocks.cookie.mockReturnValue(undefined);
   mocks.history.mockImplementation(async (_client, _user, _catalog, asOf: Date) => buildWorkoutTargetHistory(history, EXERCISE_BY_ID, asOf));
-  mocks.coach.mockResolvedValue({ coachReport: { generatedAt: now.toISOString() }, coachRecommendations: [{ kind: "reduce_load", action: { targetWeight: 500 } }],
-    coachCheckIn: "Historical report", decisions: [{ status: "accepted" }] });
+  mocks.coach.mockResolvedValue({ coachReport: { ...weeklyFixture.report, generatedAt: now.toISOString() }, coachRecommendations: weeklyFixture.recommendations.map(item => ({ ...item, action: { ...item.action, targetWeight: 500 } })),
+    coachCheckIn: "Historical report", decisions: weeklyFixture.recommendations.map(item => ({ recommendationKey: item.key, status: "accepted", deferredUntil: null })) });
 });
 afterEach(() => vi.useRealTimers());
 
 describe("shared next-workout consumers", () => {
-  it("Home/planner, active-session resolution, nextWorkout and weekly Coach agree on effective targets", async () => {
+  it("Home/planner and nextWorkout agree on targets while weekly Coach keeps report proposals separate", async () => {
     const db = client();
     const next = await loadNextWorkout(db, "user", program);
     const slot = next.slots[0];
@@ -82,10 +83,10 @@ describe("shared next-workout consumers", () => {
     expect(slot.effectiveTarget).toMatchObject({ status: "current_target", reason: "repeated_effort_miss", target: { weight: 95, targetReps: 8 } });
     expect(active).toEqual(slot.effectiveTarget);
     expect(agent.workout?.slots[0].effectiveTarget).toEqual(active);
-    expect(coach.currentWorkout?.slots[0].effectiveTarget).toEqual(active);
+    expect(coach).not.toHaveProperty("currentWorkout");
     expect(coach.recommendations[0].action.targetWeight).toBe(500);
-    expect(coach.currentWorkout?.slots[0].target?.weight).toBe(95);
-    expect(coach.currentWorkout?.slots[0].targetExplanation).toContain("not a program change");
+    expect(agent.workout?.slots[0].target?.weight).toBe(95);
+    expect(agent.workout?.slots[0].targetExplanation).toContain("not a program change");
     expect(mocks.history).toHaveBeenCalledWith(db, "user", EXERCISE_BY_ID, now, ["slot"]);
     for (const table of ["workout_session", "user_exercise_stat"]) expect(calls).toContainEqual({ table, operation: "eq", args: ["user_id", "user"] });
   });

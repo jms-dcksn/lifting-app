@@ -41,7 +41,7 @@ export function bindReadTools(supabase: Client, userId: string) {
     tool(async () => asJson(await weeklyCoach(supabase, userId)), {
       name: "weeklyCoach",
       description:
-        "Load this week's Track Coach check-in: adherence, trends, proposals, and formatted text. Use for “how was this week?”, proposals, RIR, or bodyweight in the Coach report. If checkInText says not available, a change is null, or a trend is insufficient_data, say that comparison is missing.",
+        "Load this week's compact structured Track Coach report: adherence, volume, effort, bodyweight, session summaries, exercise trends and recommendations with matching review decisions. Use for weekly progress, proposals or RIR. Full set history and free-text notes are omitted; use exerciseReview for deeper exercise evidence and nextWorkout for current targets. Null changes or insufficient_data mean a comparison is missing. Decisions are review state, not applied changes.",
       schema: z.object({}),
     }),
     tool(async () => asJson(await activeProgram(supabase, userId)), {

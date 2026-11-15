@@ -2,7 +2,7 @@ import "server-only";
 import { StateBackend, type FileData } from "deepagents";
 import { getConfig } from "@langchain/langgraph";
 
-export const WORKING_FILE_LIMITS = { fileBytes: 128 * 1024, files: 32, totalBytes: 1024 * 1024,
+export const WORKING_FILE_LIMITS = { fileBytes: 256 * 1024, files: 32, totalBytes: 1024 * 1024,
   readLines: 200, readBytes: 8 * 1024 };
 const bytes = (content: FileData["content"]) => typeof content === "string" ? Buffer.byteLength(content)
   : content instanceof Uint8Array ? content.byteLength : Buffer.byteLength(content.join("\n"));
@@ -20,7 +20,7 @@ export class WorkingFilesBackend extends StateBackend {
       .map(file => [file.path, file.content?.byteLength ?? 0]));
     for (const [path, size] of pending) sizes.set(path, size);
     for (const [path, size] of updates) {
-      if (size > WORKING_FILE_LIMITS.fileBytes) return "Working file exceeds 128 KiB; request narrower evidence.";
+      if (size > WORKING_FILE_LIMITS.fileBytes) return "Working file exceeds 256 KiB; request narrower evidence.";
       sizes.set(path, size);
     }
     if (sizes.size > WORKING_FILE_LIMITS.files) return "Working file limit reached (32 files).";

@@ -25,11 +25,14 @@
 <p>The existing <code>eval:agent</code> runner evaluates exercise review against changing development data. The new <code>eval:weekly</code> command uses the same <code>runAgentTurn</code>, <code>outputFromTurn</code>, LangSmith <code>evaluate()</code> and Jev client, with a separate dataset and experiment project. It needs no Supabase credentials.</p>
 <p class="note">Scripted tests validate the harness and fresh evidence extraction only. Actual model selection, narration and judge calibration require the explicit paid experiment. The current prompt changes follow review of actual answers; tool output and calculation paths are preserved.</p>
 <h3>Real source: fixture execution in weekly-runner.ts</h3>
-<pre><code>const tools = bindAgentTools({} as never, "synthetic-owner").map((definition) =&gt; tool(async () =&gt; {
-  if (definition.name === "weeklyCoach") return JSON.stringify(inputs.evidence.weeklyCoach);
+<pre><code>const evidence = inputs.evidence.weeklyCoach;
+const weekly = summarizeWeeklyCoach({ coachReport: evidence.report, coachRecommendations: evidence.recommendations, decisions: evidence.decisions });
+const tools = bindAgentTools({} as never, "synthetic-owner").map((definition) =&gt; tool(async () =&gt; {
+  if (definition.name === "weeklyCoach") return JSON.stringify(weekly);
   if (definition.name === "nextWorkout") return JSON.stringify({ source: "nextWorkout", workout: inputs.evidence.weeklyCoach.currentWorkout });
   return JSON.stringify({ status: "unavailable", reason: "No fixture supplied for this tool. No action performed." });
 }, { name: definition.name, description: definition.description, schema: definition.schema }));</code></pre>
+<p>Published v1 snapshots retain their original raw inputs. The runner applies the same compact weekly projection as Production; current workout evidence is available separately through nextWorkout. No remote dataset changes are required.</p>
 <p>All registered tools are offered so the model can choose incorrectly. Every execution is intercepted, including draft and navigation tools. Wrong action attempts fail the tool-selection metric; no real action is performed. This suite cannot prove notification delivery or database write behavior.</p></section>
 <section id="organization"><h2>One application, separate trace environments</h2>
 <div class="flow" role="img" aria-label="Application lifting-app groups production traces, development traces, datasets and their native experiments">

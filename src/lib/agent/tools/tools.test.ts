@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { loadCoachUi } from "@/lib/coach-ui-data";
+import { loadNextWorkout } from "@/lib/next-workout";
 import { weeklyCoach } from "./weekly-coach";
 import { activeProgram } from "./active-program";
 import { resolveExerciseIdentity, summarizeExerciseReview } from "./exercise-review";
@@ -60,9 +62,23 @@ describe("agent read tools", () => {
   it("weeklyCoach wraps loadCoachUi and omits the catalog", async () => {
     const result = await weeklyCoach({} as never, "user-1");
     expect(result.source).toBe("weeklyCoach");
-    expect(result.checkInText).toContain("3/4");
+    expect(result.report.current.adherence).toEqual(weeklyFixture.report.current.adherence);
+    expect(result).not.toHaveProperty("checkInText");
     expect(result).not.toHaveProperty("catalog");
-    expect(result.currentWorkout?.dayName).toBe("Lower A");
+    expect(result).not.toHaveProperty("currentWorkout");
+    expect(loadNextWorkout).not.toHaveBeenCalled();
+  });
+
+  it("keeps only decisions for recommendations returned in the report", async () => {
+    const loaded = await loadCoachUi("user-1", {} as never);
+    const key = loaded.coachRecommendations[0]?.key;
+    if (!key) throw Error("Missing recommendation fixture");
+    vi.mocked(loadCoachUi).mockResolvedValueOnce({ ...loaded, decisions: [
+      { recommendationKey: key, status: "accepted", deferredUntil: null },
+      ...Array.from({ length: 276 }, (_, i) => ({ recommendationKey: `old-${i}`, status: "dismissed" as const, deferredUntil: null })),
+    ] });
+    const result = await weeklyCoach({} as never, "user-1");
+    expect(result.decisions).toEqual([{ recommendationKey: key, status: "accepted", deferredUntil: null }]);
   });
 
   it("activeProgram wraps getActiveProgram", async () => {

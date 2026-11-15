@@ -27,6 +27,7 @@ if they conflict with an explicit decision, flag the conflict before changing th
 | Rationale and record eligibility | [Decisions](DECISIONS.md) |
 | Weekly facts, proposals, session-scoped consumers | [Coach report](COACH-REPORT.md) |
 | In-app agent, chat overlay, or AI Coach slices | [AI Coach](AI-COACH.md), [explainer](ai-coach.html); [streaming capability review](AI-COACH-STREAMING.md) |
+| Deep Agents/checkpoints, skill loading, file offloading or user-memory foundations (#247; A–C built locally, rollout disabled) | [Compatibility report, approved plan and A–C evidence](AI-COACH.md#runtime-foundations-plan-247); [isolated planning spike](../scripts/spikes/agent-foundations/README.md) |
 | Planned exception-only notifications, Coach entry point, or meaningful interventions | [Exception-only implementation plan](AI-COACH-EXCEPTIONS-PLAN.md) |
 | Exception storage, replay, preferences and action authorization | [Episode design and Decision Card](AI-COACH-EPISODES-DESIGN.md) — #195 inbox and #141 conversations/confirmed actions implemented |
 | Implemented persistent exception inbox, foreground refresh and rollout | [Inbox contract](COACH-INBOX.md) |

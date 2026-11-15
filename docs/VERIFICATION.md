@@ -248,6 +248,36 @@ modules and their fixture helpers to the strict slice. Keep consumer compatibili
 until each batch lands green. Global indexed-access enforcement follows those batches.
 Do not widen exercise comparison scopes while changing types.
 
+## Coach checkpoint readiness (#247)
+
+`npm run test:agent:persistence` is a separate disposable local PostgreSQL proof for
+the prepared runtime. It owns its cluster and accepts no target database URL. Native
+binary setup, source paths, isolation/fencing coverage and limits are documented in
+[AI Coach Slice A](AI-COACH.md#slice-a-integration-readiness-implemented-locally).
+It supplements `base` + `agent`; it is not the Supabase `database` profile or evidence
+of hosted pooling, applied migrations or authenticated browser behavior.
+The same runner applies the actual [Slice B migration](AI-COACH.md#slice-b-durable-execution-implemented-locally-rollout-disabled)
+to its disposable cluster and imports the production admission/saver/runtime modules. It
+checks parallel/retry sends, bootstrap, projection-only repair, real killed-worker/DB-restart
+recovery, owner/thread isolation, stale epochs and populated account cleanup. Synthetic
+provider responses make no paid calls. This does not establish Supabase Auth/PostgREST,
+hosted pooling/TLS/load or the authenticated browser journey.
+
+`npm run test:agent:bundle` verifies the actual production function traces contain the
+bundled checklist SKILL.md/reference contents and exclude test fixtures/broad project files.
+It builds without changing the deployed skill source directory. The app and tests share
+`src/lib/agent/skills/coach-context-check`; there is no separate checklist fixture.
+The PostgreSQL proof checks native discovery metadata and consumed pins after database
+restart/fresh-process reopen; it does not assert automatic repinning after context trimming.
+See [Slice C](AI-COACH.md#slice-c-reusable-skills-bundled-checklist).
+
+Slice D extends that runner with real native oversized-tool offloads and summary history,
+PostgreSQL restart/fresh-process bounded read-back, and owner-scoped retention. It verifies
+expired intermediates/orphan writes/blobs are removed without changing current state,
+unfinished turns prevent cleanup and retries are safe. Harness tests cover concurrent
+quota writes and summary fallback without a missing-history link. The 100-turn storage
+benchmark and Slice E memory are explicitly deferred; neither is a verification gate.
+
 ## Human review
 
 Focus review on training policy/numeric interpretation, comparison scope, ownership/RLS,

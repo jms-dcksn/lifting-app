@@ -1,4 +1,4 @@
-import type { ThreadSummary } from "./chat-state";
+import type { ThreadSummary, DurableChatStatus } from "./chat-state";
 import type { AgentMessage } from "./messages";
 
 export type AgentStreamEvent =
@@ -6,7 +6,9 @@ export type AgentStreamEvent =
   | { type: "text"; text: string }
   | { type: "tool-start"; callId: string; name: string }
   | { type: "tool-end"; callId: string; outcome: "complete" | "error" }
-  | { type: "done"; messages: AgentMessage[] }
+  | { type: "done"; messages: AgentMessage[]; replayed?: boolean }
+  | { type: "runtime"; status: DurableChatStatus }
+  | { type: "pending"; message: string }
   | { type: "error"; message: string };
 
 export function encodeSse(event: AgentStreamEvent) {

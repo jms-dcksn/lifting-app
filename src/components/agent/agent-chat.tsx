@@ -30,6 +30,7 @@ import { CoachThreadReview } from "@/components/coach/coach-thread-review";
 import { COACH_DISCUSSION_PROMPT, isCoachReviewSeed, presentCoachReviewSeed } from "@/lib/coach-discussion";
 import { Button } from "@/components/ui/button";
 import type { EpisodeReview } from "@/lib/coach-conversation-data";
+import { preparePendingSend } from "@/lib/agent/pending-send";
 
 export function AgentChat({
   initial,
@@ -63,6 +64,10 @@ export function AgentChat({
   const view = screen.name === "chat" ? transcriptView(screen.conversation, screen.turn) : null;
   const inChat = view !== null;
   const discussionStarted = useRef(false);
+  const sendAbort = useRef<AbortController | null>(null);
+  useEffect(() => () => { sendAbort.current?.abort(); }, []);
+  const runtime = screen.name === "chat" && screen.conversation.kind === "saved" ? screen.conversation.runtime : undefined;
+  const blocked = runtime && (runtime.readOnly || runtime.status !== "completed");
   const unansweredReview = screen.name === "chat" && screen.conversation.kind === "saved"
     && screen.conversation.messages.length === 1 && isCoachReviewSeed(screen.conversation.messages[0]);
 
@@ -97,21 +102,29 @@ export function AgentChat({
     if (node && inChat && stickToEnd.current) node.scrollTop = node.scrollHeight;
   });
 
-  const sendTurn = useCallback(async (text: string, review = false) => {
-    if ((!text && !review) || screen.name !== "chat" || screen.turn) return;
+  const sendTurn = useCallback(async (text: string, review = false, resume = false) => {
+    if ((!text && !review && !resume) || screen.name !== "chat" || screen.turn) return;
     const { conversation } = screen;
     if (!review) setDraft("");
-    dispatch({ type: "send", optimisticId: review && conversation.kind === "saved" ? conversation.messages[0].id : `local-${Date.now()}`, text: review ? COACH_DISCUSSION_PROMPT : text });
+    const existingInput = conversation.kind === "saved" ? conversation.messages.findLast(message => message.role === "user") : undefined;
+    dispatch({ type: "send", optimisticId: (review || resume) && existingInput ? existingInput.id : `local-${Date.now()}`, text: review ? COACH_DISCUSSION_PROMPT : text });
     let userTextStored = false;
+    const controller = new AbortController();
+    sendAbort.current = controller;
     try {
+      const payload = {
+        ...(review ? { discuss: true } : { text }),
+        threadId: conversation.kind === "saved" ? conversation.threadId : null,
+        context: { ...parseScreenContextFromPath(pathname), ...(focus ? { focusedExerciseId: focus.exerciseId, focusedEquipmentInstanceId: focus.equipmentInstanceId, reviewMonth: focus.month } : {}) },
+      };
+      const pending = await preparePendingSend(payload, sessionStorage.getItem("coach.pendingSend.v1"));
+      if (!resume) sessionStorage.setItem("coach.pendingSend.v1", pending.stored);
       const response = await fetch("/api/agent/chat", {
         method: "POST",
+        signal: controller.signal,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...(review ? { discuss: true } : { text }),
-          threadId: conversation.kind === "saved" ? conversation.threadId : null,
-          context: { ...parseScreenContextFromPath(pathname), ...(focus ? { focusedExerciseId: focus.exerciseId, focusedEquipmentInstanceId: focus.equipmentInstanceId, reviewMonth: focus.month } : {}) },
-        }),
+        body: resume && conversation.kind === "saved" && conversation.runtime
+          ? JSON.stringify({ ...payload, resume: true, requestId: conversation.runtime.requestId }) : pending.body,
       });
       if (!response.ok || !response.body) {
         throw new Error(response.status === 503 ? "Coach is not configured." : "Could not send.");
@@ -120,13 +133,15 @@ export function AgentChat({
         if (streamEvent.type === "thread") userTextStored = true;
         dispatch({ type: "event", event: streamEvent });
         if (streamEvent.type === "done") {
-          runClientActions(streamEvent.messages, router, onNavigate);
+          sessionStorage.removeItem("coach.pendingSend.v1");
+          if (!streamEvent.replayed) runClientActions(streamEvent.messages, router, onNavigate);
         }
       }
       dispatch({ type: "closed", error: "Connection lost." });
     } catch (caught) {
       dispatch({ type: "closed", error: caught instanceof Error ? caught.message : "Could not send." });
     } finally {
+      if (sendAbort.current === controller) sendAbort.current = null;
       if (!review && !userTextStored) setDraft((current) => current || text);
     }
   }, [screen, pathname, router, onNavigate, focus]);
@@ -145,6 +160,7 @@ export function AgentChat({
 
   async function send(event: FormEvent) {
     event.preventDefault();
+    if (blocked) return;
     await sendTurn(draft.trim());
   }
 
@@ -242,15 +258,25 @@ export function AgentChat({
           <Input
             aria-label="Message"
             value={draft}
+            disabled={Boolean(blocked)}
             onChange={(event) => setDraft(event.target.value)}
           />
-          <IconButton type="submit" aria-label="Send" pending={screen.turn !== null} disabled={!draft.trim()}>
+          <IconButton type="submit" aria-label="Send" pending={screen.turn !== null} disabled={!draft.trim() || Boolean(blocked)}>
             <IconSend />
           </IconButton>
         </form>
       ) : null}
       {error ? <p className="shrink-0 px-4 pb-3 text-caption text-danger">{error}</p> : null}
-      {error && unansweredReview ? <Button variant="secondary" className="mx-4 mb-3" onClick={() => void sendTurn("", true)}>Retry discussion</Button> : null}
+      {runtime && blocked && screen.name === "chat" && screen.turn === null ? <div className="mx-4 mb-3 space-y-2">
+        <p role="status" className="text-caption text-muted">{runtime.readOnly ? "This conversation is temporarily read-only." : runtime.status === "running" ? "Your response is still running. Refresh to check its progress." : "Your saved response was interrupted. Resume to continue."}</p>
+        <Button variant="secondary" onClick={async () => {
+          if (screen.name !== "chat" || screen.conversation.kind !== "saved") return;
+          try { dispatch({ type: "refreshed", snapshot: await fetchSnapshot(`/api/agent/chat?thread=${screen.conversation.threadId}`) }); }
+          catch { dispatch({ type: "refresh-failed", error: "Could not refresh. Please retry." }); }
+        }}>Refresh response</Button>
+        {!runtime.readOnly && runtime.status === "interrupted" ? <Button variant="secondary" onClick={() => void sendTurn("", false, true)}>Resume response</Button> : null}
+      </div> : null}
+      {error && unansweredReview && !runtime ? <Button variant="secondary" className="mx-4 mb-3" onClick={() => void sendTurn("", true)}>Retry discussion</Button> : null}
     </div>
   );
 }

@@ -92,8 +92,17 @@ original build sequence and historical checks.
 
 - [x] Slice 0 — grounded read-only chat (`#137`): schema, Gateway + LangSmith, four read
       tools, last-N context, Sheet + `/coach`, evals, [ai-coach.html](ai-coach.html).
-- [ ] Slices 1–5 in [AI-COACH.md](AI-COACH.md) order. Do not start Slice 2 writes or
-      Slice 5 Deep Agents until the earlier slice’s done criteria pass.
+- [x] Slice 1 — screen context and confirmed navigation; Slice 2 — gallery intake to
+      inactive draft. Current contracts live in [AI-COACH.md](AI-COACH.md).
+- [ ] #247 — [runtime foundations plan](AI-COACH.md#runtime-foundations-plan-247):
+      approved for staged implementation. Slices A–D are built locally: pinned
+      harness, approved migration, durable admission/fencing/bootstrap/projection and
+      killed-worker/database restart proofs, plus bundled read-only skill discovery/pinning, bounded working files and checkpoint retention.
+      Preview testing is enabled against the dev DB; Production migration and
+      credential/pooling/browser release gates remain. C uses native loading with a bundled checklist skill; #177/#233 supply real skill
+      behavior and any workflow-specific restoration/version checks.
+      Main Coach owns #177 custom design and #233 proposal workflows;
+      no program-writer subagent. Slice E user memory and the 100-turn storage benchmark are deferred by owner (2026-11-11).
 
 ## Original estimate
 

@@ -22,6 +22,9 @@ the 2026-09-13 documentation review.
 | `LANGSMITH_PROJECT` | Production: `lifting-app`; local/Preview: `lifting-app-dev` |
 | `LANGSMITH_WORKSPACE_ID` | Optional explicit workspace shared by CLI, datasets and SDK traces |
 | `AGENT_MODEL` | Optional Gateway model id (`provider/model`). Default `openai/gpt-5.4` |
+| `COACH_RUNTIME_ENABLED` | Server-only durable Coach switch; `1` enables after provisioning |
+| `COACH_RUNTIME_DATABASE_URL` | Server-only dedicated runtime role connection URL |
+| `COACH_RUNTIME_CA_CERT` | Optional PEM CA certificate for verified database TLS |
 
 The first two are required for the app and exposed in the browser bundle.
 `SUPABASE_SECRET_KEY` stays server-only for `npm run eval:agent`; the application
@@ -197,6 +200,40 @@ named `CURSOR_API_KEY`. Do not commit it.
 - Check `package.json` and deployment settings for build/runtime configuration. This checkout
   has no pinned Node engine, `.nvmrc`, or `vercel.json`; CI uses Node 22 for Supabase's native
   WebSocket support. Verify the selected deployment runtime at release.
+
+### Coach runtime persistence (#247; Preview testing enabled)
+
+Slices A–D implement the Deep Agents harness and durable execution behind
+`COACH_RUNTIME_ENABLED=1`. The feature-branch Preview uses `lifting-app-dev`; keep the
+Production flag unset/off until Production release review. Migration
+`20261108183830_coach_durable_execution.sql` (version `20261108183830`) is recorded as **unapplied to Production**. The owner reports applying it to the dev DB,
+and authenticated Preview chat was verified on 2026-11-14. The human runs `npx supabase db push` after merge, from the linked
+`main` checkout, then redeploys. The agent does not apply or query hosted SQL.
+
+The migration installs a private schema and a dedicated `coach_agent_runtime` NOLOGIN,
+non-bypass role. Separately review/provision its login credential and transaction-pooler
+connection before setting server-only `COACH_RUNTIME_DATABASE_URL`. No training/Auth-table
+access or inherited roles; domain tools retain the session client. Pooler usernames may
+include the project suffix. Production TLS verification is required; URL `sslmode`
+overrides are rejected. If the database certificate chains to Supabase's private CA,
+set `COACH_RUNTIME_CA_CERT` to the complete PEM certificate downloaded from the intended
+project's **Database → Settings → SSL Configuration**. Preserve actual newlines, including
+the BEGIN/END CERTIFICATE lines. This supplies the trusted CA without disabling certificate
+or hostname verification. For Preview testing, scope it to the feature branch.
+The Node pool has at most two connections per warm function and
+finite timeouts. Validate aggregate project limits, pooling/TLS, deployment Node version,
+account deletion and both authenticated UI surfaces before enablement. Local proofs do
+not establish those hosted facts. C/D packaging, quotas/retention and rollback gates still
+apply; do not enable this slice merely because the local build passes.
+
+Never run native `setup()` or automatic Store creation in a request. During rollback,
+turn the switch off, fence/drain executions and retain the credential for status/projection
+repair. Checkpoint-backed threads become read-only; untouched legacy threads can continue.
+Credential loss also leaves existing owned public history read-only. Never fall back to
+transcript-only generation on a checkpoint-backed thread. Drain older deployments before
+cutover; the migration rejects their transcript writes but cannot stop an old binary's
+provider calls. Do not destructively remove checkpoints or roll back the additive schema.
+Details: [durable runtime and evidence](docs/AI-COACH.md#slice-b-durable-execution-implemented-locally-rollout-disabled).
 
 ### Deload progression migration
 

@@ -22,11 +22,11 @@ function asJson(value: unknown) {
 }
 
 /** LangChain adapters. Domain functions above are the public interface. */
-export function bindAgentTools(supabase: Client, userId: string) {
+export function bindAgentTools(supabase: Client, userId: string, durable?: { programId: string; recoveryOnly: boolean }) {
   return [
     ...bindReadTools(supabase, userId),
     ...bindClientTools(),
-    ...bindWriteTools(supabase, userId),
+    ...bindWriteTools(supabase, userId, durable),
   ];
 }
 
@@ -88,9 +88,25 @@ export function bindReadTools(supabase: Client, userId: string) {
   ];
 }
 
-function bindWriteTools(supabase: Client, userId: string) {
+function bindWriteTools(supabase: Client, userId: string, durable?: { programId: string; recoveryOnly: boolean }) {
+  let previous: Promise<unknown> = Promise.resolve();
+  let recoveryOnly = durable?.recoveryOnly ?? false;
+  const draft = (input: unknown) => {
+    const next = previous.then(async () => {
+      try {
+        const result = await draftProgramFromIntake(supabase, userId, input, durable ? { ...durable, recoveryOnly } : undefined);
+        if (result.status === "draft") recoveryOnly = true;
+        return asJson(result);
+      } catch (error) {
+        recoveryOnly = true;
+        throw error;
+      }
+    });
+    previous = next.catch(() => {});
+    return next;
+  };
   return [
-    tool(async (input) => asJson(await draftProgramFromIntake(supabase, userId, input)), {
+    tool(draft, {
       name: "draftProgramFromIntake",
       description:
         "Recommend an existing PROGRAM_TEMPLATES gallery program from intake (days, goal, style, equipment, emphasis, omissions), patch exercises lightly, and persist an inactive draft. Low confidence returns follow-up chips instead of guessing a split. Does not invent custom programs. Returns an Open in builder confirm chip — the app does not navigate until the user taps it. Never activates an existing active program.",

@@ -761,8 +761,9 @@ Replacing `/analytics/coach` would throw away the tested contract shared by the 
 
 **Stay in this TypeScript app.** Every tool worth calling is already a TS loader or action
 (`loadCoachUi`, `getActiveProgram`, `loadNextWorkout`, `sessionTarget()`, `saveProgram`,
-`startNextSession`). A Python sidecar would re-expose that surface. Deep Agents waits
-until Slice 5; LangChain TypeScript is enough for the loop.
+`startNextSession`). A Python sidecar would re-expose that surface. LangChain TypeScript
+serves the current loop. The original Deep Agents Slice 5 deferral is superseded for
+planning by [runtime foundations (#247)](#ai-coach-runtime-foundations-planning-2026-11-07).
 
 **User session + RLS.** The agent is an in-app user. Domain tools wrap existing
 loaders so period data, slot identity, and owner scope cannot drift. Conversation memory
@@ -839,10 +840,11 @@ writes.
 
 **LangSmith groups by `metadata.thread_id`.** `runAgentTurn` passes the thread id as run
 metadata, which reaches the chain, model, and tool callbacks. That is how LangSmith
-threads a conversation's traces. There is no LangGraph checkpointer and no
-`configurable.thread_id`. A checkpointer would be a second transcript store beside
-`agent_message`, and the model window already comes from Postgres through
-`selectModelMessages`.
+threads a conversation's traces. There is currently no LangGraph checkpointer and no
+`configurable.thread_id`; the model window comes from Postgres through
+`selectModelMessages`. The original rejection of a second transcript store is reconciled
+by [#247's proposed execution-state/projection ownership](#ai-coach-runtime-foundations-planning-2026-11-07),
+not by enabling an independently authoritative second transcript.
 
 **Ownership is a composite key, not a second policy.** RLS checks each row's own
 `user_id`, which cannot see whose thread `thread_id` names. `agent_message (thread_id,
@@ -1088,6 +1090,96 @@ No PR/progression/calibration eligibility or comparison scope changes. See
 [workout details](WORKOUT-DETAILS.md) for the storage and interaction contract. For #201's later program-design checks, numeric four-phase prescriptions are now representable;
 AI discovery and advanced sequencing such as intra-set tempo changes remain separate.
 
+## AI Coach runtime foundations planning (2026-11-07)
+
+#247 supersedes the blanket Deep Agents/Slice 5 deferral and the assumption that a
+checkpointer must be a competing transcript authority. The default serving path remains `createAgent()` and bounded transcript reconstruction;
+the separately gated durable path is described below. The proposed contract and staged Decision
+Card are in [AI-COACH.md](AI-COACH.md#runtime-foundations-plan-247).
+
+Prefer the full TypeScript Deep Agents harness after compatibility gates, with native
+checkpoints owning graph state and `agent_message` a deliberate UI projection.
+`agent_thread` and episode seed identities survive. Domain tools retain the user's
+Supabase client; infrastructure credentials do not grant domain-tool authority.
+The main Coach owns conversation/program creation. #177 supplies its skill and #233
+owns proposal lifecycle/receipts; no specialist writer or automatic delegation.
+User memory requires a separate Store and product slice and does not block #177.
+
+The isolated exact dependency set installs without forced peers and has eleven
+deterministic capability probes. It requires a different LangSmith version and silently
+skips missing pins. Follow-up verification corrected the original summary-file finding:
+using direct `new StateBackend()` rather than the deprecated runtime-injected factory
+persists summarized history and lets a fresh agent read it. No disk backend is required.
+
+The user subsequently approved the plan and requested Slice A in this chat. Root
+dependencies now use that compatible pinned set, including LangSmith 0.9.0. The
+server-only prepared harness uses the existing Gateway, removes delegation and shell
+tools. The original shared token/call accounting was subsequently removed at the owner's
+request; current behavior uses per-response `maxTokens: 4000`, native summarization defaults
+and a shared execution timeout/cancellation signal.
+The serving route defaults to the original runtime; B adds the gated selection below. Actual domain tools and captured
+LangSmith SDK trace transport pass offline regressions. A disposable native PostgreSQL
+cluster proves database/process restart and owner/epoch isolation with the pinned saver.
+That Slice A transaction-scoped pool remains a readiness prototype; B now supplies the
+production scoped saver and execution path.
+No hosted schema/credential provisioning, production rollout or paid evaluation occurred.
+
+### Durable Coach execution schema (#247, 2026-11-08)
+
+The user approved the concrete schema. Migration `20261108183830_coach_durable_execution.sql`
+adds a private owner/runtime binding and turn ledger beside the pinned native saver tables.
+Existing thread/message/episode-seed IDs remain authoritative for UI identity. A dedicated
+non-bypass role can access private state and owner-scoped conversation rows, not training
+or Auth tables; domain tools keep the signed-in client. Runtime state never grants approval.
+
+B is implemented locally: atomic request admission, single unresolved turn, fenced native
+writes, stable-ID bootstrap, checkpoint-to-UI projection repair and explicit resume. The
+rollout switch defaults off. Bound threads remain read-only during rollback; no transcript
+fallback. Draft creation uses one stable program identity per durable turn; uncertain
+recovery cannot create a missing program. Native pending write tasks are never blindly replayed.
+The migration is unapplied to hosted storage; a human applies it after merge, then redeploys.
+Credential provisioning, hosted pooling/TLS/load, full authenticated browser verification and
+C/D packaging/retention gates precede enablement. No Store or skill bundle is introduced in B.
+
+The owner subsequently chose to remove cumulative model/summary/token caps and the custom
+usage-accounting transport. Use Deep Agents' native summarization defaults and the Coach
+summary prompt for context management, with `maxTokens: 4000` per provider response. The
+60-second execution timeout remains coupled to B's 90-second lease; cancellation and
+existing loop guards remain. The former 6,000/four/6,000 proof overrides no longer govern
+the harness. Missing usage reports cannot prevent another model request.
+
+### Reusable Coach skills (#247, 2026-11-10)
+
+The initial Slice C implementation included a manifest, digests, cache invalidation and
+required-instruction restoration. After reviewing it, the user chose native loading with
+an 11-line read-only FilesystemBackend wrapper. The harness routes `/skills/` to bundled
+repository files and supplies `skills: ["/skills/"]` to createDeepAgent. StateBackend still
+owns thread files; no Store or schema is added. At that point production had no skill directories;
+`coach-context-check` and its reference were test-only. The owner subsequently promoted
+that checklist into the deployed skill bundle on 2026-11-14 for Preview testing, sharing
+one source directory between the app and tests.
+
+Remove the custom version/restoration infrastructure rather than maintaining it ahead
+of a real workflow. Keep native discovery, on-demand reads, explicit consumed pins,
+backend write rejection, deployment packaging and checkpoint/restart tests. Native
+metadata caching, silently skipped missing pins and instruction loss from the model's
+summarized context remain native behavior. #177/#233 will add narrowly scoped required-skill
+and version/restoration checks when their authoritative workflows exist. Loaded skills
+never grant workflow activation or training-write permission. See [Slice C](AI-COACH.md#slice-c-reusable-skills-bundled-checklist).
+
+### Coach working files and deferred memory (#247, 2026-11-11)
+
+The owner explicitly deferred the 100-turn storage benchmark and Slice E cross-chat memory
+for the current two-user feedback phase. Neither is a release gate. D retains native
+summarization defaults and uses a bounded StateBackend for working files, without a new
+Store or schema. Limits apply to native automatic offloads/history appends, not just model
+tools. Quota failure must never produce a link to a file that was not saved.
+
+Prune completed intermediate checkpoints after 30 days following successful projection,
+keeping current state, bootstrap, completed-turn receipts and immediate parents. Skip
+unfinished work; never evict live files or workflow evidence. Retained checkpoint/message
+history is not bounded by live file quotas. No background worker or physical-size gate is
+introduced. See [Slice D](AI-COACH.md#slice-d-working-files-and-context-implemented-locally).
 
 ## Per-set targets for uniform programs (2026-11-11)
 

@@ -4,6 +4,7 @@ import { AgentChat } from "@/components/agent/agent-chat";
 import { createClient } from "@/lib/supabase/server";
 import { parseChatSelection } from "@/lib/agent/chat-state";
 import { loadChat } from "@/lib/agent/thread";
+import { durableChat } from "@/lib/agent/durable-chat";
 import Link from "next/link";
 import { threadReview } from "./episodes/actions";
 import { CoachEntry } from "@/components/coach/coach-entry";
@@ -27,7 +28,8 @@ export default async function AgentCoachPage({
   const catalog = focus.exerciseId ? await getCatalogMap(supabase, userId) : null;
   const focusLabel = focus.exerciseId ? catalog?.[focus.exerciseId]?.name ?? "Selected lift unavailable" : undefined;
   const selection = parseChatSelection(typeof thread === "string" ? thread : undefined);
-  const snapshot = selection ? await loadChat(supabase, userId, selection) : null;
+  const loaded = selection ? await loadChat(supabase, userId, selection) : null;
+  const snapshot = loaded ? await durableChat.snapshot(supabase, userId, loaded).catch(() => null) : null;
   if (!snapshot) return <div className="mx-auto w-full max-w-page space-y-4 px-4 pb-6"><PageHeader title="Coach" /><p>This conversation is unavailable.</p><Link href={coachConversationHref(focus, null)}>Open Coach</Link></div>;
 
   const initialReview = snapshot.open.kind === "saved" ? await threadReview(snapshot.open.threadId).catch(() => undefined) : undefined;

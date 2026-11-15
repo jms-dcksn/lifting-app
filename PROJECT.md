@@ -7,7 +7,7 @@ Kanban workstreams (intended GitHub Projects **Status** columns):
 | **Now** | 90-day wedge (complete) plus in-app AI Coach slices, starting at Slice 0 |
 | **Feedback** | User feedback from the friend / future users |
 | **Dogfood** | James's own improvement notes from using the app |
-| **Later** | Parked: native iOS migration, Deep Agents / in-session agent, and other out-of-scope items |
+| **Later** | Parked: native iOS migration, in-session agent and other unapproved product capabilities |
 
 ## 90-day scope freeze rules
 
@@ -16,8 +16,14 @@ Kanban workstreams (intended GitHub Projects **Status** columns):
    work into the current slice without an explicit scope change.
 2. **Feedback ≠ Now.** Capture friend/user notes under **Feedback**; promote to **Now** only when it unblocks the wedge or is a clear P0 for the first user.
 3. **Dogfood stays personal.** James's usage notes live in **Dogfood**; promote selectively so personal polish does not crowd out friend-critical work.
-4. **Later is a parking lot.** Native iOS, Deep Agents, web search, and in-session agent
-   presence stay in **Later** until their slice (see [AI-COACH.md](docs/AI-COACH.md) Slice 5).
+4. **Later is a parking lot.** Native iOS and in-session agent presence remain parked.
+   #247's shared Deep Agents/checkpoint/skills foundations for #177/#233 are approved
+   for staged implementation; A–D are built locally (C uses native skill
+   loading with a bundled checklist skill). Preview testing is enabled against the dev DB;
+   Production schema/credential/pooling/browser release gates remain outstanding.
+   This supersedes the blanket Slice 5 deferral. #198 owns
+   scoped research. Slice E user memory and the 100-turn storage benchmark are explicitly deferred. See the
+   [foundation plan and Decision Card](docs/AI-COACH.md#runtime-foundations-plan-247).
 5. **Prefer issues over silent scope creep.** New ideas get an issue labeled with the intended status; debate happens on the issue, not by quietly expanding **Now**.
 
 ## Board setup (manual if automation lacked Projects access)

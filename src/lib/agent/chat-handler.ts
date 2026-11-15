@@ -8,6 +8,7 @@ import { bindAgentTools } from "./tools";
 import { runAgentTurn } from "./run";
 import { encodeSse, type AgentStreamEvent } from "./stream";
 import { episodeContextForThread } from "@/lib/coach-conversation-data";
+import type { durableChat } from "./durable-chat";
 
 type Client = SupabaseClient<Database>;
 
@@ -19,6 +20,7 @@ export type AgentChatAuth = {
 export function createAgentChatHandlers(deps: {
   auth: (request: Request) => Promise<AgentChatAuth>;
   runTurn?: typeof runAgentTurn;
+  durable?: typeof durableChat;
 }) {
   const runTurn = deps.runTurn ?? runAgentTurn;
 
@@ -29,7 +31,8 @@ export function createAgentChatHandlers(deps: {
     if (!selection) return json({ error: "Invalid request" }, 400);
     const snapshot = await loadChat(supabase, userId, selection);
     if (!snapshot) return json({ error: "Not found" }, 404);
-    return json(snapshot, 200);
+    try { return json(deps.durable ? await deps.durable.snapshot(supabase, userId, snapshot) : snapshot, 200); }
+    catch { return json({ error: "Coach persistence is unavailable. Please retry later." }, 503); }
   }
 
   async function POST(request: Request) {
@@ -37,10 +40,15 @@ export function createAgentChatHandlers(deps: {
     if (!userId) return json({ error: "Unauthorized" }, 401);
     if (!gatewayApiKey()) return json({ error: "Service unavailable" }, 503);
 
-    const turnRequest = parseTurnRequest(await request.json().catch(() => null));
+    const body: unknown = await request.json().catch(() => null);
+    const turnRequest = parseTurnRequest(body, Boolean(deps.durable));
     if (!turnRequest) return json({ error: "Invalid request" }, 400);
 
     enableLangSmithTracing();
+    if (deps.durable) {
+      const response = await deps.durable.post({ supabase, owner: userId, request, turnRequest, body });
+      if (response) return response;
+    }
     const turn = await startTurn(supabase, userId, turnRequest);
     if (!turn) return json({ error: "Not found" }, 404);
     const screenContext = await enrichScreenContext(supabase, userId, turnRequest.context);
@@ -85,17 +93,23 @@ export function createAgentChatHandlers(deps: {
   return { GET, POST };
 }
 
-function parseTurnRequest(body: unknown): TurnRequest | null {
+function parseTurnRequest(body: unknown, allowResume = false): TurnRequest | null {
   if (!body || typeof body !== "object" || !("threadId" in body)) return null;
-    const { text, threadId, context, discuss } = body as {
+    const { text, threadId, context, discuss, resume, requestId } = body as {
     text?: unknown;
     threadId: unknown;
     context?: unknown;
     discuss?: unknown;
+    resume?: unknown;
+    requestId?: unknown;
   };
   const trimmed = typeof text === "string" ? text.trim() : "";
   const screenContext = parseScreenContextInput(context);
   if (!screenContext) return null;
+  if (resume === true) {
+    const id = parseThreadId(threadId);
+    return allowResume && id && parseThreadId(requestId) ? { kind: "continue", threadId: id, text: "", context: screenContext } : null;
+  }
   if (discuss === true) {
     const id = parseThreadId(threadId);
     return id && !trimmed ? { kind: "review", threadId: id, context: screenContext } : null;

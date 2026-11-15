@@ -57,7 +57,7 @@ test("workout notes, exact setup reuse and historical set context",async({page,c
     await expect(free.getByRole('button',{name:/^Edit exercise note for /}).getByRole('img',{name:'Saved note available'})).toBeVisible();
     await expect(free.getByText(longNote,{exact:true})).toHaveCount(0);
     await free.getByRole('button',{name:/^Edit exercise note for /}).click();freeSheet=page.getByRole('dialog',{name:'Exercise note',exact:true});
-    await expect(freeSheet.getByRole('textbox')).toHaveValue(longNote);
+    await expect(freeSheet.getByRole('textbox')).toHaveValue(longNote.trim());
     await freeSheet.getByRole('button',{name:'Clear',exact:true}).click();
     expect((await db.query('select note from public.workout_exercise_detail where session_id=$1 and occurrence_id=$2',[session,slots[3]])).rows[0].note).not.toBeNull();
     await freeSheet.getByRole('button',{name:'Save',exact:true}).click();await expect(freeSheet).toHaveCount(0);

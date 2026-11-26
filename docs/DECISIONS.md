@@ -941,8 +941,8 @@ Use assistant-ui headless primitives for the Coach viewport, composer, and copy
 actions. Adapt the application's reducer through the external-store runtime. The
 application owns sending, drafts, saved history, and recovery. Coach components
 own rendered evidence, review cards, intake chips, and confirmation authority.
-The browser checks exercise the shared UI with both the enabled durable runtime
-and saved legacy conversations. See the [chat contract](AI-COACH.md#shared-coach-chat-with-assistant-ui-270).
+The browser checks exercise the shared UI on the enabled durable runtime, with
+saved legacy conversations, and on the default legacy runtime. See the [chat contract](AI-COACH.md#shared-coach-chat-with-assistant-ui-270).
 
 ## AI Coach history preference and match transparency (2026-10-11, approved direction)
 

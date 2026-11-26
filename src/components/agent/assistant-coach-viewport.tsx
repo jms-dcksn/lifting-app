@@ -93,7 +93,7 @@ export function AssistantCoachConversation({
               onClick={() => viewport.current?.focus({ preventScroll: true })}
               className="pointer-events-auto absolute bottom-0 shadow-sm disabled:hidden"
             >
-              <Button type="button" variant="secondary">Jump to latest</Button>
+              <Button type="button">Jump to latest</Button>
             </ThreadPrimitive.ScrollToBottom>
           </div>
         </ThreadPrimitive.Viewport>

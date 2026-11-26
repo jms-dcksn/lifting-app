@@ -1,6 +1,6 @@
 import { resolveTempo } from "./tempo";
 import { editorSlot, parseStoredPlan, recoverySets, type PlannedSet } from "./workout-editor";
-import { refreshWorkoutPlanTargets, plannedCardTarget, plannedSetTarget, type PlannedPerformance } from "./workout-editor-targets";
+import { refreshWorkoutPlanTargets, plannedCardTarget, resolvePlannedSetTarget, type PlannedPerformance } from "./workout-editor-targets";
 import { loadPlannedPerformances } from "./workout-editor-data";
 import { exactExerciseIdentity } from "@/lib/strength/identity";
 import { cookies } from "next/headers";
@@ -41,41 +41,38 @@ export function resolveWorkoutSlots(input: {
     const equipmentInstanceId = last?.exercise_id === exerciseId ? last.equipment_instance_id : null;
     const prescription = resolvePrescription({ ...slot, repMin: folded.repMin, repMax: folded.repMax },
       week, program.style === "classic" ? program.phases : []);
-    const context = stallContext({ ...slot, programId: program.id, programDayId: day.id },
+    const contextSlot = { ...slot, programId: program.id, programDayId: day.id };
+    const context = stallContext(contextSlot,
       exerciseId, equipmentInstanceId, prescription, folded.phaseStartAt);
-    let effectiveTarget = resolveExactWorkoutTarget({ slotId: slot.id, identity: exactExerciseIdentity(exerciseId, equipmentInstanceId),
-      prescription, context, isDeload: input.sessionIsDeload ?? isDeload(prescription.phase),
-      history: targetHistory, catalog, stats, bodyweight });
-    let plannedSets: PlannedSet[];
-    let normalSets: PlannedSet[];
-    {
-      const setPrescriptions = slot.setPrescriptions ?? editorSlot({ ...slot, exerciseId,
-        prescription, effectiveTarget, restSeconds: slot.restSeconds ?? input.defaultRestSeconds }).normalSets!;
-      const normalPrescription=isDeload(prescription.phase)
-        ? resolvePrescription({...slot,repMin:folded.repMin,repMax:folded.repMax},week,[]) : {...prescription,phase:null};
-      normalSets=recoverySets(setPrescriptions,{...normalPrescription,phase:null}).map(set=>plannedSetTarget({
-        slotId:slot.id,exerciseId,equipmentInstanceId,set,history:input.plannedHistory??[],
-        context:{...context,phaseId:null},catalog,stats,bodyweight,isDeload:false}));
-      const rows = recoverySets(setPrescriptions, prescription);
-      plannedSets = rows.map(set => plannedSetTarget({ slotId: slot.id, exerciseId, equipmentInstanceId, set,
-        history: input.plannedHistory ?? [], context, catalog, stats, bodyweight, isDeload: input.sessionIsDeload ?? isDeload(prescription.phase) }));
-      prescription.targetSets = plannedSets.length;
-      if (!slot.setPrescriptions) {
-        // Missing row evidence may use the existing slot estimate; actual row history always wins.
-        const hasEvidence = (set: PlannedSet) => (input.plannedHistory ?? []).some(p => p.plannedSetId === set.id
-          && p.exerciseId === exerciseId && p.equipmentInstanceId === equipmentInstanceId);
-        plannedSets = plannedSets.map((set, index) => index !== 0 || hasEvidence(set) ? set : { ...set,
-          suggestedWeight: effectiveTarget.target?.weight ?? set.suggestedWeight,
-          targetReps: effectiveTarget.target?.targetReps ?? set.targetReps });
-        normalSets = normalSets.map((set, index) => index !== 0 || hasEvidence(set) ? set : { ...set,
-          suggestedWeight: effectiveTarget.target?.weight ?? set.suggestedWeight,
-          targetReps: effectiveTarget.target?.targetReps ?? set.targetReps });
-      }
-      if(plannedSets[0]) effectiveTarget=plannedCardTarget(effectiveTarget,plannedSets[0]);
-    }
+    const deloadPhase = isDeload(prescription.phase);
+    const deload = input.sessionIsDeload ?? deloadPhase;
+    const slotTargetInput = { slotId: slot.id, identity: exactExerciseIdentity(exerciseId, equipmentInstanceId),
+      history: targetHistory, catalog, stats, bodyweight };
+    const slotTarget = resolveExactWorkoutTarget({ ...slotTargetInput, prescription, context, isDeload: deload });
+    const restSeconds = slot.restSeconds ?? input.defaultRestSeconds;
+    const setPrescriptions = slot.setPrescriptions ?? editorSlot({ ...slot, exerciseId, prescription,
+      effectiveTarget: slotTarget, restSeconds }).normalSets!;
+    const normalPrescription = deloadPhase
+      ? resolvePrescription({ ...slot, repMin: folded.repMin, repMax: folded.repMax }, week, [])
+      : { ...prescription, phase: null };
+    const normalContext = stallContext(contextSlot, exerciseId, equipmentInstanceId, normalPrescription, folded.phaseStartAt);
+    const normalFallback = !slot.setPrescriptions && (deloadPhase || deload)
+      ? resolveExactWorkoutTarget({ ...slotTargetInput, prescription: normalPrescription, context: normalContext, isDeload: false })
+      : slotTarget;
+    const setTargetInput = { slotId: slot.id, exerciseId, equipmentInstanceId, history: input.plannedHistory ?? [],
+      catalog, stats, bodyweight };
+    const normalSets = recoverySets(setPrescriptions, normalPrescription).map((set, index) =>
+      resolvePlannedSetTarget({ ...setTargetInput, set, context: normalContext, isDeload: false,
+        fallback: index === 0 && !slot.setPrescriptions ? normalFallback : undefined }).row);
+    const resolved = recoverySets(setPrescriptions, prescription).map((set, index) =>
+      resolvePlannedSetTarget({ ...setTargetInput, set, context, isDeload: deload,
+        fallback: index === 0 && !slot.setPrescriptions ? slotTarget : undefined }));
+    const plannedSets = resolved.map(({ row }) => row);
+    prescription.targetSets = plannedSets.length;
+    const effectiveTarget = resolved[0]?.effectiveTarget ?? slotTarget;
     return { ...slot, resolvedTempo: resolveTempo(catalog[exerciseId], slot.tempo), baseExerciseId, exerciseId, prescription, targetContext: context, effectiveTarget,
       plannedSets, normalSets,
-      restSeconds: slot.restSeconds ?? input.defaultRestSeconds };
+      restSeconds };
   });
 }
 

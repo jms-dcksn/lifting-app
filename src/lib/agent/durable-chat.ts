@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import { loadChat } from "./thread";
-import { configuredDurableStore, COACH_RUNTIME_VERSION, DurableChatError } from "./durable-store";
+import { configuredDurableStore, COACH_RUNTIME_VERSION, DurableChatError, type DurableTurn } from "./durable-store";
 import { durableProgramIdentity, executeDurableTurn, recoverDurableTurn } from "./durable-runtime";
 import { bindAgentTools } from "./tools";
 import { enrichScreenContext, formatScreenContextForPrompt } from "./context";
@@ -26,20 +26,30 @@ function statusOf(turn: { request_id: string; status: string }, readOnly = !enab
 
 export const durableChat = {
   async snapshot(supabase: Client, owner: string, snapshot: AgentChatSnapshot): Promise<AgentChatSnapshot> {
-    if (snapshot.open.kind !== "saved") return snapshot;
-    const threadId = snapshot.open.threadId;
+    const { open } = snapshot;
+    if (open.kind !== "saved") return snapshot;
+    const { threadId } = open;
     const runtime = await version(supabase, threadId);
     if (!runtime) return snapshot;
+    const readOnly: AgentChatSnapshot = { ...snapshot,
+      open: { ...open, runtime: { requestId: "", status: "interrupted", readOnly: true } } };
     if (runtime !== COACH_RUNTIME_VERSION || !process.env.COACH_RUNTIME_DATABASE_URL) {
-      return { ...snapshot, open: { ...snapshot.open, runtime: { requestId: "", status: "interrupted", readOnly: true } } };
+      return readOnly;
     }
-    const store = configuredDurableStore();
-    const scope = { owner, thread: threadId };
-    let turn = await store.status(scope);
-    if (!turn) throw new DurableChatError("Conversation execution state is unavailable", 503);
-    if (turn.status !== "completed" && turn.status !== "running") {
-      await recoverDurableTurn(store, scope, turn);
-      turn = await store.status(scope) ?? turn;
+    let turn: DurableTurn;
+    try {
+      const store = configuredDurableStore();
+      const scope = { owner, thread: threadId };
+      const saved = await store.status(scope);
+      if (!saved) return readOnly;
+      turn = saved;
+      if (turn.status !== "completed" && turn.status !== "running") {
+        await recoverDurableTurn(store, scope, turn);
+        turn = await store.status(scope) ?? turn;
+      }
+    } catch {
+      console.error("Coach checkpoint history unavailable");
+      return readOnly;
     }
     const refreshed = await loadChat(supabase, owner, { kind: "thread", threadId });
     if (!refreshed || refreshed.open.kind !== "saved") throw new DurableChatError("Conversation unavailable", 404);

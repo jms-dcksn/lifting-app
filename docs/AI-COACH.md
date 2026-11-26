@@ -1183,7 +1183,10 @@ Preview and production enablement. No shadow paid dual execution. Bootstrap old 
 lazily; never destructively rewrite their history. Older deployments must not write new
 checkpoint versions. Rollback stops new admissions, fences/drains in-flight runs, repairs
 projections and leaves checkpoint-backed threads read-only until a compatible runtime
-returns. Untouched legacy threads may continue through the legacy path. Do not fall back
+returns. If the runtime database is unavailable, the sheet and full-screen page can
+still show the owner’s published transcript in read-only mode. Refresh checks current
+runtime status again and repairs the projection if possible. Untouched legacy threads
+may continue through the legacy path. Do not fall back
 to transcript-only generation on a checkpointed thread: it loses files/workflow continuity
 and can replay effects. Schema rollback is additive/forward repair, not destructive drops.
 

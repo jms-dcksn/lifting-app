@@ -229,7 +229,8 @@ apply; do not enable this slice merely because the local build passes.
 Never run native `setup()` or automatic Store creation in a request. During rollback,
 turn the switch off, fence/drain executions and retain the credential for status/projection
 repair. Checkpoint-backed threads become read-only; untouched legacy threads can continue.
-Credential loss also leaves existing owned public history read-only. Never fall back to
+Credential loss or a runtime database outage also leaves the already-published history
+read-only. Refresh resumes status and projection checks once the connection returns. Never fall back to
 transcript-only generation on a checkpoint-backed thread. Drain older deployments before
 cutover; the migration rejects their transcript writes but cannot stop an old binary's
 provider calls. Do not destructively remove checkpoints or roll back the additive schema.

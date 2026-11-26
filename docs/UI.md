@@ -90,7 +90,7 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   with a plain-update fallback. All motion respects reduced-motion preferences.
 - Coach uses the same assistant-ui viewport and composer in the sheet and page.
   Keep Send, message copying, and Jump to latest keyboard accessible with 44px
-  targets. The composer stays outside the transcript scrollport. The visual
+  targets. Jump to latest floats over message text, so it is an opaque primary (accent) pill. The composer stays outside the transcript scrollport. The visual
   viewport constrains the chat when a software keyboard covers it.
 - `Calendar` supplies the shared date grid; [weight calendar](WEIGHT-CALENDAR.md) owns its
   keyboard, mutation, replacement-confirmation, and error contracts.

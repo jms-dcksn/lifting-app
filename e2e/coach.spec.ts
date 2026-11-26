@@ -1,8 +1,12 @@
 import { randomUUID } from "node:crypto";
+import { rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { test, expect, type BrowserContext } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import pg from "pg";
+
+const runtime = process.env.E2E_COACH_RUNTIME === "legacy" ? "legacy" : "durable";
 
 async function signInCoachOwner(db: pg.Client, context: BrowserContext, baseURL: string, remember: (owner: string) => void) {
   const client = createClient(process.env.E2E_SUPABASE_URL!, process.env.E2E_SUPABASE_KEY!, { auth: { persistSession: false } });
@@ -146,7 +150,7 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
   } finally { if (owner) await db.query("delete from auth.users where id=$1", [owner]); await db.end(); }
 });
 
-test("Coach chat uses the durable runtime from page and sheet", async ({ page, context, baseURL }) => {
+test(`Coach chat uses the ${runtime} runtime from page and sheet`, { tag: "@coach-chat" }, async ({ page, context, baseURL }) => {
   test.setTimeout(180_000);
   const db = new pg.Client({ connectionString: process.env.E2E_DATABASE_URL });
   await db.connect();
@@ -158,7 +162,7 @@ test("Coach chat uses the durable runtime from page and sheet", async ({ page, c
   });
   let owner: string | undefined;
   try {
-    await db.query(`alter role coach_agent_runtime login password ${db.escapeLiteral(process.env.E2E_COACH_RUNTIME_PASSWORD!)}`);
+    if (runtime === "durable") await db.query(`alter role coach_agent_runtime login password ${db.escapeLiteral(process.env.E2E_COACH_RUNTIME_PASSWORD!)}`);
     await signInCoachOwner(db, context, baseURL!, id => { owner = id; });
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await page.setViewportSize({ width: 1100, height: 820 });
@@ -211,12 +215,68 @@ test("Coach chat uses the durable runtime from page and sheet", async ({ page, c
     expect(requestBodies).toHaveLength(2);
     expect(new Set(requestBodies.map(request => request.requestId)).size).toBe(2);
     const turns = await db.query("select status from coach_runtime.turn where owner_id=$1", [owner]);
-    expect(turns.rows).toEqual([{ status: "completed" }, { status: "completed" }]);
+    expect(turns.rows).toEqual(runtime === "durable" ? [{ status: "completed" }, { status: "completed" }] : []);
     const transcript = await db.query("select role, count(*)::int as count from public.agent_message where user_id=$1 group by role order by role", [owner]);
     expect(transcript.rows).toEqual([{ role: "assistant", count: 2 }, { role: "user", count: 2 }]);
   } finally {
     if (owner) await db.query("delete from auth.users where id=$1", [owner]);
-    await db.query("alter role coach_agent_runtime nologin password null");
+    if (runtime === "durable") await db.query("alter role coach_agent_runtime nologin password null");
+    await db.end();
+  }
+});
+
+test(`Reading older messages is not interrupted while a ${runtime} reply streams`, { tag: "@coach-chat" }, async ({ page, context, baseURL }) => {
+  test.setTimeout(120_000);
+  const db = new pg.Client({ connectionString: process.env.E2E_DATABASE_URL });
+  await db.connect();
+  const release = join(process.env.E2E_COACH_STREAM_GATE!, "release");
+  rmSync(release, { force: true });
+  let owner: string | undefined;
+  try {
+    if (runtime === "durable") await db.query(`alter role coach_agent_runtime login password ${db.escapeLiteral(process.env.E2E_COACH_RUNTIME_PASSWORD!)}`);
+    await signInCoachOwner(db, context, baseURL!, id => { owner = id; });
+    await page.goto("/coach?thread=new");
+    await page.getByRole("textbox", { name: "Message" }).fill("Hold the reply while I read.");
+    await page.keyboard.press("Enter");
+
+    // The held reply already overflows; the viewport follows it while the reader is at the end.
+    const viewport = page.getByRole("region", { name: "Chat messages" });
+    const metrics = () => viewport.evaluate(node => ({ top: node.scrollTop, end: node.scrollHeight - node.clientHeight }));
+    await expect(page.getByText("Held Coach fixture", { exact: true })).toBeAttached({ timeout: 60_000 });
+    await expect.poll(async () => { const { top, end } = await metrics(); return end > 0 && Math.abs(end - top) < 4; }).toBe(true);
+    const jump = page.getByRole("button", { name: "Jump to latest" });
+    await expect(jump).toBeHidden();
+
+    await viewport.hover();
+    await page.mouse.wheel(0, -600);
+    await expect.poll(async () => { const { top, end } = await metrics(); return end - top; }).toBeGreaterThan(300);
+    await expect(jump).toBeVisible();
+    // The control floats over message text, so it needs an opaque surface.
+    expect(await jump.evaluate(node => getComputedStyle(node).backgroundColor)).not.toMatch(/^(transparent|rgba\(0, 0, 0, 0\))$/);
+    await expect(page.getByText("End of the Coach fixture.", { exact: false })).toHaveCount(0);
+    // The reader's place is the first fixture paragraph visible at the top of the viewport.
+    const place = () => viewport.evaluate(node => {
+      const top = node.getBoundingClientRect().top;
+      const rows = [...node.querySelectorAll("p")].filter(row => row.textContent?.startsWith("Keep a steady pace"));
+      const index = rows.findIndex(row => row.getBoundingClientRect().bottom > top);
+      return { index, offset: Math.round(rows[index]!.getBoundingClientRect().top - top) };
+    });
+    const reading = await place();
+    expect(reading.index).toBeGreaterThan(0);
+
+    writeFileSync(release, "");
+    await expect(page.getByRole("button", { name: "Copy Coach message" })).toHaveCount(1, { timeout: 60_000 });
+    await expect(page.getByText("End of the Coach fixture.", { exact: false })).toBeAttached();
+    const after = await place();
+    expect(after.index).toBe(reading.index);
+    expect(Math.abs(after.offset - reading.offset)).toBeLessThan(4);
+    await expect(jump).toBeVisible();
+    await jump.click();
+    await expect.poll(async () => { const { top, end } = await metrics(); return Math.abs(end - top) < 4; }).toBe(true);
+  } finally {
+    rmSync(release, { force: true });
+    if (owner) await db.query("delete from auth.users where id=$1", [owner]);
+    if (runtime === "durable") await db.query("alter role coach_agent_runtime nologin password null");
     await db.end();
   }
 });

@@ -61,7 +61,8 @@ saved messages. The library receives display text, tool names, and activity
 statuses. Coach components render Markdown, numeric emphasis, sources, review
 cards, intake chips, and explicit confirmations. Copy controls use the projected
 text of saved messages. The viewport follows new content while the reader is at
-the end. **Jump to latest** returns to the end from older messages.
+the end. **Jump to latest** returns to the end from older messages. It floats over
+the transcript as an opaque accent pill so message text never shows through it.
 
 A connection guard fences duplicate submissions before render. Failed sends
 restore the draft and a lost acknowledgement reuses the request ID. Starting

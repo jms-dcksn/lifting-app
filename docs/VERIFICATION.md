@@ -197,13 +197,24 @@ reload. It also checks that acknowledging pain does not resolve it. Anonymous us
 must still reach the sign-in screen. Email delivery and paid model quality are separate
 checks; this suite proves the real authenticated app path using a test password login.
 
-The Coach chat journey enables the durable runtime on the disposable stack. It
-provisions the local runtime role, signs in through Auth, sends from the page
-and sheet, and checks completed turns and saved transcript rows. The fixture
-replaces the model transport in the Playwright server. The application still
-uses its regular chat API, protected PostgREST reads, and PostgreSQL checkpoints.
-The journey also checks keyboard submission, copy, scrolling, narrow layout,
-and Escape focus return. A real software-keyboard check is recorded separately.
+`npm run test:browser` (`scripts/browser-tests.mjs`) runs the whole suite with the
+durable Coach runtime enabled, then runs the `@coach-chat` journeys again on the
+default legacy runtime (`E2E_COACH_RUNTIME=legacy`), which production uses until
+the rollout flag is enabled. Arguments such as files or `--trace off` go to both runs.
+
+The Coach chat journey provisions the local runtime role when the durable runtime
+is enabled, signs in through Auth, sends from the page and sheet, and checks the
+saved transcript rows: two completed durable turns, or none on the legacy runtime.
+The fixture replaces the model transport in the Playwright server. The application
+still uses its regular chat API, protected PostgREST reads, and (durable) PostgreSQL
+checkpoints. The journey also checks keyboard submission, copy, scrolling, narrow
+layout, and Escape focus return. A second `@coach-chat` journey sends "Hold the
+reply"; the fixture streams an overflowing first chunk and waits for the test to
+create `release` in `E2E_COACH_STREAM_GATE`. While the reply is held, the reader
+scrolls up with the wheel. The test checks that the reader's paragraph stays put
+through the rest of the stream and the saved-message swap, and that the opaque
+Jump to latest control returns to the end. A real software-keyboard check is
+recorded separately.
 
 ## Enforced boundaries
 

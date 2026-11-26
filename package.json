@@ -20,7 +20,7 @@
     "typecheck": "node scripts/typecheck.mjs",
     "typecheck:indexed": "tsc --project tsconfig.indexed.json",
     "verify": "node scripts/verify.mjs",
-    "test:browser": "playwright test",
+    "test:browser": "node scripts/browser-tests.mjs",
     "test:agent": "vitest run src/lib/agent src/lib/coach-invariants.test.ts",
     "test:agent:bundle": "node scripts/test-agent-skill-bundle.mjs",
     "test:agent:persistence": "node scripts/test-agent-persistence.mjs",

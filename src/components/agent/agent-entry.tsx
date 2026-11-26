@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { IconChat } from "@/components/ui/icons";
 import { IconButton } from "@/components/ui/icon-button";
 import { Sheet } from "@/components/ui/sheet";
-import { AgentChat } from "./agent-chat";
+import { useVisualKeyboardInset } from "@/components/ui/use-visual-keyboard-inset";
+
+const AgentChat = lazy(() => import("./agent-chat").then(module => ({ default: module.AgentChat })));
 
 export function AgentEntry() {
   const [open, setOpen] = useState(false);
+  const keyboardInset = useVisualKeyboardInset(open);
 
   return (
     <>
@@ -20,8 +23,15 @@ export function AgentEntry() {
         <IconChat />
       </IconButton>
       {open ? (
-        <Sheet onClose={() => setOpen(false)} ariaLabel="Coach" className="flex h-[85dvh] min-h-0 flex-col overflow-hidden">
-          <AgentChat variant="sheet" onNavigate={() => setOpen(false)} />
+        <Sheet
+          onClose={() => setOpen(false)}
+          ariaLabel="Coach"
+          className="flex h-[85dvh] min-h-0 flex-col overflow-hidden"
+          style={keyboardInset ? { bottom: keyboardInset, maxHeight: `calc(90dvh - ${keyboardInset}px)` } : undefined}
+        >
+          <Suspense fallback={<p role="status" className="px-4 text-body text-muted">Loading chat</p>}>
+            <AgentChat variant="sheet" onNavigate={() => setOpen(false)} />
+          </Suspense>
         </Sheet>
       ) : null}
     </>

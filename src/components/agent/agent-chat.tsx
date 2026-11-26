@@ -1,13 +1,20 @@
 "use client";
 
 import { PageHeader } from "@/components/ui/page-header";
-import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useReducer, useRef, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useReducer,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cx } from "@/components/ui/cx";
-import { IconHistory, IconPlus, IconSend } from "@/components/ui/icons";
+import { IconHistory, IconPlus } from "@/components/ui/icons";
 import { IconButton } from "@/components/ui/icon-button";
-import { Input } from "@/components/ui/input";
 import { clientActionsFromParts, pendingConfirmFromMessages } from "@/lib/agent/client-tools";
 import { startNextSession } from "@/app/(app)/session/actions";
 import { parseScreenContextFromPath } from "@/lib/agent/context";
@@ -25,12 +32,14 @@ import type { AgentMessage } from "@/lib/agent/messages";
 import { coachActivityLabel } from "@/lib/agent/activity";
 import { readSseEvents } from "@/lib/agent/stream";
 import { AgentTranscript } from "./agent-transcript";
+import { AssistantCoachConversation } from "./assistant-coach-viewport";
 import { coachFocusParams, coachDetailsHref, type CoachFocus } from "@/lib/coach-entry";
 import { CoachThreadReview } from "@/components/coach/coach-thread-review";
-import { COACH_DISCUSSION_PROMPT, isCoachReviewSeed, presentCoachReviewSeed } from "@/lib/coach-discussion";
+import { COACH_DISCUSSION_PROMPT, isCoachReviewSeed } from "@/lib/coach-discussion";
 import { Button } from "@/components/ui/button";
 import type { EpisodeReview } from "@/lib/coach-conversation-data";
 import { preparePendingSend } from "@/lib/agent/pending-send";
+import { useVisualKeyboardInset } from "@/components/ui/use-visual-keyboard-inset";
 
 export function AgentChat({
   initial,
@@ -54,18 +63,21 @@ export function AgentChat({
   const [{ threads, screen, error }, dispatch] = useReducer(chatReducer, initial, initialChatState);
   const [draft, setDraft] = useState("");
   const [confirmedCallIds, setConfirmedCallIds] = useState<Set<string>>(() => new Set());
-  const scroller = useRef<HTMLDivElement>(null);
-  const stickToEnd = useRef(true);
+  const composer = useRef<HTMLTextAreaElement>(null);
+  const keyboardInset = useVisualKeyboardInset(variant === "page");
   const navigable = canNavigate(screen);
   const baseHref = screen.name === "loading" ? null : fullScreenHref(screen.conversation);
   const focusQuery = focus ? coachFocusParams(focus).toString() : "";
   const href = baseHref && focusQuery ? `${baseHref}${baseHref.includes("?") ? "&" : "?"}${focusQuery}` : baseHref;
   const shownHref = useRef(href);
   const view = screen.name === "chat" ? transcriptView(screen.conversation, screen.turn) : null;
-  const inChat = view !== null;
   const discussionStarted = useRef(false);
   const sendAbort = useRef<AbortController | null>(null);
-  useEffect(() => () => { sendAbort.current?.abort(); }, []);
+  const refreshAbort = useRef<AbortController | null>(null);
+  useEffect(() => () => {
+    sendAbort.current?.abort();
+    refreshAbort.current?.abort();
+  }, []);
   const runtime = screen.name === "chat" && screen.conversation.kind === "saved" ? screen.conversation.runtime : undefined;
   const blocked = runtime && (runtime.readOnly || runtime.status !== "completed");
   const unansweredReview = screen.name === "chat" && screen.conversation.kind === "saved"
@@ -93,24 +105,18 @@ export function AgentChat({
     window.history.replaceState(null, "", href);
   }, [variant, href]);
 
-  useLayoutEffect(() => {
-    stickToEnd.current = true;
-  }, [screen.name, href]);
-
-  useLayoutEffect(() => {
-    const node = scroller.current;
-    if (node && inChat && stickToEnd.current) node.scrollTop = node.scrollHeight;
-  });
-
   const sendTurn = useCallback(async (text: string, review = false, resume = false) => {
-    if ((!text && !review && !resume) || screen.name !== "chat" || screen.turn) return;
+    if ((!text && !review && !resume) || screen.name !== "chat" || screen.turn || sendAbort.current) return;
     const { conversation } = screen;
-    if (!review) setDraft("");
+    const status = conversation.kind === "saved" ? conversation.runtime : undefined;
+    if (resume ? (!status || status.readOnly || status.status !== "interrupted") : blocked) return;
+    const controller = new AbortController();
+    sendAbort.current = controller;
+    refreshAbort.current?.abort();
+    if (!review && !resume) setDraft("");
     const existingInput = conversation.kind === "saved" ? conversation.messages.findLast(message => message.role === "user") : undefined;
     dispatch({ type: "send", optimisticId: (review || resume) && existingInput ? existingInput.id : `local-${Date.now()}`, text: review ? COACH_DISCUSSION_PROMPT : text });
     let userTextStored = false;
-    const controller = new AbortController();
-    sendAbort.current = controller;
     try {
       const payload = {
         ...(review ? { discuss: true } : { text }),
@@ -118,6 +124,7 @@ export function AgentChat({
         context: { ...parseScreenContextFromPath(pathname), ...(focus ? { focusedExerciseId: focus.exerciseId, focusedEquipmentInstanceId: focus.equipmentInstanceId, reviewMonth: focus.month } : {}) },
       };
       const pending = await preparePendingSend(payload, sessionStorage.getItem("coach.pendingSend.v1"));
+      if (controller.signal.aborted) return;
       if (!resume) sessionStorage.setItem("coach.pendingSend.v1", pending.stored);
       const response = await fetch("/api/agent/chat", {
         method: "POST",
@@ -127,24 +134,31 @@ export function AgentChat({
           ? JSON.stringify({ ...payload, resume: true, requestId: conversation.runtime.requestId }) : pending.body,
       });
       if (!response.ok || !response.body) {
-        throw new Error(response.status === 503 ? "Coach is not configured." : "Could not send.");
+        throw new Error(response.status === 401 ? "Sign in again to send a message."
+          : response.status === 503 ? "Coach is temporarily unavailable. Try again."
+          : "Could not send your message. Try again.");
       }
       for await (const streamEvent of readSseEvents(response.body)) {
+        if (controller.signal.aborted) return;
         if (streamEvent.type === "thread") userTextStored = true;
         dispatch({ type: "event", event: streamEvent });
         if (streamEvent.type === "done") {
           sessionStorage.removeItem("coach.pendingSend.v1");
           if (!streamEvent.replayed) runClientActions(streamEvent.messages, router, onNavigate);
+          return;
         }
+        if (streamEvent.type === "pending" || streamEvent.type === "error") return;
       }
       dispatch({ type: "closed", error: "Connection lost." });
     } catch (caught) {
-      dispatch({ type: "closed", error: caught instanceof Error ? caught.message : "Could not send." });
+      if (!controller.signal.aborted) {
+        dispatch({ type: "closed", error: caught instanceof TypeError ? "Connection lost. Try again." : caught instanceof Error ? caught.message : "Could not send." });
+      }
     } finally {
       if (sendAbort.current === controller) sendAbort.current = null;
-      if (!review && !userTextStored) setDraft((current) => current || text);
+      if (!review && !resume && !userTextStored && !controller.signal.aborted) setDraft((current) => current || text);
     }
-  }, [screen, pathname, router, onNavigate, focus]);
+  }, [screen, pathname, router, onNavigate, focus, blocked]);
 
   const beginDiscussion = useEffectEvent(() => { void sendTurn("", true); });
 
@@ -158,10 +172,19 @@ export function AgentChat({
     if (unansweredReview) queueMicrotask(beginDiscussion);
   }, [discuss, screen.name, unansweredReview]);
 
-  async function send(event: FormEvent) {
-    event.preventDefault();
-    if (blocked) return;
-    await sendTurn(draft.trim());
+  async function refreshResponse() {
+    if (screen.name !== "chat" || screen.conversation.kind !== "saved" || sendAbort.current) return;
+    refreshAbort.current?.abort();
+    const controller = new AbortController();
+    refreshAbort.current = controller;
+    try {
+      const snapshot = await fetchSnapshot(`/api/agent/chat?thread=${screen.conversation.threadId}`, controller.signal);
+      if (!controller.signal.aborted) dispatch({ type: "refreshed", snapshot });
+    } catch {
+      if (!controller.signal.aborted) dispatch({ type: "refresh-failed", error: "Could not refresh. Please retry." });
+    } finally {
+      if (refreshAbort.current === controller) refreshAbort.current = null;
+    }
   }
 
   async function openThread(threadId: ThreadId) {
@@ -181,7 +204,10 @@ export function AgentChat({
           aria-label="Chat history"
           aria-pressed={screen.name === "history"}
           disabled={!navigable}
-          onClick={() => dispatch({ type: "toggle-history" })}
+          onClick={() => {
+            refreshAbort.current?.abort();
+            dispatch({ type: "toggle-history" });
+          }}
         >
           <IconHistory />
         </IconButton>
@@ -190,14 +216,56 @@ export function AgentChat({
           variant="ghost"
           aria-label="New chat"
           disabled={!navigable}
-          onClick={() => dispatch({ type: "new-chat" })}
+          onClick={() => {
+            refreshAbort.current?.abort();
+            dispatch({ type: "new-chat" });
+          }}
         >
           <IconPlus />
         </IconButton>
   </>);
 
+  const renderViewportContent = (messageRows?: ReactNode) => (
+    <>
+      {variant === "page" && navigable && <Link className="mb-3 inline-flex min-h-11 items-center text-caption underline" href={coachDetailsHref(focus ?? { exerciseId: null, equipmentInstanceId: null, month: null })}>Report details</Link>}
+      {focus && (focus.exerciseId || focus.month) && <aside className="mb-3 rounded-card border border-border p-3 text-sm"><p>{focusLabel ?? "Training review"}{focus.month ? ` · ${focus.month}` : ""}</p><p className="mt-2 text-muted">Current exceptions use the latest training evidence. Historical reports keep their own date windows.</p><Link className="inline-flex min-h-11 items-center underline" href={coachDetailsHref(focus)}>See report details</Link></aside>}
+      {screen.name === "loading" ? <p className="text-body text-muted">Loading</p> : null}
+      {screen.name === "history" ? (
+        <ThreadHistory
+          threads={threads}
+          openId={screen.conversation.kind === "saved" ? screen.conversation.threadId : null}
+          opening={screen.opening}
+          onOpen={openThread}
+        />
+      ) : null}
+      {screen.name === "chat" && screen.conversation.kind === "saved" ? <CoachThreadReview key={screen.conversation.threadId} threadId={screen.conversation.threadId} initialReview={initial?.open.kind === "saved" && initial.open.threadId === screen.conversation.threadId ? initialReview : undefined} /> : null}
+      {view ? (
+        <AgentTranscript
+          {...view}
+          messageRows={messageRows}
+          confirmedCallIds={confirmedCallIds}
+          onConfirm={async (callId) => {
+            const pending = pendingConfirmFromMessages(view.messages);
+            if (!pending || pending.callId !== callId) return;
+            if (pending.tool === "startNextWorkout") {
+              await startNextSession();
+            } else if (pending.href) {
+              router.push(pending.href);
+            }
+            setConfirmedCallIds((current) => new Set(current).add(callId));
+            onNavigate?.();
+          }}
+          onChipSelect={blocked ? undefined : (label) => {
+            setDraft((current) => current ? `${current} ${label}` : label);
+            composer.current?.focus({ preventScroll: true });
+          }}
+        />
+      ) : null}
+    </>
+  );
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col" style={keyboardInset ? { maxHeight: `calc(100dvh - ${keyboardInset}px)` } : undefined}>
       {variant === "page" ? (
         <div className="shrink-0 px-4 pb-3">
           <PageHeader title="Coach" actions={headerActions} />
@@ -209,71 +277,27 @@ export function AgentChat({
           <FullScreenLink href={navigable ? href : null} />
         </div>
       )}
-      <div
-        key={screen.name}
-        ref={scroller}
-        className="min-h-0 flex-1 overflow-y-auto px-4"
-        onScroll={(event) => {
-          const node = event.currentTarget;
-          stickToEnd.current = node.scrollHeight - node.scrollTop - node.clientHeight < 48;
-        }}
-      >
-        {variant === "page" && navigable && <Link className="mb-3 inline-flex min-h-11 items-center text-caption underline" href={coachDetailsHref(focus ?? { exerciseId: null, equipmentInstanceId: null, month: null })}>Report details</Link>}
-        {focus && (focus.exerciseId || focus.month) && <aside className="mb-3 rounded-card border border-border p-3 text-sm"><p>{focusLabel ?? "Training review"}{focus.month ? ` · ${focus.month}` : ""}</p><p className="mt-2 text-muted">Current exceptions use the latest training evidence. Historical reports keep their own date windows.</p><Link className="inline-flex min-h-11 items-center underline" href={coachDetailsHref(focus)}>See report details</Link></aside>}
-        {screen.name === "loading" ? <p className="text-body text-muted">Loading</p> : null}
-        {screen.name === "history" ? (
-          <ThreadHistory
-            threads={threads}
-            openId={screen.conversation.kind === "saved" ? screen.conversation.threadId : null}
-            opening={screen.opening}
-            onOpen={openThread}
-          />
-        ) : null}
-        {screen.name === "chat" && screen.conversation.kind === "saved" ? <CoachThreadReview key={screen.conversation.threadId} threadId={screen.conversation.threadId} initialReview={initial?.open.kind === "saved" && initial.open.threadId === screen.conversation.threadId ? initialReview : undefined} /> : null}
-        {view ? (
-          <AgentTranscript
-            {...view}
-            messages={view.messages.map(presentCoachReviewSeed)}
-            confirmedCallIds={confirmedCallIds}
-            onConfirm={async (callId) => {
-              const pending = pendingConfirmFromMessages(view.messages);
-              if (!pending || pending.callId !== callId) return;
-              if (pending.tool === "startNextWorkout") {
-                await startNextSession();
-              } else if (pending.href) {
-                router.push(pending.href);
-              }
-              setConfirmedCallIds((current) => new Set(current).add(callId));
-              onNavigate?.();
-            }}
-            onChipSelect={(label) => setDraft((current) => (current ? `${current} ${label}` : label))}
-          />
-        ) : null}
-      </div>
+      {view ? (
+        <AssistantCoachConversation
+          transcript={view}
+          blocked={Boolean(blocked)}
+          draft={draft}
+          onDraftChange={setDraft}
+          inputRef={composer}
+          onSend={sendTurn}
+        >
+          {renderViewportContent}
+        </AssistantCoachConversation>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-y-auto px-4">{renderViewportContent()}</div>
+      )}
       <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {view?.pending ? coachActivityLabel(view.tools) : ""}
       </p>
-      {screen.name === "chat" ? (
-        <form onSubmit={send} className="flex shrink-0 items-center gap-2 bg-background px-4 py-3">
-          <Input
-            aria-label="Message"
-            value={draft}
-            disabled={Boolean(blocked)}
-            onChange={(event) => setDraft(event.target.value)}
-          />
-          <IconButton type="submit" aria-label="Send" pending={screen.turn !== null} disabled={!draft.trim() || Boolean(blocked)}>
-            <IconSend />
-          </IconButton>
-        </form>
-      ) : null}
-      {error ? <p className="shrink-0 px-4 pb-3 text-caption text-danger">{error}</p> : null}
+      {error ? <p role="alert" className="shrink-0 px-4 pb-3 text-caption text-danger">{error}</p> : null}
       {runtime && blocked && screen.name === "chat" && screen.turn === null ? <div className="mx-4 mb-3 space-y-2">
         <p role="status" className="text-caption text-muted">{runtime.readOnly ? "This conversation is temporarily read-only." : runtime.status === "running" ? "Your response is still running. Refresh to check its progress." : "Your saved response was interrupted. Resume to continue."}</p>
-        <Button variant="secondary" onClick={async () => {
-          if (screen.name !== "chat" || screen.conversation.kind !== "saved") return;
-          try { dispatch({ type: "refreshed", snapshot: await fetchSnapshot(`/api/agent/chat?thread=${screen.conversation.threadId}`) }); }
-          catch { dispatch({ type: "refresh-failed", error: "Could not refresh. Please retry." }); }
-        }}>Refresh response</Button>
+        <Button variant="secondary" onClick={() => void refreshResponse()}>Refresh response</Button>
         {!runtime.readOnly && runtime.status === "interrupted" ? <Button variant="secondary" onClick={() => void sendTurn("", false, true)}>Resume response</Button> : null}
       </div> : null}
       {error && unansweredReview && !runtime ? <Button variant="secondary" className="mx-4 mb-3" onClick={() => void sendTurn("", true)}>Retry discussion</Button> : null}
@@ -333,8 +357,8 @@ function ThreadHistory({
   );
 }
 
-async function fetchSnapshot(url: string): Promise<AgentChatSnapshot> {
-  const response = await fetch(url);
+async function fetchSnapshot(url: string, signal?: AbortSignal): Promise<AgentChatSnapshot> {
+  const response = await (signal ? fetch(url, { signal }) : fetch(url));
   if (!response.ok) throw new Error(`Chat request failed with ${response.status}`);
   return (await response.json()) as AgentChatSnapshot;
 }

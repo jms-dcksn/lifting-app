@@ -21,6 +21,11 @@ const receipt = (intent: CoachActionIntent) => ({ ...intent, status: "applied", 
 const button = (text: string) => [...host.querySelectorAll("button")].find(b => b.textContent === text)!;
 beforeEach(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+  vi.stubGlobal("ResizeObserver", class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  });
   vi.resetAllMocks();
   actions.openNotice.mockResolvedValue({ notice: { title: "Bench plateau review", generation_evidence: null }, episodeId: "episode", episode, fresh: true });
   actions.episodeReview.mockResolvedValue(review);
@@ -67,4 +72,31 @@ it("keeps the server-loaded review choices visible while the first discussion co
   expect(host.textContent).toContain("Here is the recommendation.");
   expect(host.querySelector('a[href="/coach/episodes/episode"]')).not.toBeNull();
   expect(actions.threadReview).not.toHaveBeenCalled();
+});
+
+it.each(["sheet", "page"] as const)("keeps review and explicit confirmation in the assistant-ui %s", async variant => {
+  const threadId = parseThreadId("0199a3b2-0000-7000-8000-00000000000a")!;
+  const time = "2026-10-18T00:00:00Z";
+  const snapshot: AgentChatSnapshot = { threads: [], open: {
+    kind: "saved", threadId, title: "Plateau", messages: [
+      { id: "seed", role: "user", createdAt: time, parts: [
+        { type: "text", text: "Opened a Coach exception review (evidence revision 1). Use the current authorized review context; this message does not confirm a training change." },
+      ] },
+      { id: "answer", role: "assistant", createdAt: time, parts: [
+        { type: "text", text: "Your draft is ready." },
+        { type: "tool-call", id: "draft", name: "draftProgramFromIntake", args: {} },
+      ] },
+      { id: "result", role: "tool", createdAt: time, parts: [
+        { type: "tool-result", id: "draft", name: "draftProgramFromIntake", result: { action: "confirm", href: "/program/example/edit" } },
+      ] },
+    ],
+  } };
+  await act(async () => root.render(<AgentChat initial={snapshot} initialReview={review} variant={variant} />));
+  expect(host.querySelector('[data-message-id="seed"]')?.textContent).toContain("Help me understand this training review");
+  expect(host.querySelector('[data-message-id="answer"]')?.textContent).toContain("Your draft is ready.");
+  expect(host.querySelector('a[href="/coach/episodes/episode"]')).not.toBeNull();
+  expect(actions.push).not.toHaveBeenCalled();
+  await act(async () => button("Open in builder").click());
+  expect(actions.push).toHaveBeenCalledExactlyOnceWith("/program/example/edit");
+  expect(button("Open in builder")).toBeUndefined();
 });

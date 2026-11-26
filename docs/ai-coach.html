@@ -30,6 +30,36 @@
         </p>
       </header>
 
+      <section id="assistant-ui-chat" class="space-y-4 rounded-lg border border-slate-300 p-5">
+        <h2 class="font-serif text-2xl">Shared Coach chat (#270)</h2>
+        <p>The sheet and full-screen Coach share a multiline composer, message copying, and a
+          viewport that follows new replies while you’re at the end. Use <strong>Jump to latest</strong>
+          when reading older messages. The server-rendered composer starts at one row, the same
+          height the autosizing textarea measures, so hydration does not shift the transcript.</p>
+        <ol class="grid gap-2 sm:grid-cols-3" aria-label="Coach message flow">
+          <li class="rounded border border-slate-300 p-3"><strong>1. Coach chat reducer</strong><br />
+            Reconciles saved history, the optimistic input, and the response stream.</li>
+          <li class="rounded border border-slate-300 p-3"><strong>2. Display adapter</strong><br />
+            Projects message text and display tool activity into assistant-ui.</li>
+          <li class="rounded border border-slate-300 p-3"><strong>3. Shared chat controls</strong><br />
+            Renders Coach bubbles and exposes the composer, viewport, and copy actions.</li>
+        </ol>
+        <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/components/agent/assistant-coach-viewport.tsx
+const runtime = useExternalStoreRuntime({
+  messages: visible,
+  convertMessage,
+  isRunning: pending,
+  isDisabled: blocked,
+  onNew: async ({ content }) =&gt; {
+    const text = content.flatMap((part) =&gt; part.type === "text" ? [part.text] : []).join("").trim();
+    if (text &amp;&amp; !blocked &amp;&amp; !pending) await onSend(text);
+  },
+});</code></pre>
+        <p>The application keeps the draft and submits it through the same send handler. The saved
+          server status controls Refresh and Resume after the local stream ends. The review cards
+          and confirmation buttons use their existing action handlers.</p>
+      </section>
+
       <section id="runtime-foundations" class="space-y-4 rounded-lg border border-slate-300 p-5">
         <h2 class="font-serif text-2xl">Runtime foundations (#247): A/B built, rollout disabled</h2>
         <p>The current Coach rebuilds a fresh agent from bounded chat history on every send.

@@ -935,6 +935,15 @@ to their existing seeded identities. Keep the shared 16:9 frame and identity inh
 remove the former 35% center zoom because the fuller compositions already fill the frame.
 Serve all seven as 640×360 JPEGs. See [UI conventions](UI.md) for the current art contract.
 
+### Shared Coach chat primitives (#270, 2026-11-26)
+
+Use assistant-ui headless primitives for the Coach viewport, composer, and copy
+actions. Adapt the application's reducer through the external-store runtime. The
+application owns sending, drafts, saved history, and recovery. Coach components
+own rendered evidence, review cards, intake chips, and confirmation authority.
+The browser checks exercise the shared UI with both the enabled durable runtime
+and saved legacy conversations. See the [chat contract](AI-COACH.md#shared-coach-chat-with-assistant-ui-270).
+
 ## AI Coach history preference and match transparency (2026-10-11, approved direction)
 
 Implemented by the exercise-review update. Prefer exercises with logged data while exposing all

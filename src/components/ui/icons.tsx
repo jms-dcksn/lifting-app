@@ -175,6 +175,15 @@ export function IconChat({ size }: IconProps) {
   );
 }
 
+export function IconCopy({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.75" />
+      <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" strokeWidth="1.75" />
+    </Svg>
+  );
+}
+
 export function IconSend({ size }: IconProps) {
   return (
     <Svg size={size}>

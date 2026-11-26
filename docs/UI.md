@@ -88,6 +88,10 @@ variables. `--text-recap` is the finish-recap hero only, not a fifth general sca
   intercept taps, making the tile appear intermittently unresponsive.
 - `Skeleton` supports route loading states. `withViewTransition` animates builder reorder
   with a plain-update fallback. All motion respects reduced-motion preferences.
+- Coach uses the same assistant-ui viewport and composer in the sheet and page.
+  Keep Send, message copying, and Jump to latest keyboard accessible with 44px
+  targets. The composer stays outside the transcript scrollport. The visual
+  viewport constrains the chat when a software keyboard covers it.
 - `Calendar` supplies the shared date grid; [weight calendar](WEIGHT-CALENDAR.md) owns its
   keyboard, mutation, replacement-confirmation, and error contracts.
 - Finish recap reuses `animate-rise` (staggered 70ms delays) for the hero and record

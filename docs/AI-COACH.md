@@ -40,6 +40,41 @@ rollout remain separate release gates. No provider change or user-memory writes 
 Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/coach`,
 `/api/agent/chat`) so they do not collide with Track Coach.
 
+## Shared Coach chat with assistant-ui (#270)
+
+The Coach sheet and full-screen page use one viewport, transcript, and multiline
+composer. Home loads the chat code when the sheet opens. The page loads it on
+entry. The composer sends on Enter and inserts a newline on Shift+Enter. The
+library handles composition keys, and the named Send button provides a touch
+target. The composer sits outside the scrolling transcript. Its server-rendered
+textarea uses one row, so hydration does not resize the transcript. The page and sheet
+use the visual viewport to reserve space when a keyboard covers the layout viewport.
+
+`@assistant-ui/react` is pinned to `0.15.38` and supports the app's React 19 and CI's
+Node 22. The integration uses public primitives and `useExternalStoreRuntime`.
+Recheck these APIs when upgrading the pre-1.0 dependency.
+
+`AgentChat` owns the draft, transcript reducer, request identity, and recovery. The
+adapter memoizes saved display rows and adds presentation rows for optimistic input
+and the connected reply. Acknowledgement and completion replace those rows with
+saved messages. The library receives display text, tool names, and activity
+statuses. Coach components render Markdown, numeric emphasis, sources, review
+cards, intake chips, and explicit confirmations. Copy controls use the projected
+text of saved messages. The viewport follows new content while the reader is at
+the end. **Jump to latest** returns to the end from older messages.
+
+A connection guard fences duplicate submissions before render. Failed sends
+restore the draft and a lost acknowledgement reuses the request ID. Starting
+a turn or leaving chat invalidates an older status refresh. The local stream
+controls working feedback. A saved running or interrupted response exposes the
+application's Refresh and Resume controls after the connection is gone. A
+read-only conversation continues to show its history.
+
+The rollback is a UI code revert of #270. Redeploy the restored UI with the same
+server runtime configuration and keep the durable conversation APIs and database
+migration in place. Check that a checkpoint-backed conversation still opens and
+that the UI offers recovery for an interrupted turn.
+
 ## Locked decisions
 
 | Decision | Lock |

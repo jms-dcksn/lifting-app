@@ -40,6 +40,47 @@ rollout remain separate release gates. No provider change or user-memory writes 
 Product copy may say Coach. Code and routes use **agent** (`src/lib/agent/`, `/coach`,
 `/api/agent/chat`) so they do not collide with Track Coach.
 
+## assistant-ui integration spike (#270)
+
+Set `NEXT_PUBLIC_COACH_ASSISTANT_UI=1` when starting a local dev server or building a
+dedicated Preview to try the same assistant-ui viewport in the Coach sheet and page.
+The flag is build-time. Rebuild with it unset to return to the default viewport while
+retaining access to checkpoint-backed conversations through the existing runtime configuration.
+
+`@assistant-ui/react` is pinned to `0.15.38`. The prototype uses its public
+`useExternalStoreRuntime`, provider, thread viewport, and message primitives. The package
+supports React 19 and its locked dependency tree supports CI's Node 22. Keep the pin and
+recheck these APIs before upgrading because the package is pre-1.0. The viewport module
+loads when an enabled conversation renders.
+
+`AgentChat` owns the transcript reducer, composer draft, request identity, and recovery.
+The adapter memoizes the saved display rows and adds presentation rows for the pending input
+and connected response. A server acknowledgement replaces the optimistic input in the
+application reducer. Saved completion replaces the streamed reply. The library receives text,
+display tool names, and activity statuses. Coach renders Markdown, sources, intake chips,
+review cards, and explicit confirmations through the existing components. Refresh and
+Resume still use the application-owned controls and the saved request ID. The library's
+running flag represents the local stream.
+
+The focused tests cover saved and streaming rows, tool activity, read-only history,
+disconnect, status refresh, explicit resume, replay suppression, and Coach review and
+confirmation. A local Chromium fixture exercised an 80-message history and 50 streamed
+chunks at 320, 390, and 1100 pixels. It checked initial scroll position, reading older
+messages during the stream, composer reachability, and sheet dismissal with focus return.
+The p95 animation-frame interval was 16.8–33.4 ms across the four development-mode runs.
+Authenticated durable chat and a real mobile software keyboard remain Phase 1 checks.
+
+The Next.js production client-reference manifests list 252.9 kB of gzipped initial
+JavaScript for each route on `d57e12c`. The prototype lists 257.3 kB with the flag
+either enabled or unset, an increase of about 4.4–4.5 kB. The two chunks in the dynamic
+import add 126.4 kB gzipped when an enabled viewport first renders. The full-screen page
+renders it on entry, and Home renders it when the sheet opens.
+
+The adapter is compatible with the UI contract in the tested scenarios. The remaining
+implementation estimate is 6–10 engineering days for the shared composer and actions,
+recovery parity, and release verification. Revisit the estimate after the authenticated
+durable-path check.
+
 ## Locked decisions
 
 | Decision | Lock |

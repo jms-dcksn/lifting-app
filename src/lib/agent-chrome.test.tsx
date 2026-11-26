@@ -22,7 +22,8 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }));
 
-beforeAll(() => {
+beforeAll(async () => {
+  await import("@/components/agent/assistant-coach-viewport");
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   HTMLDialogElement.prototype.showModal = function showModal() {
     this.setAttribute("open", "");
@@ -36,6 +37,12 @@ let root: Root;
 let host: HTMLDivElement;
 
 beforeEach(() => {
+  vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", "0");
+  vi.stubGlobal("ResizeObserver", class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  });
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
@@ -49,6 +56,7 @@ afterEach(() => {
   });
   host.remove();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   window.history.replaceState(null, "", "/");
 });
 
@@ -107,7 +115,15 @@ function sseResponse(events: AgentStreamEvent[]) {
 }
 
 describe("durable Coach controls", () => {
-  it.each(["sheet", "page"] as const)("resumes the saved request in the %s without duplicating input or replaying navigation", async variant => {
+  const surfaces = [
+    { variant: "sheet", assistantUi: false },
+    { variant: "page", assistantUi: false },
+    { variant: "sheet", assistantUi: true },
+    { variant: "page", assistantUi: true },
+  ] as const;
+
+  it.each(surfaces)("resumes in $variant (assistant-ui: $assistantUi) without duplicating input or replaying navigation", async ({ variant, assistantUi }) => {
+    vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", assistantUi ? "1" : "0");
     if (saved.open.kind !== "saved") throw Error("Saved fixture required");
     const conversation = saved.open;
     const requestId = "40000000-0000-4000-8000-000000000001";
@@ -120,7 +136,7 @@ describe("durable Coach controls", () => {
       { type: "done", messages: [answer], replayed: true },
     ]));
     vi.stubGlobal("fetch", fetchMock);
-    act(() => { root.render(<AgentChat variant={variant} initial={{ ...saved, open: { ...conversation, runtime } }} />); });
+    await act(async () => { root.render(<AgentChat variant={variant} initial={{ ...saved, open: { ...conversation, runtime } }} />); });
     expect(button("Send")?.disabled).toBe(true);
     const resume = [...host.querySelectorAll("button")].find(button => button.textContent === "Resume response");
     await act(async () => {
@@ -134,7 +150,8 @@ describe("durable Coach controls", () => {
     expect(host.querySelector("input")?.disabled).toBe(false);
   });
 
-  it.each(["sheet", "page"] as const)("keeps recovery controls out of a live %s response, then offers them after disconnect", async variant => {
+  it.each(surfaces)("offers recovery after a $variant disconnect (assistant-ui: $assistantUi)", async ({ variant, assistantUi }) => {
+    vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", assistantUi ? "1" : "0");
     if (saved.open.kind !== "saved") throw Error("Saved fixture required");
     const encoder = new TextEncoder();
     let streamController!: ReadableStreamDefaultController<Uint8Array>;
@@ -147,7 +164,7 @@ describe("durable Coach controls", () => {
       ] satisfies AgentStreamEvent[]) controller.enqueue(encoder.encode(encodeSse(event)));
     } });
     vi.stubGlobal("fetch", vi.fn(async () => new Response(stream, { headers: { "Content-Type": "text/event-stream" } })));
-    act(() => { root.render(<AgentChat variant={variant} initial={saved} />); });
+    await act(async () => { root.render(<AgentChat variant={variant} initial={saved} />); });
     type("Inspect");
     await submit();
     expect(host.textContent).toContain("Live response fragment");
@@ -160,16 +177,72 @@ describe("durable Coach controls", () => {
     expect(refresh?.disabled).toBe(false);
   });
 
-  it("offers status refresh for a running response without starting generation", async () => {
+  it.each([false, true])("refreshes a running response without generation (assistant-ui: %s)", async assistantUi => {
+    vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", assistantUi ? "1" : "0");
     if (saved.open.kind !== "saved") throw Error("Saved fixture required");
     const initial = { ...saved, open: { ...saved.open, runtime: { requestId: "request", status: "running" as const, readOnly: false } } };
     const fetchMock = vi.fn<typeof fetch>(async () => Response.json(initial));
     vi.stubGlobal("fetch", fetchMock);
-    act(() => { root.render(<AgentChat variant="sheet" initial={initial} />); });
+    await act(async () => { root.render(<AgentChat variant="sheet" initial={initial} />); });
     expect(fetchMock).not.toHaveBeenCalled();
     await act(async () => { [...host.querySelectorAll("button")].find(button => button.textContent === "Refresh response")?.click(); });
     expect(fetchMock).toHaveBeenCalledWith(`/api/agent/chat?thread=${A}`);
     expect([...host.querySelectorAll("button")].some(button => button.textContent === "Resume response")).toBe(false);
+  });
+
+  it("keeps read-only history visible and blocks submits in assistant-ui", async () => {
+    vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", "1");
+    if (saved.open.kind !== "saved") throw Error("Saved fixture required");
+    const initial = { ...saved, open: { ...saved.open, runtime: { requestId: "", status: "interrupted" as const, readOnly: true } } };
+    const fetchMock = vi.fn<typeof fetch>();
+    vi.stubGlobal("fetch", fetchMock);
+    await act(async () => { root.render(<AgentChat variant="page" initial={initial} initialReview={null} />); });
+    expect(host.querySelector('[data-message-id="1"]')?.textContent).toBe("Youlatest");
+    expect(host.textContent).toContain("This conversation is temporarily read-only.");
+    expect(host.textContent).not.toContain("Resume response");
+    expect(host.querySelector("input")?.disabled).toBe(true);
+    await submit();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["sheet", "page"] as const)("projects saved, optimistic and streamed rows in the assistant-ui %s", async variant => {
+    vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", "1");
+    const encoder = new TextEncoder();
+    let streamController!: ReadableStreamDefaultController<Uint8Array>;
+    const stream = new ReadableStream<Uint8Array>({ start(controller) { streamController = controller; } });
+    const emit = (event: AgentStreamEvent) => streamController.enqueue(encoder.encode(encodeSse(event)));
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(stream)));
+    const rows = () => [...host.querySelectorAll("[data-message-id]")].map(row => row.textContent);
+    await act(async () => { root.render(<AgentChat variant={variant} initial={saved} initialReview={null} />); });
+    expect(rows()).toEqual(["Youlatest"]);
+
+    type("Inspect");
+    await submit();
+    expect(rows()).toEqual(["Youlatest", "YouInspect", "Coach"]);
+    await act(async () => {
+      emit({ type: "thread", thread: saved.threads[0], userMessage: userMessage("saved-input", "Inspect") });
+      emit({ type: "runtime", status: { requestId: "request", status: "running", readOnly: false } });
+      emit({ type: "tool-start", callId: "target", name: "nextWorkout" });
+      emit({ type: "text", text: "Try **8 reps**." });
+    });
+    expect(rows()).toHaveLength(3);
+    expect(rows()[1]).toBe("YouInspect");
+    expect(rows()[2]).toContain("8 reps");
+    expect(rows()[2]).toContain("Checking your next workout");
+    expect(host.querySelector("strong")?.textContent).toBe("8 reps");
+    expect(host.textContent).not.toContain("Refresh response");
+
+    await act(async () => {
+      emit({ type: "tool-end", callId: "target", outcome: "complete" });
+      emit({ type: "done", messages: [
+        { ...userMessage("private-result", ""), role: "tool",
+          parts: [{ type: "tool-result", id: "target", name: "nextWorkout", result: { private: "unrendered payload" } }] },
+        { ...userMessage("saved-reply", "Try **8 reps**."), role: "assistant" },
+      ] });
+      streamController.close();
+    });
+    expect(rows()).toEqual(["Youlatest", "YouInspect", "CoachTry 8 reps."]);
+    expect(host.textContent).not.toContain("unrendered payload");
   });
 });
 
@@ -311,7 +384,7 @@ describe("agent chrome", () => {
     expect(host.querySelectorAll(".coach-dot")).toHaveLength(0);
   });
 
-  it("opens on the latest message with the composer still on screen", () => {
+  it("opens the default viewport at the latest message with the composer still on screen", () => {
     const scrollHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollHeight");
     const clientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientHeight");
     Object.defineProperty(HTMLElement.prototype, "scrollHeight", { configurable: true, get: () => 900 });

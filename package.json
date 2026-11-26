@@ -34,6 +34,7 @@
     "verify:pr": "node scripts/pr-verification.mjs"
   },
   "dependencies": {
+    "@assistant-ui/react": "0.15.38",
     "@langchain/anthropic": "1.5.12",
     "@langchain/core": "1.2.14",
     "@langchain/langgraph": "1.4.16",

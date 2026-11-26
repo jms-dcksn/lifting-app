@@ -1,11 +1,13 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { toolActivityLabel, type ToolActivity } from "@/lib/agent/activity";
 import { pendingConfirmFromMessages } from "@/lib/agent/client-tools";
 import { intakeChipsFromParts } from "@/lib/agent/intake-chips";
 import { STARTER_PROMPTS } from "@/lib/agent/starter-prompts";
 import { splitCoachReply } from "@/lib/agent/markdown";
 import { textFromParts, type AgentMessage } from "@/lib/agent/messages";
+import { presentCoachReviewSeed } from "@/lib/coach-discussion";
 import { AgentConfirmChip } from "./agent-confirm-chip";
 import { CoachMarkdown } from "./coach-markdown";
 
@@ -18,6 +20,7 @@ export function AgentTranscript({
   confirmedCallIds = new Set<string>(),
   onConfirm,
   onChipSelect,
+  messageRows,
 }: {
   messages: AgentMessage[];
   pendingText?: string;
@@ -27,6 +30,7 @@ export function AgentTranscript({
   confirmedCallIds?: ReadonlySet<string>;
   onConfirm?: (callId: string) => void | Promise<void>;
   onChipSelect?: (label: string) => void;
+  messageRows?: ReactNode;
 }) {
   const pendingConfirm = pendingConfirmFromMessages(messages);
   const showConfirm = pendingConfirm !== null && !confirmedCallIds.has(pendingConfirm.callId);
@@ -56,23 +60,16 @@ export function AgentTranscript({
 
   return (
     <ol className="flex flex-col gap-4">
-      {messages.map((message) =>
-        message.role === "tool" ? null : (
-          <li key={message.id}>
-            <AgentBubble message={message} />
-          </li>
-        ),
-      )}
-      {pendingText ? (
-        <li>
-          <YouBubble text={pendingText} />
-        </li>
-      ) : null}
-      {pending || streamingText ? (
-        <li>
-          <CoachReply text={streamingText ?? ""} activity={pending ? tools : undefined} />
-        </li>
-      ) : null}
+      {messageRows ?? <>
+        {messages.map((message) => {
+          const bubble = savedAgentBubble(message);
+          return bubble ? <li key={message.id}><AgentBubble {...bubble} /></li> : null;
+        })}
+        {pendingText ? <li><YouBubble text={pendingText} /></li> : null}
+        {pending || streamingText ? (
+          <li><CoachReply text={streamingText ?? ""} activity={pending ? tools : undefined} /></li>
+        ) : null}
+      </>}
       {showConfirm && pendingConfirm ? (
         <li>
           <AgentConfirmChip
@@ -102,23 +99,34 @@ export function AgentTranscript({
   );
 }
 
-function AgentBubble({ message }: { message: AgentMessage }) {
-  const text = textFromParts(message.parts).trim();
-  const tools = message.parts.flatMap((part) => (part.type === "tool-call" ? [part.name] : []));
+type AgentBubbleProps = {
+  role: "user" | "assistant";
+  text: string;
+  tools?: string[];
+  activity?: ToolActivity[];
+};
+
+export function savedAgentBubble(message: AgentMessage): AgentBubbleProps | null {
   if (message.role === "tool") return null;
-  if (message.role === "user") return text ? <YouBubble text={text} /> : null;
-  if (!text) {
-    if (tools.length === 0) return null;
+  const text = textFromParts(presentCoachReviewSeed(message).parts).trim();
+  if (message.role === "user") return text ? { role: message.role, text } : null;
+  const tools = message.parts.flatMap((part) => (part.type === "tool-call" ? [part.name] : []));
+  return text || tools.length ? { role: message.role, text, tools } : null;
+}
+
+export function AgentBubble({ role, text, tools = [], activity }: AgentBubbleProps) {
+  if (role === "user") return <YouBubble text={text} />;
+  if (!text && !activity) {
     return <p className="text-caption text-faint">Checked {tools.map(toolLabel).join(" · ")}</p>;
   }
-  return <CoachReply text={text} tools={tools} />;
+  return <CoachReply text={text} tools={tools} activity={activity} />;
 }
 
 function YouBubble({ text }: { text: string }) {
   return (
     <div className="ml-auto flex max-w-[92%] flex-col items-end gap-1.5">
       <p className="text-caption font-semibold uppercase tracking-wide text-calibrate">You</p>
-      <p className="rounded-card bg-accent px-3 py-2.5 text-left text-body whitespace-pre-wrap text-accent-foreground">
+      <p className="max-w-full rounded-card bg-accent px-3 py-2.5 text-left text-body whitespace-pre-wrap wrap-anywhere text-accent-foreground">
         {text}
       </p>
     </div>

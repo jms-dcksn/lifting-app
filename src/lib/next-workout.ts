@@ -1,5 +1,5 @@
 import { resolveTempo } from "./tempo";
-import { editorSlot, parseStoredPlan, recoverySets, type PlannedSet } from "./workout-editor";
+import { editorSlot, parseStoredPlan, recoverySets } from "./workout-editor";
 import { refreshWorkoutPlanTargets, plannedCardTarget, resolvePlannedSetTarget, type PlannedPerformance } from "./workout-editor-targets";
 import { loadPlannedPerformances } from "./workout-editor-data";
 import { exactExerciseIdentity } from "@/lib/strength/identity";

@@ -1,13 +1,30 @@
 import { randomUUID } from "node:crypto";
-import { test, expect } from "@playwright/test";
+import { test, expect, type BrowserContext } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import pg from "pg";
 
+async function signInCoachOwner(db: pg.Client, context: BrowserContext, baseURL: string, remember: (owner: string) => void) {
+  const client = createClient(process.env.E2E_SUPABASE_URL!, process.env.E2E_SUPABASE_KEY!, { auth: { persistSession: false } });
+  const email = `coach-${randomUUID()}@example.test`, password = randomUUID() + "Aa1!";
+  const signup = await client.auth.signUp({ email, password });
+  if (signup.error || !signup.data.user) throw signup.error ?? Error("Signup failed");
+  const owner = signup.data.user.id;
+  remember(owner);
+  await db.query("update auth.users set email_confirmed_at=now() where id=$1", [owner]);
+  const login = await client.auth.signInWithPassword({ email, password });
+  if (login.error || !login.data.session) throw login.error ?? Error("Login failed");
+  const cookies: Array<{ name: string; value: string }> = [];
+  const server = createServerClient(process.env.E2E_SUPABASE_URL!, process.env.E2E_SUPABASE_KEY!, {
+    cookies: { getAll: () => cookies, setAll: values => { cookies.splice(0, cookies.length, ...values); } },
+  });
+  await server.auth.setSession(login.data.session);
+  await context.addCookies(cookies.map(cookie => ({ ...cookie, url: baseURL })));
+}
+
 for (const openWorkout of [false, true]) test(`plateau review reuses its conversation and confirms once (${openWorkout ? "open workout keeps drafts" : "before workout"})`, async ({ page, context, baseURL }) => {
   test.setTimeout(240_000);
   const db = new pg.Client({ connectionString: process.env.E2E_DATABASE_URL }); await db.connect();
-  const client = createClient(process.env.E2E_SUPABASE_URL!, process.env.E2E_SUPABASE_KEY!, { auth: { persistSession: false } });
   let owner: string | undefined;
   const program = randomUUID(), day = randomUUID(), slot = randomUUID();
   let modelPosts = 0;
@@ -15,19 +32,7 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
   page.on("pageerror", e => errors.push(e.message));
   page.on("request", r => { if (r.method() === "POST" && r.url().includes("/api/agent/chat")) modelPosts++; });
   try {
-    const email = `coach-${randomUUID()}@example.test`, password = randomUUID() + "Aa1!";
-    const signup = await client.auth.signUp({ email, password });
-    if (signup.error || !signup.data.user) throw signup.error ?? Error("Signup failed");
-    owner = signup.data.user.id;
-    await db.query("update auth.users set email_confirmed_at=now() where id=$1", [owner]);
-    const login = await client.auth.signInWithPassword({ email, password });
-    if (login.error || !login.data.session) throw login.error ?? Error("Login failed");
-    const cookies: Array<{ name: string; value: string }> = [];
-    const server = createServerClient(process.env.E2E_SUPABASE_URL!, process.env.E2E_SUPABASE_KEY!, {
-      cookies: { getAll: () => cookies, setAll: values => { cookies.splice(0, cookies.length, ...values); } },
-    });
-    await server.auth.setSession(login.data.session);
-    await context.addCookies(cookies.map(cookie => ({ ...cookie, url: baseURL! })));
+    await signInCoachOwner(db, context, baseURL!, id => { owner = id; });
     await db.query("update public.profile set bodyweight=180 where id=$1", [owner]);
     await db.query("insert into public.program(id,user_id,name,weeks,is_active,style) values($1,$2,'Coach Upper',12,true,'fluid')", [program, owner]);
     await db.query("insert into public.program_day(id,user_id,program_id,position,name) values($1,$2,$3,0,'Upper')", [day, owner, program]);
@@ -135,4 +140,79 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
     expect(modelPosts).toBe(1);
     expect(errors).toEqual([]);
   } finally { if (owner) await db.query("delete from auth.users where id=$1", [owner]); await db.end(); }
+});
+
+test("Coach chat uses the durable runtime from page and sheet", async ({ page, context, baseURL }) => {
+  test.setTimeout(180_000);
+  const db = new pg.Client({ connectionString: process.env.E2E_DATABASE_URL });
+  await db.connect();
+  const requestBodies: Array<{ text: string; requestId: string }> = [];
+  page.on("request", request => {
+    if (request.method() === "POST" && new URL(request.url()).pathname === "/api/agent/chat") {
+      requestBodies.push(request.postDataJSON());
+    }
+  });
+  let owner: string | undefined;
+  try {
+    await db.query(`alter role coach_agent_runtime login password ${db.escapeLiteral(process.env.E2E_COACH_RUNTIME_PASSWORD!)}`);
+    await signInCoachOwner(db, context, baseURL!, id => { owner = id; });
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.setViewportSize({ width: 1100, height: 820 });
+    await page.goto("/coach?thread=new");
+
+    const composer = page.getByRole("textbox", { name: "Message" });
+    await page.getByRole("button", { name: "How was my week?" }).click();
+    await expect(composer).toBeFocused();
+    await expect(composer).toHaveValue("How was my week?");
+    const height = (await composer.boundingBox())!.height;
+    await composer.press("End");
+    await composer.press("Shift+Enter");
+    await composer.pressSequentially("Focus on bench.");
+    await expect(composer).toHaveValue("How was my week?\nFocus on bench.");
+    await expect.poll(async () => (await composer.boundingBox())!.height).toBeGreaterThan(height);
+    await composer.dispatchEvent("keydown", { key: "Enter", code: "Enter", isComposing: true });
+    expect(requestBodies).toHaveLength(0);
+    await composer.press("Enter");
+    await expect(page.getByText("End of the Coach fixture.", { exact: true })).toBeVisible({ timeout: 60_000 });
+    await expect(composer).toHaveValue("");
+    expect(requestBodies).toHaveLength(1);
+    expect(requestBodies[0].text).toBe("How was my week?\nFocus on bench.");
+
+    const viewport = page.getByRole("region", { name: "Chat messages" });
+    const atEnd = () => viewport.evaluate(node => Math.abs(node.scrollHeight - node.clientHeight - node.scrollTop) < 4);
+    await expect.poll(atEnd).toBe(true);
+    await viewport.evaluate(node => { node.scrollTop = 0; });
+    await expect(page.getByRole("button", { name: "Jump to latest" })).toBeVisible();
+    await page.getByRole("button", { name: "Jump to latest" }).click();
+    await expect.poll(atEnd).toBe(true);
+    await page.getByRole("button", { name: "Copy Coach message" }).click();
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain("End of the Coach fixture.");
+
+    await page.setViewportSize({ width: 320, height: 750 });
+    await page.goto("/");
+    const opener = page.getByRole("button", { name: "Coach", exact: true });
+    await opener.click();
+    const dialog = page.getByRole("dialog", { name: "Coach" });
+    await expect(dialog.getByText("End of the Coach fixture.", { exact: true })).toBeVisible();
+    const sheetComposer = dialog.getByRole("textbox", { name: "Message" });
+    await sheetComposer.fill("And squat next?");
+    expect(await dialog.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
+    await dialog.getByRole("button", { name: "Send", exact: true }).click();
+    await expect(dialog.getByText("End of the Coach fixture.", { exact: true })).toHaveCount(2);
+    await expect(dialog.getByRole("button", { name: "Copy Coach message" })).toHaveCount(2);
+    await expect(sheetComposer).toHaveValue("");
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(opener).toBeFocused();
+    expect(requestBodies).toHaveLength(2);
+    expect(new Set(requestBodies.map(request => request.requestId)).size).toBe(2);
+    const turns = await db.query("select status from coach_runtime.turn where owner_id=$1", [owner]);
+    expect(turns.rows).toEqual([{ status: "completed" }, { status: "completed" }]);
+    const transcript = await db.query("select role, count(*)::int as count from public.agent_message where user_id=$1 group by role order by role", [owner]);
+    expect(transcript.rows).toEqual([{ role: "assistant", count: 2 }, { role: "user", count: 2 }]);
+  } finally {
+    if (owner) await db.query("delete from auth.users where id=$1", [owner]);
+    await db.query("alter role coach_agent_runtime nologin password null");
+    await db.end();
+  }
 });

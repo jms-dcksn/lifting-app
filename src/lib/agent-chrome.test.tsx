@@ -22,8 +22,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }));
 
-beforeAll(async () => {
-  await import("@/components/agent/assistant-coach-viewport");
+beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   HTMLDialogElement.prototype.showModal = function showModal() {
     this.setAttribute("open", "");
@@ -37,7 +36,6 @@ let root: Root;
 let host: HTMLDivElement;
 
 beforeEach(() => {
-  vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", "0");
   vi.stubGlobal("ResizeObserver", class {
     observe() {}
     unobserve() {}
@@ -56,7 +54,6 @@ afterEach(() => {
   });
   host.remove();
   vi.unstubAllGlobals();
-  vi.unstubAllEnvs();
   window.history.replaceState(null, "", "/");
 });
 
@@ -86,8 +83,8 @@ function click(label: string) {
 }
 
 function type(text: string) {
-  const input = host.querySelector("input");
-  const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+  const input = host.querySelector("textarea");
+  const setValue = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set;
   act(() => {
     setValue?.call(input, text);
     input?.dispatchEvent(new Event("input", { bubbles: true }));
@@ -115,15 +112,9 @@ function sseResponse(events: AgentStreamEvent[]) {
 }
 
 describe("durable Coach controls", () => {
-  const surfaces = [
-    { variant: "sheet", assistantUi: false },
-    { variant: "page", assistantUi: false },
-    { variant: "sheet", assistantUi: true },
-    { variant: "page", assistantUi: true },
-  ] as const;
+  const surfaces = ["sheet", "page"] as const;
 
-  it.each(surfaces)("resumes in $variant (assistant-ui: $assistantUi) without duplicating input or replaying navigation", async ({ variant, assistantUi }) => {
-    vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", assistantUi ? "1" : "0");
+  it.each(surfaces)("resumes in %s without duplicating input or replaying navigation", async variant => {
     if (saved.open.kind !== "saved") throw Error("Saved fixture required");
     const conversation = saved.open;
     const requestId = "40000000-0000-4000-8000-000000000001";
@@ -147,11 +138,10 @@ describe("durable Coach controls", () => {
     expect(push).not.toHaveBeenCalled();
     expect(host.querySelectorAll(".uppercase")).toHaveLength(1);
     expect([...host.querySelectorAll("button")].some(button => button.textContent === "Resume response")).toBe(false);
-    expect(host.querySelector("input")?.disabled).toBe(false);
+    expect(host.querySelector("textarea")?.disabled).toBe(false);
   });
 
-  it.each(surfaces)("offers recovery after a $variant disconnect (assistant-ui: $assistantUi)", async ({ variant, assistantUi }) => {
-    vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", assistantUi ? "1" : "0");
+  it.each(surfaces)("offers recovery after a %s disconnect", async variant => {
     if (saved.open.kind !== "saved") throw Error("Saved fixture required");
     const encoder = new TextEncoder();
     let streamController!: ReadableStreamDefaultController<Uint8Array>;
@@ -177,8 +167,7 @@ describe("durable Coach controls", () => {
     expect(refresh?.disabled).toBe(false);
   });
 
-  it.each([false, true])("refreshes a running response without generation (assistant-ui: %s)", async assistantUi => {
-    vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", assistantUi ? "1" : "0");
+  it("refreshes a running response without generation", async () => {
     if (saved.open.kind !== "saved") throw Error("Saved fixture required");
     const initial = { ...saved, open: { ...saved.open, runtime: { requestId: "request", status: "running" as const, readOnly: false } } };
     const fetchMock = vi.fn<typeof fetch>(async () => Response.json(initial));
@@ -186,12 +175,11 @@ describe("durable Coach controls", () => {
     await act(async () => { root.render(<AgentChat variant="sheet" initial={initial} />); });
     expect(fetchMock).not.toHaveBeenCalled();
     await act(async () => { [...host.querySelectorAll("button")].find(button => button.textContent === "Refresh response")?.click(); });
-    expect(fetchMock).toHaveBeenCalledWith(`/api/agent/chat?thread=${A}`);
+    expect(fetchMock).toHaveBeenCalledWith(`/api/agent/chat?thread=${A}`, { signal: expect.any(AbortSignal) });
     expect([...host.querySelectorAll("button")].some(button => button.textContent === "Resume response")).toBe(false);
   });
 
   it("keeps read-only history visible and blocks submits in assistant-ui", async () => {
-    vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", "1");
     if (saved.open.kind !== "saved") throw Error("Saved fixture required");
     const initial = { ...saved, open: { ...saved.open, runtime: { requestId: "", status: "interrupted" as const, readOnly: true } } };
     const fetchMock = vi.fn<typeof fetch>();
@@ -200,13 +188,40 @@ describe("durable Coach controls", () => {
     expect(host.querySelector('[data-message-id="1"]')?.textContent).toBe("Youlatest");
     expect(host.textContent).toContain("This conversation is temporarily read-only.");
     expect(host.textContent).not.toContain("Resume response");
-    expect(host.querySelector("input")?.disabled).toBe(true);
+    expect(host.querySelector("textarea")?.disabled).toBe(true);
     await submit();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("ignores an old refresh that returns after a successful resume", async () => {
+    if (saved.open.kind !== "saved") throw Error("Saved fixture required");
+    const open = saved.open;
+    const runtime = { requestId: "40000000-0000-4000-8000-000000000001", status: "interrupted" as const, readOnly: false };
+    const interrupted = { ...saved, open: { ...open, runtime } };
+    let completeRefresh!: (response: Response) => void;
+    const fetcher = vi.fn<typeof fetch>(async (_url, init) => {
+      if (init?.method !== "POST") return new Promise(resolve => { completeRefresh = resolve; });
+      return sseResponse([
+        { type: "thread", thread: saved.threads[0], userMessage: open.messages[0] },
+        { type: "runtime", status: { ...runtime, status: "running" } },
+        { type: "done", messages: [{ ...userMessage("resumed", "Recovered reply"), role: "assistant" }], replayed: true },
+      ]);
+    });
+    vi.stubGlobal("fetch", fetcher);
+    await act(async () => root.render(<AgentChat initial={interrupted} initialReview={null} variant="page" />));
+    const recoveryButton = (label: string) => [...host.querySelectorAll("button")].find(node => node.textContent === label);
+    act(() => { recoveryButton("Refresh response")?.click(); });
+    await act(async () => {
+      recoveryButton("Resume response")?.click();
+      for (let tick = 0; tick < 5; tick += 1) await new Promise(resolve => setTimeout(resolve, 0));
+    });
+    await act(async () => { completeRefresh(Response.json(interrupted)); });
+    expect(host.textContent).toContain("Recovered reply");
+    expect(recoveryButton("Resume response")).toBeUndefined();
+    expect(host.querySelector("textarea")?.disabled).toBe(false);
+  });
+
   it.each(["sheet", "page"] as const)("projects saved, optimistic and streamed rows in the assistant-ui %s", async variant => {
-    vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", "1");
     const encoder = new TextEncoder();
     let streamController!: ReadableStreamDefaultController<Uint8Array>;
     const stream = new ReadableStream<Uint8Array>({ start(controller) { streamController = controller; } });
@@ -247,6 +262,44 @@ describe("durable Coach controls", () => {
 });
 
 describe("agent chrome", () => {
+  it("keeps a multiline draft and sends it once even when submit fires twice", async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => new Response(null, { status: 503 }));
+    vi.stubGlobal("fetch", fetcher);
+    await act(async () => root.render(<AgentChat initial={{ threads: [], open: { kind: "draft" } }} variant="page" />));
+    const composer = host.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]');
+    expect(composer).not.toBeNull();
+    type("How was my week?\nFocus on bench.");
+    await act(async () => {
+      const form = composer?.form;
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      for (let tick = 0; tick < 5; tick += 1) await new Promise(resolve => setTimeout(resolve, 0));
+    });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body)).text).toBe("How was my week?\nFocus on bench.");
+    expect(composer?.value).toBe("How was my week?\nFocus on bench.");
+  });
+
+  it("reuses the send request when retrying a lost acknowledgement", async () => {
+    const input = userMessage("retry-input", "Lost acknowledgement");
+    const fetcher = vi.fn<typeof fetch>()
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce(sseResponse([
+        { type: "thread", thread: saved.threads[0], userMessage: input },
+        { type: "done", messages: [input, { ...userMessage("retry-reply", "One saved reply"), role: "assistant" }], replayed: true },
+      ]));
+    vi.stubGlobal("fetch", fetcher);
+    await act(async () => root.render(<AgentChat initial={saved} initialReview={null} variant="sheet" />));
+    type("Lost acknowledgement");
+    await submit();
+    expect(host.querySelector("textarea")?.value).toBe("Lost acknowledgement");
+    await submit();
+    const requests = fetcher.mock.calls.map(([, init]) => JSON.parse(String(init?.body)));
+    expect(requests).toHaveLength(2);
+    expect(requests[0]).toEqual(requests[1]);
+    expect(host.querySelectorAll('[data-message-id="retry-input"]')).toHaveLength(1);
+    expect(host.querySelectorAll('[data-message-id="retry-reply"]')).toHaveLength(1);
+  });
   it("starts an explicitly requested episode discussion once, then reopens without another model call", async () => {
     const seed = userMessage("seed", "Opened a Coach exception review (evidence revision 1). Use the current authorized review context; this message does not confirm a training change.");
     const snapshot: AgentChatSnapshot = { threads: saved.threads, open: { kind: "saved", threadId: A, title: "Plateau", messages: [seed] } };
@@ -292,8 +345,8 @@ describe("agent chrome", () => {
   it("puts you on the right and renders Coach markdown with one source", () => {
     act(() => {
       root.render(
-        <AgentTranscript
-          messages={[
+        <AgentChat variant="page" initialReview={null}
+          initial={{ threads: [], open: { kind: "saved", threadId: A, title: "Week", messages: [
             {
               id: "u1",
               role: "user",
@@ -315,7 +368,7 @@ describe("agent chrome", () => {
                 text: "This week went solidly — **4/4 sessions** completed.\n\n- Cable Curl **+8.5%**\n\nSource: Track Coach / Coach check-in",
               }],
             },
-          ]}
+          ] } }}
         />,
       );
     });
@@ -384,30 +437,19 @@ describe("agent chrome", () => {
     expect(host.querySelectorAll(".coach-dot")).toHaveLength(0);
   });
 
-  it("opens the default viewport at the latest message with the composer still on screen", () => {
-    const scrollHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollHeight");
-    const clientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientHeight");
-    Object.defineProperty(HTMLElement.prototype, "scrollHeight", { configurable: true, get: () => 900 });
-    Object.defineProperty(HTMLElement.prototype, "clientHeight", { configurable: true, get: () => 200 });
-    try {
-      act(() => {
-        root.render(<AgentChat variant="sheet" initial={saved} />);
-      });
-      const scroller = host.querySelector(".overflow-y-auto");
-      const form = host.querySelector("form");
-      expect(scroller?.scrollTop).toBe(900);
-      expect(scroller?.contains(form)).toBe(false);
-      expect(host.querySelector("h2")?.textContent).toBe("Coach");
-      expect([...host.querySelectorAll("button[aria-label]")].map((node) => node.getAttribute("aria-label")))
-        .toEqual(["Chat history", "New chat", "Send"]);
-      expect(host.querySelector("a")?.textContent).toBe("Full screen");
-      expect(host.querySelector("a")?.getAttribute("href")).toBe("/coach?thread=0199a3b2-0000-7000-8000-00000000000a");
-      expect(host.querySelector("input")?.hasAttribute("disabled")).toBe(false);
-      expect(host.querySelector("button[aria-label='Send'] path")?.getAttribute("d")).toBe("M12 19V5M6 11l6-6 6 6");
-    } finally {
-      if (scrollHeight) Object.defineProperty(HTMLElement.prototype, "scrollHeight", scrollHeight);
-      if (clientHeight) Object.defineProperty(HTMLElement.prototype, "clientHeight", clientHeight);
-    }
+  it("keeps the composer outside the scrollable transcript", () => {
+    act(() => { root.render(<AgentChat variant="sheet" initial={saved} initialReview={null} />); });
+    const scroller = host.querySelector('[aria-label="Chat messages"]');
+    const form = host.querySelector("form");
+    expect(scroller?.contains(form)).toBe(false);
+    expect(host.querySelector("h2")?.textContent).toBe("Coach");
+    expect(button("Chat history")).toBeTruthy();
+    expect(button("New chat")).toBeTruthy();
+    expect(button("Copy your message")).toBeTruthy();
+    expect(button("Jump to latest")?.disabled).toBe(true);
+    expect(host.querySelector("a")?.getAttribute("href")).toBe(`/coach?thread=${A}`);
+    expect(host.querySelector("textarea")?.disabled).toBe(false);
+    expect(button("Send")?.disabled).toBe(true);
   });
 
   it("starts a new chat without a request and points Full screen at a fresh draft", () => {
@@ -550,8 +592,8 @@ describe("agent chrome", () => {
     type("and squat?");
     await submit();
 
-    expect(host.querySelector(".text-danger")?.textContent).toBe("Coach is not configured.");
-    expect(host.querySelector("input")?.value).toBe("and squat?");
+    expect(host.querySelector('[role="alert"]')?.textContent).toBe("Coach is temporarily unavailable. Try again.");
+    expect(host.querySelector("textarea")?.value).toBe("and squat?");
     expect(host.querySelector(".overflow-y-auto")?.textContent).not.toContain("and squat?");
     expect(button("New chat")?.disabled).toBe(false);
   });

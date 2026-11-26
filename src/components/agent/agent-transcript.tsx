@@ -16,7 +16,6 @@ export function AgentTranscript({
   pendingText,
   streamingText,
   pending = false,
-  tools = [],
   confirmedCallIds = new Set<string>(),
   onConfirm,
   onChipSelect,
@@ -26,7 +25,6 @@ export function AgentTranscript({
   pendingText?: string;
   streamingText?: string;
   pending?: boolean;
-  tools?: ToolActivity[];
   confirmedCallIds?: ReadonlySet<string>;
   onConfirm?: (callId: string) => void | Promise<void>;
   onChipSelect?: (label: string) => void;
@@ -47,7 +45,7 @@ export function AgentTranscript({
                 key={prompt}
                 type="button"
                 onClick={() => onChipSelect(prompt)}
-                className="rounded-full border border-border-strong bg-surface px-3 py-1.5 text-caption text-body hover:bg-muted"
+                className="min-h-11 rounded-full border border-border-strong bg-surface px-3 py-1.5 text-caption hover:bg-muted focus-visible:outline-2 focus-visible:outline-foreground"
               >
                 {prompt}
               </button>
@@ -60,19 +58,11 @@ export function AgentTranscript({
 
   return (
     <ol className="flex flex-col gap-4">
-      {messageRows ?? <>
-        {messages.map((message) => {
-          const bubble = savedAgentBubble(message);
-          return bubble ? <li key={message.id}><AgentBubble {...bubble} /></li> : null;
-        })}
-        {pendingText ? <li><YouBubble text={pendingText} /></li> : null}
-        {pending || streamingText ? (
-          <li><CoachReply text={streamingText ?? ""} activity={pending ? tools : undefined} /></li>
-        ) : null}
-      </>}
+      {messageRows}
       {showConfirm && pendingConfirm ? (
         <li>
           <AgentConfirmChip
+            key={pendingConfirm.callId}
             label={pendingConfirm.label}
             pendingLabel={pendingConfirm.tool === "startNextWorkout" ? "Starting…" : "Opening…"}
             onConfirm={() => onConfirm?.(pendingConfirm.callId)}
@@ -87,7 +77,7 @@ export function AgentTranscript({
                 key={chip}
                 type="button"
                 onClick={() => onChipSelect(chip)}
-                className="rounded-full border border-border-strong bg-surface px-3 py-1.5 text-caption text-body hover:bg-muted"
+                className="min-h-11 rounded-full border border-border-strong bg-surface px-3 py-1.5 text-caption hover:bg-muted focus-visible:outline-2 focus-visible:outline-foreground"
               >
                 {chip}
               </button>

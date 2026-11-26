@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { AgentChat } from "@/components/agent/agent-chat";
 import type { EpisodeReview } from "./coach-conversation-data";
 import { parseThreadId, type AgentChatSnapshot } from "./agent/chat-state";
@@ -19,12 +19,8 @@ const episode = planCoachEpisodes({ previous: [], observations: [coachObservatio
 const review: EpisodeReview = { sourceRevision: 0, stateVersion: 0, preferencesVersion: 0, episodeId: "episode", episode, fresh: true, sessionId: null, threadId: null, receipts: [], suggestion: { action: "rep_change", repBand: { repMin: 12, repMax: 15 }, ladderStep: 0, stalledExposures: 3 } };
 const receipt = (intent: CoachActionIntent) => ({ ...intent, status: "applied", adaptationId: "adaptation", slotId: "slot", repMin: 12, repMax: 15 });
 const button = (text: string) => [...host.querySelectorAll("button")].find(b => b.textContent === text)!;
-beforeAll(async () => {
-  await import("@/components/agent/assistant-coach-viewport");
-});
 beforeEach(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-  vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", "0");
   vi.stubGlobal("ResizeObserver", class {
     observe() {}
     unobserve() {}
@@ -37,7 +33,7 @@ beforeEach(() => {
   actions.confirmEpisode.mockImplementation(async intent => receipt(intent));
   host = document.createElement("div"); document.body.append(host); root = createRoot(host);
 });
-afterEach(async () => { await act(async () => root.unmount()); host.remove(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
+afterEach(async () => { await act(async () => root.unmount()); host.remove(); vi.unstubAllGlobals(); });
 it("puts a scoped recommendation and direct acceptance on the notice without starting chat", async () => {
   await act(async () => root.render(<CoachNoticeDetail noticeId="notice" />));
   expect(host.textContent).toContain("Switch rep range to 12–15 reps");
@@ -79,7 +75,6 @@ it("keeps the server-loaded review choices visible while the first discussion co
 });
 
 it.each(["sheet", "page"] as const)("keeps review and explicit confirmation in the assistant-ui %s", async variant => {
-  vi.stubEnv("NEXT_PUBLIC_COACH_ASSISTANT_UI", "1");
   const threadId = parseThreadId("0199a3b2-0000-7000-8000-00000000000a")!;
   const time = "2026-10-18T00:00:00Z";
   const snapshot: AgentChatSnapshot = { threads: [], open: {

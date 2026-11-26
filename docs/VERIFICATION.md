@@ -197,6 +197,14 @@ reload. It also checks that acknowledging pain does not resolve it. Anonymous us
 must still reach the sign-in screen. Email delivery and paid model quality are separate
 checks; this suite proves the real authenticated app path using a test password login.
 
+The Coach chat journey enables the durable runtime on the disposable stack. It
+provisions the local runtime role, signs in through Auth, sends from the page
+and sheet, and checks completed turns and saved transcript rows. The fixture
+replaces the model transport in the Playwright server. The application still
+uses its regular chat API, protected PostgREST reads, and PostgreSQL checkpoints.
+The journey also checks keyboard submission, copy, scrolling, narrow layout,
+and Escape focus return. A real software-keyboard check is recorded separately.
+
 ## Enforced boundaries
 
 - `training-evidence.ts` validates saved set ownership, timestamps, explicit warmup/deload

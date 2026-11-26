@@ -46,7 +46,8 @@ The Coach sheet and full-screen page use one viewport, transcript, and multiline
 composer. Home loads the chat code when the sheet opens. The page loads it on
 entry. The composer sends on Enter and inserts a newline on Shift+Enter. The
 library handles composition keys, and the named Send button provides a touch
-target. The composer sits outside the scrolling transcript. The page and sheet
+target. The composer sits outside the scrolling transcript. Its server-rendered
+textarea uses one row, so hydration does not resize the transcript. The page and sheet
 use the visual viewport to reserve space when a keyboard covers the layout viewport.
 
 `@assistant-ui/react` is pinned to `0.15.38` and supports the app's React 19 and CI's

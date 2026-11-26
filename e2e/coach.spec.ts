@@ -89,6 +89,10 @@ for (const openWorkout of [false, true]) test(`plateau review reuses its convers
     expect(new URL(page.url()).searchParams.get("month")).toBe("2026-09");
     await page.goto("/settings?coachExercise=db-bench&month=2026-09");
     await expect.poll(() => new URL(page.url()).searchParams.get("thread")).toBe(threadId);
+    // The server-rendered transcript starts at its top; hydration pins it to the latest message.
+    // Clicking before that settles lets the jump retarget the click away from the link.
+    const transcript = page.getByRole("region", { name: "Chat messages" });
+    await expect.poll(() => transcript.evaluate(node => Math.abs(node.scrollHeight - node.clientHeight - node.scrollTop) < 4)).toBe(true);
     await page.getByRole("link", { name: "Report details", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Weekly report details", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /^Accept/ })).toHaveCount(0);

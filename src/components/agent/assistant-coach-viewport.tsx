@@ -109,6 +109,7 @@ export function AssistantCoachConversation({
             aria-label="Message"
             placeholder="Message Coach"
             value={draft}
+            rows={1}
             minRows={1}
             maxRows={5}
             submitMode="enter"

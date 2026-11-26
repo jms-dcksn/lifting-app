@@ -93,6 +93,15 @@ if (completed) return completed;</code></pre>
             response only for reopened or disconnected work, when no local stream is active.
             Live generation shows activity and streamed text without recovery clutter.
             Reconnecting does not automatically repeat navigation.</p>
+          <div role="img" aria-label="Coach opens the owned transcript, then checks the runtime database. If the database is unavailable, the transcript is read-only until refresh can reach the runtime." style="border:1px solid #78716c;padding:12px;margin:12px 0">
+            Open owned transcript → Check runtime database → Show live status or repair projection<br>
+            Runtime database unavailable → Keep saved transcript visible in read-only mode → Refresh checks again
+          </div>
+          <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/durable-chat.ts
+    } catch {
+      console.error(&quot;Coach checkpoint history unavailable&quot;);
+      return readOnly;
+    }</code></pre>
           <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/components/agent/agent-chat.tsx
       {runtime &amp;&amp; blocked &amp;&amp; screen.name === &quot;chat&quot; &amp;&amp; screen.turn === null ? &lt;div className=&quot;mx-4 mb-3 space-y-2&quot;&gt;</code></pre>
           <pre class="code-rail overflow-x-auto bg-white p-4 text-sm"><code>// src/lib/agent/tools/draft-program.ts

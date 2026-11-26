@@ -100,6 +100,32 @@ describe("shared next-workout consumers", () => {
     expect(result.workout?.slots[0].target?.weight).not.toBe(95);
   });
 
+  it("uses the normal prescription for the program-edit fallback during a deload", async () => {
+    history.sets = [{ ...history.sets[0], program_slot_id: "other-slot", rir: 2 }];
+    const normal = await loadNextWorkout(client(), "user", program);
+    program.phases = [{ id: "recovery", name: "Recovery", description: null, position: 0, weekStart: 3, weekEnd: 3,
+      targetRirMin: 4, targetRirMax: 4, setMultiplier: 0.5, isDeload: true }];
+    const deload = await loadNextWorkout(client(), "user", program);
+    const { sets, normalSets } = deload.editorPlan.slots[0];
+    expect(sets[0]).toMatchObject({ rirMax: 4, targetReps: 8 });
+    expect(normalSets?.[0]).toMatchObject({ rirMax: 2, suggestedWeight: 100, targetReps: 9 });
+    expect(normalSets?.[0]).toEqual(normal.editorPlan.slots[0].sets[0]);
+  });
+
+  it("explains the first row using the same evidence that set its target", async () => {
+    const first = { ...history.sets[0], weight: 100, reps: 8, rir: 2 };
+    plannedHistory = [{ exerciseId: first.exercise_id, equipmentInstanceId: null, sessionId: first.session_id,
+      setId: first.id, programSlotId: first.program_slot_id, performedAt: history.sessions[0].performedAt,
+      weight: first.weight, reps: first.reps, rir: first.rir, e1rm: first.e1rm, plannedSetId: "slot000000000001" }];
+    history.sets = [first, { ...history.sets[1], program_slot_id: "other-slot", reps: 10, rir: 2, e1rm: 145 }];
+    const result = await nextWorkout(client(), "user");
+    const slot = result.workout?.slots[0];
+    expect(slot?.target).toMatchObject({ weight: 100, targetReps: 9 });
+    expect(slot?.effectiveTarget).toMatchObject({ reason: "add_rep",
+      reference: { selected: { setId: first.id } }, evidence: [{ setId: first.id }] });
+    expect(slot?.targetExplanation).toContain("holds load and advances reps");
+  });
+
   it("preserves the explicit planner swap and never carries a reduction across exercise identity", async () => {
     mocks.cookie.mockReturnValue({ value: JSON.stringify({ key: "user:program:day:2", choices: { slot: "db-bench" } }) });
     const next = await loadNextWorkout(client(), "user", program);

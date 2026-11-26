@@ -1,12 +1,13 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { durableChat } from "./durable-chat";
 import { readSseEvents } from "./stream";
-import type { TurnRequest } from "./chat-state";
+import type { AgentChatSnapshot, TurnRequest } from "./chat-state";
 
-const mocks = vi.hoisted(() => ({ store: vi.fn(), execute: vi.fn(), tools: vi.fn() }));
+const mocks = vi.hoisted(() => ({ store: vi.fn(), execute: vi.fn(), tools: vi.fn(), loadChat: vi.fn() }));
 vi.mock("./durable-store", async importOriginal => ({ ...await importOriginal<typeof import("./durable-store")>(), configuredDurableStore: mocks.store }));
 vi.mock("./durable-runtime", async importOriginal => ({ ...await importOriginal<typeof import("./durable-runtime")>(), executeDurableTurn: mocks.execute }));
 vi.mock("./tools", () => ({ bindAgentTools: mocks.tools }));
+vi.mock("./thread", () => ({ loadChat: mocks.loadChat }));
 vi.mock("./context", async importOriginal => ({ ...await importOriginal<typeof import("./context")>(), enrichScreenContext: async (_client: unknown, _owner: unknown, context: unknown) => context }));
 vi.mock("@/lib/coach-conversation-data", () => ({ episodeContextForThread: async () => null }));
 
@@ -25,6 +26,33 @@ beforeEach(() => { vi.clearAllMocks(); rpc.mockResolvedValue({ data: null, error
 afterEach(() => { vi.unstubAllEnvs(); });
 
 describe("durable chat rollout and transport", () => {
+  it("returns saved history read-only when the runtime database rejects its credential", async () => {
+    vi.stubEnv("COACH_RUNTIME_ENABLED", "1");
+    vi.stubEnv("COACH_RUNTIME_DATABASE_URL", "configured");
+    rpc.mockResolvedValue({ data: "coach-deep-v1", error: null });
+    const unavailable = new Error("database rejected credential");
+    mocks.store.mockReturnValue({
+      status: vi.fn().mockRejectedValue(unavailable),
+      admit: vi.fn().mockRejectedValue(unavailable),
+    });
+    const snapshot: AgentChatSnapshot = { threads: [], open: { kind: "saved", threadId: threadId as never,
+      title: "Question", messages: [{ ...userMessage, role: "user", parts: [{ type: "text", text: "Question" }] }] } };
+    const logger = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(await durableChat.snapshot(client as never, owner, snapshot)).toEqual({
+        ...snapshot, open: { ...snapshot.open, runtime: { requestId: "", status: "interrupted", readOnly: true } },
+      });
+      expect((await post())?.status).toBe(503);
+      expect(mocks.execute).not.toHaveBeenCalled();
+
+      mocks.store.mockReturnValue({ status: vi.fn().mockResolvedValue({ request_id: requestId, status: "completed" }) });
+      mocks.loadChat.mockResolvedValue(snapshot);
+      expect(await durableChat.snapshot(client as never, owner, snapshot)).toMatchObject({
+        open: { runtime: { requestId, status: "completed", readOnly: false } },
+      });
+    } finally { logger.mockRestore(); }
+  });
+
   it("keeps untouched threads on legacy with switch off, and never falls back for a checkpoint-backed thread", async () => {
     vi.stubEnv("COACH_RUNTIME_ENABLED", "0");
     expect(await post()).toBeNull();

@@ -120,8 +120,11 @@ effort adjustments. Uniform slots also resolve each row from its own actual perf
 slot/index row IDs without requiring a saved per-set program edit. Completed workouts before
 plan snapshots fall back to saved set indexes; their historical rep/RIR context is unknown,
 so it does not gate progression. Snapshot-backed rows continue to require matching context.
-Only the first row may fall back to the slot-level reference when row evidence is unavailable;
-later rows use a starting estimate rather than copying the first set. Explicit weight seeds
+Only the first default row may fall back to the slot-level reference when comparable row
+evidence is unavailable. During recovery, the program editor computes that fallback using
+the normal-week prescription. The exercise-level target and its explanation use the same
+resolution as the first row. Later rows use independent starting estimates when history is
+unavailable. Explicit weight seeds
 retain their chosen target reps until comparable performance exists (recovery still wins).
 
 **Use recommended target** clears only that row's weight adjustment. Its apply-to-all control

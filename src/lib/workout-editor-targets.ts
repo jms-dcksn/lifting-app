@@ -1,15 +1,16 @@
 import { exactExerciseIdentity } from "./strength/identity";
-import { resolveExactWorkoutTarget, type TargetPerformance, type WorkoutTargetHistory } from "./effective-workout-target";
+import { resolveExactWorkoutTarget, type EffectiveWorkoutTarget, type TargetPerformance, type WorkoutTargetHistory } from "./effective-workout-target";
 import type { ExerciseDef } from "./strength/coefficients";
 import type { ExerciseStat } from "./strength/recommend";
 import type { StallContext } from "./stall-report";
 import type { PlannedSet, PlannedSlot, WorkoutEditorPlan } from "./workout-editor";
 
 export type PlannedPerformance = TargetPerformance & { plannedSetId: string; repMin?: number; repMax?: number; rirMin?: number; rirMax?: number; phaseId?: string | null };
-export function plannedSetTarget(input: {
+export function resolvePlannedSetTarget(input: {
   slotId: string; exerciseId: string; equipmentInstanceId?: string | null; set: PlannedSet; history: PlannedPerformance[];
   catalog: Record<string, ExerciseDef>; stats: ExerciseStat[]; bodyweight: number | null; isDeload: boolean; context?:StallContext|null;
-}): PlannedSet {
+  fallback?: EffectiveWorkoutTarget;
+}) {
   const { set } = input;
   const performances = input.history.filter(p => p.plannedSetId === set.id && p.exerciseId === input.exerciseId
     && p.equipmentInstanceId === (input.equipmentInstanceId??null) && (p.repMin == null || (p.repMin === set.repMin && p.repMax === set.repMax
@@ -20,21 +21,27 @@ export function plannedSetTarget(input: {
   const exposures=performances.filter(p=>!context || p.phaseId===context.phaseId)
     .sort((a,b)=>a.performedAt.localeCompare(b.performedAt)).slice(-2);
   const history: WorkoutTargetHistory = { progressionByExercise: { [input.exerciseId]: performances }, effortBySlot: context && exposures.length===2 ? {[input.slotId]:{context,exposures}} : {} };
-  const target = resolveExactWorkoutTarget({ slotId: input.slotId, identity: exactExerciseIdentity(input.exerciseId, input.equipmentInstanceId??null),
+  const result = !performances.length && input.fallback?.target ? input.fallback : resolveExactWorkoutTarget({
+    slotId: input.slotId, identity: exactExerciseIdentity(input.exerciseId, input.equipmentInstanceId??null),
     prescription: { repMin: set.repMin, repMax: set.repMax, targetRir: set.rirMax }, context,
-    history, catalog: input.catalog, stats: input.stats, bodyweight: input.bodyweight, isDeload: input.isDeload }).target;
-  return { ...set, weight: performances.length || input.isDeload ? null : set.weight,
+    history, catalog: input.catalog, stats: input.stats, bodyweight: input.bodyweight, isDeload: input.isDeload });
+  const { target } = result;
+  const row = { ...set, weight: performances.length || input.isDeload ? null : set.weight,
     suggestedWeight: target?.weight ?? null, targetReps: set.weight !== null && !performances.length && !input.isDeload
       ? set.targetReps : target?.targetReps ?? set.repMin };
+  return { row, effectiveTarget: plannedCardTarget(result, row) };
 }
 
+export function plannedSetTarget(input: Parameters<typeof resolvePlannedSetTarget>[0]): PlannedSet {
+  return resolvePlannedSetTarget(input).row;
+}
 
 export function plannedSetSessionTarget(row: PlannedSet): import("./strength/progression").SessionTarget | null {
   const weight = row.weight ?? row.suggestedWeight;
   return weight === null ? null : { weight, targetReps: row.targetReps, targetRir: row.rirMax, source: "progression" };
 }
 
-export function plannedCardTarget(base: import("./effective-workout-target").EffectiveWorkoutTarget, row: PlannedSet) {
+export function plannedCardTarget(base: EffectiveWorkoutTarget, row: PlannedSet): EffectiveWorkoutTarget {
   const weight=row.weight??row.suggestedWeight;
   return { ...base, reason: row.weight!==null ? "manual_target" as const : base.reason,
     target:weight===null?null:{...base.target,weight,targetReps:row.targetReps,targetRir:row.rirMax,source:base.target?.source??"recommendation" as const} };
